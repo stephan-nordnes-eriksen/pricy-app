@@ -57,7 +57,13 @@ before the catalog block executes, or mutate the exported arrays in place
 *and* rebuild the derived indexes. Settle this in 4a before anything else —
 it's the one place a wrong choice forces upstream prototype changes.
 
-### 4a — Catalog served, not baked (no backend yet)
+### 4a — Catalog served, not baked (no backend yet) ✅
+
+Hydration approach settled: build.js bundles the prototype blocks and
+boot.jsx into one esbuild scope, so boot.jsx mutates `CATALOG` in place
+(keeping the array identity `window.CATALOG` shares) and rebuilds `CAT_OF`
+— the only load-time derived index — before first render. Baked catalog
+remains the no-fetch/failed-fetch fallback.
 
 - `build.js` gains a step: execute the compiled catalog block in Node and
   dump the enriched `CATALOG` to `dist/api/catalog.json` (a static asset —
