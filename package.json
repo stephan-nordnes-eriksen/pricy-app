@@ -1,0 +1,14 @@
+{
+  "name": "pricy",
+  "private": true,
+  "scripts": {
+    "test": "node render-check.js",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "wrangler": "^4.0.0"
+  }
+}
