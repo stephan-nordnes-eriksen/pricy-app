@@ -10,7 +10,12 @@ const { JSDOM } = require('jsdom');
 
 const DIST = path.join(__dirname, '..', 'dist');
 
-function boot(url = 'http://pricy.test/', { session = false, catalog } = {}) {
+let CATALOG_JSON;
+const mari = { email: 'mari@hansen.no', name: 'Mari', initials: 'M' };
+
+// jsdom has no fetch — stub the whole API surface boot.jsx talks to.
+// `session`/`me` seed the /api/me answer; every call lands in win.api.
+function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -19,12 +24,24 @@ function boot(url = 'http://pricy.test/', { session = false, catalog } = {}) {
   });
   const win = dom.window;
   win.scrollTo = () => {};
-  // jsdom has no fetch; boot.jsx falls back to the baked catalog unless a
-  // test serves one here
-  if (catalog) win.fetch = (u) => u === '/api/catalog.json'
-    ? Promise.resolve({ ok: true, json: () => Promise.resolve(catalog) })
-    : Promise.reject(new Error('unexpected fetch ' + u));
-  if (session) win.localStorage.setItem('pricy_session', '1');
+  CATALOG_JSON = CATALOG_JSON || JSON.parse(fs.readFileSync(path.join(DIST, 'api', 'catalog.json'), 'utf8'));
+  let ME = me || (session ? { user: mari, watches: [] } : null);
+  win.api = []; // 'METHOD /path [body]' log for assertions
+  const ok = (data, status = 200) => Promise.resolve({ ok: status < 400, status, json: () => Promise.resolve(data) });
+  win.fetch = (u, opts = {}) => {
+    const body = opts.body ? JSON.parse(opts.body) : undefined;
+    win.api.push({ call: (opts.method || 'GET') + ' ' + u, body });
+    if (u === '/api/catalog.json') return ok(catalog || CATALOG_JSON);
+    if (u === '/api/me') return ME ? ok(ME) : ok({ error: 'unauthenticated' }, 401);
+    if (u === '/api/auth/login') {
+      const name = body.email.split('@')[0].replace(/[._-]+/g, ' ').replace(/(^| )\w/g, c => c.toUpperCase());
+      ME = { user: { email: body.email, name, initials: name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('') }, watches: [] };
+      return ok(ME);
+    }
+    if (u === '/api/logout') { ME = null; return ok({ ok: true }); }
+    if (u === '/api/watches') return ok({ ok: true });
+    return Promise.reject(new Error('unexpected fetch ' + u));
+  };
   const ctx = dom.getInternalVMContext();
   // run the exact script pipeline from dist/index.html
   const scripts = [...html.matchAll(/<script(?:\s+src="([^"]+)")?>([\s\S]*?)<\/script>/g)];
@@ -110,7 +127,8 @@ test('email login reaches the signed-in home and persists the session', async ()
   const win = boot('http://pricy.test/login');
   await logIn(win);
   assert.strictEqual(win.location.pathname, '/');
-  assert.strictEqual(win.localStorage.getItem('pricy_session'), '1');
+  const login = win.api.find(c => c.call === 'POST /api/auth/login');
+  assert.strictEqual(login && login.body.email, 'mari@hansen.no', 'typed email must reach the server');
 });
 
 test('BankID signup runs onboarding and authenticates', async () => {
@@ -118,7 +136,7 @@ test('BankID signup runs onboarding and authenticates', async () => {
   await tick();
   q(win, '.bankid-btn').click();
   assert.ok(await until(() => win.location.pathname === '/onboarding'), 'BankID should land on onboarding');
-  assert.strictEqual(win.localStorage.getItem('pricy_session'), '1');
+  assert.ok(win.api.some(c => c.call === 'POST /api/auth/login'), 'BankID signup must create a server session');
 });
 
 // ---------- signed in ----------
@@ -158,7 +176,7 @@ test('signed in: results rows open the product page', async () => {
   assert.ok(await until(() => win.location.pathname.startsWith('/product/')), 'row click should open product');
 });
 
-test('signed in: session survives a reload (fresh boot, same storage flag)', async () => {
+test('signed in: session survives a reload (fresh boot, /api/me still says yes)', async () => {
   const win = boot('http://pricy.test/alerts', { session: true });
   await tick();
   assert.ok(!q(win, '.authcard'), 'session flag should keep app screens open');
@@ -172,7 +190,7 @@ test('account menu logs out: back to landing, session cleared', async () => {
   const items = qa(win, '.acctmenu__item');
   items[items.length - 1].click(); // Log out
   assert.ok(await until(() => q(win, '.lhero')), 'log out should land on the public landing');
-  assert.strictEqual(win.localStorage.getItem('pricy_session'), null, 'session must be cleared');
+  assert.ok(win.api.some(c => c.call === 'POST /api/logout'), 'logout must kill the server session');
 });
 
 // ---------- catalog hydration (Phase 4a) ----------
@@ -188,6 +206,34 @@ test('rendered catalog comes from /api/catalog.json, not the baked constants', a
   const cats = qa(win, '.catlink').map(el => el.textContent);
   assert.ok(cats.length > 0, 'category filter list did not render');
   assert.ok(!cats.some(t => t.includes('Gaming')), 'CAT_OF still lists the dropped Gaming category');
+});
+
+// ---------- per-user hydration + watch persistence (Phase 4b) ----------
+
+test('identity and watchlist hydrate from /api/me, not the baked USER/WATCHED', async () => {
+  const me = {
+    user: { email: 'ola@nordmann.no', name: 'Ola Nordmann', initials: 'ON' },
+    watches: [{ id: 'xm5', target: 3100, paused: 0 }],
+  };
+  const win = boot('http://pricy.test/alerts', { me });
+  assert.ok(await until(() => q(win, '.avatar')), 'signed-in header missing');
+  assert.strictEqual(q(win, '.avatar').textContent, 'ON', 'avatar must show the fetched user, not baked Mari');
+  assert.ok(await until(() => qa(win, '.alrow').length === 1), 'alerts must show exactly the fetched watchlist');
+  assert.ok(q(win, '.alrow .alrow__name').textContent.includes('Sony'), 'watch row must resolve its product');
+});
+
+test('removing a watch PUTs the new list to /api/watches', async () => {
+  const me = {
+    user: { email: 'ola@nordmann.no', name: 'Ola Nordmann', initials: 'ON' },
+    watches: [{ id: 'xm5', target: 3100, paused: 0 }, { id: 'lgc3', target: 12000, paused: 0 }],
+  };
+  const win = boot('http://pricy.test/alerts', { me });
+  assert.ok(await until(() => qa(win, '.alrow').length === 2), 'watch rows missing');
+  q(win, '.alrow .iconbtn.danger').click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PUT /api/watches')), 'watch removal must persist');
+  const put = win.api.find(c => c.call === 'PUT /api/watches');
+  assert.strictEqual(put.body.length, 1, 'PUT must carry the remaining watchlist');
+  assert.strictEqual(put.body[0].id, 'lgc3');
 });
 
 test('lucide icons render as inline svg', async () => {
