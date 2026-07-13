@@ -42,6 +42,11 @@ html = html
 for (const cdn of ['unpkg.com', 'text/babel']) {
   if (html.includes(cdn)) throw new Error(`build output still references ${cdn}`);
 }
+// every locally-linked stylesheet must exist in the repo (it gets copied below)
+const localCss = [...html.matchAll(/<link[^>]*href="(?!https?:)([^"]+\.css)"/g)].map(m => m[1]);
+for (const f of localCss) {
+  if (!fs.existsSync(path.join(REPO, f))) throw new Error(`html links ${f} but it's not in the repo`);
+}
 
 // --- write dist -------------------------------------------------
 fs.rmSync(DIST, { recursive: true, force: true });
@@ -52,4 +57,5 @@ for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));
 }
 fs.cpSync(path.join(REPO, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+for (const f of localCss) fs.copyFileSync(path.join(REPO, f), path.join(DIST, f));
 console.log(`built dist/: app.js ${Math.round(compiled.length / 1024)}KB from ${blocks.length} prototype blocks + boot.jsx`);
