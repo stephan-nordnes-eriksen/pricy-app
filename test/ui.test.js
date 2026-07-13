@@ -130,9 +130,20 @@ test('signed in: / is the app home and the header search suggests live', async (
   // Enter navigates to results
   input.closest('form').dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
   assert.ok(await until(() => win.location.pathname + win.location.search === '/search?q=sony'), 'Enter should open results for the query');
-  // NOTE: remaining prototype gap — suggestion PICK still only fills the
-  // input (AppHeader onPick lacks SearchHero's navigate). Fix upstream in
-  // Claude Design, then extend this test.
+});
+
+test('signed in: picking a header suggestion navigates', async () => {
+  const win = boot('http://pricy.test/', { session: true });
+  await tick();
+  const input = q(win, '.app-hdr__search input');
+  input.focus();
+  type(win, input, 'sony');
+  assert.ok(await until(() => q(win, '.suggest .suggest__item')), 'live suggestions missing');
+  q(win, '.suggest .suggest__item').click();
+  assert.ok(await until(() => {
+    const p = win.location.pathname;
+    return p.startsWith('/product/') || p === '/search';
+  }), 'suggestion pick should open the product or results');
 });
 
 test('signed in: results rows open the product page', async () => {

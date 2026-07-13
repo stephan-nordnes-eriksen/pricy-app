@@ -41,6 +41,4 @@ Two Claude Design projects feed this repo:
 3. Commit (sync and boot/test adjustments separately), push — Workers
    Builds auto-deploys main (build command: `npm run build`, output: `dist`).
 
-Known upstream gaps (fix in Claude Design, then extend tests):
-- Signed-in AppHeader search: suggestion-pick only fills the input, doesn't
-  navigate (Enter works now; SearchHero's onPick has the working pattern).
+Known upstream gaps (fix in Claude Design, then extend tests): none currently.
