@@ -1,0 +1,224 @@
+<!doctype html>
+<!-- @dsCard group="Spacing" name="Hard Offset Shadows" subtitle="No blur — brutalist drop shadows" viewport="700x175" -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* ============================================================
+   PRICY.NO — DESIGN SYSTEM FOUNDATIONS
+   Brutalist / minimal. Clear typography, signal-green savings.
+   ------------------------------------------------------------
+   Fonts are Google Fonts (no local files shipped — see README).
+   Load in HTML <head> alongside this file:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+
+:root {
+  /* ---- FONT FAMILIES ------------------------------------- */
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-ui:      'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ---- INK (text + borders) ------------------------------ */
+  --ink-900: #0E0E0E;   /* primary text, heavy borders, the "black" */
+  --ink-700: #2E2E2C;   /* strong body */
+  --ink-600: #5C5C57;   /* secondary text */
+  --ink-400: #908F87;   /* tertiary / placeholder / disabled */
+  --ink-300: #C7C5BC;   /* hairlines on canvas */
+
+  /* ---- PAPER / SURFACE ----------------------------------- */
+  --paper:    #FFFFFF;  /* cards, panels */
+  --canvas:   #F3F1E9;  /* warm newsprint page background */
+  --canvas-2: #EAE7DB;  /* sunken / alternating rows */
+
+  /* ---- BRAND: SIGNAL GREEN (savings / best price / CTA) --- */
+  --green-700: #017A43; /* text on light, hover */
+  --green-500: #00B964; /* the brand green */
+  --green-300: #8DEBB8; /* tints / chips */
+  --green-100: #D8F8E6; /* wash */
+
+  /* ---- SEMANTIC: PRICE DIRECTION ------------------------- */
+  --up-600:   #C32A1E;  /* price increased — text */
+  --up-500:   #E5342A;  /* price increased — fill */
+  --up-100:   #FBDDDA;  /* wash */
+  --down-600: #017A43;  /* price dropped — text (= green) */
+  --down-500: #00B964;  /* price dropped — fill */
+  --warn-500: #F5B100;  /* watch / caution highlight (brutalist marker) */
+
+  /* ---- DERIVED ALIASES (foreground / background) --------- */
+  --fg1: var(--ink-900);
+  --fg2: var(--ink-600);
+  --fg3: var(--ink-400);
+  --bg1: var(--paper);
+  --bg2: var(--canvas);
+  --bg3: var(--canvas-2);
+  --line: var(--ink-900);          /* borders are full-black in brutalism */
+  --line-soft: var(--ink-300);     /* hairline dividers on canvas */
+  --accent: var(--green-500);
+  --accent-ink: var(--green-700);
+
+  /* ---- BORDERS ------------------------------------------- */
+  --bw: 2px;                                  /* default border weight */
+  --bw-hair: 1px;
+  --bw-bold: 3px;
+  --border:      var(--bw) solid var(--line);
+  --border-hair: var(--bw-hair) solid var(--line-soft);
+
+  /* ---- RADII (brutalist = square) ------------------------ */
+  --r-0: 0px;
+  --r-sm: 2px;     /* used sparingly — chips, inputs */
+  --r-pill: 999px; /* only for round toggles / avatars */
+
+  /* ---- HARD OFFSET SHADOWS (no blur) --------------------- */
+  --shadow-sm: 2px 2px 0 var(--ink-900);
+  --shadow:    4px 4px 0 var(--ink-900);
+  --shadow-lg: 6px 6px 0 var(--ink-900);
+  --shadow-green: 4px 4px 0 var(--green-500);
+
+  /* ---- SPACING (4px base / 8px grid) --------------------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  /* ---- LAYOUT -------------------------------------------- */
+  --container: 1200px;
+  --gutter: 24px;
+
+  /* ---- MOTION (snappy, minimal) -------------------------- */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 90ms;
+  --dur: 150ms;
+}
+
+/* ============================================================
+   TYPE SCALE — semantic element styles
+   Display uses Space Grotesk; numbers/labels use JetBrains Mono.
+   ============================================================ */
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(48px, 6vw, 76px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  color: var(--fg1);
+}
+
+h1, .t-h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--fg1);
+}
+
+h2, .t-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--fg1);
+}
+
+h3, .t-h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+}
+
+.t-lead {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--fg2);
+}
+
+p, .t-body {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--fg1);
+}
+
+.t-small {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--fg2);
+}
+
+/* Micro-labels: uppercase mono, the brutalist tag voice */
+.t-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg2);
+}
+
+/* Prices — tabular mono, the hero number of the product */
+.t-price {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+}
+
+.t-price-lg { font-family: var(--font-mono); font-weight: 800; font-size: 40px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.t-price-md { font-family: var(--font-mono); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; }
+.t-price-sm { font-family: var(--font-mono); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+
+code, .t-mono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+a, .t-link {
+  color: var(--fg1);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--green-500);
+}
+
+</style>
+<style>
+  body { margin: 0; background: var(--canvas); padding: 30px; display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .box { width: 116px; height: 70px; background: var(--paper); border: 2px solid var(--ink-900); display: flex; align-items: center; justify-content: center; }
+  .cap { font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
+  .grp { display: grid; gap: 14px; justify-items: center; }
+  .lbl { font-family: var(--font-mono); font-size: 11px; color: var(--fg3); }
+</style>
+</head>
+<body>
+  <div class="grp"><div class="box" style="box-shadow:var(--shadow-sm);"><span class="cap">sm</span></div><span class="lbl">2·2·0</span></div>
+  <div class="grp"><div class="box" style="box-shadow:var(--shadow);"><span class="cap">shadow</span></div><span class="lbl">4·4·0</span></div>
+  <div class="grp"><div class="box" style="box-shadow:var(--shadow-lg);"><span class="cap">lg</span></div><span class="lbl">6·6·0</span></div>
+  <div class="grp"><div class="box" style="box-shadow:var(--shadow-green);"><span class="cap">green</span></div><span class="lbl">4·4·0 grn</span></div>
+</body>
+</html>

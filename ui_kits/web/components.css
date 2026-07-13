@@ -1,0 +1,99 @@
+/* ============================================================
+   PRICY.NO — COMPONENT PRIMITIVES
+   Depends on colors_and_type.css (load that first).
+   Brutalist: square corners, heavy black borders, hard shadows.
+   ============================================================ */
+
+/* ---- BUTTONS ------------------------------------------- */
+.btn {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 12px 20px;
+  border: var(--bw) solid var(--ink-900);
+  border-radius: var(--r-0);
+  background: var(--paper);
+  color: var(--ink-900);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  box-shadow: var(--shadow-sm);
+}
+.btn:hover { transform: translate(-1px, -1px); box-shadow: var(--shadow); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink-900); }
+
+.btn--primary { background: var(--green-500); color: var(--ink-900); }
+.btn--dark    { background: var(--ink-900); color: var(--paper); }
+.btn--ghost   { box-shadow: none; background: transparent; }
+.btn--ghost:hover { background: var(--canvas-2); transform: none; box-shadow: none; }
+.btn--lg { padding: 16px 28px; font-size: 15px; }
+.btn--sm { padding: 8px 14px; font-size: 12px; box-shadow: none; }
+.btn--sm:hover { transform: none; box-shadow: var(--shadow-sm); }
+
+/* ---- CARD ---------------------------------------------- */
+.card {
+  background: var(--paper);
+  border: var(--bw) solid var(--ink-900);
+  border-radius: var(--r-0);
+}
+.card--raised { box-shadow: var(--shadow); }
+.card--pad { padding: var(--s-5); }
+
+/* ---- TAGS / CHIPS / BADGES ----------------------------- */
+.tag {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border: var(--bw-hair) solid var(--ink-900);
+  background: var(--paper);
+  color: var(--ink-900);
+}
+.tag--best { background: var(--green-500); border-color: var(--ink-900); }
+.tag--down { background: var(--green-100); color: var(--green-700); border-color: var(--green-700); }
+.tag--up   { background: var(--up-100); color: var(--up-600); border-color: var(--up-600); }
+.tag--watch{ background: var(--warn-500); }
+.tag--solid{ background: var(--ink-900); color: var(--paper); }
+
+/* ---- INPUT / SEARCH ------------------------------------ */
+.field {
+  display: flex;
+  align-items: center;
+  border: var(--bw) solid var(--ink-900);
+  background: var(--paper);
+  height: 52px;
+}
+.field input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  padding: 0 var(--s-4);
+  color: var(--ink-900);
+}
+.field input::placeholder { color: var(--ink-400); }
+.field:focus-within { box-shadow: var(--shadow); }
+
+/* ---- PRICE DELTA --------------------------------------- */
+.delta { font-family: var(--font-mono); font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 3px; }
+.delta--down { color: var(--green-700); }
+.delta--up   { color: var(--up-600); }
+
+/* ---- DIVIDER / GRID HELPERS ---------------------------- */
+.rule { border: 0; border-top: var(--bw) solid var(--ink-900); margin: 0; }
+.rule--hair { border-top: var(--bw-hair) solid var(--line-soft); }

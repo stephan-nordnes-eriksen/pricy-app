@@ -1,0 +1,594 @@
+/* @ds-bundle: {"format":3,"namespace":"PricyDesignSystem_ee80f3","components":[],"sourceHashes":{"ui_kits/web/Chrome.jsx":"6f87b1cb80c1","ui_kits/web/Home.jsx":"62bfca999d49","ui_kits/web/Primitives.jsx":"e0056cde7394"},"inlinedExternals":[],"unexposedExports":[]} */
+
+(() => {
+
+const __ds_ns = (window.PricyDesignSystem_ee80f3 = window.PricyDesignSystem_ee80f3 || {});
+
+const __ds_scope = {};
+
+(__ds_ns.__errors = __ds_ns.__errors || []);
+
+// ui_kits/web/Chrome.jsx
+try { (() => {
+// ===========================================================
+// Pricy.no Web Kit — Header & Footer
+// ===========================================================
+
+function Header({
+  route,
+  go,
+  query,
+  setQuery
+}) {
+  const [val, setVal] = useState(query || '');
+  useEffect(() => {
+    setVal(query || '');
+  }, [query]);
+  const submit = e => {
+    e && e.preventDefault();
+    go('results', {
+      query: val || 'airpods pro'
+    });
+  };
+  return /*#__PURE__*/React.createElement("header", {
+    className: "hdr"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "wrap hdr__row"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hdr__logo",
+    onClick: () => go('home')
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "assets/logo-wordmark.svg",
+    alt: "pricy.no"
+  })), /*#__PURE__*/React.createElement("form", {
+    className: "hdr__search",
+    onSubmit: submit
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      height: 44
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 12px',
+      color: 'var(--ink-600)'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    size: 18
+  })), /*#__PURE__*/React.createElement("input", {
+    value: val,
+    onChange: e => setVal(e.target.value),
+    placeholder: "Search 1.4M products across 1,400 shops…"
+  }))), /*#__PURE__*/React.createElement("nav", {
+    className: "hdr__nav"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: 'navlink ' + (route === 'deals' ? 'is-active' : ''),
+    onClick: () => go('deals')
+  }, "Deals"), /*#__PURE__*/React.createElement("span", {
+    className: "navlink",
+    onClick: () => go('results', {
+      query: 'audio'
+    })
+  }, "Categories"), /*#__PURE__*/React.createElement("span", {
+    className: "navlink",
+    style: {
+      display: 'inline-flex',
+      gap: 6,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "bell",
+    size: 15
+  }), " Alerts"), /*#__PURE__*/React.createElement("span", {
+    className: "navlink",
+    style: {
+      border: '2px solid var(--ink-900)',
+      display: 'inline-flex',
+      gap: 6,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "user",
+    size: 15
+  }), " Log in"))));
+}
+function Footer({
+  go
+}) {
+  const col = (h, items) => /*#__PURE__*/React.createElement("div", {
+    className: "ftr__col"
+  }, /*#__PURE__*/React.createElement("h5", null, h), items.map(i => /*#__PURE__*/React.createElement("a", {
+    key: i,
+    onClick: () => go('deals')
+  }, i)));
+  return /*#__PURE__*/React.createElement("footer", {
+    className: "ftr"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ftr__row"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ftr__col",
+    style: {
+      maxWidth: 260
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "assets/logo-wordmark-reversed.svg",
+    alt: "pricy.no"
+  }), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: 'var(--ink-400)',
+      fontSize: 14,
+      lineHeight: 1.5,
+      marginTop: 16
+    }
+  }, "Norway's price comparison. No shop pays for placement — ever.")), col('Shop', ['Today\'s deals', 'Categories', 'Price alerts', 'New products']), col('Company', ['About', 'How it works', 'For shops', 'Press']), col('Help', ['Contact', 'FAQ', 'Privacy', 'Terms']))), /*#__PURE__*/React.createElement("div", {
+    className: "wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ftr__bot"
+  }, /*#__PURE__*/React.createElement("span", null, "\xA9 2026 pricy.no — Oslo, Norway"), /*#__PURE__*/React.createElement("span", null, "Prices updated every 30 min \xB7 1,412 shops tracked"))));
+}
+Object.assign(window, {
+  Header,
+  Footer
+});
+})(); } catch (e) { __ds_ns.__errors.push({ path: "ui_kits/web/Chrome.jsx", error: String((e && e.message) || e) }); }
+
+// ui_kits/web/Home.jsx
+try { (() => {
+// ===========================================================
+// Pricy.no Web Kit — Home screen
+// ===========================================================
+
+function ProductCard({
+  p,
+  go
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "pcard",
+    onClick: () => go('product', {
+      id: p.id
+    })
+  }, p.drop >= 20 && /*#__PURE__*/React.createElement("span", {
+    className: "pcard__tag"
+  }, /*#__PURE__*/React.createElement(Tag, {
+    kind: "best"
+  }, "▼ −", p.drop, "%")), /*#__PURE__*/React.createElement("div", {
+    className: "pcard__img"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: p.icon,
+    size: 42
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "pcard__name"
+  }, p.name), /*#__PURE__*/React.createElement("div", {
+    className: "pcard__foot"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "pcard__from"
+  }, "from"), /*#__PURE__*/React.createElement(Price, {
+    value: p.best,
+    size: 20
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pcard__meta"
+  }, p.shops, " shops"))));
+}
+function Home({
+  go
+}) {
+  const [q, setQ] = useState('');
+  const trending = PRODUCTS.slice().sort((a, b) => b.drop - a.drop).slice(0, 8);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("section", {
+    className: "hero"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hero__inner"
+  }, /*#__PURE__*/React.createElement("h1", null, "Never overpay.", /*#__PURE__*/React.createElement("br", null), "Find the ", /*#__PURE__*/React.createElement("span", {
+    className: "hl"
+  }, "best price"), "."), /*#__PURE__*/React.createElement("p", {
+    className: "hero__sub"
+  }, "Compare the exact same product across 1,400 Norwegian shops. We track price history, so you know a deal is really a deal."), /*#__PURE__*/React.createElement("form", {
+    className: "hero__search",
+    onSubmit: e => {
+      e.preventDefault();
+      go('results', {
+        query: q || 'airpods pro'
+      });
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 18px',
+      color: 'var(--ink-600)'
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "search",
+    size: 22
+  })), /*#__PURE__*/React.createElement("input", {
+    value: q,
+    onChange: e => setQ(e.target.value),
+    placeholder: "Search any product…",
+    autoFocus: true
+  })), /*#__PURE__*/React.createElement(Btn, {
+    variant: "primary",
+    size: "lg",
+    style: {
+      borderLeft: 0
+    },
+    onClick: () => go('results', {
+      query: q || 'airpods pro'
+    })
+  }, "Compare")), /*#__PURE__*/React.createElement("div", {
+    className: "hero__popular"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lbl"
+  }, "Popular"), POPULAR.map(t => /*#__PURE__*/React.createElement("a", {
+    key: t,
+    className: "cchip",
+    onClick: () => go('results', {
+      query: t
+    })
+  }, t)))))), /*#__PURE__*/React.createElement("section", {
+    className: "wrap section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section__head"
+  }, /*#__PURE__*/React.createElement("h2", null, "Biggest price drops today"), /*#__PURE__*/React.createElement("span", {
+    className: "more",
+    onClick: () => go('deals')
+  }, "All deals ", /*#__PURE__*/React.createElement(Icon, {
+    name: "arrow-right",
+    size: 14
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "pgrid"
+  }, trending.map(p => /*#__PURE__*/React.createElement(ProductCard, {
+    key: p.id,
+    p: p,
+    go: go
+  })))), /*#__PURE__*/React.createElement("section", {
+    className: "wrap",
+    style: {
+      paddingBottom: 64
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section__head"
+  }, /*#__PURE__*/React.createElement("h2", null, "Browse categories")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 12
+    }
+  }, CATEGORIES.map(c => /*#__PURE__*/React.createElement("a", {
+    key: c,
+    className: "cchip",
+    style: {
+      padding: '12px 18px',
+      fontSize: 14
+    },
+    onClick: () => go('results', {
+      query: c
+    })
+  }, c)))));
+}
+Object.assign(window, {
+  Home,
+  ProductCard
+});
+})(); } catch (e) { __ds_ns.__errors.push({ path: "ui_kits/web/Home.jsx", error: String((e && e.message) || e) }); }
+
+// ui_kits/web/Primitives.jsx
+try { (() => {
+// ===========================================================
+// Pricy.no Web Kit — Primitives & shared data
+// ===========================================================
+const {
+  useState,
+  useEffect,
+  useRef
+} = React;
+
+// --- NOK formatting: "1 499" with thin spaces ----------------
+function fmt(n) {
+  return n.toLocaleString('en-US').replace(/,/g, ' ');
+}
+
+// --- Lucide icon wrapper -------------------------------------
+function Icon({
+  name,
+  size = 18,
+  style
+}) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && window.lucide) {
+      ref.current.innerHTML = '';
+      const i = document.createElement('i');
+      i.setAttribute('data-lucide', name);
+      ref.current.appendChild(i);
+      window.lucide.createIcons();
+    }
+  }, [name]);
+  return /*#__PURE__*/React.createElement("span", {
+    className: "icon",
+    ref: ref,
+    style: {
+      fontSize: size,
+      ...style
+    }
+  });
+}
+
+// --- Price (currency + tabular number) -----------------------
+function Price({
+  value,
+  size = 22,
+  cur = 'kr'
+}) {
+  return /*#__PURE__*/React.createElement("span", {
+    className: "price"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "cur",
+    style: {
+      fontSize: Math.round(size * 0.6)
+    }
+  }, cur), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: 'var(--font-mono)',
+      fontWeight: 800,
+      fontSize: size,
+      fontVariantNumeric: 'tabular-nums',
+      letterSpacing: '-0.01em'
+    }
+  }, fmt(value)));
+}
+
+// --- Tag / badge --------------------------------------------
+function Tag({
+  children,
+  kind = ''
+}) {
+  return /*#__PURE__*/React.createElement("span", {
+    className: 'tag ' + (kind ? 'tag--' + kind : '')
+  }, children);
+}
+
+// --- Delta (price change) -----------------------------------
+function Delta({
+  pct
+}) {
+  const down = pct <= 0;
+  return /*#__PURE__*/React.createElement("span", {
+    className: 'delta ' + (down ? 'delta--down' : 'delta--up')
+  }, down ? '▼' : '▲', " ", Math.abs(pct), "%");
+}
+
+// --- Button -------------------------------------------------
+function Btn({
+  children,
+  variant = '',
+  size = '',
+  icon,
+  onClick,
+  style
+}) {
+  const cls = ['btn', variant && 'btn--' + variant, size && 'btn--' + size].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("button", {
+    className: cls,
+    onClick: onClick,
+    style: style
+  }, icon && /*#__PURE__*/React.createElement(Icon, {
+    name: icon,
+    size: 16
+  }), children);
+}
+
+// --- Sparkline (small inline price trend) -------------------
+function Sparkline({
+  points,
+  w = 120,
+  h = 40,
+  color = 'var(--ink-900)'
+}) {
+  const max = Math.max(...points),
+    min = Math.min(...points);
+  const range = max - min || 1;
+  const step = w / (points.length - 1);
+  const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${(i * step).toFixed(1)} ${(h - (p - min) / range * h).toFixed(1)}`).join(' ');
+  return /*#__PURE__*/React.createElement("svg", {
+    width: w,
+    height: h,
+    viewBox: `0 0 ${w} ${h}`,
+    fill: "none",
+    preserveAspectRatio: "none"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: d,
+    stroke: color,
+    strokeWidth: "2.5"
+  }));
+}
+
+// --- Price-history step chart -------------------------------
+function HistoryChart({
+  points,
+  low
+}) {
+  const w = 560,
+    h = 180,
+    pad = 4;
+  const max = Math.max(...points),
+    min = Math.min(...points);
+  const range = max - min || 1;
+  const step = (w - pad * 2) / (points.length - 1);
+  const x = i => pad + i * step;
+  const y = v => pad + (h - pad * 2) - (v - min) / range * (h - pad * 2);
+  let line = '';
+  points.forEach((p, i) => {
+    line += i === 0 ? `M ${x(i)} ${y(p)}` : ` H ${x(i)} V ${y(p)}`;
+  });
+  const area = `${line} V ${h - pad} H ${x(0)} Z`;
+  const lastIdx = points.length - 1;
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: `0 0 ${w} ${h}`,
+    preserveAspectRatio: "none"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: area,
+    fill: "var(--green-100)"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: line,
+    stroke: "var(--ink-900)",
+    strokeWidth: "2.5",
+    fill: "none"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: x(0),
+    y1: y(low),
+    x2: w - pad,
+    y2: y(low),
+    stroke: "var(--green-500)",
+    strokeWidth: "2",
+    strokeDasharray: "6 4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: x(lastIdx),
+    cy: y(points[lastIdx]),
+    r: "5",
+    fill: "var(--green-500)",
+    stroke: "var(--ink-900)",
+    strokeWidth: "2"
+  }));
+}
+
+// ===========================================================
+// DATA — Norwegian shops + products
+// ===========================================================
+const SHOPS = ['Elkjøp', 'Power', 'Komplett', 'NetOnNet', 'Clas Ohlson', 'Proshop', 'CDON', 'Dustin'];
+function hist(base, vol) {
+  const pts = [];
+  let v = base * 1.35;
+  for (let i = 0; i < 24; i++) {
+    v += Math.sin(i * 0.9) * vol + (Math.random() - 0.55) * vol;
+    v = Math.max(base, v);
+    pts.push(Math.round(v / 10) * 10);
+  }
+  pts[pts.length - 1] = base;
+  return pts;
+}
+const PRODUCTS = [{
+  id: 'airpods',
+  name: 'AirPods Pro (2nd gen, USB-C)',
+  brand: 'Apple',
+  cat: 'Audio',
+  icon: 'headphones',
+  best: 2290,
+  was: 2990,
+  drop: 23,
+  shops: 9
+}, {
+  id: 'xm5',
+  name: 'Sony WH-1000XM5 Wireless',
+  brand: 'Sony',
+  cat: 'Audio',
+  icon: 'headphones',
+  best: 2999,
+  was: 4290,
+  drop: 30,
+  shops: 11
+}, {
+  id: 'switch',
+  name: 'Nintendo Switch OLED',
+  brand: 'Nintendo',
+  cat: 'Gaming',
+  icon: 'gamepad-2',
+  best: 3290,
+  was: 3790,
+  drop: 13,
+  shops: 8
+}, {
+  id: 'dyson',
+  name: 'Dyson V15 Detect Absolute',
+  brand: 'Dyson',
+  cat: 'Home',
+  icon: 'wind',
+  best: 6490,
+  was: 8990,
+  drop: 28,
+  shops: 7
+}, {
+  id: 'iphone',
+  name: 'iPhone 15 128GB',
+  brand: 'Apple',
+  cat: 'Phones',
+  icon: 'smartphone',
+  best: 9190,
+  was: 9990,
+  drop: 8,
+  shops: 12
+}, {
+  id: 'tv',
+  name: 'Samsung 55" OLED S90C',
+  brand: 'Samsung',
+  cat: 'TV',
+  icon: 'tv',
+  best: 11990,
+  was: 17990,
+  drop: 33,
+  shops: 6
+}, {
+  id: 'kindle',
+  name: 'Kindle Paperwhite 16GB',
+  brand: 'Amazon',
+  cat: 'E-readers',
+  icon: 'book-open',
+  best: 1690,
+  was: 1990,
+  drop: 15,
+  shops: 5
+}, {
+  id: 'lego',
+  name: 'LEGO Icons Orchid 10311',
+  brand: 'LEGO',
+  cat: 'Toys',
+  icon: 'blocks',
+  best: 449,
+  was: 599,
+  drop: 25,
+  shops: 10
+}];
+
+// build offers + history per product
+PRODUCTS.forEach(p => {
+  p.offers = SHOPS.slice(0, Math.min(p.shops, SHOPS.length)).map((s, i) => ({
+    shop: s,
+    price: p.best + Math.round((i * (p.best * 0.04) + (i === 0 ? 0 : 50)) / 10) * 10,
+    ship: i % 3 === 0 ? 'Free shipping' : 'kr 79 shipping',
+    stock: i % 4 !== 3,
+    eta: i % 2 === 0 ? 'In stock' : '2–4 days'
+  })).sort((a, b) => a.price - b.price);
+  p.offers[0].price = p.best;
+  p.history = hist(p.best, p.best * 0.06);
+});
+const CATEGORIES = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'Kitchen'];
+const POPULAR = ['airpods pro', 'rtx 4070', 'robot vacuum', 'espresso machine', 'air fryer'];
+Object.assign(window, {
+  fmt,
+  Icon,
+  Price,
+  Tag,
+  Delta,
+  Btn,
+  Sparkline,
+  HistoryChart,
+  SHOPS,
+  PRODUCTS,
+  CATEGORIES,
+  POPULAR
+});
+})(); } catch (e) { __ds_ns.__errors.push({ path: "ui_kits/web/Primitives.jsx", error: String((e && e.message) || e) }); }
+
+})();

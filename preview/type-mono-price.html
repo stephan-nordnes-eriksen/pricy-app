@@ -1,0 +1,240 @@
+<!doctype html>
+<!-- @dsCard group="Type" name="Mono, Labels & Prices" subtitle="JetBrains Mono — tabular prices & micro-labels" viewport="700x220" -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* ============================================================
+   PRICY.NO — DESIGN SYSTEM FOUNDATIONS
+   Brutalist / minimal. Clear typography, signal-green savings.
+   ------------------------------------------------------------
+   Fonts are Google Fonts (no local files shipped — see README).
+   Load in HTML <head> alongside this file:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+
+:root {
+  /* ---- FONT FAMILIES ------------------------------------- */
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-ui:      'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ---- INK (text + borders) ------------------------------ */
+  --ink-900: #0E0E0E;   /* primary text, heavy borders, the "black" */
+  --ink-700: #2E2E2C;   /* strong body */
+  --ink-600: #5C5C57;   /* secondary text */
+  --ink-400: #908F87;   /* tertiary / placeholder / disabled */
+  --ink-300: #C7C5BC;   /* hairlines on canvas */
+
+  /* ---- PAPER / SURFACE ----------------------------------- */
+  --paper:    #FFFFFF;  /* cards, panels */
+  --canvas:   #F3F1E9;  /* warm newsprint page background */
+  --canvas-2: #EAE7DB;  /* sunken / alternating rows */
+
+  /* ---- BRAND: SIGNAL GREEN (savings / best price / CTA) --- */
+  --green-700: #017A43; /* text on light, hover */
+  --green-500: #00B964; /* the brand green */
+  --green-300: #8DEBB8; /* tints / chips */
+  --green-100: #D8F8E6; /* wash */
+
+  /* ---- SEMANTIC: PRICE DIRECTION ------------------------- */
+  --up-600:   #C32A1E;  /* price increased — text */
+  --up-500:   #E5342A;  /* price increased — fill */
+  --up-100:   #FBDDDA;  /* wash */
+  --down-600: #017A43;  /* price dropped — text (= green) */
+  --down-500: #00B964;  /* price dropped — fill */
+  --warn-500: #F5B100;  /* watch / caution highlight (brutalist marker) */
+
+  /* ---- DERIVED ALIASES (foreground / background) --------- */
+  --fg1: var(--ink-900);
+  --fg2: var(--ink-600);
+  --fg3: var(--ink-400);
+  --bg1: var(--paper);
+  --bg2: var(--canvas);
+  --bg3: var(--canvas-2);
+  --line: var(--ink-900);          /* borders are full-black in brutalism */
+  --line-soft: var(--ink-300);     /* hairline dividers on canvas */
+  --accent: var(--green-500);
+  --accent-ink: var(--green-700);
+
+  /* ---- BORDERS ------------------------------------------- */
+  --bw: 2px;                                  /* default border weight */
+  --bw-hair: 1px;
+  --bw-bold: 3px;
+  --border:      var(--bw) solid var(--line);
+  --border-hair: var(--bw-hair) solid var(--line-soft);
+
+  /* ---- RADII (brutalist = square) ------------------------ */
+  --r-0: 0px;
+  --r-sm: 2px;     /* used sparingly — chips, inputs */
+  --r-pill: 999px; /* only for round toggles / avatars */
+
+  /* ---- HARD OFFSET SHADOWS (no blur) --------------------- */
+  --shadow-sm: 2px 2px 0 var(--ink-900);
+  --shadow:    4px 4px 0 var(--ink-900);
+  --shadow-lg: 6px 6px 0 var(--ink-900);
+  --shadow-green: 4px 4px 0 var(--green-500);
+
+  /* ---- SPACING (4px base / 8px grid) --------------------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  /* ---- LAYOUT -------------------------------------------- */
+  --container: 1200px;
+  --gutter: 24px;
+
+  /* ---- MOTION (snappy, minimal) -------------------------- */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 90ms;
+  --dur: 150ms;
+}
+
+/* ============================================================
+   TYPE SCALE — semantic element styles
+   Display uses Space Grotesk; numbers/labels use JetBrains Mono.
+   ============================================================ */
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(48px, 6vw, 76px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  color: var(--fg1);
+}
+
+h1, .t-h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--fg1);
+}
+
+h2, .t-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--fg1);
+}
+
+h3, .t-h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+}
+
+.t-lead {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--fg2);
+}
+
+p, .t-body {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--fg1);
+}
+
+.t-small {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--fg2);
+}
+
+/* Micro-labels: uppercase mono, the brutalist tag voice */
+.t-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg2);
+}
+
+/* Prices — tabular mono, the hero number of the product */
+.t-price {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+}
+
+.t-price-lg { font-family: var(--font-mono); font-weight: 800; font-size: 40px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.t-price-md { font-family: var(--font-mono); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; }
+.t-price-sm { font-family: var(--font-mono); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+
+code, .t-mono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+a, .t-link {
+  color: var(--fg1);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--green-500);
+}
+
+</style>
+<style>
+  body { margin: 0; background: var(--paper); padding: 28px 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px 28px; align-items: start; }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fg3); letter-spacing: 0.04em; margin-bottom: 10px; text-transform: uppercase; }
+  .labels { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .full { grid-column: 1 / -1; border-top: 1px solid var(--line-soft); padding-top: 18px; display: flex; align-items: baseline; gap: 22px; }
+  .price-line { display: flex; align-items: baseline; gap: 4px; }
+  .cur { font-family: var(--font-mono); font-weight: 700; font-size: 18px; color: var(--fg2); }
+</style>
+</head>
+<body>
+  <div>
+    <div class="meta">Micro-label · Mono 12/700 · UPPER</div>
+    <div class="labels">
+      <span class="t-label">BEST PRICE</span>
+      <span class="t-label">IN STOCK</span>
+      <span class="t-label">PRICE HISTORY</span>
+      <span class="t-label">— 30% TODAY</span>
+    </div>
+  </div>
+  <div>
+    <div class="meta">Mono / code · 14/500</div>
+    <code>kr&nbsp;1&nbsp;499,—</code>
+  </div>
+  <div class="full">
+    <div class="price-line"><span class="cur">kr</span><span class="t-price-lg">1&nbsp;499</span></div>
+    <div class="price-line"><span class="cur">kr</span><span class="t-price-md">1&nbsp;499</span></div>
+    <div class="price-line"><span class="cur">kr</span><span class="t-price-sm">1&nbsp;499</span></div>
+    <div class="meta" style="margin:0 0 0 auto;">Tabular mono · the hero number</div>
+  </div>
+</body>
+</html>

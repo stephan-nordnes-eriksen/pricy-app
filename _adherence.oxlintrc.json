@@ -1,0 +1,179 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "ui_kits/web/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Space Grotesk|JetBrains Mono))/i]",
+        "message": "Font not provided by the design system. Available: Space Grotesk, JetBrains Mono."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {},
+    "tokens": [
+      "--accent",
+      "--accent-ink",
+      "--bg1",
+      "--bg2",
+      "--bg3",
+      "--border",
+      "--border-hair",
+      "--bw",
+      "--bw-bold",
+      "--bw-hair",
+      "--canvas",
+      "--canvas-2",
+      "--container",
+      "--down-500",
+      "--down-600",
+      "--dur",
+      "--dur-fast",
+      "--ease",
+      "--fg1",
+      "--fg2",
+      "--fg3",
+      "--font-display",
+      "--font-mono",
+      "--font-ui",
+      "--green-100",
+      "--green-300",
+      "--green-500",
+      "--green-700",
+      "--gutter",
+      "--ink-300",
+      "--ink-400",
+      "--ink-600",
+      "--ink-700",
+      "--ink-900",
+      "--line",
+      "--line-soft",
+      "--paper",
+      "--r-0",
+      "--r-pill",
+      "--r-sm",
+      "--s-1",
+      "--s-10",
+      "--s-2",
+      "--s-3",
+      "--s-4",
+      "--s-5",
+      "--s-6",
+      "--s-7",
+      "--s-8",
+      "--s-9",
+      "--shadow",
+      "--shadow-green",
+      "--shadow-lg",
+      "--shadow-sm",
+      "--up-100",
+      "--up-500",
+      "--up-600",
+      "--warn-500"
+    ],
+    "tokenKinds": {
+      "--font-display": "font",
+      "--font-ui": "font",
+      "--font-mono": "font",
+      "--ink-900": "color",
+      "--ink-700": "color",
+      "--ink-600": "color",
+      "--ink-400": "color",
+      "--ink-300": "color",
+      "--paper": "color",
+      "--canvas": "color",
+      "--canvas-2": "color",
+      "--green-700": "color",
+      "--green-500": "color",
+      "--green-300": "color",
+      "--green-100": "color",
+      "--up-600": "color",
+      "--up-500": "color",
+      "--up-100": "color",
+      "--down-600": "color",
+      "--down-500": "color",
+      "--warn-500": "color",
+      "--fg1": "color",
+      "--fg2": "color",
+      "--fg3": "color",
+      "--bg1": "color",
+      "--bg2": "color",
+      "--bg3": "color",
+      "--line": "color",
+      "--line-soft": "color",
+      "--accent": "color",
+      "--accent-ink": "color",
+      "--bw": "spacing",
+      "--bw-hair": "spacing",
+      "--bw-bold": "spacing",
+      "--border": "color",
+      "--border-hair": "color",
+      "--r-0": "spacing",
+      "--r-sm": "spacing",
+      "--r-pill": "spacing",
+      "--shadow-sm": "shadow",
+      "--shadow": "shadow",
+      "--shadow-lg": "shadow",
+      "--shadow-green": "shadow",
+      "--s-1": "spacing",
+      "--s-2": "spacing",
+      "--s-3": "spacing",
+      "--s-4": "spacing",
+      "--s-5": "spacing",
+      "--s-6": "spacing",
+      "--s-7": "spacing",
+      "--s-8": "spacing",
+      "--s-9": "spacing",
+      "--s-10": "spacing",
+      "--container": "spacing",
+      "--gutter": "spacing",
+      "--ease": "other",
+      "--dur-fast": "other",
+      "--dur": "other"
+    },
+    "fontFamilies": [
+      "JetBrains Mono",
+      "Space Grotesk"
+    ]
+  }
+}
