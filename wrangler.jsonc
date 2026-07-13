@@ -1,8 +1,21 @@
 {
   "name": "pricy",
   "compatibility_date": "2026-07-13",
+  "main": "worker/index.js",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pricy",
+      // local-only for now (Phase 2 on hold): wrangler dev never checks this
+      // id locally. Create a real D1 db and swap the id in at deploy.
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+  // At deploy, add the Email Service binding for real magic-link mail:
+  // "send_email": [{ "name": "SEND_EMAIL" }]
 }
