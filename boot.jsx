@@ -39,8 +39,8 @@ function formEmail() {
     || 'demo@pricy.no'; // ponytail: fake BankID carries no email — shared demo account
 }
 
-function serverLogin(email) {
-  return fetchJson('/api/auth/login', {
+function serverLogin(email, path = '/api/auth/login') {
+  return fetchJson(path, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -140,11 +140,18 @@ function App() {
     nav(name, params);
   };
   // onAuthed fires after AuthCard's fake validation; the session only
-  // becomes real once the Worker sets its cookie — navigate on success only
-  const authed = () => serverLogin(formEmail()).then(ok => { if (ok) { setSession(true); nav('home'); } });
-  // Login's BankID path goes straight to onboarding — that's a signup, so it authenticates
+  // becomes real once the Worker sets its cookie — navigate on success only.
+  // From the magic-link sent screen (.addr present), "Open the link"
+  // simulates clicking the emailed verify link — an upsert, i.e. signup;
+  // a password login is strict (existing accounts only).
+  const authed = () => {
+    const magicSent = !!document.querySelector('.authcard .addr');
+    serverLogin(formEmail(), magicSent ? '/api/auth/signup' : '/api/auth/login')
+      .then(ok => { if (ok) { setSession(true); nav('home'); } });
+  };
+  // Signup submit and the BankID path both go('onboarding') — account creation
   const loginGo = (name, params = {}) => {
-    if (name === 'onboarding') { serverLogin(formEmail()).then(ok => { if (ok) { setSession(true); nav('onboarding'); } }); return; }
+    if (name === 'onboarding') { serverLogin(formEmail(), '/api/auth/signup').then(ok => { if (ok) { setSession(true); nav('onboarding'); } }); return; }
     go(name, params);
   };
 

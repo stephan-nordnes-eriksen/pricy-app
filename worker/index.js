@@ -90,14 +90,19 @@ export default {
       return new Response(null, { status: 302, headers: { location: url.origin + '/', 'set-cookie': await startSession(db, user.id) } });
     }
 
-    if (route === 'POST /api/auth/login') {
-      // ponytail: demo bridge — the prototype's AuthCard fake-validates
-      // (password theatre, fake BankID per plan) and expects an instant
-      // session. Real login is request+verify above; drop this when the
-      // upstream Login screen actually waits for the emailed link.
+    // Demo bridges — the prototype's AuthCard fake-validates (password
+    // theatre, fake BankID per plan) and expects an instant session. Real
+    // login is request+verify above; drop both when the upstream Login
+    // actually waits for the emailed link.
+    // login = existing accounts only; signup = create-or-log-in (same
+    // upsert semantics as a verified magic link, which is also a signup).
+    if (route === 'POST /api/auth/login' || route === 'POST /api/auth/signup') {
       const email = await bodyEmail(request);
       if (!email) return json({ error: 'invalid email' }, 400);
-      const user = await upsertUser(db, email);
+      const user = route.endsWith('signup')
+        ? await upsertUser(db, email)
+        : await db.prepare('SELECT id, email, name FROM users WHERE email = ?').bind(email).first();
+      if (!user) return json({ error: 'no account for this email' }, 401);
       return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
     }
 
