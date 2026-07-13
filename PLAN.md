@@ -29,7 +29,7 @@ the token/kit reference, but nothing is built from it.
 dist/index.html's real script pipeline (gating, login, BankID→onboarding,
 search suggest, product nav, logout, icons).
 
-## Phase 2 — Deploy to Cloudflare  ← next
+## Phase 2 — Deploy to Cloudflare (on hold — working locally, no remote)
 
 1. `npm run deploy` (wrangler prompts to log in first time) →
    `pricy.<subdomain>.workers.dev`.
@@ -43,11 +43,53 @@ See CLAUDE.md. One file to pull (`pricy/index.html`), then
 `npm test`, push. Mirror new screens in `boot.jsx` when the prototype's
 App grows one.
 
-## Phase 4 — Real data & auth (deferred until wanted)
+## Phase 4 — Real data & auth  ← the current milestone
 
-- Worker script + D1 for products/offers/history; swap the prototype's
-  window.CATALOG mock for `/api/…` fetches at the boot layer.
-- Real auth replaces the localStorage session flag (same boot.jsx seam).
+Make the shell real without breaking the design-sync loop: the prototype
+stays the UI source of truth; everything real lives behind seams the sync
+never touches (`boot.jsx`, a new `worker/`, `build.js`).
 
-Not planned here: scraping/ingestion, payments, SSR/SEO — separate
-decisions once the mock-data site is live.
+**The data seam (what makes this tricky):** the prototype defines
+`const CATALOG` at module scope and computes derived indexes (`CAT_OF`,
+`CAT_COUNTS`, offers, history) immediately at load. Screens close over the
+module constants, not `window.CATALOG`. So hydration must either land
+before the catalog block executes, or mutate the exported arrays in place
+*and* rebuild the derived indexes. Settle this in 4a before anything else —
+it's the one place a wrong choice forces upstream prototype changes.
+
+### 4a — Catalog served, not baked (no backend yet)
+
+- `build.js` gains a step: execute the compiled catalog block in Node and
+  dump the enriched `CATALOG` to `dist/api/catalog.json` (a static asset —
+  no Worker code needed yet).
+- `boot.jsx` fetches it and hydrates through the seam above; jsdom test
+  asserts the rendered catalog came from the fetch, not the baked constants.
+- Site behaves identically; data is now a document with a URL, which is the
+  contract 4c fills with real prices later.
+
+### 4b — Real auth + persisted watchlist
+
+- First Worker code: `worker/` module alongside the static assets
+  (`wrangler.jsonc` gains `main` + a D1 binding).
+- Email magic-link login (Cloudflare Email Service), HttpOnly session
+  cookie, `/api/me`. `boot.jsx`'s `readSession/writeSession` swap
+  localStorage for `/api/me` — the gating logic above them doesn't change.
+- D1: `users`, `sessions`, `watches`. The prototype's `USER` / `WATCHED`
+  constants hydrate per-user the same way CATALOG does in 4a.
+- BankID stays a fake button (real BankID is a signed-vendor contract, not
+  a phase).
+
+### 4c — Real prices
+
+- Ingestion writes to D1 (`products`, `offers`, `price_points`); the
+  catalog endpoint goes dynamic (Worker route replaces the static JSON —
+  same URL, same shape, nothing downstream moves).
+- Scheduled Worker (cron) refreshes offers. Source of prices (feeds vs
+  scraping vs partner APIs) is its own decision — do not start 4c until
+  that's made; 4a/4b don't depend on it.
+
+Order matters: 4a proves the hydration seam cheaply, 4b builds the first
+real backend on a proven seam, 4c is blocked on a business decision.
+
+Not planned here: payments, SSR/SEO — separate decisions once real data
+is live.
