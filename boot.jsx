@@ -29,16 +29,6 @@ const fetchJson = (url, opts) =>
   (typeof fetch === 'function' ? fetch(url, opts) : Promise.reject(new Error('no fetch')))
     .then(r => { if (!r.ok) throw new Error(url + ' → ' + r.status); return r.json(); });
 
-// AuthCard keeps the typed email in its own state and onAuthed() passes
-// nothing (upstream gap) — read it from the live login form, or the
-// magic-link sent-screen address, before they unmount.
-function formEmail() {
-  const input = document.querySelector('.authcard input[type="email"]');
-  const sent = document.querySelector('.authcard .addr');
-  return (input && input.value.trim()) || (sent && sent.textContent.trim())
-    || 'demo@pricy.no'; // ponytail: fake BankID carries no email — shared demo account
-}
-
 function serverLogin(email, path = '/api/auth/login') {
   return fetchJson(path, {
     method: 'POST',
@@ -139,20 +129,20 @@ function App() {
     if (name !== 'login' && !session && !PUBLIC_SCREENS.includes(name)) { name = 'login'; params = {}; }
     nav(name, params);
   };
-  // onAuthed fires after AuthCard's fake validation; the session only
-  // becomes real once the Worker sets its cookie — navigate on success only.
-  // From the magic-link sent screen (.addr present), "Open the link"
-  // simulates clicking the emailed verify link — an upsert, i.e. signup;
-  // a password login is strict (existing accounts only).
-  const authed = () => {
-    const magicSent = !!document.querySelector('.authcard .addr');
-    serverLogin(formEmail(), magicSent ? '/api/auth/signup' : '/api/auth/login')
-      .then(ok => { if (ok) { setSession(true); nav('home'); } });
-  };
-  // Signup submit and the BankID path both go('onboarding') — account creation
-  const loginGo = (name, params = {}) => {
-    if (name === 'onboarding') { serverLogin(formEmail(), '/api/auth/signup').then(ok => { if (ok) { setSession(true); nav('onboarding'); } }); return; }
-    go(name, params);
+  // AuthCard hands us the attempt as onAuthed(email, {signup}) and awaits
+  // the verdict: resolve truthy = we set the session and navigated; false =
+  // it shows its own error and stays. Upserts (account creation) are:
+  // signup submits, the sent-screen "Open the link" (.addr present — it
+  // simulates the emailed verify link, which is an upsert), and fake
+  // BankID (null email → shared demo account). Password login is strict.
+  const onAuthed = (email, opts) => {
+    const signup = !!(opts && opts.signup);
+    const upsert = signup || !email || !!document.querySelector('.authcard .addr');
+    return serverLogin(email || 'demo@pricy.no', upsert ? '/api/auth/signup' : '/api/auth/login')
+      .then(ok => {
+        if (ok) { setSession(true); nav(signup ? 'onboarding' : 'home'); }
+        return ok;
+      });
   };
 
   useEffect(() => {
@@ -164,7 +154,7 @@ function App() {
 
   const { name, params } = screen;
   let view;
-  if (name === 'login') view = <Login onAuthed={authed} go={loginGo} layout={T.loginLayout} />;
+  if (name === 'login') view = <Login onAuthed={onAuthed} go={go} layout={T.loginLayout} />;
   else if (name === 'landing') view = <Landing go={go} />;
   else if (name === 'results') view = <Results go={go} query={params.query} cat={params.cat} view={T.resultsView} filterLayout={T.filterLayout} density={T.density} sparklines={T.sparklines} />;
   else if (name === 'product') view = <ProductPage go={go} id={params.id} />;

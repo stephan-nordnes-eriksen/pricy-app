@@ -51,7 +51,13 @@ html = html
   .replace(/<script src="https:\/\/unpkg\.com\/lucide@[^"]*"[^>]*><\/script>/, '<script src="vendor/lucide.min.js"></script>')
   .replace(/[ \t]*<script src="https:\/\/unpkg\.com\/@babel\/standalone[^"]*"[^>]*><\/script>\n?/, '')
   .replace(/<title>[^<]*<\/title>/, '<title>pricy.no — Never overpay</title>\n<base href="/">\n<link rel="icon" href="assets/logo-mark.svg">')
-  .replace('</body>', '<script src="app.js"></script>\n</body>');
+  .trimEnd();
+// closing tags are optional HTML5 and the prototype has dropped them before —
+// inject app.js against either shape
+html = html.includes('</body>')
+  ? html.replace('</body>', '<script src="app.js"></script>\n</body>')
+  : html + '\n<script src="app.js"></script>\n</body>\n</html>\n';
+if (!html.includes('<script src="app.js">')) throw new Error('app.js injection failed');
 for (const cdn of ['unpkg.com', 'text/babel']) {
   if (html.includes(cdn)) throw new Error(`build output still references ${cdn}`);
 }
