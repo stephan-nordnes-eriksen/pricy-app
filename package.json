@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test": "node render-check.js && node --test test/ui.test.js",
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --persist-to \"${TMPDIR:-/tmp}/pricy-wrangler-state\"",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
