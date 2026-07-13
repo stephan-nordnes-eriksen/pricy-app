@@ -127,9 +127,12 @@ test('signed in: / is the app home and the header search suggests live', async (
   input.focus();
   type(win, input, 'sony');
   assert.ok(await until(() => q(win, '.suggest .suggest__item')), 'live suggestions missing');
-  // NOTE: prototype gap — Enter / suggestion pick in the header do not
-  // navigate yet (AppHeader submit only closes the panel; SearchHero has the
-  // working version). Fix upstream in Claude Design, then extend this test.
+  // Enter navigates to results
+  input.closest('form').dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
+  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?q=sony'), 'Enter should open results for the query');
+  // NOTE: remaining prototype gap — suggestion PICK still only fills the
+  // input (AppHeader onPick lacks SearchHero's navigate). Fix upstream in
+  // Claude Design, then extend this test.
 });
 
 test('signed in: results rows open the product page', async () => {

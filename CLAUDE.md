@@ -42,5 +42,5 @@ Two Claude Design projects feed this repo:
    Builds auto-deploys main (build command: `npm run build`, output: `dist`).
 
 Known upstream gaps (fix in Claude Design, then extend tests):
-- Signed-in AppHeader search: Enter and suggestion-pick don't navigate
-  (SearchHero has the working pattern).
+- Signed-in AppHeader search: suggestion-pick only fills the input, doesn't
+  navigate (Enter works now; SearchHero's onPick has the working pattern).
