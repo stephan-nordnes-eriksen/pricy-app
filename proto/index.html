@@ -2399,7 +2399,7 @@ function AppHeader({ go, onLogout }) {
               {q && <button type="button" className="pw-toggle" onMouseDown={() => setQ('')} aria-label="Clear"><Icon name="x" size={16} /></button>}
             </div>
           </form>
-          {focus && <SearchSuggest q={q} onPick={(v) => { setQ(v); setFocus(false); }} />}
+          {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : go('results', { query: v }); }} />}
         </div>
         <nav className="app-hdr__nav">
           <div className="app-hdr__icon" title="Browse" onClick={() => go('home')}><Icon name="layout-grid" size={19} /></div>
