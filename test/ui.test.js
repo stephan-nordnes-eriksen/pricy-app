@@ -33,7 +33,7 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {})
     win.api.push({ call: (opts.method || 'GET') + ' ' + u, body });
     if (u === '/api/catalog.json') return ok(catalog || CATALOG_JSON);
     if (u === '/api/me') return ME ? ok(ME) : ok({ error: 'unauthenticated' }, 401);
-    if (u === '/api/auth/login') {
+    if (u === '/api/auth/login' || u === '/api/auth/signup') {
       const name = body.email.split('@')[0].replace(/[._-]+/g, ' ').replace(/(^| )\w/g, c => c.toUpperCase());
       ME = { user: { email: body.email, name, initials: name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('') }, watches: [] };
       return ok(ME);
@@ -136,7 +136,58 @@ test('BankID signup runs onboarding and authenticates', async () => {
   await tick();
   q(win, '.bankid-btn').click();
   assert.ok(await until(() => win.location.pathname === '/onboarding'), 'BankID should land on onboarding');
-  assert.ok(win.api.some(c => c.call === 'POST /api/auth/login'), 'BankID signup must create a server session');
+  assert.ok(win.api.some(c => c.call === 'POST /api/auth/signup'), 'BankID signup must create a server account');
+});
+
+test('signup mode creates the account and runs onboarding', async () => {
+  const win = boot('http://pricy.test/login');
+  await tick();
+  qa(win, '.auth-foot a').find(a => /create an account/i.test(a.textContent)).click();
+  assert.ok(await until(() => /create your account/i.test((q(win, '.authcard h1') || {}).textContent || '')), 'signup mode did not render');
+  type(win, q(win, '.authcard input[type="email"]'), 'kari@nordmann.no');
+  type(win, q(win, '.authcard input[type="password"]'), 'hunter2');
+  submit(win, q(win, '.authcard form'));
+  assert.ok(await until(() => win.location.pathname === '/onboarding'), 'signup should land on onboarding');
+  const call = win.api.find(c => c.call === 'POST /api/auth/signup');
+  assert.strictEqual(call && call.body.email, 'kari@nordmann.no', 'signup must hit the signup endpoint');
+});
+
+test('magic-link "Open the link" acts as a verified signup', async () => {
+  const win = boot('http://pricy.test/login');
+  await tick();
+  qa(win, '.seg button').find(b => /magic link/i.test(b.textContent)).click();
+  type(win, q(win, '.authcard input[type="email"]'), 'kari@nordmann.no');
+  submit(win, q(win, '.authcard form'));
+  assert.ok(await until(() => q(win, '.authcard .addr')), 'sent screen missing');
+  qa(win, '.authcard button').find(b => /open the link/i.test(b.textContent)).click();
+  assert.ok(await until(() => q(win, '.avatar')), 'should reach the signed-in app');
+  assert.ok(win.api.some(c => c.call === 'POST /api/auth/signup'), 'emailed-link simulation must upsert like verify does');
+});
+
+test('rejected login stays on the login screen', async () => {
+  const win = boot('http://pricy.test/login');
+  await tick();
+  const fetch0 = win.fetch;
+  win.fetch = (u, opts) => u === '/api/auth/login'
+    ? Promise.resolve({ ok: false, status: 401, json: () => Promise.resolve({ error: 'no account for this email' }) })
+    : fetch0(u, opts);
+  type(win, q(win, '.authcard input[type="email"]'), 'nobody@nowhere.no');
+  type(win, q(win, '.authcard input[type="password"]'), 'hunter2');
+  submit(win, q(win, '.authcard form'));
+  await tick(1200); // AuthCard's 850ms fake network + the failed request
+  assert.strictEqual(win.location.pathname, '/login', 'must not navigate without a session');
+  assert.ok(!q(win, '.avatar'), 'must not render signed-in chrome');
+});
+
+test('login screen Back button returns to the landing page', async () => {
+  const win = boot('http://pricy.test/login');
+  await tick();
+  qa(win, '.authcard, .screen').length; // ensure rendered
+  const back = qa(win, 'button').find(b => /back/i.test(b.textContent) && b.querySelector('.icon'));
+  assert.ok(back, 'Back button missing on the login screen');
+  back.click();
+  assert.ok(await until(() => q(win, '.lhero')), 'Back should land on the public landing');
+  assert.strictEqual(win.location.pathname, '/');
 });
 
 // ---------- signed in ----------
