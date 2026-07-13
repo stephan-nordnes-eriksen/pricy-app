@@ -1295,10 +1295,10 @@ function Delta({ pct }) {
 }
 
 // --- Button -------------------------------------------------
-function Btn({ children, variant = '', size = '', icon, onClick, style }) {
+function Btn({ children, variant = '', size = '', icon, onClick, style, disabled }) {
   const cls = ['btn', variant && 'btn--' + variant, size && 'btn--' + size].filter(Boolean).join(' ');
   return (
-    <button className={cls} onClick={onClick} style={style}>
+    <button className={cls} onClick={onClick} style={style} disabled={disabled}>
       {icon && <Icon name={icon} size={16} />}{children}
     </button>
   );
@@ -2177,11 +2177,6 @@ function AuthCard({ onAuthed, go }) {
   const [method, setMethod] = useState('password'); // password | magic
   const [mode, setMode] = useState('login'); // login | signup
   const [bidBusy, setBidBusy] = useState(false);
-  const bankid = () => {
-    if (bidBusy) return;
-    setBidBusy(true);
-    setTimeout(() => { setBidBusy(false); go ? go('onboarding') : onAuthed(); }, 1400);
-  };
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -2191,18 +2186,48 @@ function AuthCard({ onAuthed, go }) {
 
   const validEmail = /.+@.+\..+/.test(email);
 
+  // Hand the attempt to the parent and wait for the real answer.
+  // - onAuthed returns a Promise (production shell): keep the spinner until it
+  //   settles. Resolved `false`, or an object like `{ error: '…' }`, is a
+  //   server-side rejection — stay on the form and show the message. A resolved
+  //   truthy value means the parent is navigating; we just stop spinning.
+  // - onAuthed returns undefined (the preview harness, which navigates by side
+  //   effect): fall back to today's fake demo delay, then release.
+  const runAuth = (setBusy, demoDelay, fallbackErr, ...args) => {
+    setErr('');
+    setBusy(true);
+    const result = onAuthed(...args);
+    if (result && typeof result.then === 'function') {
+      Promise.resolve(result).then(
+        (r) => {
+          setBusy(false);
+          if (r === false || (r && r.error)) setErr((r && r.error) || fallbackErr);
+        },
+        () => { setBusy(false); setErr(fallbackErr); }
+      );
+    } else {
+      setTimeout(() => setBusy(false), demoDelay);
+    }
+  };
+
+  const bankid = () => {
+    if (bidBusy) return;
+    runAuth(setBidBusy, 1400, 'BankID could not verify your identity — try again.', null);
+  };
+
   const submit = (e) => {
     e.preventDefault();
     setErr('');
     if (!validEmail) { setErr('Enter a valid email address.'); return; }
     if (method === 'password' && pw.length < 1) { setErr('Enter your password.'); return; }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (method === 'magic') setSent(true);
-      else if (mode === 'signup') (go ? go('onboarding') : onAuthed());
-      else onAuthed();
-    }, 850);
+    if (method === 'magic') {
+      // Sending the link is not an auth event — show the "check your inbox" screen.
+      setLoading(true);
+      setTimeout(() => { setLoading(false); setSent(true); }, 850);
+      return;
+    }
+    if (mode === 'signup') runAuth(setLoading, 850, "Couldn't create your account — try again.", email, { signup: true });
+    else runAuth(setLoading, 850, 'No account for this email — create one?', email);
   };
 
   if (sent) {
@@ -2212,7 +2237,7 @@ function AuthCard({ onAuthed, go }) {
           <div className="sent__icon"><Icon name="mail-check" size={34} /></div>
           <h1>Check your inbox</h1>
           <p>We sent a one-tap login link to<br /><span className="addr">{email}</span></p>
-          <Btn variant="primary" size="lg" style={{ width: '100%' }} icon="arrow-right" onClick={onAuthed}>Open the link</Btn>
+          <Btn variant="primary" size="lg" style={{ width: '100%' }} icon={loading ? undefined : 'arrow-right'} disabled={loading} onClick={() => runAuth(setLoading, 850, "That link didn't work — request a new one.", email)}>{loading ? 'Opening…' : 'Open the link'}</Btn>
           <div className="auth-foot" style={{ marginTop: 20 }}>
             Wrong address? <a onClick={() => { setSent(false); setMethod('magic'); }}>Go back</a>
           </div>
@@ -4752,7 +4777,7 @@ function App(){
   window.PLAN = t.plan;
   window.setPlan = (v)=>setTweak("plan",v);
   let view;
-  if(name==="login") view=<Login onAuthed={()=>go("home")} go={go} layout={t.loginLayout} />;
+  if(name==="login") view=<Login onAuthed={(email,opts)=>go(opts&&opts.signup?"onboarding":"home")} go={go} layout={t.loginLayout} />;
   else if(name==="landing") view=<Landing go={go} />;
   else if(name==="results") view=<Results go={go} query={params.query} cat={params.cat} view={t.resultsView} filterLayout={t.filterLayout} density={t.density} sparklines={t.sparklines} />;
   else if(name==="product") view=<ProductPage go={go} id={params.id} />;
@@ -4786,5 +4811,3 @@ function App(){
 }
 ReactDOM.createRoot(document.getElementById("root")).render(<ErrorBoundary><App /></ErrorBoundary>);
 </script>
-</body>
-</html>
