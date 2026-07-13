@@ -24,7 +24,9 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {})
   });
   const win = dom.window;
   win.scrollTo = () => {};
-  CATALOG_JSON = CATALOG_JSON || JSON.parse(fs.readFileSync(path.join(DIST, 'api', 'catalog.json'), 'utf8'));
+  // /api/catalog.json is a Worker route now (4c) — stub it with the
+  // build-generated seed, the same shape the route serves
+  CATALOG_JSON = CATALOG_JSON || JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
   let ME = me || (session ? { user: mari, watches: [] } : null);
   win.api = []; // 'METHOD /path [body]' log for assertions
   const ok = (data, status = 200) => Promise.resolve({ ok: status < 400, status, json: () => Promise.resolve(data) });
@@ -250,7 +252,7 @@ test('account menu logs out: back to landing, session cleared', async () => {
 // ---------- catalog hydration (Phase 4a) ----------
 
 test('rendered catalog comes from /api/catalog.json, not the baked constants', async () => {
-  const served = JSON.parse(fs.readFileSync(path.join(DIST, 'api', 'catalog.json'), 'utf8'))
+  const served = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'))
     .filter(p => p.cat !== 'Gaming') // dropped category must vanish from CAT_OF
     .map(p => p.cat === 'Audio' ? { ...p, name: 'Fetched ' + p.name } : p);
   const win = boot('http://pricy.test/search?cat=Audio', { session: true, catalog: served });

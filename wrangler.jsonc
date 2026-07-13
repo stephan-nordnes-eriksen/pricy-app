@@ -15,7 +15,10 @@
       // id locally. Create a real D1 db and swap the id in at deploy.
       "database_id": "00000000-0000-0000-0000-000000000000"
     }
-  ]
+  ],
+  // hourly offer refresh (worker scheduled handler); price_points stay
+  // one-per-day via the upsert
+  "triggers": { "crons": ["0 * * * *"] }
   // At deploy, add the Email Service binding for real magic-link mail:
   // "send_email": [{ "name": "SEND_EMAIL" }]
 }

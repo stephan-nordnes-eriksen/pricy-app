@@ -96,17 +96,23 @@ WATCH_HITS/TOTAL_SAVED const primitives).
   everything else is done** — don't spend sync/boot/worker effort on it
   beyond keeping the fake button working.
 
-### 4c — Real prices
+### 4c — Real prices ✅ (synthetic source until a real feed is signed)
 
-- Ingestion writes to D1 (`products`, `offers`, `price_points`); the
-  catalog endpoint goes dynamic (Worker route replaces the static JSON —
-  same URL, same shape, nothing downstream moves).
-- Scheduled Worker (cron) refreshes offers. Source of prices (feeds vs
-  scraping vs partner APIs) is its own decision — do not start 4c until
-  that's made; 4a/4b don't depend on it.
+Shipped: D1 `products`/`offers`/`price_points`, seeded from the
+build-generated `worker/seed.json` (the same extracted CATALOG that used to
+be a static file). `GET /api/catalog.json` is a Worker route now — same URL,
+same shape, boot.jsx untouched; `best`/`drop`/`shops`/`stock`/`history` are
+derived from offers and price_points on read. Hourly cron
+(`worker.scheduled`) refreshes offers through `ingest()`.
+
+**Price-source decision (2026-07-14): synthetic feed first.** The one fake
+piece is `syntheticFeed()` in `worker/index.js` — it jiggles current offer
+prices. Swapping in a real source (affiliate feeds were the runner-up)
+means replacing that single function; nothing else in the pipeline moves.
 
 Order matters: 4a proves the hydration seam cheaply, 4b builds the first
-real backend on a proven seam, 4c is blocked on a business decision.
+real backend on a proven seam, 4c fills the pipeline (real feed pending a
+business signature).
 
 Not planned here: payments, SSR/SEO — separate decisions once real data
 is live. Real BankID is parked until mostly everything else is done

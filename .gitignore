@@ -1,4 +1,5 @@
 node_modules/
 .wrangler/
 dist/
+worker/seed.json
 test-e2e/__artifacts__/

@@ -22,6 +22,12 @@ Two Claude Design projects feed this repo:
   the prototype's TWEAK_DEFAULTS
 - CDN dev React/Babel/lucide are swapped for vendored production UMDs
   (`vendor/`)
+- the prototype's enriched CATALOG is extracted to `worker/seed.json`
+  (gitignored). `/api/catalog.json` is a Worker route (4c): D1
+  `products`/`offers`/`price_points`, seeded from that file on first use,
+  offers refreshed by the hourly cron `scheduled` handler.
+  `syntheticFeed()` in `worker/index.js` is the swap point for a real
+  price source — until one is signed, prices are synthetic jiggle.
 
 ## Rules
 

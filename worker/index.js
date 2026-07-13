@@ -1,17 +1,26 @@
-// Pricy API (Phase 4b): magic-link auth, HttpOnly session cookie, /api/me,
-// persisted watchlist — all on D1. Static assets (including the 4a
-// /api/catalog.json) are served asset-first by the platform; only paths
-// with no matching file reach this Worker.
+// Pricy API (Phase 4b/4c): magic-link auth, HttpOnly session cookie, /api/me,
+// persisted watchlist, and the dynamic catalog (products/offers/price_points
+// on D1, seeded from the build-generated seed.json) — /api/catalog.json is a
+// Worker route now, no static file shadows it.
+
+import seed from './seed.json' with { type: 'json' };
 
 const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
+  'CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, PRIMARY KEY (product_id, shop))',
+  'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations when
 // a real deployment exists (Phase 2 is on hold, everything runs locally)
 const schemaReady = new WeakMap();
+async function ensureSchema(db) {
+  if (!schemaReady.has(db)) schemaReady.set(db, db.exec(SCHEMA));
+  await schemaReady.get(db);
+}
 
 const SESSION_DAYS = 30;
 const TOKEN_MINUTES = 15;
@@ -51,6 +60,76 @@ async function startSession(db, userId) {
   return `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
 }
 
+const dayOf = (t) => new Date(t).toISOString().slice(0, 10);
+
+// products.meta = the static display fields; offers/history live in their
+// tables and best/drop/shops/stock are derived on read (see catalogBody)
+async function seedIfEmpty(db) {
+  if (await db.prepare('SELECT 1 FROM products LIMIT 1').first()) return;
+  const stmts = []; // OR IGNORE: two racing first requests must not fail
+  for (const { id, offers, history, best, drop, shops, stock, ...meta } of seed) {
+    stmts.push(db.prepare('INSERT OR IGNORE INTO products (id, meta) VALUES (?, ?)').bind(id, JSON.stringify(meta)));
+    for (const o of offers) {
+      stmts.push(db.prepare('INSERT OR IGNORE INTO offers (product_id, shop, price, ship, stock, eta) VALUES (?, ?, ?, ?, ?, ?)')
+        .bind(id, o.shop, o.price, o.ship ?? null, o.stock ? 1 : 0, o.eta ?? null));
+    }
+    history.forEach((price, i) => stmts.push(
+      db.prepare('INSERT OR IGNORE INTO price_points (product_id, day, price) VALUES (?, ?, ?)')
+        .bind(id, dayOf(Date.now() - (history.length - 1 - i) * 86400e3), price)));
+  }
+  await db.batch(stmts);
+}
+
+// ponytail: synthetic feed — THE swap point for a real price source
+// (affiliate/partner feeds, per PLAN.md 4c); everything around it is the
+// real pipeline and doesn't change when this does
+async function syntheticFeed(db) {
+  const { results } = await db.prepare('SELECT product_id, shop, price, ship, stock, eta FROM offers').all();
+  return results.map(o => ({
+    ...o,
+    price: Math.max(1, Math.round(o.price * (0.97 + Math.random() * 0.06))),
+    stock: Math.random() < 0.05 ? (o.stock ? 0 : 1) : o.stock,
+  }));
+}
+
+async function ingest(db, rows) {
+  const today = dayOf(Date.now());
+  const best = {};
+  for (const r of rows) best[r.product_id] = Math.min(best[r.product_id] ?? Infinity, r.price);
+  await db.batch([
+    ...rows.map(r => db.prepare(
+      'INSERT INTO offers (product_id, shop, price, ship, stock, eta) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(product_id, shop) DO UPDATE SET price = excluded.price, ship = excluded.ship, stock = excluded.stock, eta = excluded.eta'
+    ).bind(r.product_id, r.shop, r.price, r.ship ?? null, r.stock ? 1 : 0, r.eta ?? null)),
+    ...Object.entries(best).map(([id, price]) => db.prepare(
+      'INSERT INTO price_points (product_id, day, price) VALUES (?, ?, ?) ON CONFLICT(product_id, day) DO UPDATE SET price = MIN(price, excluded.price)'
+    ).bind(id, today, price)),
+  ]);
+}
+
+async function catalogBody(db) {
+  await seedIfEmpty(db);
+  const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
+  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta FROM offers ORDER BY price').all();
+  const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
+  const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
+  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: !!o.stock, eta: o.eta }));
+  const history = group(pts.results, p => p.price);
+  return prods.results.map(({ id, meta }) => {
+    const m = JSON.parse(meta);
+    const po = offers[id] || [];
+    const best = po[0]?.price; // po is price-ordered
+    return {
+      id, ...m,
+      best,
+      drop: m.was && best ? Math.round((1 - best / m.was) * 100) : undefined,
+      shops: po.length,
+      stock: po.some(o => o.stock),
+      offers: po,
+      history: (history[id] || []).slice(-24), // the demo shape's window
+    };
+  });
+}
+
 async function meBody(db, user) {
   const { results } = await db.prepare('SELECT product_id AS id, target, paused FROM watches WHERE user_id = ? ORDER BY rowid').bind(user.id).all(); // rowid = the order the client PUT them in
   return { user: { email: user.email, name: user.name, initials: initials(user.name) }, watches: results };
@@ -63,9 +142,12 @@ export default {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('not found', { status: 404 });
     }
     const db = env.DB;
-    if (!schemaReady.has(db)) schemaReady.set(db, db.exec(SCHEMA));
-    await schemaReady.get(db);
+    await ensureSchema(db);
     const route = request.method + ' ' + url.pathname;
+
+    if (route === 'GET /api/catalog.json') {
+      return json(await catalogBody(db));
+    }
 
     if (route === 'POST /api/auth/request') {
       const email = await bodyEmail(request);
@@ -138,5 +220,13 @@ export default {
     }
 
     return json({ error: 'not found' }, 404);
+  },
+
+  // cron (wrangler.jsonc triggers): refresh offers and record today's best
+  async scheduled(event, env) {
+    const db = env.DB;
+    await ensureSchema(db);
+    await seedIfEmpty(db);
+    await ingest(db, await syntheticFeed(db));
   },
 };
