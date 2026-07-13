@@ -41,4 +41,10 @@ Two Claude Design projects feed this repo:
 3. Commit (sync and boot/test adjustments separately), push — Workers
    Builds auto-deploys main (build command: `npm run build`, output: `dist`).
 
-Known upstream gaps (fix in Claude Design, then extend tests): none currently.
+Known upstream gaps (fix in Claude Design, then extend tests):
+- Minor: AppHeader search Enter on an empty query falls back to searching
+  "airpods pro" (demo-ism) — fix opportunistically at the next sync.
+
+`npm run test:e2e` (Playwright visual parity vs the prototype) must run
+with the Bash sandbox disabled — Chromium can't bootstrap its mach port
+inside it.
