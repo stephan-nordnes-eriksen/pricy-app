@@ -114,7 +114,10 @@ function App() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
   const go = (route, params = {}) => {
-    history.pushState(null, '', toUrl(route, params));
+    const url = toUrl(route, params);
+    // the kit fires both onClick and onSubmit for search (browser implicit
+    // submission) — don't push a duplicate history entry
+    if (url !== location.pathname + location.search) history.pushState(null, '', url);
     window.scrollTo(0, 0);
     setNav({ route, params });
   };

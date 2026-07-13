@@ -2,11 +2,12 @@
   "name": "pricy",
   "private": true,
   "scripts": {
-    "test": "node render-check.js",
+    "test": "node render-check.js && node --test test/ui.test.js",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
+    "jsdom": "^29.1.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "wrangler": "^4.0.0"
