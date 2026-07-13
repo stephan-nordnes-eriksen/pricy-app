@@ -2175,6 +2175,7 @@ function BrandDemo() {
 
 function AuthCard({ onAuthed, go }) {
   const [method, setMethod] = useState('password'); // password | magic
+  const [mode, setMode] = useState('login'); // login | signup
   const [bidBusy, setBidBusy] = useState(false);
   const bankid = () => {
     if (bidBusy) return;
@@ -2199,6 +2200,7 @@ function AuthCard({ onAuthed, go }) {
     setTimeout(() => {
       setLoading(false);
       if (method === 'magic') setSent(true);
+      else if (mode === 'signup') (go ? go('onboarding') : onAuthed());
       else onAuthed();
     }, 850);
   };
@@ -2221,8 +2223,8 @@ function AuthCard({ onAuthed, go }) {
 
   return (
     <div className="authcard">
-      <div className="authcard__eyebrow">Welcome back</div>
-      <h1>Log in to pricy</h1>
+      <div className="authcard__eyebrow">{mode === 'signup' ? 'Get started' : 'Welcome back'}</div>
+      <h1>{mode === 'signup' ? 'Create your account' : 'Log in to pricy'}</h1>
 
       <button type="button" className="bankid-btn" onClick={bankid} disabled={bidBusy}>
         {bidBusy
@@ -2273,12 +2275,14 @@ function AuthCard({ onAuthed, go }) {
         {err && <div className="formhint err"><Icon name="alert-triangle" size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />{err}</div>}
 
         <button type="submit" className="btn btn--primary auth-submit" disabled={loading}>
-          {loading ? <span className="spinner" /> : (<>{method === 'magic' ? 'Send magic link' : 'Log in'}<Icon name="arrow-right" size={16} /></>)}
+          {loading ? <span className="spinner" /> : (<>{method === 'magic' ? 'Send magic link' : (mode === 'signup' ? 'Create account' : 'Log in')}<Icon name="arrow-right" size={16} /></>)}
         </button>
       </form>
 
       <div className="auth-foot">
-        New to pricy? <a onClick={() => go && go('landing')}>Create an account</a>
+        {mode === 'signup'
+          ? <React.Fragment>Already have an account? <a onClick={() => { setMode('login'); setErr(''); }}>Log in</a></React.Fragment>
+          : <React.Fragment>New to pricy? <a onClick={() => { setMode('signup'); setErr(''); }}>Create an account</a></React.Fragment>}
       </div>
     </div>
   );
@@ -2290,7 +2294,7 @@ function Login({ onAuthed, go, layout = 'centered' }) {
       <div className="screen auth">
         <div className="auth__brand">
           <div className="auth__brand-grid" />
-          <div className="auth__brand-top">
+          <div className="auth__brand-top" onClick={() => go && go('landing')} style={{ cursor: 'pointer' }}>
             <Wordmark height={30} reversed />
           </div>
           <div className="auth__pitch">
@@ -2307,8 +2311,9 @@ function Login({ onAuthed, go, layout = 'centered' }) {
   }
   // centered
   return (
-    <div className="screen" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--s-6)', gap: 'var(--s-6)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+    <div className="screen" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--s-6)', gap: 'var(--s-6)', position: 'relative' }}>
+      <button type="button" className="btn btn--ghost btn--sm" onClick={() => go && go('landing')} style={{ position: 'absolute', top: 'var(--s-5)', left: 'var(--s-5)' }}><Icon name="arrow-left" size={15} /> Back</button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, cursor: 'pointer' }} onClick={() => go && go('landing')}>
         <Wordmark height={34} />
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-400)' }}>
           1.4M products · 1,412 shops · 0 paid placements
