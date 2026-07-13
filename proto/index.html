@@ -542,6 +542,15 @@ button { font-family: inherit; }
 
 .page { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
 
+/* account dropdown */
+.acctmenu { position: absolute; top: calc(100% + 8px); right: 0; width: 230px; background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow); z-index: 70; animation: pop-in var(--t-fast) both; }
+.acctmenu__id { display: flex; flex-direction: column; gap: 2px; padding: 12px var(--s-4); border-bottom: var(--bw) solid var(--ink-900); background: var(--canvas-2); }
+.acctmenu__id b { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+.acctmenu__id span { font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); }
+.acctmenu__item { display: flex; align-items: center; gap: 10px; padding: 10px var(--s-4); font-size: 14px; cursor: pointer; }
+.acctmenu__item:hover { background: var(--canvas-2); }
+.acctmenu__sep { border-top: var(--bw) solid var(--ink-900); }
+
 /* search suggest dropdown */
 .suggest { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow); z-index: 60; animation: pop-in var(--dur-fast) var(--ease) both; }
 .suggest__grp { padding: 10px var(--s-4) 6px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-400); }
@@ -2363,6 +2372,13 @@ function SearchSuggest({ q, onPick, onClose }) {
 function AppHeader({ go, onLogout }) {
   const [q, setQ] = useState('');
   const [focus, setFocus] = useState(false);
+  const [menu, setMenu] = useState(false);
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [menu]);
   const submit = (e) => { e && e.preventDefault(); setFocus(false); };
   return (
     <header className="app-hdr">
@@ -2395,7 +2411,19 @@ function AppHeader({ go, onLogout }) {
             <Icon name="bell" size={19} />
             {WATCH_HITS > 0 && <span className="badge">{WATCH_HITS}</span>}
           </div>
-          <div className="avatar" title={USER.name} onClick={onLogout}>{USER.initials}</div>
+          <div className="app-hdr__acct" style={{ position: 'relative' }}>
+            <div className="avatar" title={USER.name} onClick={e => { e.stopPropagation(); setMenu(m => !m); }}>{USER.initials}</div>
+            {menu && (
+              <div className="acctmenu">
+                <div className="acctmenu__id"><b>{USER.name}</b><span>{USER.email}</span></div>
+                <div className="acctmenu__item" onClick={() => go('account')}><Icon name="settings" size={16} /> Account settings</div>
+                <div className="acctmenu__item" onClick={() => go('account', { tab: 'notifications' })}><Icon name="bell" size={16} /> Notifications</div>
+                <div className="acctmenu__item" onClick={() => go('account', { tab: 'plan' })}><Icon name="credit-card" size={16} /> Plan &amp; billing</div>
+                <div className="acctmenu__sep"></div>
+                <div className="acctmenu__item" onClick={onLogout}><Icon name="log-out" size={16} /> Log out</div>
+              </div>
+            )}
+          </div>
         </nav>
       </div>
     </header>
@@ -3097,7 +3125,7 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
 
   return (
     <div className="screen">
-      <AppHeader go={go} onLogout={() => go('login')} query={query || ''} />
+      <AppHeader go={go} onLogout={() => go('landing')} query={query || ''} />
       <div className={'page results' + (filterLayout === 'topbar' ? ' results--topbar' : '') + (density === 'compact' ? ' is-compact' : '') + (view === 'grid' ? ' is-grid' : '')}>
         {filterLayout === 'rail' && (
           <aside className="filters">
@@ -3162,7 +3190,7 @@ function ProductPage({ go, id }) {
 
   return (
     <div className="screen">
-      <AppHeader go={go} onLogout={() => go('login')} />
+      <AppHeader go={go} onLogout={() => go('landing')} />
       <div className="page pdp">
         <div className="pdp__crumb">
           <a onClick={() => go('home')}>Home</a><Icon name="chevron-right" size={13} />
@@ -3890,7 +3918,7 @@ function AutobuyPage({ go }) {
 
   return (
     <div className="screen" data-screen-label="Auto-buy orders">
-      <AppHeader go={go} onLogout={() => go('login')} />
+      <AppHeader go={go} onLogout={() => go('landing')} />
       <div className="page ab">
         <div className="al__head">
           <div>
@@ -4072,7 +4100,7 @@ function AlertsPage({ go, tab: tab0 }) {
 
   return (
     <div className="screen" data-screen-label="Alerts & watchlist">
-      <AppHeader go={go} active="alerts" onLogout={() => go('login')} />
+      <AppHeader go={go} active="alerts" onLogout={() => go('landing')} />
       <div className="page al">
         <div className="al__head">
           <div>
@@ -4150,7 +4178,7 @@ function BrowsePage({ go }) {
   const drops = ALL.slice().sort((a, b) => b.drop - a.drop).slice(0, 4);
   return (
     <div className="screen" data-screen-label="Browse categories">
-      <AppHeader go={go} active="browse" onLogout={() => go('login')} />
+      <AppHeader go={go} active="browse" onLogout={() => go('landing')} />
       <div className="page browse">
         <div className="browse__head">
           <h1>Browse categories</h1>
@@ -4391,7 +4419,7 @@ function AccountPage({ go, tab: tab0 }) {
   const openPaywall = () => setPaywall(true);
   return (
     <div className="screen" data-screen-label="Account & settings">
-      <AppHeader go={go} active="account" onLogout={() => go('login')} />
+      <AppHeader go={go} active="account" onLogout={() => go('landing')} />
       <div className="page acct">
         <h1>Account</h1>
         <div className="acct__grid">
@@ -4729,7 +4757,7 @@ function App(){
   else if(name==="autobuy") view=<AutobuyPage go={go} />;
   else if(name==="onboarding") view=<Onboarding go={go} />;
   else if(name==="about") view=<AboutPage go={go} />;
-  else view=<SignedHome go={go} onLogout={()=>go("login")} layout={t.homeLayout} />;
+  else view=<SignedHome go={go} onLogout={()=>go("landing")} layout={t.homeLayout} />;
   return (<React.Fragment>
     <div key={name+JSON.stringify(params)+t.loginLayout+t.homeLayout+t.resultsView+t.filterLayout+t.density+t.sparklines+t.plan}>{view}</div>
     <TweaksPanel>
