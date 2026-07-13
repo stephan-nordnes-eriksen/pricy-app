@@ -13,12 +13,71 @@
 const T = window.TWEAK_DEFAULTS;
 const PUBLIC_SCREENS = ['landing', 'login', 'about'];
 
-function readSession() {
-  try { return localStorage.getItem('pricy_session') === '1'; } catch (e) { return false; }
-}
+// Session is real now (Phase 4b): an HttpOnly cookie the Worker owns. ME
+// caches the /api/me result fetched before first render; the gating logic
+// reading these two functions is unchanged from the localStorage days.
+let ME = null;
+function readSession() { return !!ME; }
 function writeSession(v) {
-  try { v ? localStorage.setItem('pricy_session', '1') : localStorage.removeItem('pricy_session'); } catch (e) {}
+  if (!v && ME) {
+    ME = null;
+    if (typeof fetch === 'function') fetch('/api/logout', { method: 'POST' }).catch(() => {});
+  }
 }
+
+const fetchJson = (url, opts) =>
+  (typeof fetch === 'function' ? fetch(url, opts) : Promise.reject(new Error('no fetch')))
+    .then(r => { if (!r.ok) throw new Error(url + ' → ' + r.status); return r.json(); });
+
+// AuthCard keeps the typed email in its own state and onAuthed() passes
+// nothing (upstream gap) — read it from the live login form, or the
+// magic-link sent-screen address, before they unmount.
+function formEmail() {
+  const input = document.querySelector('.authcard input[type="email"]');
+  const sent = document.querySelector('.authcard .addr');
+  return (input && input.value.trim()) || (sent && sent.textContent.trim())
+    || 'demo@pricy.no'; // ponytail: fake BankID carries no email — shared demo account
+}
+
+function serverLogin(email) {
+  return fetchJson('/api/auth/login', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email }),
+  }).then(me => { hydrateMe(me); return true; })
+    .catch(e => { console.error('login failed:', e); return false; });
+}
+
+// Hydrate the prototype's per-user module constants in place, same seam as
+// the 4a catalog: USER is a const object (assign over it), WATCHED a const
+// array (splice), and WatchStore.items a plain reassignable property.
+// Known upstream gap: WATCH_HITS / TOTAL_SAVED are const primitives computed
+// at module load — they can't be rebound here and stay demo numbers.
+function hydrateMe(me) {
+  ME = me;
+  Object.assign(USER, me.user);
+  WatchStore.items = (me.watches || []).map(w => {
+    const p = WatchStore.prod(w.id);
+    return { id: w.id, target: w.target, paused: !!w.paused, hit: !!p && p.best <= w.target };
+  });
+  WATCHED.splice(0, WATCHED.length, ...WatchStore.items.map(w => {
+    const p = WatchStore.prod(w.id);
+    return p && { ...p, target: w.target, hit: w.hit, spark: (p.history || []).slice(-12) };
+  }).filter(Boolean));
+}
+
+// Every watch mutation funnels through WatchStore.emit — persist from there.
+const _emit = WatchStore.emit;
+WatchStore.emit = function () {
+  _emit.call(this);
+  if (ME && typeof fetch === 'function') {
+    fetch('/api/watches', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(this.items.map(w => ({ id: w.id, target: w.target, paused: !!w.paused }))),
+    }).catch(() => {});
+  }
+};
 
 function parseUrl(session) {
   const p = location.pathname;
@@ -80,10 +139,12 @@ function App() {
     if (name !== 'login' && !session && !PUBLIC_SCREENS.includes(name)) { name = 'login'; params = {}; }
     nav(name, params);
   };
-  const authed = () => { setSession(true); nav('home'); };
+  // onAuthed fires after AuthCard's fake validation; the session only
+  // becomes real once the Worker sets its cookie — navigate on success only
+  const authed = () => serverLogin(formEmail()).then(ok => { if (ok) { setSession(true); nav('home'); } });
   // Login's BankID path goes straight to onboarding — that's a signup, so it authenticates
   const loginGo = (name, params = {}) => {
-    if (name === 'onboarding') { setSession(true); nav('onboarding'); return; }
+    if (name === 'onboarding') { serverLogin(formEmail()).then(ok => { if (ok) { setSession(true); nav('onboarding'); } }); return; }
     go(name, params);
   };
 
@@ -124,8 +185,11 @@ function hydrateCatalog(data) {
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
 }
 
-(typeof fetch === 'function' ? fetch('/api/catalog.json') : Promise.reject(new Error('no fetch')))
-  .then(r => { if (!r.ok) throw new Error('catalog fetch ' + r.status); return r.json(); })
-  .then(hydrateCatalog)
-  .catch(() => {}) // ponytail: fetch missing/failed → baked demo catalog (jsdom has no fetch)
-  .then(() => ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>));
+Promise.all([
+  fetchJson('/api/catalog.json').then(hydrateCatalog)
+    .catch(() => {}), // ponytail: fetch missing/failed → baked demo catalog (jsdom has no fetch)
+  fetchJson('/api/me').catch(() => null), // 401 / static hosting → logged out
+]).then(([, me]) => {
+  if (me && me.user) hydrateMe(me); // after catalog: hydrateMe looks up products
+  ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
+});
