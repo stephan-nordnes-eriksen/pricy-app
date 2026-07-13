@@ -2379,7 +2379,7 @@ function AppHeader({ go, onLogout }) {
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, [menu]);
-  const submit = (e) => { e && e.preventDefault(); setFocus(false); };
+  const submit = (e) => { e && e.preventDefault(); setFocus(false); go('results', { query: q.trim() || 'airpods pro' }); };
   return (
     <header className="app-hdr">
       <div className="page app-hdr__row">
