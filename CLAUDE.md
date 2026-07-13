@@ -49,7 +49,9 @@ Known upstream gaps (fix in Claude Design, then extend tests):
   passed out, awaitable verdict, server errors shown in the form), but
   the credentials stay theatre: the password is never verified and
   BankID is a fake button that logs into a shared demo account
-  (`demo@pricy.no`) and lands home. Served by the Worker's demo
+  (`demo@pricy.no`) and lands home. Real BankID is parked until mostly
+  everything else is done (see PLAN.md) — keep the fake button working,
+  spend no other effort on it. Served by the Worker's demo
   bridges: `POST /api/auth/login` (strict, existing accounts only) and
   `POST /api/auth/signup` (upsert; also used for BankID and the
   "Open the link" magic simulation). Drop both when the upstream Login

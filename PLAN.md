@@ -92,7 +92,9 @@ WATCH_HITS/TOTAL_SAVED const primitives).
 - D1: `users`, `sessions`, `watches`. The prototype's `USER` / `WATCHED`
   constants hydrate per-user the same way CATALOG does in 4a.
 - BankID stays a fake button (real BankID is a signed-vendor contract, not
-  a phase).
+  a phase). **Decided 2026-07: all BankID work is parked until mostly
+  everything else is done** — don't spend sync/boot/worker effort on it
+  beyond keeping the fake button working.
 
 ### 4c — Real prices
 
@@ -107,4 +109,5 @@ Order matters: 4a proves the hydration seam cheaply, 4b builds the first
 real backend on a proven seam, 4c is blocked on a business decision.
 
 Not planned here: payments, SSR/SEO — separate decisions once real data
-is live.
+is live. Real BankID is parked until mostly everything else is done
+(see 4b); the fake button just keeps working.
