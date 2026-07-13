@@ -10,7 +10,7 @@ const { JSDOM } = require('jsdom');
 
 const DIST = path.join(__dirname, '..', 'dist');
 
-function boot(url = 'http://pricy.test/', { session = false } = {}) {
+function boot(url = 'http://pricy.test/', { session = false, catalog } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -19,6 +19,11 @@ function boot(url = 'http://pricy.test/', { session = false } = {}) {
   });
   const win = dom.window;
   win.scrollTo = () => {};
+  // jsdom has no fetch; boot.jsx falls back to the baked catalog unless a
+  // test serves one here
+  if (catalog) win.fetch = (u) => u === '/api/catalog.json'
+    ? Promise.resolve({ ok: true, json: () => Promise.resolve(catalog) })
+    : Promise.reject(new Error('unexpected fetch ' + u));
   if (session) win.localStorage.setItem('pricy_session', '1');
   const ctx = dom.getInternalVMContext();
   // run the exact script pipeline from dist/index.html
@@ -168,6 +173,21 @@ test('account menu logs out: back to landing, session cleared', async () => {
   items[items.length - 1].click(); // Log out
   assert.ok(await until(() => q(win, '.lhero')), 'log out should land on the public landing');
   assert.strictEqual(win.localStorage.getItem('pricy_session'), null, 'session must be cleared');
+});
+
+// ---------- catalog hydration (Phase 4a) ----------
+
+test('rendered catalog comes from /api/catalog.json, not the baked constants', async () => {
+  const served = JSON.parse(fs.readFileSync(path.join(DIST, 'api', 'catalog.json'), 'utf8'))
+    .filter(p => p.cat !== 'Gaming') // dropped category must vanish from CAT_OF
+    .map(p => p.cat === 'Audio' ? { ...p, name: 'Fetched ' + p.name } : p);
+  const win = boot('http://pricy.test/search?cat=Audio', { session: true, catalog: served });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const names = qa(win, '.rrow, .rcard').map(el => el.textContent);
+  assert.ok(names.length && names.every(t => t.includes('Fetched ')), 'results must show the fetched names, got: ' + names[0]);
+  const cats = qa(win, '.catlink').map(el => el.textContent);
+  assert.ok(cats.length > 0, 'category filter list did not render');
+  assert.ok(!cats.some(t => t.includes('Gaming')), 'CAT_OF still lists the dropped Gaming category');
 });
 
 test('lucide icons render as inline svg', async () => {
