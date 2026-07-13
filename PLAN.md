@@ -1,73 +1,53 @@
 # Pricy.no — prototype → production plan
 
-Goal: ship the Claude Design prototype as a real site on Cloudflare, while the
-design keeps evolving in claude.ai/design and syncs back into this repo.
+Goal: ship the Claude Design prototype as a real site on Cloudflare, while
+the design keeps evolving in claude.ai/design and syncs back into this repo.
 
-## Architecture (Option A — zero-build static shell)
+## Architecture
 
-No bundler, no build step. The design sync ships `_ds_bundle.js`, a
-pre-compiled version of the kit JSX that puts every component and the mock
-data on `window`. The app consumes it directly:
+The interactive prototype (Claude Design project `7fa9cba6-…`, file
+`pricy/index.html`) IS the app: a single self-contained HTML file with all
+CSS and all screen JSX inline. It syncs to `proto/index.html` verbatim, and
+`build.js` productionizes it into `dist/`:
 
-```
-index.html        ← loads synced CSS, vendored React/Lucide, _ds_bundle.js, app.js
-app.js            ← URL router + stub screens not yet designed in Claude Design
-vendor/           ← React 18 + Lucide UMD builds (vendored, no CDN)
-wrangler.jsonc    ← Workers static assets, SPA fallback
-.assetsignore     ← keeps repo-internal files out of the deployment
-render-check.js   ← `npm test` — renders every route, fails if the bundle contract breaks
-```
+- prototype babel blocks → esbuild → `dist/app.js` (byte-faithful), except
+  the final block (designer tweaks-panel harness), which is replaced by
+  `boot.jsx` — session flag, URL routing, auth gating, frozen layout defaults
+- CDN dev React/Babel → vendored production React 18 UMD (`vendor/`)
+- deployed as Cloudflare Workers static assets with SPA fallback
 
-Synced design files stay exactly where the sync puts them (repo root:
-`colors_and_type.css`, `components.css`, `preview/`, `ui_kits/`, `assets/`,
-`_ds_*`). **Never hand-edit these** — they are overwritten on every sync.
+Logged-out spec (from the prototype): only landing / login / about exist;
+there is no search until you log in. Login is faked client-side
+(localStorage flag) until Phase 4 brings a real backend.
 
-Key detail: the compiled bundle calls React hooks bare, so `index.html` runs
-`Object.assign(window, React)` before loading it.
+The design-system project (`ee80f3e5-…`) still syncs to the repo root as
+the token/kit reference, but nothing is built from it.
 
-Fallback if the bundle format ever changes: the raw `.jsx` sources are also
-synced — compile them ourselves with one esbuild command and load in order.
+## Phase 1 — Scaffold ✅   Phase 1b — Prototype adoption ✅
 
-## Phase 1 — Scaffold ✅ (done)
+`npm run build` → dist/; `npm test` = build + 11 jsdom UI tests booting
+dist/index.html's real script pipeline (gating, login, BankID→onboarding,
+search suggest, product nav, logout, icons).
 
-Routes: `/` (Home from the kit), `/search?q=`, `/product/:id`, `/deals`.
-The three non-home screens are stubs in `app.js` built from kit.css's
-existing styles; each gets replaced when its design lands in Claude Design
-and exports a component. Mock data (`PRODUCTS`, `SHOPS`) ships as-is —
-real data is Phase 4, deliberately.
+## Phase 2 — Deploy to Cloudflare  ← next
 
-Verified: `npm test` renders every route; headless Chrome confirmed
-browser rendering via `wrangler dev`.
-
-## Phase 2 — Deploy to Cloudflare
-
-1. `npm run deploy` (wrangler will prompt to log in first time) →
-   live on `pricy.<subdomain>.workers.dev`.
-2. Connect the GitHub repo to Workers Builds in the Cloudflare dashboard →
-   every push to `main` auto-deploys. (No CI YAML to maintain.)
-3. Attach the custom domain (pricy.no) in the dashboard when ready.
-
-Done when: push to main → live site updates.
+1. `npm run deploy` (wrangler prompts to log in first time) →
+   `pricy.<subdomain>.workers.dev`.
+2. Connect repo to Workers Builds (build command `npm run build`, deploy
+   command `npx wrangler deploy`) → push-to-deploy.
+3. Attach pricy.no in the dashboard when ready.
 
 ## Phase 3 — The design-sync loop (ongoing ritual)
 
-The direction is one-way: **Claude Design → repo → deploy**. See CLAUDE.md
-for the exact ritual. Because the app runs the design bundle directly,
-there is normally **nothing to propagate** — sync, `npm test`, push.
-Only a brand-new screen needs work: one route entry in `app.js` (and
-deleting the stub it replaces).
+See CLAUDE.md. One file to pull (`pricy/index.html`), then
+`npm test`, push. Mirror new screens in `boot.jsx` when the prototype's
+App grows one.
 
-## Phase 4 — Real data (deferred until wanted)
+## Phase 4 — Real data & auth (deferred until wanted)
 
-The mock `PRODUCTS`/`SHOPS`/`hist()` in the kit ship first. When real data
-exists:
+- Worker script + D1 for products/offers/history; swap the prototype's
+  window.CATALOG mock for `/api/…` fetches at the boot layer.
+- Real auth replaces the localStorage session flag (same boot.jsx seam).
 
-- Add a Worker script (`main` in wrangler.jsonc) with API routes
-  (`/api/products`, `/api/products/:id`); D1 for products/offers/history.
-- Have `app.js` fetch and pass data down instead of reading `window.PRODUCTS`.
-- This is also the natural moment to graduate to a bundler (Vite/esbuild)
-  if the app has grown real logic — decide then, not now.
-
-Not planned here: scraping/ingestion pipeline, accounts/alerts, SSR/SEO.
-Each is a separate decision when the mock-data site is live and the design
-has settled.
+Not planned here: scraping/ingestion, payments, SSR/SEO — separate
+decisions once the mock-data site is live.

@@ -2,11 +2,13 @@
   "name": "pricy",
   "private": true,
   "scripts": {
-    "test": "node render-check.js && node --test test/ui.test.js",
-    "dev": "wrangler dev --persist-to \"${TMPDIR:-/tmp}/pricy-wrangler-state\"",
-    "deploy": "wrangler deploy"
+    "build": "node build.js",
+    "test": "node build.js && node --test test/ui.test.js",
+    "dev": "node build.js && wrangler dev --persist-to \"${TMPDIR:-/tmp}/pricy-wrangler-state\"",
+    "deploy": "node build.js && wrangler deploy"
   },
   "devDependencies": {
+    "esbuild": "^0.28.1",
     "jsdom": "^29.1.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
