@@ -131,12 +131,14 @@ test('email login reaches the signed-in home and persists the session', async ()
   assert.strictEqual(login && login.body.email, 'mari@hansen.no', 'typed email must reach the server');
 });
 
-test('BankID signup runs onboarding and authenticates', async () => {
+test('BankID authenticates into the shared demo account and lands home', async () => {
   const win = boot('http://pricy.test/login');
   await tick();
   q(win, '.bankid-btn').click();
-  assert.ok(await until(() => win.location.pathname === '/onboarding'), 'BankID should land on onboarding');
-  assert.ok(win.api.some(c => c.call === 'POST /api/auth/signup'), 'BankID signup must create a server account');
+  assert.ok(await until(() => q(win, '.avatar')), 'BankID should reach the signed-in app');
+  assert.strictEqual(win.location.pathname, '/');
+  const call = win.api.find(c => c.call === 'POST /api/auth/signup');
+  assert.strictEqual(call && call.body.email, 'demo@pricy.no', 'fake BankID upserts the demo account');
 });
 
 test('signup mode creates the account and runs onboarding', async () => {
@@ -174,7 +176,8 @@ test('rejected login stays on the login screen', async () => {
   type(win, q(win, '.authcard input[type="email"]'), 'nobody@nowhere.no');
   type(win, q(win, '.authcard input[type="password"]'), 'hunter2');
   submit(win, q(win, '.authcard form'));
-  await tick(1200); // AuthCard's 850ms fake network + the failed request
+  assert.ok(await until(() => q(win, '.formhint.err')), 'server rejection must surface in the form');
+  assert.match(q(win, '.formhint.err').textContent, /no account/i);
   assert.strictEqual(win.location.pathname, '/login', 'must not navigate without a session');
   assert.ok(!q(win, '.avatar'), 'must not render signed-in chrome');
 });

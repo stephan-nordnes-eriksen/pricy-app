@@ -45,19 +45,15 @@ Two Claude Design projects feed this repo:
 Known upstream gaps (fix in Claude Design, then extend tests):
 - Minor: AppHeader search Enter on an empty query falls back to searching
   "airpods pro" (demo-ism) — fix opportunistically at the next sync.
-- AuthCard keeps the typed email in its own state; `onAuthed()` passes
-  nothing. boot.jsx reads it back out of the live DOM (`formEmail()`).
-  Upstream fix: `onAuthed(email)`.
-- AuthCard fake-validates (password theatre, instant "Open the link"
-  button) then expects an immediate session — served by the Worker's
-  demo bridges: `POST /api/auth/login` (strict, existing accounts only)
-  and `POST /api/auth/signup` (upsert; also used for BankID and the
+- AuthCard's `onAuthed(email, {signup})` contract is real now (email
+  passed out, awaitable verdict, server errors shown in the form), but
+  the credentials stay theatre: the password is never verified and
+  BankID is a fake button that logs into a shared demo account
+  (`demo@pricy.no`) and lands home. Served by the Worker's demo
+  bridges: `POST /api/auth/login` (strict, existing accounts only) and
+  `POST /api/auth/signup` (upsert; also used for BankID and the
   "Open the link" magic simulation). Drop both when the upstream Login
   waits for the real emailed link.
-- AuthCard has no way to show a server-side auth failure (e.g. login
-  with no account, 401): its fake validation already reported success,
-  so boot.jsx can only refuse to navigate. Upstream fix: let onAuthed
-  return/await a result and surface an error state.
 - `WATCH_HITS` / `TOTAL_SAVED` are const primitives computed at module
   load — boot.jsx can't rebind them, so header badge/greeting/saved
   numbers stay demo values. Upstream fix: compute from WatchStore.
