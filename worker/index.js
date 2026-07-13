@@ -14,8 +14,8 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, PRIMARY KEY (product_id, shop))',
   'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
-// ponytail: schema bootstraps once per database; move to d1 migrations when
-// a real deployment exists (Phase 2 is on hold, everything runs locally)
+// ponytail: schema bootstraps once per database; move to d1 migrations
+// when the schema first has to *change* on the deployed db
 const schemaReady = new WeakMap();
 async function ensureSchema(db) {
   if (!schemaReady.has(db)) schemaReady.set(db, db.exec(SCHEMA));

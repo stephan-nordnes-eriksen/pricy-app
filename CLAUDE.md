@@ -45,8 +45,11 @@ Two Claude Design projects feed this repo:
    write to `proto/index.html`.
 2. `npm test`. If the prototype's App gained/renamed screens (see the
    view switch in its last babel block), mirror that in `boot.jsx`.
-3. Commit (sync and boot/test adjustments separately), push — Workers
-   Builds auto-deploys main (build command: `npm run build`, output: `dist`).
+3. Commit (sync and boot/test adjustments separately), then
+   `npm run deploy` (live: https://pricy.stephanruler.workers.dev — Worker
+   `pricy`, D1 `pricy-app`; the account's other `pricy` D1 belongs to the
+   project serving pricy.no — never bind it). No git remote / Workers
+   Builds yet.
 
 Known upstream gaps (fix in Claude Design, then extend tests):
 - Minor: AppHeader search Enter on an empty query falls back to searching

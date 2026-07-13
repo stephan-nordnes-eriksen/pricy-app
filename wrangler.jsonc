@@ -10,10 +10,10 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "pricy",
-      // local-only for now (Phase 2 on hold): wrangler dev never checks this
-      // id locally. Create a real D1 db and swap the id in at deploy.
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      // NOT the account's "pricy" D1 — that one belongs to the other
+      // (live pricy.no) project despite the name
+      "database_name": "pricy-app",
+      "database_id": "ae84c6cb-b7f8-4025-b7a8-7bfb1f9f8dc1"
     }
   ],
   // hourly offer refresh (worker scheduled handler); price_points stay

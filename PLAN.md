@@ -29,13 +29,20 @@ the token/kit reference, but nothing is built from it.
 dist/index.html's real script pipeline (gating, login, BankID→onboarding,
 search suggest, product nav, logout, icons).
 
-## Phase 2 — Deploy to Cloudflare (on hold — working locally, no remote)
+## Phase 2 — Deploy to Cloudflare ✅ (manual deploys; domain not attached)
 
-1. `npm run deploy` (wrangler prompts to log in first time) →
-   `pricy.<subdomain>.workers.dev`.
-2. Connect repo to Workers Builds (build command `npm run build`, deploy
-   command `npx wrangler deploy`) → push-to-deploy.
-3. Attach pricy.no in the dashboard when ready.
+Live at https://pricy.stephanruler.workers.dev — Worker `pricy`, D1
+`pricy-app`, hourly cron. Deploy with `npm run deploy`.
+
+- **The account's `pricy` D1 is NOT ours** — it belongs to the project
+  currently serving pricy.no (a SvelteKit app on the same account), even
+  though `d1 list` misreports it as 0 tables. Never bind it.
+- Workers Builds push-to-deploy: deferred — repo has no git remote.
+  Revisit if/when it gets one.
+- Attach pricy.no in the dashboard only when deliberately cutting over
+  from the existing site.
+- Email Service binding still unwired (see 4b) — magic-link mail is
+  console-logged; login works via the demo bridges.
 
 ## Phase 3 — The design-sync loop (ongoing ritual)
 
