@@ -74,7 +74,9 @@ function App() {
     setScreen({ name, params });
   };
   const go = (name, params = {}) => {
-    if (name === 'login') setSession(false); // avatar / "log in" anywhere acts as logout
+    // "log in" links act as logout; signed-in landing is only reachable via
+    // the account menu's Log out / account deletion, so it ends the session
+    if (name === 'login' || (name === 'landing' && session)) setSession(false);
     if (name !== 'login' && !session && !PUBLIC_SCREENS.includes(name)) { name = 'login'; params = {}; }
     nav(name, params);
   };
@@ -104,7 +106,7 @@ function App() {
   else if (name === 'autobuy') view = <AutobuyPage go={go} />;
   else if (name === 'onboarding') view = <Onboarding go={go} />;
   else if (name === 'about') view = <AboutPage go={go} />;
-  else view = <SignedHome go={go} onLogout={() => go('login')} layout={T.homeLayout} />;
+  else view = <SignedHome go={go} onLogout={() => go('landing')} layout={T.homeLayout} />;
 
   return <div key={name + JSON.stringify(params)}>{view}</div>;
 }

@@ -145,11 +145,14 @@ test('signed in: session survives a reload (fresh boot, same storage flag)', asy
   assert.ok(!q(win, '.authcard'), 'session flag should keep app screens open');
 });
 
-test('avatar logs out: back to login, session cleared, search gated again', async () => {
+test('account menu logs out: back to landing, session cleared', async () => {
   const win = boot('http://pricy.test/', { session: true });
   await tick();
   q(win, '.avatar').click();
-  assert.ok(await until(() => q(win, '.authcard')), 'avatar should lead to login');
+  assert.ok(await until(() => q(win, '.acctmenu')), 'avatar should open the account menu');
+  const items = qa(win, '.acctmenu__item');
+  items[items.length - 1].click(); // Log out
+  assert.ok(await until(() => q(win, '.lhero')), 'log out should land on the public landing');
   assert.strictEqual(win.localStorage.getItem('pricy_session'), null, 'session must be cleared');
 });
 
