@@ -27,10 +27,11 @@ Two Claude Design projects feed this repo:
 
 - `proto/index.html` and the repo-root design files are **sync-owned —
   never hand-edit**. Behavior fixes go upstream in Claude Design, then
-  re-sync. Hand-written code is only: `boot.jsx`, `build.js`, `test/`,
-  configs.
-- `npm test` builds then runs the jsdom UI suite. Run after every sync
-  and boot.jsx change.
+  re-sync. Hand-written code is only: `boot.jsx`, `build.js`, `worker/`,
+  `test/`, configs.
+- `npm test` builds then runs the jsdom UI suite + Worker API tests
+  (worker/index.js driven in-process, D1 emulated over node:sqlite). Run
+  after every sync and boot.jsx/worker change.
 
 ## "sync design changes" ritual
 
@@ -44,6 +45,16 @@ Two Claude Design projects feed this repo:
 Known upstream gaps (fix in Claude Design, then extend tests):
 - Minor: AppHeader search Enter on an empty query falls back to searching
   "airpods pro" (demo-ism) — fix opportunistically at the next sync.
+- AuthCard keeps the typed email in its own state; `onAuthed()` passes
+  nothing. boot.jsx reads it back out of the live DOM (`formEmail()`).
+  Upstream fix: `onAuthed(email)`.
+- AuthCard fake-validates (password theatre, instant "Open the link"
+  button) then expects an immediate session — served by the Worker's
+  `POST /api/auth/login` demo bridge. Drop that route when the upstream
+  Login waits for the real emailed link.
+- `WATCH_HITS` / `TOTAL_SAVED` are const primitives computed at module
+  load — boot.jsx can't rebind them, so header badge/greeting/saved
+  numbers stay demo values. Upstream fix: compute from WatchStore.
 
 `npm run test:e2e` (Playwright visual parity vs the prototype) must run
 with the Bash sandbox disabled — Chromium can't bootstrap its mach port

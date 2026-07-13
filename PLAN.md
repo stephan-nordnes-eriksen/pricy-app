@@ -73,7 +73,16 @@ remains the no-fetch/failed-fetch fallback.
 - Site behaves identically; data is now a document with a URL, which is the
   contract 4c fills with real prices later.
 
-### 4b — Real auth + persisted watchlist
+### 4b — Real auth + persisted watchlist ✅ (email send deferred to deploy)
+
+Shipped: `worker/index.js` (magic-link request/verify, HttpOnly session
+cookie, `/api/me`, whole-list `PUT /api/watches`) on D1, schema
+bootstrapped in the Worker until a real deployment justifies migrations.
+boot.jsx hydrates USER / WATCHED / WatchStore.items from `/api/me` pre-render
+and persists every WatchStore.emit. The magic-link email itself is only
+console-logged — wire the Email Service binding (see wrangler.jsonc) at
+deploy. Upstream UI gaps recorded in CLAUDE.md (AuthCard email/theatre,
+WATCH_HITS/TOTAL_SAVED const primitives).
 
 - First Worker code: `worker/` module alongside the static assets
   (`wrangler.jsonc` gains `main` + a D1 binding).
