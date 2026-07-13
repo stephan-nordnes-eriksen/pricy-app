@@ -111,4 +111,21 @@ function App() {
   return <div key={name + JSON.stringify(params)}>{view}</div>;
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
+// Catalog is served, not baked: fetch /api/catalog.json and hydrate the
+// prototype's module constants in place before first render. This bundle
+// shares one esbuild scope with the prototype blocks, so CATALOG and CAT_OF
+// (the only load-time derived index) are directly in scope; getListing,
+// searchCatalog and ALL_BRANDS read CATALOG live and follow automatically.
+// window.CATALOG is the same array object, so it stays in sync too.
+function hydrateCatalog(data) {
+  CATALOG.length = 0;
+  CATALOG.push(...data);
+  Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
+  CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
+}
+
+(typeof fetch === 'function' ? fetch('/api/catalog.json') : Promise.reject(new Error('no fetch')))
+  .then(r => { if (!r.ok) throw new Error('catalog fetch ' + r.status); return r.json(); })
+  .then(hydrateCatalog)
+  .catch(() => {}) // ponytail: fetch missing/failed → baked demo catalog (jsdom has no fetch)
+  .then(() => ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>));

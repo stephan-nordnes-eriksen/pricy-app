@@ -6,6 +6,7 @@
 //                   by <script src="app.js">
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 const esbuild = require('esbuild');
 
 const REPO = __dirname;
@@ -30,6 +31,18 @@ const jsx = [
 ].join('\n;\n');
 const compiled = esbuild.transformSync(jsx, { loader: 'jsx', target: 'es2020' }).code;
 
+// --- catalog: run the prototype blocks in Node, dump the enriched CATALOG --
+// Blocks only touch React/window at module load (DOM access is inside
+// effects), so a bare vm context is enough.
+const blockCode = esbuild.transformSync(blocks.join('\n;\n'), { loader: 'jsx', target: 'es2020' }).code;
+const ctx = vm.createContext({ React: {}, console });
+ctx.window = ctx;
+vm.runInContext(blockCode, ctx, { filename: 'proto-blocks.js' });
+const catalog = ctx.CATALOG;
+if (!Array.isArray(catalog) || !catalog.length || catalog.some(p => !p.id || !p.offers || !p.history)) {
+  throw new Error('catalog extraction from the prototype blocks produced bad data');
+}
+
 // --- rewrite the html ------------------------------------------
 html = html
   .replace(BLOCK_RE, '')
@@ -53,6 +66,8 @@ fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(path.join(DIST, 'vendor'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), html);
 fs.writeFileSync(path.join(DIST, 'app.js'), compiled);
+fs.mkdirSync(path.join(DIST, 'api'));
+fs.writeFileSync(path.join(DIST, 'api', 'catalog.json'), JSON.stringify(catalog));
 for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith('.js'))) {
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));
 }
