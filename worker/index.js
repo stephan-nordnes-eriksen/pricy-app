@@ -40,10 +40,10 @@ async function sha(s) {
 
 // Password storage: PBKDF2-HMAC-SHA256, native Web Crypto (Workers + Node
 // both implement it, no dependency). ponytail: OWASP's 2023 guidance is
-// 600k iterations for PBKDF2-SHA256; trimmed to 210k to stay well inside a
-// Worker's per-request CPU budget — raise it if the CPU limit is ever
-// configured generously (wrangler.jsonc `limits.cpu_ms`).
-const PBKDF2_ITERATIONS = 210_000;
+// 600k iterations for PBKDF2-SHA256, but Workers' WebCrypto hard-caps
+// PBKDF2 at 100k iterations (throws NotSupportedError above that) — this
+// is the platform ceiling, not a tuning choice.
+const PBKDF2_ITERATIONS = 100_000;
 async function pbkdf2(password, salt, iterations) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
   return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations }, key, 256));
