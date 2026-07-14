@@ -29,13 +29,17 @@ const fetchJson = (url, opts) =>
   (typeof fetch === 'function' ? fetch(url, opts) : Promise.reject(new Error('no fetch')))
     .then(r => { if (!r.ok) throw new Error(url + ' → ' + r.status); return r.json(); });
 
-function serverLogin(email, path = '/api/auth/login') {
-  return fetchJson(path, {
+function serverLogin(email, path = '/api/auth/login', password) {
+  return fetch(path, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email }),
-  }).then(me => { hydrateMe(me); return true; })
-    .catch(e => { console.error('login failed:', e); return false; });
+    body: JSON.stringify(password ? { email, password } : { email }),
+  }).then(async r => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) return data; // { error } — AuthCard shows it and stays on the form
+    hydrateMe(data);
+    return true;
+  }).catch(e => { console.error('login failed:', e); return false; });
 }
 
 // Hydrate the prototype's per-user module constants in place, same seam as
@@ -129,18 +133,21 @@ function App() {
     if (name !== 'login' && !session && !PUBLIC_SCREENS.includes(name)) { name = 'login'; params = {}; }
     nav(name, params);
   };
-  // AuthCard hands us the attempt as onAuthed(email, {signup}) and awaits
-  // the verdict: resolve truthy = we set the session and navigated; false =
-  // it shows its own error and stays. Upserts (account creation) are:
-  // signup submits, the sent-screen "Open the link" (.addr present — it
-  // simulates the emailed verify link, which is an upsert), and fake
-  // BankID (null email → shared demo account). Password login is strict.
+  // AuthCard hands us the attempt as onAuthed(email, {signup, password}) and
+  // awaits the verdict: resolve strictly `true` = we set the session and
+  // navigated; `false` or `{error}` = it shows its own error and stays.
+  // Upserts (account creation) are: signup submits, the sent-screen "Open
+  // the link" (.addr present — it simulates the emailed verify link, which
+  // is an upsert), and fake BankID (null email → shared demo account, no
+  // password). Password login is strict and now actually checks the
+  // password server-side (worker/index.js verifyPassword).
   const onAuthed = (email, opts) => {
     const signup = !!(opts && opts.signup);
+    const password = opts && opts.password;
     const upsert = signup || !email || !!document.querySelector('.authcard .addr');
-    return serverLogin(email || 'demo@pricy.no', upsert ? '/api/auth/signup' : '/api/auth/login')
+    return serverLogin(email || 'demo@pricy.no', upsert ? '/api/auth/signup' : '/api/auth/login', password)
       .then(ok => {
-        if (ok) { setSession(true); nav(signup ? 'onboarding' : 'home'); }
+        if (ok === true) { setSession(true); nav(signup ? 'onboarding' : 'home'); }
         return ok;
       });
   };

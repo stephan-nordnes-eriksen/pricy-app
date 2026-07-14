@@ -47,7 +47,7 @@ test('signup issues an HttpOnly session cookie and /api/me returns the user', as
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/me')).status, 401, 'unauthenticated /api/me must 401');
 
-  const signup = await call('/api/auth/signup', { method: 'POST', body: { email: 'Ola@Nordmann.no' } });
+  const signup = await call('/api/auth/signup', { method: 'POST', body: { email: 'Ola@Nordmann.no', password: 'correcthorse1' } });
   assert.strictEqual(signup.status, 200);
   const setCookie = signup.headers.get('set-cookie');
   assert.match(setCookie, /pricy_session=[0-9a-f]{64}/, 'session cookie missing');
@@ -58,15 +58,36 @@ test('signup issues an HttpOnly session cookie and /api/me returns the user', as
   assert.deepStrictEqual(me.watches, []);
 });
 
-test('login is strict (existing accounts only); signup is create-or-log-in', async () => {
+test('login is strict (existing accounts only, correct password); signup is create-or-log-in', async () => {
   const call = api({ DB: d1() });
-  const unknown = await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no' } });
+  const unknown = await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } });
   assert.strictEqual(unknown.status, 401, 'login must not create accounts');
   assert.strictEqual(unknown.headers.get('set-cookie'), null, 'no cookie on failed login');
 
-  await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } });
-  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no' } })).status, 200, 'login must work after signup');
-  assert.strictEqual((await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } })).status, 200, 'signup for an existing account just logs in');
+  await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } });
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } })).status, 200, 'login must work after signup with the right password');
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'wrong-password' } })).status, 401, 'wrong password must be rejected');
+  assert.strictEqual((await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } })).status, 200, 'signup for an existing account just logs in (password bridge, e.g. magic link/BankID)');
+});
+
+test('password signup requires 8+ chars; login requires and verifies the password', async () => {
+  const call = api({ DB: d1() });
+  const short = await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'short1' } });
+  assert.strictEqual(short.status, 400, 'short password must be rejected');
+
+  const signup = await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } });
+  assert.strictEqual(signup.status, 200);
+
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no' } })).status, 400, 'login without a password must be rejected');
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'nope-nope' } })).status, 401, 'wrong password must be rejected');
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200);
+});
+
+test('an account created without a password (BankID/magic-link bridge) cannot log in with one', async () => {
+  const call = api({ DB: d1() });
+  await call('/api/auth/signup', { method: 'POST', body: { email: 'demo@pricy.no' } });
+  const res = await call('/api/auth/login', { method: 'POST', body: { email: 'demo@pricy.no', password: 'anything1' } });
+  assert.strictEqual(res.status, 401);
 });
 
 test('magic link: request logs a single-use link, verify sets the session', async () => {

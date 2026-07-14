@@ -6,7 +6,7 @@
 import seed from './seed.json' with { type: 'json' };
 
 const SCHEMA = [
-  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT)',
   'CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
@@ -18,7 +18,11 @@ const SCHEMA = [
 // when the schema first has to *change* on the deployed db
 const schemaReady = new WeakMap();
 async function ensureSchema(db) {
-  if (!schemaReady.has(db)) schemaReady.set(db, db.exec(SCHEMA));
+  if (!schemaReady.has(db)) schemaReady.set(db, (async () => {
+    await db.exec(SCHEMA);
+    // migration for DBs created before password auth existed
+    await db.prepare('ALTER TABLE users ADD COLUMN password_hash TEXT').run().catch(() => {});
+  })());
   await schemaReady.get(db);
 }
 
@@ -28,9 +32,38 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const COOKIE = 'pricy_session';
 
 const hex = (bytes) => [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
+const unhex = (s) => new Uint8Array(s.match(/../g).map(b => parseInt(b, 16)));
 const newToken = () => hex(crypto.getRandomValues(new Uint8Array(32)));
 async function sha(s) {
   return hex(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))));
+}
+
+// Password storage: PBKDF2-HMAC-SHA256, native Web Crypto (Workers + Node
+// both implement it, no dependency). ponytail: OWASP's 2023 guidance is
+// 600k iterations for PBKDF2-SHA256; trimmed to 210k to stay well inside a
+// Worker's per-request CPU budget — raise it if the CPU limit is ever
+// configured generously (wrangler.jsonc `limits.cpu_ms`).
+const PBKDF2_ITERATIONS = 210_000;
+async function pbkdf2(password, salt, iterations) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations }, key, 256));
+}
+async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const digest = await pbkdf2(password, salt, PBKDF2_ITERATIONS);
+  return `pbkdf2$${PBKDF2_ITERATIONS}$${hex(salt)}$${hex(digest)}`;
+}
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+async function verifyPassword(password, stored) {
+  const [scheme, iterations, saltHex, hashHex] = String(stored || '').split('$');
+  if (scheme !== 'pbkdf2' || !saltHex || !hashHex) return false;
+  const digest = await pbkdf2(password, unhex(saltHex), Number(iterations));
+  return timingSafeEqual(hex(digest), hashHex);
 }
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', ...headers } });
@@ -39,6 +72,13 @@ async function bodyEmail(request) {
   const email = String(((await request.json().catch(() => ({}))).email || '')).trim().toLowerCase();
   return EMAIL_RE.test(email) ? email : null;
 }
+const MIN_PASSWORD_LEN = 8;
+async function bodyEmailAndPassword(request) {
+  const body = await request.json().catch(() => ({}));
+  const email = String(body.email || '').trim().toLowerCase();
+  const password = body.password == null ? null : String(body.password);
+  return { email: EMAIL_RE.test(email) ? email : null, password };
+}
 
 function displayName(email) {
   const base = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
@@ -46,11 +86,13 @@ function displayName(email) {
 }
 const initials = (name) => name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 
-async function upsertUser(db, email) {
-  // the no-op DO UPDATE makes RETURNING yield the row on conflict too
+async function upsertUser(db, email, passwordHash = null) {
+  // the no-op DO UPDATE makes RETURNING yield the row on conflict too; on
+  // conflict only email is touched, so a magic-link/BankID upsert never
+  // clobbers a password set by an earlier real signup
   return db.prepare(
-    'INSERT INTO users (email, name) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name'
-  ).bind(email, displayName(email)).first();
+    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name'
+  ).bind(email, displayName(email), passwordHash).first();
 }
 
 async function startSession(db, userId) {
@@ -172,19 +214,30 @@ export default {
       return new Response(null, { status: 302, headers: { location: url.origin + '/', 'set-cookie': await startSession(db, user.id) } });
     }
 
-    // Demo bridges — the prototype's AuthCard fake-validates (password
-    // theatre, fake BankID per plan) and expects an instant session. Real
-    // login is request+verify above; drop both when the upstream Login
-    // actually waits for the emailed link.
-    // login = existing accounts only; signup = create-or-log-in (same
-    // upsert semantics as a verified magic link, which is also a signup).
+    // Demo bridges — also the real password login/signup path now. BankID
+    // (per plan) and the magic-link "Open the link" simulation still hit
+    // signup with no password, upserting a passwordless account exactly
+    // like a verified magic link does. Real request+verify is above; drop
+    // the whole bridge (and password auth stays) when Login waits on the
+    // actually-emailed link instead of simulating it.
+    // login = existing accounts only; signup = create-or-log-in.
     if (route === 'POST /api/auth/login' || route === 'POST /api/auth/signup') {
-      const email = await bodyEmail(request);
+      const { email, password } = await bodyEmailAndPassword(request);
       if (!email) return json({ error: 'invalid email' }, 400);
-      const user = route.endsWith('signup')
-        ? await upsertUser(db, email)
-        : await db.prepare('SELECT id, email, name FROM users WHERE email = ?').bind(email).first();
+
+      if (route.endsWith('signup')) {
+        if (password != null && password.length < MIN_PASSWORD_LEN) {
+          return json({ error: `password must be at least ${MIN_PASSWORD_LEN} characters` }, 400);
+        }
+        const user = await upsertUser(db, email, password ? await hashPassword(password) : null);
+        return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
+      }
+
+      const user = await db.prepare('SELECT id, email, name, password_hash FROM users WHERE email = ?').bind(email).first();
       if (!user) return json({ error: 'no account for this email' }, 401);
+      if (!password) return json({ error: 'enter your password' }, 400);
+      if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);
+      if (!(await verifyPassword(password, user.password_hash))) return json({ error: 'incorrect password' }, 401);
       return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
     }
 

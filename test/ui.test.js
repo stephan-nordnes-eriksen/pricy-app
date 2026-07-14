@@ -131,6 +131,7 @@ test('email login reaches the signed-in home and persists the session', async ()
   assert.strictEqual(win.location.pathname, '/');
   const login = win.api.find(c => c.call === 'POST /api/auth/login');
   assert.strictEqual(login && login.body.email, 'mari@hansen.no', 'typed email must reach the server');
+  assert.strictEqual(login && login.body.password, 'hunter2', 'typed password must reach the server');
 });
 
 test('BankID authenticates into the shared demo account and lands home', async () => {
@@ -141,6 +142,7 @@ test('BankID authenticates into the shared demo account and lands home', async (
   assert.strictEqual(win.location.pathname, '/');
   const call = win.api.find(c => c.call === 'POST /api/auth/signup');
   assert.strictEqual(call && call.body.email, 'demo@pricy.no', 'fake BankID upserts the demo account');
+  assert.strictEqual(call && call.body.password, undefined, 'BankID must not send a password');
 });
 
 test('signup mode creates the account and runs onboarding', async () => {
@@ -149,11 +151,12 @@ test('signup mode creates the account and runs onboarding', async () => {
   qa(win, '.auth-foot a').find(a => /create an account/i.test(a.textContent)).click();
   assert.ok(await until(() => /create your account/i.test((q(win, '.authcard h1') || {}).textContent || '')), 'signup mode did not render');
   type(win, q(win, '.authcard input[type="email"]'), 'kari@nordmann.no');
-  type(win, q(win, '.authcard input[type="password"]'), 'hunter2');
+  type(win, q(win, '.authcard input[type="password"]'), 'hunter22');
   submit(win, q(win, '.authcard form'));
   assert.ok(await until(() => win.location.pathname === '/onboarding'), 'signup should land on onboarding');
   const call = win.api.find(c => c.call === 'POST /api/auth/signup');
   assert.strictEqual(call && call.body.email, 'kari@nordmann.no', 'signup must hit the signup endpoint');
+  assert.strictEqual(call && call.body.password, 'hunter22', 'typed password must reach the server');
 });
 
 test('magic-link "Open the link" acts as a verified signup', async () => {
