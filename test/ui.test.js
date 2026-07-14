@@ -42,6 +42,12 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {})
     }
     if (u === '/api/logout') { ME = null; return ok({ ok: true }); }
     if (u === '/api/watches') return ok({ ok: true });
+    if (u === '/api/account') { ME.user = { ...ME.user, name: body.name, initials: body.name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('') }; return ok({ user: ME.user }); }
+    if (u === '/api/settings') { ME.settings = { ...ME.settings, ...body }; return ok({ ok: true }); }
+    if (u === '/api/account/password') {
+      if (ME.user.hasPassword && body.currentPassword !== 'hunter2') return ok({ error: 'current password is incorrect' }, 401);
+      return ok({ ok: true });
+    }
     return Promise.reject(new Error('unexpected fetch ' + u));
   };
   const ctx = dom.getInternalVMContext();
@@ -293,6 +299,77 @@ test('removing a watch PUTs the new list to /api/watches', async () => {
   const put = win.api.find(c => c.call === 'PUT /api/watches');
   assert.strictEqual(put.body.length, 1, 'PUT must carry the remaining watchlist');
   assert.strictEqual(put.body[0].id, 'lgc3');
+});
+
+// ---------- account settings persistence ----------
+
+test('saving the profile name PATCHes /api/account', async () => {
+  const me = { user: { ...mari, name: 'Mari' }, watches: [], settings: {} };
+  const win = boot('http://pricy.test/account', { me });
+  assert.ok(await until(() => q(win, '.acct')), 'account page did not render');
+  const nameInput = q(win, '.formfield input');
+  type(win, nameInput, 'Mari Hansen');
+  qa(win, '.asec__body .btn').find(b => /save changes/i.test(b.textContent)).click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PATCH /api/account')), 'name save must PATCH /api/account');
+  const patch = win.api.find(c => c.call === 'PATCH /api/account');
+  assert.strictEqual(patch.body.name, 'Mari Hansen');
+  assert.ok(await until(() => q(win, '.toast') && /profile saved/i.test(q(win, '.toast').textContent)), 'save confirmation toast missing');
+});
+
+test('changing the password checks the current one before saving the new one', async () => {
+  const me = { user: { ...mari, hasPassword: true }, watches: [], settings: {} };
+  const win = boot('http://pricy.test/account', { me });
+  assert.ok(await until(() => q(win, '.acct')), 'account page did not render');
+  qa(win, '.asec__body .btn').find(b => /change password/i.test(b.textContent)).click();
+  assert.ok(await until(() => q(win, '.asec__body form')), 'password form did not open');
+
+  const [curInput, newInput] = qa(win, '.asec__body form .formfield input');
+  type(win, curInput, 'wrong-password');
+  type(win, newInput, 'newpassword1');
+  submit(win, q(win, '.asec__body form'));
+  assert.ok(await until(() => q(win, '.formhint.err')), 'wrong current password must show an error');
+  assert.ok(q(win, '.asec__body form'), 'form must stay open after a rejected attempt');
+
+  type(win, curInput, 'hunter2');
+  submit(win, q(win, '.asec__body form'));
+  assert.ok(await until(() => win.api.filter(c => c.call === 'POST /api/account/password').length === 2), 'must POST /api/account/password');
+  assert.ok(await until(() => !q(win, '.asec__body form')), 'form should close on success');
+});
+
+test('a passwordless (magic-link/BankID) account can set a password with no current one', async () => {
+  const me = { user: { ...mari, hasPassword: false }, watches: [], settings: {} };
+  const win = boot('http://pricy.test/account', { me });
+  assert.ok(await until(() => q(win, '.acct')), 'account page did not render');
+  qa(win, '.asec__body .btn').find(b => /set password/i.test(b.textContent)).click();
+  assert.ok(await until(() => q(win, '.asec__body form')), 'password form did not open');
+  assert.strictEqual(qa(win, '.asec__body form .formfield').length, 1, 'passwordless account must not ask for a current password');
+
+  type(win, q(win, '.asec__body form .formfield input'), 'brandnew1');
+  submit(win, q(win, '.asec__body form'));
+  assert.ok(await until(() => win.api.some(c => c.call === 'POST /api/account/password')), 'must POST /api/account/password');
+  assert.strictEqual(win.api.find(c => c.call === 'POST /api/account/password').body.currentPassword, '');
+});
+
+test('toggling a notification preference PUTs /api/settings and survives a reload', async () => {
+  const me = { user: mari, watches: [], settings: { weekly: false } };
+  const win = boot('http://pricy.test/account?tab=notifications', { me });
+  assert.ok(await until(() => q(win, '.acct')), 'account page did not render');
+  const weeklyToggle = qa(win, '.arow').find(r => /weekly summary/i.test(r.textContent)).querySelector('.tgl');
+  weeklyToggle.click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PUT /api/settings')), 'toggle must PUT /api/settings');
+  const put = win.api.find(c => c.call === 'PUT /api/settings');
+  assert.strictEqual(put.body.weekly, true);
+  assert.strictEqual(me.settings.weekly, true, 'server-side settings must be updated');
+});
+
+test('marketing email toggle in Privacy saves as a settings patch', async () => {
+  const me = { user: mari, watches: [], settings: {} };
+  const win = boot('http://pricy.test/account?tab=privacy', { me });
+  assert.ok(await until(() => q(win, '.acct')), 'account page did not render');
+  const marketingToggle = qa(win, '.arow').find(r => /marketing emails/i.test(r.textContent)).querySelector('.tgl');
+  marketingToggle.click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PUT /api/settings')), 'toggle must PUT /api/settings');
+  assert.strictEqual(win.api.find(c => c.call === 'PUT /api/settings').body.marketing, true);
 });
 
 test('lucide icons render as inline svg', async () => {

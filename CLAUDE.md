@@ -35,6 +35,35 @@ Two Claude Design projects feed this repo:
   never hand-edit**. Behavior fixes go upstream in Claude Design, then
   re-sync. Hand-written code is only: `boot.jsx`, `build.js`, `worker/`,
   `test/`, configs.
+  - **Standing exception (2026-07-14):** `ProfileSection`, `NotifSection`,
+    `PrivacySection` and `AccountPage` in `proto/index.html` were hand-edited
+    to accept `initialName`/`onSave`/`hasPassword`/`onChangePassword`
+    (profile), `initial`/`onSave` (notifications), `initialMarketing`/
+    `onSaveMarketing` (privacy) — the same "optional callback prop, local
+    state if absent" contract AuthCard's `onAuthed` already uses — plus
+    `AccountPage`'s `me`/`onSaveProfile`/`onSaveSettings`/`onChangePassword`,
+    so `boot.jsx` can persist real account settings and real password
+    changes (see below). A new `ChangePasswordForm` component was added
+    (inline in `ProfileSection`, replacing the old "Change password" button
+    that only faked sending a reset email). Also fixed the `ProfileSection`
+    demo bug that appended `' Hansen'` to every name. **Port this diff into
+    the Pricy.no Claude Design prototype project**
+    (`7fa9cba6-ae13-4aa3-9ae4-f76a18ff1573` — a `PROJECT_TYPE_PROJECT`, not a
+    design-system project, so DesignSync can't push to it from here; the
+    get_file pull-only ritual is the only sync path) next time it's open,
+    then this exception can be deleted.
+- Account settings persist for real (name, notification prefs, marketing
+  toggle): `PATCH /api/account` (`{name}`) and `PUT /api/settings`
+  (whole-object replace per save, merged client-side in `boot.jsx`'s
+  `saveSettings`) — same shape as `PUT /api/watches`. `users.settings` is a
+  JSON blob column; marketing emails aren't actually sent, only the
+  preference persists.
+- Changing password is real too: `POST /api/account/password`
+  (`{currentPassword, newPassword}`) verifies the current password (skipped
+  for passwordless magic-link/BankID accounts, which just set one) and
+  re-hashes with the same PBKDF2 scheme as signup. `meBody`'s user object
+  now carries `hasPassword` so the UI knows whether to ask for the current
+  password or offer "Set password" instead.
 - `npm test` builds then runs the jsdom UI suite + Worker API tests
   (worker/index.js driven in-process, D1 emulated over node:sqlite). Run
   after every sync and boot.jsx/worker change.
@@ -55,12 +84,12 @@ Known upstream gaps (fix in Claude Design, then extend tests):
 - Minor: AppHeader search Enter on an empty query falls back to searching
   "airpods pro" (demo-ism) — fix opportunistically at the next sync.
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
-  passed out, awaitable verdict, server errors shown in the form), but
-  the credentials stay theatre: the password is never verified and
-  BankID is a fake button that logs into a shared demo account
-  (`demo@pricy.no`) and lands home. Real BankID is parked until mostly
-  everything else is done (see PLAN.md) — keep the fake button working,
-  spend no other effort on it. Served by the Worker's demo
+  passed out, awaitable verdict, server errors shown in the form), and
+  password login/signup/change are real (PBKDF2-hashed, verified
+  server-side). BankID is still a fake button that logs into a shared demo
+  account (`demo@pricy.no`) and lands home. Real BankID is parked until
+  mostly everything else is done (see PLAN.md) — keep the fake button
+  working, spend no other effort on it. Served by the Worker's demo
   bridges: `POST /api/auth/login` (strict, existing accounts only) and
   `POST /api/auth/signup` (upsert; also used for BankID and the
   "Open the link" magic simulation). Drop both when the upstream Login

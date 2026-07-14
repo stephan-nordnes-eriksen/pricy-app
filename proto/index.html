@@ -4331,11 +4331,47 @@ function AcctField({ label, value, onChange, type = 'text' }) {
   );
 }
 
-function ProfileSection({ onToast }) {
-  const [name, setName] = useState(USER.name + ' Hansen');
+function ChangePasswordForm({ hasPassword, onChangePassword, onDone, onToast }) {
+  const [current, setCurrent] = useState('');
+  const [next, setNext] = useState('');
+  const [err, setErr] = useState('');
+  const [saving, setSaving] = useState(false);
+  const submit = (e) => {
+    e.preventDefault();
+    setErr('');
+    setSaving(true);
+    Promise.resolve(onChangePassword(current, next))
+      .then(() => { onToast(hasPassword ? 'Password changed' : 'Password set'); onDone(); })
+      .catch(e => setErr(e.message || 'Could not change password'))
+      .finally(() => setSaving(false));
+  };
+  return (
+    <form onSubmit={submit} style={{ marginTop: 'var(--s-4)', paddingTop: 'var(--s-4)', borderTop: '1px solid var(--ink-100)' }}>
+      {hasPassword && <AcctField label="Current password" value={current} onChange={setCurrent} type="password" />}
+      <AcctField label="New password" value={next} onChange={setNext} type="password" />
+      {err && <div className="formhint err"><Icon name="alert-triangle" size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />{err}</div>}
+      <div style={{ display: 'flex', gap: 'var(--s-3)', justifyContent: 'flex-end' }}>
+        <button type="button" className="btn btn--ghost" onClick={onDone}>Cancel</button>
+        <button type="submit" className="btn btn--primary" disabled={saving}><Icon name="check" size={16} /> {hasPassword ? 'Update password' : 'Set password'}</button>
+      </div>
+    </form>
+  );
+}
+
+function ProfileSection({ onToast, initialName, onSave, hasPassword, onChangePassword }) {
+  const [name, setName] = useState(initialName || (USER.name + ' Hansen'));
   const [email, setEmail] = useState(USER.email);
   const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
   const set = (fn) => (v) => { fn(v); setDirty(true); };
+  const save = () => {
+    setSaving(true);
+    Promise.resolve(onSave ? onSave(name) : null)
+      .then(() => { setDirty(false); onToast('Profile saved'); })
+      .catch(() => onToast('Could not save profile'))
+      .finally(() => setSaving(false));
+  };
   return (
     <div className="asec">
       <div className="asec__head"><h2>Profile</h2><span className="hint">Member since March 2026</span></div>
@@ -4348,18 +4384,32 @@ function ProfileSection({ onToast }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 'var(--s-3)', justifyContent: 'flex-end' }}>
-          <Btn variant="ghost" icon="key-round" onClick={() => onToast('Password reset link sent to ' + email)}>Change password</Btn>
-          <Btn variant={dirty ? 'primary' : ''} icon="check" onClick={() => { setDirty(false); onToast('Profile saved'); }}>Save changes</Btn>
+          {!changingPw && <Btn variant="ghost" icon="key-round" onClick={() => setChangingPw(true)}>{hasPassword ? 'Change password' : 'Set password'}</Btn>}
+          <Btn variant={dirty ? 'primary' : ''} icon="check" disabled={saving} onClick={save}>Save changes</Btn>
         </div>
+        {changingPw && (
+          <ChangePasswordForm
+            hasPassword={hasPassword}
+            onChangePassword={onChangePassword}
+            onToast={onToast}
+            onDone={() => setChangingPw(false)}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function NotifSection({ onToast, openPaywall }) {
+function NotifSection({ onToast, openPaywall, initial, onSave }) {
   const plan = usePlan();
-  const [n, setN] = useState({ email: true, push: false, hits: true, lows: true, weekly: false, digest: 'instant', threshold: 'any' });
-  const set = (k, v) => { setN(s => ({ ...s, [k]: v })); onToast('Preference saved'); };
+  const [n, setN] = useState({ email: true, push: false, hits: true, lows: true, weekly: false, digest: 'instant', threshold: 'any', ...initial });
+  const set = (k, v) => {
+    const next = { ...n, [k]: v };
+    setN(next);
+    Promise.resolve(onSave ? onSave(next) : null)
+      .then(() => onToast('Preference saved'))
+      .catch(() => onToast('Could not save preference'));
+  };
   const chip = (k, val, label) => (
     <a className={'cchip' + (n[k] === val ? ' is-on' : '')} onClick={() => set(k, val)}>{label}</a>
   );
@@ -4452,16 +4502,22 @@ function PlanSection({ openPaywall, onToast }) {
   );
 }
 
-function PrivacySection({ onToast, go }) {
-  const [marketing, setMarketing] = useState(false);
+function PrivacySection({ onToast, go, initialMarketing, onSaveMarketing }) {
+  const [marketing, setMarketing] = useState(!!initialMarketing);
   const [confirm, setConfirm] = useState(false);
+  const set = (v) => {
+    setMarketing(v);
+    Promise.resolve(onSaveMarketing ? onSaveMarketing(v) : null)
+      .then(() => onToast('Preference saved'))
+      .catch(() => onToast('Could not save preference'));
+  };
   return (
     <React.Fragment>
       <div className="asec">
         <div className="asec__head"><h2>Privacy &amp; data</h2></div>
         <div className="arow">
           <div className="arow__txt"><b>Marketing emails</b><p>Occasional product news from pricy. Never from shops — we don't share your data.</p></div>
-          <Toggle on={marketing} onChange={setMarketing}></Toggle>
+          <Toggle on={marketing} onChange={set}></Toggle>
         </div>
         <div className="arow">
           <div className="arow__txt"><b>Export my data</b><p>Watchlist, alert history and settings as JSON.</p></div>
@@ -4486,13 +4542,14 @@ function PrivacySection({ onToast, go }) {
   );
 }
 
-function AccountPage({ go, tab: tab0 }) {
+function AccountPage({ go, tab: tab0, me, onSaveProfile, onSaveSettings, onChangePassword }) {
   const [tab, setTab] = useState(ACCT_SECTIONS.some(s => s.id === tab0) ? tab0 : 'profile');
   const [toast, setToast] = useState('');
   const [paywall, setPaywall] = useState(false);
   const tRef = useRef(null);
   const onToast = (msg) => { setToast(msg); clearTimeout(tRef.current); tRef.current = setTimeout(() => setToast(''), 2200); };
   const openPaywall = () => setPaywall(true);
+  const settings = (me && me.settings) || {};
   return (
     <div className="screen" data-screen-label="Account & settings">
       <AppHeader go={go} active="account" onLogout={() => go('landing')} />
@@ -4507,10 +4564,10 @@ function AccountPage({ go, tab: tab0 }) {
             ))}
           </nav>
           <div>
-            {tab === 'profile' && <ProfileSection onToast={onToast} />}
-            {tab === 'notifications' && <NotifSection onToast={onToast} openPaywall={openPaywall} />}
+            {tab === 'profile' && <ProfileSection onToast={onToast} initialName={me && me.user && me.user.name} onSave={onSaveProfile} hasPassword={me && me.user && me.user.hasPassword} onChangePassword={onChangePassword} />}
+            {tab === 'notifications' && <NotifSection onToast={onToast} openPaywall={openPaywall} initial={settings} onSave={onSaveSettings} />}
             {tab === 'plan' && <PlanSection openPaywall={openPaywall} onToast={onToast} />}
-            {tab === 'privacy' && <PrivacySection onToast={onToast} go={go} />}
+            {tab === 'privacy' && <PrivacySection onToast={onToast} go={go} initialMarketing={settings.marketing} onSaveMarketing={onSaveSettings ? (v) => onSaveSettings({ marketing: v }) : undefined} />}
           </div>
         </div>
       </div>

@@ -60,6 +60,46 @@ function hydrateMe(me) {
   }).filter(Boolean));
 }
 
+function saveProfile(name) {
+  if (!ME) return Promise.reject(new Error('not signed in'));
+  return fetch('/api/account', {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ name }),
+  }).then(async r => {
+    if (!r.ok) throw new Error('save failed');
+    const { user } = await r.json();
+    Object.assign(USER, user);
+    ME.user = user;
+  });
+}
+
+function changePassword(currentPassword, newPassword) {
+  if (!ME) return Promise.reject(new Error('not signed in'));
+  return fetch('/api/account/password', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  }).then(async r => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'could not change password');
+    ME.user.hasPassword = true;
+  });
+}
+
+// Whole-object replace per save, merged onto the last known settings — same
+// seam as WatchStore.emit below. Callers (NotifSection, PrivacySection) send
+// either their whole sub-object or a single-key patch; merging covers both.
+function saveSettings(patch) {
+  if (!ME) return Promise.reject(new Error('not signed in'));
+  const next = { ...(ME.settings || {}), ...patch };
+  return fetch('/api/settings', {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(next),
+  }).then(r => { if (!r.ok) throw new Error('save failed'); ME.settings = next; });
+}
+
 // Every watch mutation funnels through WatchStore.emit — persist from there.
 const _emit = WatchStore.emit;
 WatchStore.emit = function () {
@@ -167,7 +207,7 @@ function App() {
   else if (name === 'product') view = <ProductPage go={go} id={params.id} />;
   else if (name === 'browse') view = <BrowsePage go={go} />;
   else if (name === 'alerts') view = <AlertsPage go={go} tab={params.tab} />;
-  else if (name === 'account') view = <AccountPage go={go} tab={params.tab} />;
+  else if (name === 'account') view = <AccountPage go={go} tab={params.tab} me={ME} onSaveProfile={saveProfile} onSaveSettings={saveSettings} onChangePassword={changePassword} />;
   else if (name === 'autobuy') view = <AutobuyPage go={go} />;
   else if (name === 'onboarding') view = <Onboarding go={go} />;
   else if (name === 'about') view = <AboutPage go={go} />;

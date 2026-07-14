@@ -6,7 +6,7 @@
 import seed from './seed.json' with { type: 'json' };
 
 const SCHEMA = [
-  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT)',
+  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT)',
   'CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
@@ -20,8 +20,9 @@ const schemaReady = new WeakMap();
 async function ensureSchema(db) {
   if (!schemaReady.has(db)) schemaReady.set(db, (async () => {
     await db.exec(SCHEMA);
-    // migration for DBs created before password auth existed
+    // migration for DBs created before password auth / settings existed
     await db.prepare('ALTER TABLE users ADD COLUMN password_hash TEXT').run().catch(() => {});
+    await db.prepare('ALTER TABLE users ADD COLUMN settings TEXT').run().catch(() => {});
   })());
   await schemaReady.get(db);
 }
@@ -91,7 +92,7 @@ async function upsertUser(db, email, passwordHash = null) {
   // conflict only email is touched, so a magic-link/BankID upsert never
   // clobbers a password set by an earlier real signup
   return db.prepare(
-    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name'
+    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name, password_hash, settings'
   ).bind(email, displayName(email), passwordHash).first();
 }
 
@@ -174,7 +175,7 @@ async function catalogBody(db) {
 
 async function meBody(db, user) {
   const { results } = await db.prepare('SELECT product_id AS id, target, paused FROM watches WHERE user_id = ? ORDER BY rowid').bind(user.id).all(); // rowid = the order the client PUT them in
-  return { user: { email: user.email, name: user.name, initials: initials(user.name) }, watches: results };
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {} };
 }
 
 export default {
@@ -233,7 +234,7 @@ export default {
         return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 
-      const user = await db.prepare('SELECT id, email, name, password_hash FROM users WHERE email = ?').bind(email).first();
+      const user = await db.prepare('SELECT id, email, name, password_hash, settings FROM users WHERE email = ?').bind(email).first();
       if (!user) return json({ error: 'no account for this email' }, 401);
       if (!password) return json({ error: 'enter your password' }, 400);
       if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);
@@ -243,7 +244,7 @@ export default {
 
     const token = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`))?.[1];
     const user = token && await db.prepare(
-      'SELECT u.id, u.email, u.name FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
+      'SELECT u.id, u.email, u.name, u.password_hash, u.settings FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
     ).bind(await sha(token), Date.now()).first();
 
     if (route === 'GET /api/me') {
@@ -253,6 +254,42 @@ export default {
     if (route === 'POST /api/logout') {
       if (token) await db.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(await sha(token)).run();
       return json({ ok: true }, 200, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
+    }
+
+    const MAX_NAME_LEN = 100;
+    if (route === 'PATCH /api/account') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const name = String(((await request.json().catch(() => ({}))).name || '')).trim();
+      if (!name || name.length > MAX_NAME_LEN) return json({ error: 'invalid name' }, 400);
+      await db.prepare('UPDATE users SET name = ? WHERE id = ?').bind(name, user.id).run();
+      return json({ user: { email: user.email, name, initials: initials(name) } });
+    }
+
+    if (route === 'POST /api/account/password') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const body = await request.json().catch(() => ({}));
+      const currentPassword = body.currentPassword == null ? null : String(body.currentPassword);
+      const newPassword = body.newPassword == null ? null : String(body.newPassword);
+      if (!newPassword || newPassword.length < MIN_PASSWORD_LEN) {
+        return json({ error: `password must be at least ${MIN_PASSWORD_LEN} characters` }, 400);
+      }
+      if (user.password_hash) {
+        if (!currentPassword) return json({ error: 'enter your current password' }, 400);
+        if (!(await verifyPassword(currentPassword, user.password_hash))) return json({ error: 'current password is incorrect' }, 401);
+      }
+      await db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(await hashPassword(newPassword), user.id).run();
+      return json({ ok: true });
+    }
+
+    // ponytail: whole-object replace, same seam as PUT /api/watches — the
+    // client owns the settings shape, we just persist whatever it sends
+    if (route === 'PUT /api/settings') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const settings = await request.json().catch(() => null);
+      const bad = !settings || typeof settings !== 'object' || Array.isArray(settings) || JSON.stringify(settings).length > 2000;
+      if (bad) return json({ error: 'bad settings' }, 400);
+      await db.prepare('UPDATE users SET settings = ? WHERE id = ?').bind(JSON.stringify(settings), user.id).run();
+      return json({ ok: true });
     }
 
     if (route === 'PUT /api/watches') {

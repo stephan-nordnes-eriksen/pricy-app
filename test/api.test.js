@@ -54,7 +54,7 @@ test('signup issues an HttpOnly session cookie and /api/me returns the user', as
   assert.match(setCookie, /HttpOnly/, 'cookie must be HttpOnly');
 
   const me = await (await call('/api/me', { cookie: cookieOf(signup) })).json();
-  assert.deepStrictEqual(me.user, { email: 'ola@nordmann.no', name: 'Ola', initials: 'O' });
+  assert.deepStrictEqual(me.user, { email: 'ola@nordmann.no', name: 'Ola', initials: 'O', hasPassword: true });
   assert.deepStrictEqual(me.watches, []);
 });
 
@@ -146,6 +146,63 @@ test('watchlist persists per user and requires auth', async () => {
   for (const bad of ['nope', [{ id: 42 }], [{ id: 'a', target: 'high' }], [{ id: 'a' }, { id: 'a' }]]) {
     assert.strictEqual((await call('/api/watches', { method: 'PUT', body: bad, cookie: ola })).status, 400, JSON.stringify(bad));
   }
+});
+
+test('account name and notification settings persist per user and require auth', async () => {
+  const call = api({ DB: d1() });
+  assert.strictEqual((await call('/api/account', { method: 'PATCH', body: { name: 'Ola' } })).status, 401, 'PATCH without session must 401');
+  assert.strictEqual((await call('/api/settings', { method: 'PUT', body: { email: true } })).status, 401, 'PUT without session must 401');
+
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const patch = await call('/api/account', { method: 'PATCH', body: { name: 'Ola Norge' }, cookie: ola });
+  assert.strictEqual(patch.status, 200);
+  assert.deepStrictEqual((await patch.json()).user, { email: 'ola@nordmann.no', name: 'Ola Norge', initials: 'ON' });
+
+  const settings = await call('/api/settings', { method: 'PUT', body: { email: false, digest: 'daily' }, cookie: ola });
+  assert.strictEqual(settings.status, 200);
+
+  const me = await (await call('/api/me', { cookie: ola })).json();
+  assert.strictEqual(me.user.name, 'Ola Norge', 'name change must persist across requests');
+  assert.deepStrictEqual(me.settings, { email: false, digest: 'daily' });
+
+  // another user's settings/name are untouched
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const kariMe = await (await call('/api/me', { cookie: kari })).json();
+  assert.strictEqual(kariMe.user.name, 'Kari');
+  assert.deepStrictEqual(kariMe.settings, {});
+
+  for (const bad of [{}, { name: '' }, { name: '  ' }, { name: 'x'.repeat(101) }]) {
+    assert.strictEqual((await call('/api/account', { method: 'PATCH', body: bad, cookie: ola })).status, 400, JSON.stringify(bad));
+  }
+  for (const bad of [[], 'nope']) {
+    assert.strictEqual((await call('/api/settings', { method: 'PUT', body: bad, cookie: ola })).status, 400, JSON.stringify(bad));
+  }
+  assert.strictEqual((await call('/api/settings', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
+});
+
+test('changing password requires the current one and re-hashes; passwordless accounts just set one', async () => {
+  const call = api({ DB: d1() });
+  assert.strictEqual((await call('/api/account/password', { method: 'POST', body: { newPassword: 'correcthorse1' } })).status, 401, 'POST without session must 401');
+
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).user.hasPassword, true);
+
+  assert.strictEqual((await call('/api/account/password', { method: 'POST', body: { newPassword: 'short1' }, cookie: ola })).status, 400, 'too-short new password');
+  assert.strictEqual((await call('/api/account/password', { method: 'POST', body: { newPassword: 'newpassword1' }, cookie: ola })).status, 400, 'existing password requires currentPassword');
+  const wrong = await call('/api/account/password', { method: 'POST', body: { currentPassword: 'nope-nope', newPassword: 'newpassword1' }, cookie: ola });
+  assert.strictEqual(wrong.status, 401, 'wrong current password rejected');
+
+  const ok = await call('/api/account/password', { method: 'POST', body: { currentPassword: 'correcthorse1', newPassword: 'newpassword1' }, cookie: ola });
+  assert.strictEqual(ok.status, 200);
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } })).status, 401, 'old password must stop working');
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'newpassword1' } })).status, 200, 'new password must work');
+
+  // passwordless (magic-link/BankID) account: no current password needed
+  const demo = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'demo@pricy.no' } }));
+  assert.strictEqual((await (await call('/api/me', { cookie: demo })).json()).user.hasPassword, false);
+  const setPw = await call('/api/account/password', { method: 'POST', body: { newPassword: 'brandnew1' }, cookie: demo });
+  assert.strictEqual(setPw.status, 200);
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'demo@pricy.no', password: 'brandnew1' } })).status, 200);
 });
 
 test('logout kills the session and clears the cookie', async () => {
