@@ -4544,13 +4544,13 @@ function PrivacySection({ onToast, go, initialMarketing, onSaveMarketing }) {
 }
 
 function AccountPage({ go, tab: tab0, me, onSaveProfile, onSaveSettings, onChangePassword }) {
+  const settings = (me && me.settings) || {};
   const [tab, setTab] = useState(ACCT_SECTIONS.some(s => s.id === tab0) ? tab0 : 'profile');
   const [toast, setToast] = useState('');
   const [paywall, setPaywall] = useState(false);
   const tRef = useRef(null);
   const onToast = (msg) => { setToast(msg); clearTimeout(tRef.current); tRef.current = setTimeout(() => setToast(''), 2200); };
   const openPaywall = () => setPaywall(true);
-  const settings = (me && me.settings) || {};
   return (
     <div className="screen" data-screen-label="Account & settings">
       <AppHeader go={go} active="account" onLogout={() => go('landing')} />

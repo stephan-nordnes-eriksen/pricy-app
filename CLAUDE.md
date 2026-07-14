@@ -34,34 +34,9 @@ Two Claude Design projects feed this repo:
 - `proto/index.html` and the repo-root design files are **sync-owned —
   never hand-edit**. Behavior fixes go upstream in Claude Design, then
   re-sync. Hand-written code is only: `boot.jsx`, `build.js`, `worker/`,
-  `test/`, configs.
-  - **Standing exception (2026-07-14):** `ProfileSection`, `NotifSection`,
-    `PrivacySection` and `AccountPage` in `proto/index.html` were hand-edited
-    to accept `initialName`/`onSave`/`hasPassword`/`onChangePassword`
-    (profile), `initial`/`onSave` (notifications), `initialMarketing`/
-    `onSaveMarketing` (privacy) — the same "optional callback prop, local
-    state if absent" contract AuthCard's `onAuthed` already uses — plus
-    `AccountPage`'s `me`/`onSaveProfile`/`onSaveSettings`/`onChangePassword`,
-    so `boot.jsx` can persist real account settings and real password
-    changes (see below). A new `ChangePasswordForm` component was added
-    (inline in `ProfileSection`, replacing the old "Change password" button
-    that only faked sending a reset email). Also fixed the `ProfileSection`
-    demo bug that appended `' Hansen'` to every name. **Port this diff into
-    the Pricy.no Claude Design prototype project**
-    (`7fa9cba6-ae13-4aa3-9ae4-f76a18ff1573` — a `PROJECT_TYPE_PROJECT`, not a
-    design-system project, so DesignSync can't push to it from here; the
-    get_file pull-only ritual is the only sync path) next time it's open,
-    then this exception can be deleted.
-  - **Standing exception (2026-07-15):** `ProductPage`'s "Watch price"
-    button tracked `watching` in local `useState` and never touched
-    `WatchStore` — pressing it did nothing persistent. Fixed in
-    `proto/index.html` by deriving `watching` from `WatchStore.has(p.id)`
-    (subscribed via the existing `useWatchStore()` hook) and calling
-    `WatchStore.toggle(p.id, target)` on click, the same store every other
-    watch entry point (onboarding picks, alerts list) already uses. No new
-    props, so no `boot.jsx` change needed. **Port this diff into the
-    Pricy.no Claude Design prototype project** next time it's open, then
-    this exception can be deleted.
+  `test/`, configs. (The prototype project is a `PROJECT_TYPE_PROJECT`, not
+  a design-system project, so DesignSync can't push to it from here; the
+  get_file pull-only ritual is the only sync path.)
 - Account settings persist for real (name, notification prefs, marketing
   toggle): `PATCH /api/account` (`{name}`) and `PUT /api/settings`
   (whole-object replace per save, merged client-side in `boot.jsx`'s
