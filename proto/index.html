@@ -3252,7 +3252,8 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
 function ProductPage({ go, id }) {
   const p = getListing(id) || CATALOG[0];
   const [target, setTarget] = useState(Math.round(p.best * 0.92 / 10) * 10);
-  const [watching, setWatching] = useState(false);
+  useWatchStore();
+  const watching = WatchStore.has(p.id);
   const [weeks, setWeeks] = useState(24);
   const RANGES = [{ w: 6, label: '6W' }, { w: 12, label: '12W' }, { w: 24, label: '24W' }];
   const histView = p.history.slice(-weeks);
@@ -3304,7 +3305,7 @@ function ProductPage({ go, id }) {
                     <input type="number" value={target} onChange={e => setTarget(+e.target.value)} />
                   </div>
                 </div>
-                <Btn variant={watching ? '' : 'primary'} icon={watching ? 'check' : 'bell'} onClick={() => setWatching(w => !w)}>
+                <Btn variant={watching ? '' : 'primary'} icon={watching ? 'check' : 'bell'} onClick={() => WatchStore.toggle(p.id, target)}>
                   {watching ? 'Watching' : 'Watch price'}
                 </Btn>
               </div>

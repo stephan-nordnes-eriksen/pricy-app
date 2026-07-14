@@ -52,6 +52,16 @@ Two Claude Design projects feed this repo:
     design-system project, so DesignSync can't push to it from here; the
     get_file pull-only ritual is the only sync path) next time it's open,
     then this exception can be deleted.
+  - **Standing exception (2026-07-15):** `ProductPage`'s "Watch price"
+    button tracked `watching` in local `useState` and never touched
+    `WatchStore` — pressing it did nothing persistent. Fixed in
+    `proto/index.html` by deriving `watching` from `WatchStore.has(p.id)`
+    (subscribed via the existing `useWatchStore()` hook) and calling
+    `WatchStore.toggle(p.id, target)` on click, the same store every other
+    watch entry point (onboarding picks, alerts list) already uses. No new
+    props, so no `boot.jsx` change needed. **Port this diff into the
+    Pricy.no Claude Design prototype project** next time it's open, then
+    this exception can be deleted.
 - Account settings persist for real (name, notification prefs, marketing
   toggle): `PATCH /api/account` (`{name}`) and `PUT /api/settings`
   (whole-object replace per save, merged client-side in `boot.jsx`'s
