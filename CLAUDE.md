@@ -37,6 +37,14 @@ Two Claude Design projects feed this repo:
   `test/`, configs. (The prototype project is a `PROJECT_TYPE_PROJECT`, not
   a design-system project, so DesignSync can't push to it from here; the
   get_file pull-only ritual is the only sync path.)
+  - **Standing exception (2026-07-15):** search Enter on an empty/whitespace
+    query used to navigate to results for `'airpods pro'` (demo-ism). Fixed
+    in `proto/index.html` in both submit handlers — `AppHeader` (signed-in)
+    and `Header` (logged-out chrome): trim the query, and if empty do
+    nothing. No prop changes, no `boot.jsx` change. Covered by the ui test
+    "header search Enter on an empty query stays put". **Port this diff
+    into the Pricy.no Claude Design prototype project** next time it's
+    open, then this exception can be deleted.
 - Account settings persist for real (name, notification prefs, marketing
   toggle): `PATCH /api/account` (`{name}`) and `PUT /api/settings`
   (whole-object replace per save, merged client-side in `boot.jsx`'s
@@ -66,8 +74,6 @@ Two Claude Design projects feed this repo:
    Builds yet.
 
 Known upstream gaps (fix in Claude Design, then extend tests):
-- Minor: AppHeader search Enter on an empty query falls back to searching
-  "airpods pro" (demo-ism) — fix opportunistically at the next sync.
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
   passed out, awaitable verdict, server errors shown in the form), and
   password login/signup/change are real (PBKDF2-hashed, verified

@@ -1522,7 +1522,7 @@ function Mark({ size = 36 }) {
 function Header({ route, go, query, setQuery }) {
   const [val, setVal] = useState(query || '');
   useEffect(() => { setVal(query || ''); }, [query]);
-  const submit = (e) => { e && e.preventDefault(); go('results', { query: val || 'airpods pro' }); };
+  const submit = (e) => { e && e.preventDefault(); const query = val.trim(); if (query) go('results', { query }); };
   return (
     <header className="hdr">
       <div className="wrap hdr__row">
@@ -2448,7 +2448,7 @@ function AppHeader({ go, onLogout }) {
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, [menu]);
-  const submit = (e) => { e && e.preventDefault(); setFocus(false); go('results', { query: q.trim() || 'airpods pro' }); };
+  const submit = (e) => { e && e.preventDefault(); const query = q.trim(); if (!query) return; setFocus(false); go('results', { query }); };
   return (
     <header className="app-hdr">
       <div className="page app-hdr__row">
