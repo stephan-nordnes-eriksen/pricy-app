@@ -45,8 +45,8 @@ function serverLogin(email, path = '/api/auth/login', password) {
 // Hydrate the prototype's per-user module constants in place, same seam as
 // the 4a catalog: USER is a const object (assign over it), WATCHED a const
 // array (splice), and WatchStore.items a plain reassignable property.
-// Known upstream gap: WATCH_HITS / TOTAL_SAVED are const primitives computed
-// at module load — they can't be rebound here and stay demo numbers.
+// Header badge / greeting / saved numbers derive live from WatchStore
+// (hits()/saved()), so setting items is enough.
 function hydrateMe(me) {
   ME = me;
   Object.assign(USER, me.user);

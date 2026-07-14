@@ -1446,9 +1446,6 @@ const WATCHED = [
   { ...byId.lego,   target: 400,  hit: false, delta: -5 },
 ].map(w => ({ ...w, spark: w.history.slice(-12) }));
 
-const WATCH_HITS = WATCHED.filter(w => w.hit).length;
-const TOTAL_SAVED = 4870; // kr saved since joining
-
 // RECENTLY VIEWED
 const RECENT = ['airpods', 'switch', 'kindle', 'iphone', 'dyson'].map(id => byId[id]);
 
@@ -1483,7 +1480,7 @@ function searchSuggest(q) {
 }
 
 Object.assign(window, {
-  USER, WATCHED, WATCH_HITS, TOTAL_SAVED, RECENT, FEED,
+  USER, WATCHED, RECENT, FEED,
   PROP_SUGGEST, CAT_ICONS, CAT_COUNTS, searchSuggest, byId,
   Wordmark, Mark,
 });
@@ -2442,6 +2439,8 @@ function AppHeader({ go, onLogout }) {
   const [q, setQ] = useState('');
   const [focus, setFocus] = useState(false);
   const [menu, setMenu] = useState(false);
+  useWatchStore();
+  const hits = WatchStore.hits();
   useEffect(() => {
     if (!menu) return;
     const close = () => setMenu(false);
@@ -2478,7 +2477,7 @@ function AppHeader({ go, onLogout }) {
           <div className="app-hdr__icon" title="Auto-buy" onClick={() => go('autobuy')}><Icon name="zap" size={19} /></div>
           <div className="app-hdr__icon" title="Alerts" onClick={() => go('alerts')}>
             <Icon name="bell" size={19} />
-            {WATCH_HITS > 0 && <span className="badge">{WATCH_HITS}</span>}
+            {hits > 0 && <span className="badge">{hits}</span>}
           </div>
           <div className="app-hdr__acct" style={{ position: 'relative' }}>
             <div className="avatar" title={USER.name} onClick={e => { e.stopPropagation(); setMenu(m => !m); }}>{USER.initials}</div>
@@ -2538,17 +2537,18 @@ function PriceTag({ value, size = 22, color }) {
 
 // ---- METRIC STRIP -----------------------------------------
 function MetricStrip() {
-  const saved = useCountTo(TOTAL_SAVED, true, 1000);
+  const items = useWatchStore();
+  const saved = useCountTo(WatchStore.saved(), true, 1000);
   return (
     <div className="metrics">
       <div className="metric">
         <div className="metric__k"><Icon name="bookmark" size={12} /> Watching</div>
-        <div className="metric__v">{WATCHED.length}</div>
+        <div className="metric__v">{items.length}</div>
         <div className="metric__sub">products tracked</div>
       </div>
       <div className="metric">
         <div className="metric__k"><Icon name="bell-ring" size={12} /> Active alerts</div>
-        <div className="metric__v green">{WATCH_HITS}</div>
+        <div className="metric__v green">{WatchStore.hits()}</div>
         <div className="metric__sub">below target now</div>
       </div>
       <div className="metric">
@@ -2731,12 +2731,13 @@ function LayoutSearch({ go }) {
 
 // ---- LAYOUT: DASHBOARD ------------------------------------
 function LayoutDashboard({ go }) {
+  useWatchStore();
   return (
     <div className="home page">
       <div className="home__greet">
         <div>
           <h1>Good afternoon, {USER.name}.</h1>
-          <div className="wave">{WATCH_HITS} of your watched products are below target right now.</div>
+          <div className="wave">{WatchStore.hits()} of your watched products are below target right now.</div>
         </div>
         <Btn variant="primary" icon="plus">Watch a product</Btn>
       </div>
@@ -2814,19 +2815,20 @@ function FeedCard({ f, go }) {
 }
 
 function LayoutFeed({ go }) {
+  const items = useWatchStore();
   return (
     <div className="home page">
       <div className="feed">
         <div className="home__greet" style={{ marginBottom: 'var(--s-4)' }}>
           <div>
             <h1>Your price feed</h1>
-            <div className="wave">Live updates from {WATCHED.length} watched products · {WATCH_HITS} below target</div>
+            <div className="wave">Live updates from {items.length} watched products · {WatchStore.hits()} below target</div>
           </div>
         </div>
         <div className="metrics" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <div className="metric"><div className="metric__k"><Icon name="bell-ring" size={12} /> Active alerts</div><div className="metric__v green">{WATCH_HITS}</div></div>
-          <div className="metric"><div className="metric__k"><Icon name="trending-down" size={12} /> Saved YTD</div><div className="metric__v green">kr {fmt(TOTAL_SAVED)}</div></div>
-          <div className="metric"><div className="metric__k"><Icon name="bookmark" size={12} /> Watching</div><div className="metric__v">{WATCHED.length}</div></div>
+          <div className="metric"><div className="metric__k"><Icon name="bell-ring" size={12} /> Active alerts</div><div className="metric__v green">{WatchStore.hits()}</div></div>
+          <div className="metric"><div className="metric__k"><Icon name="trending-down" size={12} /> Saved YTD</div><div className="metric__v green">kr {fmt(WatchStore.saved())}</div></div>
+          <div className="metric"><div className="metric__k"><Icon name="bookmark" size={12} /> Watching</div><div className="metric__v">{items.length}</div></div>
         </div>
         {FEED.map((f, i) => <FeedCard key={i} f={f} go={go} />)}
         <div className="sec" style={{ marginTop: 'var(--s-7)' }}>
@@ -3552,6 +3554,8 @@ const WatchStore = {
   prod(id) { return (window.byId && byId[id]) || (window.CATALOG || []).find(p => p.id === id) || (window.PRODUCTS || []).find(p => p.id === id); },
   get(id) { return this.items.find(w => w.id === id); },
   has(id) { return this.items.some(w => w.id === id); },
+  hits() { return this.items.filter(w => w.hit && !w.paused).length; },
+  saved() { return this.items.reduce((s, w) => { const p = this.prod(w.id); return s + (p && p.was > p.best ? p.was - p.best : 0); }, 0); },
   add(id, target) {
     if (this.has(id)) return;
     const p = this.prod(id);
@@ -4182,7 +4186,7 @@ function AlertsPage({ go, tab: tab0 }) {
         <div className="al__head">
           <div>
             <h1>Watchlist &amp; alerts</h1>
-            <div className="sub">{rows.length} watched · {hits} below target · kr {fmt(TOTAL_SAVED)} saved since March</div>
+            <div className="sub">{rows.length} watched · {hits} below target · kr {fmt(WatchStore.saved())} saved since March</div>
           </div>
           <Btn variant="primary" icon="plus" onClick={() => go('browse')}>Watch a product</Btn>
         </div>

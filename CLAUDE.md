@@ -45,6 +45,19 @@ Two Claude Design projects feed this repo:
     "header search Enter on an empty query stays put". **Port this diff
     into the Pricy.no Claude Design prototype project** next time it's
     open, then this exception can be deleted.
+  - **Standing exception (2026-07-15):** `WATCH_HITS` / `TOTAL_SAVED` demo
+    consts deleted from `proto/index.html` (AppData block, incl. the window
+    export). Replaced by live `WatchStore.hits()` (below-target, unpaused)
+    and `WatchStore.saved()` (sum of `was - best` over watched products) in
+    `AppHeader`'s alerts badge, `MetricStrip`, `LayoutDashboard`'s greeting,
+    `LayoutFeed`'s metrics, and `AlertsPage`'s sub-line; each consumer
+    subscribes via `useWatchStore()`. `MetricStrip`/`LayoutFeed` "Watching"
+    counts moved from static `WATCHED.length` to live `items.length` while
+    there. No prop changes; `boot.jsx` only lost its stale gap comment.
+    Covered by the ui tests "header alerts badge counts real below-target
+    watches" / "no watches: no alerts badge". **Port this diff into the
+    Pricy.no Claude Design prototype project** next time it's open, then
+    this exception can be deleted.
 - Account settings persist for real (name, notification prefs, marketing
   toggle): `PATCH /api/account` (`{name}`) and `PUT /api/settings`
   (whole-object replace per save, merged client-side in `boot.jsx`'s
@@ -85,9 +98,6 @@ Known upstream gaps (fix in Claude Design, then extend tests):
   `POST /api/auth/signup` (upsert; also used for BankID and the
   "Open the link" magic simulation). Drop both when the upstream Login
   waits for the real emailed link.
-- `WATCH_HITS` / `TOTAL_SAVED` are const primitives computed at module
-  load — boot.jsx can't rebind them, so header badge/greeting/saved
-  numbers stay demo values. Upstream fix: compute from WatchStore.
 
 `npm run test:e2e` (Playwright visual parity vs the prototype) must run
 with the Bash sandbox disabled — Chromium can't bootstrap its mach port

@@ -231,6 +231,22 @@ test('signed in: header search Enter on an empty query stays put (no "airpods pr
   assert.strictEqual(win.location.pathname, '/', 'empty or whitespace query must not navigate');
 });
 
+test('signed in: header alerts badge counts real below-target watches, not demo WATCH_HITS', async () => {
+  const cat = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  const p = cat.find(p => p.was > p.best);
+  const me = { user: mari, watches: [{ id: p.id, target: p.best + 10 }] }; // best <= target → hit
+  const win = boot('http://pricy.test/', { session: true, me });
+  assert.ok(await until(() => q(win, '.app-hdr .badge')), 'alerts badge missing for a below-target watch');
+  assert.strictEqual(q(win, '.app-hdr .badge').textContent, '1');
+});
+
+test('signed in with no watches: no alerts badge (demo values gone)', async () => {
+  const win = boot('http://pricy.test/', { session: true });
+  assert.ok(await until(() => q(win, '.avatar')), 'signed-in header missing');
+  await tick();
+  assert.strictEqual(q(win, '.app-hdr .badge'), null, 'badge must not show demo watch hits');
+});
+
 test('signed in: picking a header suggestion navigates', async () => {
   const win = boot('http://pricy.test/', { session: true });
   await tick();
