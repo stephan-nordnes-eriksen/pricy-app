@@ -88,11 +88,15 @@ function displayName(email) {
 const initials = (name) => name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 
 async function upsertUser(db, email, passwordHash = null) {
-  // the no-op DO UPDATE makes RETURNING yield the row on conflict too; on
-  // conflict only email is touched, so a magic-link/BankID upsert never
-  // clobbers a password set by an earlier real signup
+  // the DO UPDATE makes RETURNING yield the row on conflict too, and its
+  // password_hash is COALESCEd so an upsert never clobbers a password that's
+  // already set (a magic-link/BankID upsert always passes passwordHash =
+  // null) — but still lets a genuine password-signup set one on an existing
+  // passwordless row, which a plain "only touch email" DO UPDATE silently
+  // dropped (the bug: signing up with a password on a pre-existing
+  // passwordless email logged you in fine but never actually saved it)
   return db.prepare(
-    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name, password_hash, settings'
+    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email, password_hash = COALESCE(users.password_hash, excluded.password_hash) RETURNING id, email, name, password_hash, settings'
   ).bind(email, displayName(email), passwordHash).first();
 }
 

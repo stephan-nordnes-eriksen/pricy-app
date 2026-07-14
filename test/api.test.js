@@ -90,6 +90,29 @@ test('an account created without a password (BankID/magic-link bridge) cannot lo
   assert.strictEqual(res.status, 401);
 });
 
+test('signing up with a password on a pre-existing passwordless account actually sets it', async () => {
+  const call = api({ DB: d1() });
+  // account first exists passwordless (e.g. an earlier magic-link/BankID upsert)
+  await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } });
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 401, 'no password yet');
+
+  const signup = await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } });
+  assert.strictEqual(signup.status, 200);
+  assert.strictEqual((await signup.json()).user.hasPassword, true, 'the second signup must actually save the password');
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200, 'must be able to log in with the password just set');
+});
+
+test('an upsert never overwrites a password that is already set', async () => {
+  const call = api({ DB: d1() });
+  await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } });
+  // a later passwordless upsert (magic-link "open the link" / BankID) must not wipe it
+  await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } });
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200, 'original password must survive a passwordless upsert');
+  // nor a signup attempt with a different password
+  await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'differentpass1' } });
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200, 'a second signup must not silently change the password');
+});
+
 test('magic link: request logs a single-use link, verify sets the session', async () => {
   const call = api({ DB: d1() });
   const logs = [];
