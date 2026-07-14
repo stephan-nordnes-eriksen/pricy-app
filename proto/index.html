@@ -2258,14 +2258,15 @@ function AuthCard({ onAuthed, go }) {
     setErr('');
     if (!validEmail) { setErr('Enter a valid email address.'); return; }
     if (method === 'password' && pw.length < 1) { setErr('Enter your password.'); return; }
+    if (method === 'password' && mode === 'signup' && pw.length < 8) { setErr('Password must be at least 8 characters.'); return; }
     if (method === 'magic') {
       // Sending the link is not an auth event — show the "check your inbox" screen.
       setLoading(true);
       setTimeout(() => { setLoading(false); setSent(true); }, 850);
       return;
     }
-    if (mode === 'signup') runAuth(setLoading, 850, "Couldn't create your account — try again.", email, { signup: true });
-    else runAuth(setLoading, 850, 'No account for this email — create one?', email);
+    if (mode === 'signup') runAuth(setLoading, 850, "Couldn't create your account — try again.", email, { signup: true, password: pw });
+    else runAuth(setLoading, 850, 'No account for this email — create one?', email, { password: pw });
   };
 
   if (sent) {
