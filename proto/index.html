@@ -351,8 +351,21 @@ button { font-family: inherit; }
 
 /* price history chart */
 .chart { border: var(--bw) solid var(--ink-900); background: var(--paper); padding: var(--s-4); }
-.chart__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s-4); }
+.chart__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; margin-bottom: var(--s-4); }
+.chart__ranges { display: flex; border: var(--bw) solid var(--ink-900); }
+.chart__ranges button { font-family: var(--font-mono); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; padding: 4px 11px; background: var(--paper); color: var(--ink-600); border: 0; border-right: var(--bw) solid var(--ink-900); cursor: pointer; transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+.chart__ranges button:last-child { border-right: 0; }
+.chart__ranges button:hover { background: var(--green-100); color: var(--ink-900); }
+.chart__ranges button.is-active { background: var(--ink-900); color: var(--paper); }
 .chart svg { display: block; width: 100%; height: 180px; }
+.chart__plot { position: relative; cursor: crosshair; }
+.chart__cursor { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink-900); opacity: .3; transform: translateX(-50%); pointer-events: none; }
+.chart__dot { position: absolute; width: 12px; height: 12px; background: var(--paper); border: 3px solid var(--ink-900); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 2; }
+.chart__tip { position: absolute; transform: translate(-50%, calc(-100% - 16px)); background: var(--ink-900); color: var(--paper); padding: 6px 10px; display: flex; flex-direction: column; gap: 2px; white-space: nowrap; pointer-events: none; z-index: 3; }
+.chart__tip--left { transform: translate(calc(-100% - 12px), -50%); }
+.chart__tip--right { transform: translate(12px, -50%); }
+.chart__tip-price { font-family: var(--font-mono); font-weight: 800; font-size: 15px; line-height: 1; }
+.chart__tip-when { font-family: var(--font-mono); font-size: 10px; opacity: .65; text-transform: uppercase; letter-spacing: .05em; }
 
 /* ---- DEALS --------------------------------------------- */
 .dealgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: var(--bw) solid var(--ink-900); border-right: 0; border-bottom: 0; }
@@ -1333,13 +1346,38 @@ function HistoryChart({ points, low }) {
   points.forEach((p, i) => { line += (i === 0 ? `M ${x(i)} ${y(p)}` : ` H ${x(i)} V ${y(p)}`); });
   const area = `${line} V ${h - pad} H ${x(0)} Z`;
   const lastIdx = points.length - 1;
+  const [hi, setHi] = React.useState(null);
+  const wrapRef = React.useRef(null);
+  const track = e => {
+    const r = wrapRef.current.getBoundingClientRect();
+    const frac = (e.clientX - r.left) / r.width;
+    setHi(Math.max(0, Math.min(lastIdx, Math.round(frac * lastIdx))));
+  };
+  const val = hi != null ? points[hi] : null;
+  const leftPct = hi != null ? (x(hi) / w) * 100 : 0;
+  const topPct = hi != null ? (y(val) / h) * 100 : 0;
+  const weeksAgo = hi != null ? lastIdx - hi : 0;
+  const whenLabel = weeksAgo === 0 ? 'today' : weeksAgo + (weeksAgo === 1 ? ' week ago' : ' weeks ago');
+  const tipMod = leftPct > 78 ? ' chart__tip--left' : leftPct < 12 ? ' chart__tip--right' : '';
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-      <path d={area} fill="var(--green-100)" />
-      <path d={line} stroke="var(--ink-900)" strokeWidth="2.5" fill="none" strokeLinecap="square" strokeLinejoin="miter" />
-      <line x1={x(0)} y1={y(low)} x2={w - pad} y2={y(low)} stroke="var(--green-500)" strokeWidth="2" strokeDasharray="6 4" />
-      <rect x={x(lastIdx) - 5} y={y(points[lastIdx]) - 5} width="10" height="10" fill="var(--green-500)" stroke="var(--ink-900)" strokeWidth="2" />
-    </svg>
+    <div className="chart__plot" ref={wrapRef} onMouseMove={track} onMouseLeave={() => setHi(null)}>
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+        <path d={area} fill="var(--green-100)" />
+        <path d={line} stroke="var(--ink-900)" strokeWidth="2.5" fill="none" strokeLinecap="square" strokeLinejoin="miter" />
+        <line x1={x(0)} y1={y(low)} x2={w - pad} y2={y(low)} stroke="var(--green-500)" strokeWidth="2" strokeDasharray="6 4" />
+        <rect x={x(lastIdx) - 5} y={y(points[lastIdx]) - 5} width="10" height="10" fill="var(--green-500)" stroke="var(--ink-900)" strokeWidth="2" />
+      </svg>
+      {hi != null && (
+        <React.Fragment>
+          <div className="chart__cursor" style={{ left: leftPct + '%' }} />
+          <div className="chart__dot" style={{ left: leftPct + '%', top: topPct + '%' }} />
+          <div className={'chart__tip' + tipMod} style={{ left: leftPct + '%', top: topPct + '%' }}>
+            <span className="chart__tip-price">kr {fmt(val)}</span>
+            <span className="chart__tip-when">{whenLabel}</span>
+          </div>
+        </React.Fragment>
+      )}
+    </div>
   );
 }
 
@@ -2433,11 +2471,11 @@ function AppHeader({ go, onLogout }) {
         </div>
         <nav className="app-hdr__nav">
           <div className="app-hdr__icon" title="Browse" onClick={() => go('home')}><Icon name="layout-grid" size={19} /></div>
-          <div className="app-hdr__icon" title="Watching" onClick={() => go('home')}>
+          <div className="app-hdr__icon" title="Watching" onClick={() => go('alerts', { tab: 'watching' })}>
             <Icon name="bookmark" size={19} />
           </div>
           <div className="app-hdr__icon" title="Auto-buy" onClick={() => go('autobuy')}><Icon name="zap" size={19} /></div>
-          <div className="app-hdr__icon" title="Alerts">
+          <div className="app-hdr__icon" title="Alerts" onClick={() => go('alerts')}>
             <Icon name="bell" size={19} />
             {WATCH_HITS > 0 && <span className="badge">{WATCH_HITS}</span>}
           </div>
@@ -3214,6 +3252,9 @@ function ProductPage({ go, id }) {
   const p = getListing(id) || CATALOG[0];
   const [target, setTarget] = useState(Math.round(p.best * 0.92 / 10) * 10);
   const [watching, setWatching] = useState(false);
+  const [weeks, setWeeks] = useState(24);
+  const RANGES = [{ w: 6, label: '6W' }, { w: 12, label: '12W' }, { w: 24, label: '24W' }];
+  const histView = p.history.slice(-weeks);
   const low = Math.min(...p.history);
   const best = p.offers[0];
   const more = CAT_OF[p.cat].filter(x => x.id !== p.id).slice(0, 4);
@@ -3290,10 +3331,14 @@ function ProductPage({ go, id }) {
 
           <div className="chart">
             <div className="chart__head">
-              <h3 style={{ margin: 0, fontSize: 16 }}>Price history · 24 weeks</h3>
-              <span className="tag tag--down">▼ at all-time low</span>
+              <h3 style={{ margin: 0, fontSize: 16 }}>Price history · {weeks} weeks</h3>
+              <div className="chart__ranges" role="group" aria-label="Time scale">
+                {RANGES.map(r => (
+                  <button key={r.w} type="button" className={weeks === r.w ? 'is-active' : ''} aria-pressed={weeks === r.w} onClick={() => setWeeks(r.w)}>{r.label}</button>
+                ))}
+              </div>
             </div>
-            <HistoryChart points={p.history} low={low} />
+            <HistoryChart points={histView} low={low} />
             <div className="chart__legend">
               <span><span className="dot dot--line" /> Lowest across shops</span>
               <span><span className="dot dot--low" /> All-time low kr {fmt(low)}</span>
