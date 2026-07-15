@@ -8,8 +8,10 @@
     "not_found_handling": "single-page-application",
     // MCP OAuth surface: discovery, DCR, login page, token exchange must
     // reach the worker — the SPA fallback answering 200+HTML there breaks
-    // claude.ai's connector flow
-    "run_worker_first": ["/.well-known/*", "/authorize", "/token", "/register", "/mcp"]
+    // claude.ai's connector flow. CAUTION: setting run_worker_first AT ALL
+    // makes the asset layer claim every path NOT listed (it answered /api/*
+    // POSTs with 405, taking down login) — /api/* must stay in this list.
+    "run_worker_first": ["/api/*", "/.well-known/*", "/authorize", "/token", "/register", "/mcp"]
   },
   "d1_databases": [
     {
