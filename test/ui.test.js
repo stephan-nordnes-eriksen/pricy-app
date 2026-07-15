@@ -328,6 +328,24 @@ test('removing a watch PUTs the new list to /api/watches', async () => {
   assert.strictEqual(put.body[0].id, 'lgc3');
 });
 
+test('results row Watch price button adds a real watch (PUT /api/watches)', async () => {
+  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow__save').length > 0), 'row watch buttons missing');
+  const btn = qa(win, '.rrow__save')[0];
+  btn.click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PUT /api/watches')), 'row watch must persist');
+  const put = win.api.find(c => c.call === 'PUT /api/watches');
+  assert.strictEqual(put.body.length, 1, 'PUT must carry the new watch');
+  assert.ok(put.body[0].target > 0, 'watch must get a default target');
+  assert.ok(await until(() => btn.className.includes('is-on')), 'button must reflect the watching state');
+  // toggle off removes it again
+  btn.click();
+  assert.ok(await until(() => {
+    const puts = win.api.filter(c => c.call === 'PUT /api/watches');
+    return puts.length === 2 && puts[1].body.length === 0;
+  }), 'second click must remove the watch');
+});
+
 // ---------- account settings persistence ----------
 
 test('saving the profile name PATCHes /api/account', async () => {
