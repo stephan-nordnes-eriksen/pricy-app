@@ -289,22 +289,13 @@ test('catalog route seeds D1 on first request and serves the demo shape, no auth
   assert.deepStrictEqual(got.offers.map(o => o.price), [...got.offers.map(o => o.price)].sort((a, b) => a - b), 'offers are price-ordered');
 });
 
-test('scheduled refresh moves offer prices and keeps one price point per day', async () => {
+test('scheduled with no sources configured is a no-op — prices freeze until real rows arrive', async () => {
   const DB = d1();
   const call = api({ DB });
   const before = await (await call('/api/catalog.json')).json(); // seeds
-  const ctl = { waitUntil() {} };
-  await worker.scheduled({ cron: '0 * * * *' }, { DB }, ctl);
-  await worker.scheduled({ cron: '0 * * * *' }, { DB }, ctl);
+  await worker.scheduled({ cron: '0 * * * *' }, { DB }, { waitUntil() {} });
   const after = await (await call('/api/catalog.json')).json();
-
-  for (const p of after) {
-    const prev = before.find(q => q.id === p.id);
-    assert.strictEqual(p.offers.length, prev.offers.length, `refresh must not add or lose offers (${p.id})`);
-    assert.strictEqual(p.best, Math.min(...p.offers.map(o => o.price)), `best must track refreshed offers (${p.id})`);
-    assert.strictEqual(p.history.length, prev.history.length, `today's point is upserted, not appended (${p.id})`);
-  }
-  assert.ok(after.some((p, i) => p.best !== before[i].best), 'refresh should move at least one price');
+  assert.deepStrictEqual(after, before, 'no sources must mean no changes (the synthetic jiggle is gone)');
 });
 
 // 4d: real price sources — env.SOURCES config, Adtraction XML feeds matched
@@ -416,4 +407,49 @@ test('a failing source freezes its shop without aborting the others', async () =
   }
   assert.strictEqual(after.find(p => p.id === 'airpods').offers.find(o => o.shop === 'Power').price, 1111, 'the healthy source must still ingest');
   assert.ok(errors.some(e => e.includes('Komplett') && e.includes('frozen')), 'the failure must be logged');
+});
+
+// 4d interim: the laptop crawler pushes rows to POST /api/ingest
+test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one price point per day', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const push = (rows, token) => worker.fetch(new Request('http://pricy.test/api/ingest', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify(rows),
+  }), env);
+
+  assert.strictEqual((await api({ DB: d1() })('/api/ingest', { method: 'POST', body: [] })).status, 503, 'no INGEST_TOKEN secret = endpoint disabled');
+  const row = { product_id: 'airpods', shop: 'Elkjøp', price: 1999, ship: 'Fri frakt', stock: 1, url: 'https://www.elkjop.no/airpods' };
+  assert.strictEqual((await push([row])).status, 401, 'missing bearer');
+  assert.strictEqual((await push([row], 'wrong-token')).status, 401, 'wrong bearer');
+  assert.strictEqual((await push([], 'sekrit-token')).status, 400, 'empty list');
+  assert.strictEqual((await push([{ ...row, price: 19.99 }], 'sekrit-token')).status, 400, 'non-integer price');
+  assert.strictEqual((await push([{ ...row, price: -5 }], 'sekrit-token')).status, 400, 'negative price');
+  const unknown = await push([{ ...row, product_id: 'not-a-product' }], 'sekrit-token');
+  assert.strictEqual(unknown.status, 400);
+  assert.deepStrictEqual((await unknown.json()).ids, ['not-a-product'], 'unknown products are named');
+
+  const before = await (await call('/api/catalog.json')).json();
+  const baseline = before.find(p => p.id === 'airpods');
+
+  const ok = await push([row], 'sekrit-token');
+  assert.strictEqual(ok.status, 200);
+  assert.deepStrictEqual(await ok.json(), { ok: true, ingested: 1 });
+
+  let airpods = (await (await call('/api/catalog.json')).json()).find(p => p.id === 'airpods');
+  let offer = airpods.offers.find(o => o.shop === 'Elkjøp');
+  assert.strictEqual(offer.price, 1999);
+  assert.strictEqual(offer.url, 'https://www.elkjop.no/airpods');
+  assert.strictEqual(airpods.best, 1999, 'pushed price becomes best');
+  assert.strictEqual(airpods.history.length, baseline.history.length, "today's point is upserted, not appended");
+  assert.strictEqual(airpods.history.at(-1), 1999, "today's point tracks the pushed best");
+
+  // a second, higher push the same day: offer follows, the day's point keeps the min
+  await push([{ ...row, price: 2050 }], 'sekrit-token');
+  airpods = (await (await call('/api/catalog.json')).json()).find(p => p.id === 'airpods');
+  assert.strictEqual(airpods.offers.find(o => o.shop === 'Elkjøp').price, 2050);
+  assert.strictEqual(airpods.history.at(-1), 1999, "the day's price point keeps the day's minimum");
+  assert.strictEqual(airpods.history.length, baseline.history.length, 'still one point per day');
 });

@@ -155,20 +155,16 @@ source registry above stays as-is — it's the "later".
 
 Outstanding tasks (in rough order):
 
-1. **Laptop ingestion path (the interim, not built yet).** Nothing accepts
-   pushed rows today — `ingest()` only runs inside the cron. Needs:
-   - an authenticated `POST /api/ingest` (shared-secret bearer, e.g. an
-     `INGEST_TOKEN` secret) accepting `ingest()`-shaped rows
-     `{product_id, shop, price, ship?, stock, eta?, url?}`, validating at
-     the trust boundary like `PUT /api/watches` does
-   - a local crawler script (`tools/crawl.js` or similar) that reuses
-     `scrapeSource`/`parsePrice` from `worker/sources.js` (they're plain
-     exports, Node-compatible) against a laptop-side URL map, then POSTs
-     the rows. Run by hand / launchd — no scheduling infra.
-   - once the first manual push lands, empty the synthetic fallback
-     question: cron with empty `SOURCES` still jiggles hourly and would
-     overwrite pushed prices — the fallback must go (or gate on "any
-     offer has updated_at") **at the same time** as the endpoint ships.
+1. **Laptop ingestion path ✅ (2026-07-15).** `POST /api/ingest`
+   (bearer-gated on the `INGEST_TOKEN` secret, 503 while unset, validates
+   rows and rejects unknown product ids) feeds the same `ingest()` as the
+   cron. `tools/crawl.mjs [--dry]` scrapes the first-party pages in
+   `tools/crawl-urls.json` (shop → product id → URL; starts empty — fill
+   it in) and pushes; token from `$INGEST_TOKEN` or untracked
+   `tools/.ingest-token`. The synthetic jiggle is deleted — empty
+   `SOURCES` makes the cron a no-op, so pushed prices are never
+   overwritten. To crawl: fill `crawl-urls.json`, check robots.txt for
+   each shop, `node tools/crawl.mjs --dry`, then without `--dry`.
 2. **Adtraction rollout (the better solution, later):** publisher signup
    (site: pricy.no), apply to the 8 brands (Power/Proshop coverage
    unverified — check the brand directory; fall back to
@@ -178,14 +174,12 @@ Outstanding tasks (in rough order):
    (ean/price/instock/trackingurl variants).
 3. **Worker-side scrape config** for shops without any network: product-page
    URLs + robots.txt check, `{"type": "scrape", "urls": {…}}`.
-4. **Delete `syntheticFeed()`** once real ingestion (manual or cron) is the
-   steady state.
-5. **Extend `worker/eans.json`** variant arrays as real feeds reveal missed
+4. **Extend `worker/eans.json`** variant arrays as real feeds reveal missed
    colors/regional SKUs (Hue kit SKUs are the fuzziest).
-6. **Upstream UI (Claude Design):** "go to shop" button from `offers[].url`;
+5. **Upstream UI (Claude Design):** "go to shop" button from `offers[].url`;
    maybe a "last updated" hint from `offers.updated_at` (not exposed in the
    API yet).
-7. **Kelkoo Group** (contract-based shopping API) — future single-feed
+6. **Kelkoo Group** (contract-based shopping API) — future single-feed
    option; fits the same source seam if ever signed.
 
 Order matters: 4a proves the hydration seam cheaply, 4b builds the first

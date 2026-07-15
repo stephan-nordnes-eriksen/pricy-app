@@ -192,6 +192,27 @@ export default {
       return json(await catalogBody(db));
     }
 
+    // 4d interim: the laptop crawler (tools/crawl.mjs) pushes ingest()-shaped
+    // rows here, bearer-gated on the INGEST_TOKEN secret
+    if (route === 'POST /api/ingest') {
+      if (!env.INGEST_TOKEN) return json({ error: 'ingest disabled (no INGEST_TOKEN secret)' }, 503);
+      const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+      if (!bearer || !timingSafeEqual(bearer, env.INGEST_TOKEN)) return json({ error: 'unauthorized' }, 401);
+      const rows = await request.json().catch(() => null);
+      const bad = !Array.isArray(rows) || !rows.length || rows.length > 500 || rows.some(r =>
+        !r || typeof r.product_id !== 'string' || typeof r.shop !== 'string' || !r.shop.trim()
+        || !Number.isInteger(r.price) || r.price <= 0 || r.price > 10_000_000
+        || (r.ship != null && typeof r.ship !== 'string') || (r.eta != null && typeof r.eta !== 'string')
+        || (r.url != null && typeof r.url !== 'string'));
+      if (bad) return json({ error: 'bad rows' }, 400);
+      await seedIfEmpty(db);
+      const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(p => p.id));
+      const unknown = [...new Set(rows.filter(r => !known.has(r.product_id)).map(r => r.product_id))];
+      if (unknown.length) return json({ error: 'unknown product_id', ids: unknown }, 400);
+      await ingest(db, rows);
+      return json({ ok: true, ingested: rows.length });
+    }
+
     if (route === 'POST /api/auth/request') {
       const email = await bodyEmail(request);
       if (!email) return json({ error: 'invalid email' }, 400);
@@ -327,12 +348,14 @@ export default {
   },
 
   // cron (wrangler.jsonc triggers): refresh offers from the configured
-  // sources (env.SOURCES; synthetic fallback while it's empty) and record
-  // today's best. Shops without rows this run keep their stored offers.
+  // sources (env.SOURCES) and record today's best. Shops without rows this
+  // run keep their stored offers; no sources configured = no-op (the
+  // manual-crawl interim pushes rows via POST /api/ingest instead).
   async scheduled(event, env) {
     const db = env.DB;
     await ensureSchema(db);
     await seedIfEmpty(db);
-    await ingest(db, await collectRows(env, db));
+    const rows = await collectRows(env);
+    if (rows.length) await ingest(db, rows);
   },
 };

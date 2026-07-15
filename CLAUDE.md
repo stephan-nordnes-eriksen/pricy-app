@@ -33,9 +33,12 @@ Two Claude Design projects feed this repo:
   JSON-LD off the shop's own product pages). **Never scrape competing
   comparison services (Prisjakt etc.).** A shop with no/failing source
   freezes at its last stored price; empty `SOURCES` (current prod state)
-  falls back to the synthetic jiggle. `eans.json` arrays hold confirmed
-  variants only — extend them as real feeds reveal missed colors/SKUs.
-  Go-live checklist (Adtraction signup etc.) is in PLAN.md 4d.
+  makes the cron a no-op. The interim price writer is manual:
+  `node tools/crawl.mjs [--dry]` scrapes first-party pages listed in
+  `tools/crawl-urls.json` and POSTs to `/api/ingest` (bearer =
+  `INGEST_TOKEN` secret; token also in untracked `tools/.ingest-token`).
+  `eans.json` arrays hold confirmed variants only — extend them as real
+  feeds reveal missed colors/SKUs. Rollout checklist: PLAN.md 4d.
 
 ## Rules
 

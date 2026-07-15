@@ -131,25 +131,16 @@ function productOffer(html) {
   return null;
 }
 
-// the pre-4d placeholder: jiggle stored prices. Falls away once env.SOURCES
-// has real entries; delete it when the first real source is stable in prod.
-export async function syntheticFeed(db) {
-  const { results } = await db.prepare('SELECT product_id, shop, price, ship, stock, eta FROM offers').all();
-  return results.map(o => ({
-    ...o,
-    price: Math.max(1, Math.round(o.price * (0.97 + Math.random() * 0.06))),
-    stock: Math.random() < 0.05 ? (o.stock ? 0 : 1) : o.stock,
-  }));
-}
-
 const SOURCES = { adtraction: adtractionSource, scrape: scrapeSource };
 
 // One failed source = that shop's offers freeze at their last stored price
 // (ingest only upserts rows it receives); it never aborts the other shops.
-export async function collectRows(env, db) {
+// No sources configured (current prod state, manual-crawl interim) = no
+// rows: the cron is a no-op and POST /api/ingest is the only price writer.
+export async function collectRows(env) {
   const config = typeof env.SOURCES === 'string' ? JSON.parse(env.SOURCES) : (env.SOURCES || {});
   const shops = Object.entries(config);
-  if (!shops.length) return syntheticFeed(db);
+  if (!shops.length) return [];
   const settled = await Promise.allSettled(shops.map(async ([shop, cfg]) => {
     const run = SOURCES[cfg.type];
     if (!run) throw new Error(`unknown source type ${cfg.type}`);
