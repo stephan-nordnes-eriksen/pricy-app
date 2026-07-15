@@ -527,6 +527,16 @@ test('mcp oauth: register → authorize (login page) → code → token = workin
   assert.ok(!result.isError, 'bearer from the oauth flow must authenticate tool calls');
   assert.strictEqual(JSON.parse(result.content[0].text).results[0].id, 'airpods');
 
+  // an authenticated client never sees the password tools
+  const list = await (await worker.fetch(new Request('http://pricy.test/mcp', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${access_token}` },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
+  }), env)).json();
+  const names = list.result.tools.map(t => t.name);
+  assert.ok(!names.includes('login') && !names.includes('signup'), 'login/signup must be hidden for oauth-authenticated clients');
+  assert.ok(names.includes('buy_now'), 'the rest of the tools still list');
+
   // signup path creates the account and hands back a working code too
   const signupLoc = (await post('/authorize', { action: 'signup', email: 'kari@example.no', password: 'newpassword1', redirect_uri: CALLBACK, code_challenge: challenge }, true)).headers.get('location');
   assert.ok(new URL(signupLoc).searchParams.get('code'), 'signup via the authorize form must issue a code');

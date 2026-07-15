@@ -219,8 +219,8 @@ const MCP_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const obj = (properties = {}, required = []) => ({ type: 'object', properties, required });
 const str = (description) => ({ type: 'string', description });
 const MCP_TOOLS = [
-  { name: 'login', description: 'Log in to an existing pricy.no account. Required before using the other tools.', inputSchema: obj({ email: str('account email'), password: str('account password') }, ['email', 'password']) },
-  { name: 'signup', description: 'Create a pricy.no account (and log in). If the account already exists, the password must match.', inputSchema: obj({ email: str('email'), password: str(`password, min ${MIN_PASSWORD_LEN} characters`) }, ['email', 'password']) },
+  { name: 'login', description: 'Log in to an existing pricy.no account. Only for clients not connected via OAuth — if this tool is listed, the user is not logged in yet.', inputSchema: obj({ email: str('account email'), password: str('account password') }, ['email', 'password']) },
+  { name: 'signup', description: 'Create a pricy.no account (and log in). Only for clients not connected via OAuth. If the account already exists, the password must match.', inputSchema: obj({ email: str('email'), password: str(`password, min ${MIN_PASSWORD_LEN} characters`) }, ['email', 'password']) },
   { name: 'search_products', description: 'Search the pricy.no catalog (Norwegian shops, prices in NOK). Returns matching products with their current best price.', inputSchema: obj({ query: str('free-text search, e.g. "headphones" or "sony tv"') }, ['query']) },
   { name: 'get_product', description: 'Full detail for one product: every shop offer (price, shipping, stock, link) and recent price history.', inputSchema: obj({ product_id: str('id from search_products') }, ['product_id']) },
   { name: 'buy_now', description: 'Buy the product immediately at the current cheapest in-stock price (or from a specific shop). Returns the order with the exact price charged.', inputSchema: obj({ product_id: str('id from search_products'), shop: str('optional: buy from this shop instead of the cheapest') }, ['product_id']) },
@@ -479,15 +479,23 @@ async function mcp(request, db) {
 
   if (msg.method === 'initialize') {
     const v = msg.params?.protocolVersion;
+    const authed = await sessionUser(db, sid); // OAuth clients are logged in before they ever initialize
     return reply({ result: {
       protocolVersion: MCP_VERSIONS.includes(v) ? v : MCP_VERSIONS[0],
       capabilities: { tools: {} },
       serverInfo: { name: 'pricy.no', version: '0.1.0' },
-      instructions: 'pricy.no — Norwegian price comparison. Log in with the login tool (or signup to create an account) first; then search_products, get_product, watch_product, and buy_now. All prices are NOK.',
+      instructions: authed
+        ? `pricy.no — Norwegian price comparison. The user is already logged in as ${authed.email}; never ask for credentials. Use search_products, get_product, watch_product, and buy_now. All prices are NOK.`
+        : 'pricy.no — Norwegian price comparison. Log in with the login tool (or signup to create an account) first; then search_products, get_product, watch_product, and buy_now. All prices are NOK.',
     } }, { 'mcp-session-id': newToken() });
   }
   if (msg.method === 'ping') return reply({ result: {} });
-  if (msg.method === 'tools/list') return reply({ result: { tools: MCP_TOOLS } });
+  if (msg.method === 'tools/list') {
+    // an authenticated client must not see login/signup at all — a listed
+    // login tool reads as "ask the user for their password in chat"
+    const authed = await sessionUser(db, sid);
+    return reply({ result: { tools: authed ? MCP_TOOLS.filter(t => t.name !== 'login' && t.name !== 'signup') : MCP_TOOLS } });
+  }
   if (msg.method === 'tools/call') {
     try {
       const out = await mcpTool(db, sid, msg.params?.name, msg.params?.arguments || {});
