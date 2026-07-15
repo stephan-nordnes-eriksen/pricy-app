@@ -300,6 +300,22 @@ test('rendered catalog comes from /api/catalog.json, not the baked constants', a
   assert.ok(!cats.some(t => t.includes('Gaming')), 'CAT_OF still lists the dropped Gaming category');
 });
 
+test('offer rows: Visit opens the offer url, url-less offers are disabled', async () => {
+  const seed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  const served = seed.map(p => p.id !== 'xm5' ? p : {
+    ...p,
+    offers: p.offers.map((o, i) => i === 0 ? { ...o, url: 'https://shop.example/xm5' } : { ...o, url: null }),
+  });
+  const win = boot('http://pricy.test/product/xm5', { session: true, catalog: served });
+  assert.ok(await until(() => qa(win, '.orow').length > 1), 'offer rows missing');
+  const opened = [];
+  win.open = u => { opened.push(u); return null; };
+  const visits = qa(win, '.orow .btn').filter(b => /visit/i.test(b.textContent));
+  visits[0].click();
+  assert.deepStrictEqual(opened, ['https://shop.example/xm5'], 'Visit must open the offer url');
+  assert.ok(visits.slice(1).every(b => b.disabled), 'offers without a url must render a disabled Visit');
+});
+
 // ---------- per-user hydration + watch persistence (Phase 4b) ----------
 
 test('identity and watchlist hydrate from /api/me, not the baked USER/WATCHED', async () => {

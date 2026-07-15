@@ -78,9 +78,6 @@ Two Claude Design projects feed this repo:
    Workers Builds push-to-deploy not set up.
 
 Known upstream gaps (fix in Claude Design, then extend tests):
-- Offers now carry a `url` (tracking deep link / shop page) in the catalog
-  API, but the prototype's offer rows render no "go to shop" link yet —
-  add it upstream when convenient.
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
   passed out, awaitable verdict, server errors shown in the form), and
   password login/signup/change are real (PBKDF2-hashed, verified
