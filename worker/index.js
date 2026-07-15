@@ -4,6 +4,7 @@
 // Worker route now, no static file shadows it.
 
 import seed from './seed.json' with { type: 'json' };
+import { collectRows } from './sources.js';
 
 const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT)',
@@ -11,7 +12,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
   'CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)',
-  'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, PRIMARY KEY (product_id, shop))',
+  'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, url TEXT, updated_at INTEGER, PRIMARY KEY (product_id, shop))',
   'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
@@ -23,6 +24,9 @@ async function ensureSchema(db) {
     // migration for DBs created before password auth / settings existed
     await db.prepare('ALTER TABLE users ADD COLUMN password_hash TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE users ADD COLUMN settings TEXT').run().catch(() => {});
+    // 4d: real-source offers carry a deep link and a freshness stamp
+    await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
+    await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
   })());
   await schemaReady.get(db);
 }
@@ -127,26 +131,14 @@ async function seedIfEmpty(db) {
   await db.batch(stmts);
 }
 
-// ponytail: synthetic feed — THE swap point for a real price source
-// (affiliate/partner feeds, per PLAN.md 4c); everything around it is the
-// real pipeline and doesn't change when this does
-async function syntheticFeed(db) {
-  const { results } = await db.prepare('SELECT product_id, shop, price, ship, stock, eta FROM offers').all();
-  return results.map(o => ({
-    ...o,
-    price: Math.max(1, Math.round(o.price * (0.97 + Math.random() * 0.06))),
-    stock: Math.random() < 0.05 ? (o.stock ? 0 : 1) : o.stock,
-  }));
-}
-
 async function ingest(db, rows) {
   const today = dayOf(Date.now());
   const best = {};
   for (const r of rows) best[r.product_id] = Math.min(best[r.product_id] ?? Infinity, r.price);
   await db.batch([
     ...rows.map(r => db.prepare(
-      'INSERT INTO offers (product_id, shop, price, ship, stock, eta) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(product_id, shop) DO UPDATE SET price = excluded.price, ship = excluded.ship, stock = excluded.stock, eta = excluded.eta'
-    ).bind(r.product_id, r.shop, r.price, r.ship ?? null, r.stock ? 1 : 0, r.eta ?? null)),
+      'INSERT INTO offers (product_id, shop, price, ship, stock, eta, url, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(product_id, shop) DO UPDATE SET price = excluded.price, ship = excluded.ship, stock = excluded.stock, eta = excluded.eta, url = excluded.url, updated_at = excluded.updated_at'
+    ).bind(r.product_id, r.shop, r.price, r.ship ?? null, r.stock ? 1 : 0, r.eta ?? null, r.url ?? null, Date.now())),
     ...Object.entries(best).map(([id, price]) => db.prepare(
       'INSERT INTO price_points (product_id, day, price) VALUES (?, ?, ?) ON CONFLICT(product_id, day) DO UPDATE SET price = MIN(price, excluded.price)'
     ).bind(id, today, price)),
@@ -156,10 +148,10 @@ async function ingest(db, rows) {
 async function catalogBody(db) {
   await seedIfEmpty(db);
   const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
-  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta FROM offers ORDER BY price').all();
+  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url FROM offers ORDER BY price').all();
   const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
   const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
-  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: !!o.stock, eta: o.eta }));
+  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: !!o.stock, eta: o.eta, url: o.url }));
   const history = group(pts.results, p => p.price);
   return prods.results.map(({ id, meta }) => {
     const m = JSON.parse(meta);
@@ -334,11 +326,13 @@ export default {
     return json({ error: 'not found' }, 404);
   },
 
-  // cron (wrangler.jsonc triggers): refresh offers and record today's best
+  // cron (wrangler.jsonc triggers): refresh offers from the configured
+  // sources (env.SOURCES; synthetic fallback while it's empty) and record
+  // today's best. Shops without rows this run keep their stored offers.
   async scheduled(event, env) {
     const db = env.DB;
     await ensureSchema(db);
     await seedIfEmpty(db);
-    await ingest(db, await syntheticFeed(db));
+    await ingest(db, await collectRows(env, db));
   },
 };

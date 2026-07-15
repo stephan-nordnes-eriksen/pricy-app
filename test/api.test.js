@@ -26,9 +26,10 @@ function d1() {
   };
 }
 
-let worker;
+let worker, parsePrice;
 before(async () => {
   worker = (await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')))).default;
+  ({ parsePrice } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
 });
 
 const api = (env) => (pathname, { method = 'GET', body, cookie } = {}) =>
@@ -304,4 +305,115 @@ test('scheduled refresh moves offer prices and keeps one price point per day', a
     assert.strictEqual(p.history.length, prev.history.length, `today's point is upserted, not appended (${p.id})`);
   }
   assert.ok(after.some((p, i) => p.best !== before[i].best), 'refresh should move at least one price');
+});
+
+// 4d: real price sources — env.SOURCES config, Adtraction XML feeds matched
+// by EAN (worker/eans.json), first-party JSON-LD scraping, freeze-on-failure.
+const eans = require(path.join(__dirname, '..', 'worker', 'eans.json'));
+const ctl = { waitUntil() {} };
+
+const withFetch = async (impl, fn) => {
+  const real = globalThis.fetch;
+  globalThis.fetch = impl;
+  try { return await fn(); } finally { globalThis.fetch = real; }
+};
+
+test('parsePrice handles Norwegian and feed formats', () => {
+  assert.strictEqual(parsePrice('2990'), 2990);
+  assert.strictEqual(parsePrice('2 990,00'), 2990);
+  assert.strictEqual(parsePrice('2990.50 NOK'), 2991, 'rounds to whole kroner');
+  assert.strictEqual(parsePrice('1.299'), 1299, 'dot as thousands grouping');
+  assert.strictEqual(parsePrice('1,299,000'), 1299000, 'comma grouping');
+  assert.strictEqual(parsePrice(''), null);
+  assert.strictEqual(parsePrice('N/A'), null);
+  assert.strictEqual(parsePrice('0'), null, 'zero is junk, not a price');
+});
+
+test('adtraction source: EAN-matched feed rows update offers with deep link; unknown EANs are dropped', async () => {
+  const entries = Object.entries(eans);
+  assert.ok(entries.length, 'worker/eans.json is empty — 4d ingestion needs the product EAN map');
+  const [pid, [ean]] = entries[0];
+
+  const DB = d1();
+  const call = api({ DB });
+  const before = await (await call('/api/catalog.json')).json(); // seeds
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><products>
+    <product><SKU>a1</SKU><Name><![CDATA[Matched & sold]]></Name><Ean>${ean}</Ean><Price>2 490,00</Price><Shipping>Fri frakt</Shipping><Instock>yes</Instock><TrackingUrl>https://track.adtraction.com/t/?u=1&amp;d=2</TrackingUrl></product>
+    <product><SKU>a2</SKU><Name>Not in catalog</Name><Ean>7091234567890</Ean><Price>999.00</Price><Instock>no</Instock><TrackingUrl>https://track.adtraction.com/t/?u=9</TrackingUrl></product>
+  </products>`;
+  const env = { DB, SOURCES: { Komplett: { type: 'adtraction' } }, ADTRACTION_FEEDS: JSON.stringify({ Komplett: 'https://feed.test/komplett.xml' }) };
+  await withFetch(async (url) => {
+    assert.strictEqual(String(url), 'https://feed.test/komplett.xml');
+    return new Response(xml, { status: 200 });
+  }, () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
+
+  const after = await (await call('/api/catalog.json')).json();
+  assert.strictEqual(after.length, before.length, 'unknown EANs must not create products');
+
+  const offer = after.find(p => p.id === pid).offers.find(o => o.shop === 'Komplett');
+  assert.strictEqual(offer.price, 2490);
+  assert.strictEqual(offer.ship, 'Fri frakt');
+  assert.strictEqual(offer.stock, true);
+  assert.strictEqual(offer.url, 'https://track.adtraction.com/t/?u=1&d=2', 'tracking deep link must survive entity decoding');
+
+  // freeze: every offer not fed this run keeps its stored price
+  for (const p of after) for (const o of p.offers) {
+    if (p.id === pid && o.shop === 'Komplett') continue;
+    const prev = before.find(q => q.id === p.id).offers.find(q => q.shop === o.shop);
+    assert.strictEqual(o.price, prev.price, `${p.id}/${o.shop} had no feed row and must freeze`);
+    assert.strictEqual(o.url, null, 'unfed offers have no deep link');
+  }
+});
+
+test('scrape source: first-party JSON-LD product page updates the offer', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/catalog.json'); // seeds
+
+  const html = `<html><head><script type="application/ld+json">
+    {"@context":"https://schema.org","@graph":[{"@type":"Product","name":"AirPods Pro",
+     "offers":{"@type":"Offer","price":"2349.00","priceCurrency":"NOK","availability":"https://schema.org/InStock"}}]}
+  </script></head><body>hi</body></html>`;
+  const env = { DB, SOURCES: { Power: { type: 'scrape', urls: { airpods: 'https://www.power.no/airpods-pro' } } } };
+  await withFetch(async () => new Response(html, { status: 200 }), () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
+
+  const cat = await (await call('/api/catalog.json')).json();
+  const offer = cat.find(p => p.id === 'airpods').offers.find(o => o.shop === 'Power');
+  assert.strictEqual(offer.price, 2349);
+  assert.strictEqual(offer.stock, true);
+  assert.strictEqual(offer.url, 'https://www.power.no/airpods-pro', 'scraped offers link the shop page');
+});
+
+test('a failing source freezes its shop without aborting the others', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  const before = await (await call('/api/catalog.json')).json(); // seeds
+
+  const html = `<html><script type="application/ld+json">{"@type":"Product","offers":{"price":"1111","availability":"https://schema.org/InStock"}}</script></html>`;
+  const env = {
+    DB,
+    SOURCES: { Komplett: { type: 'adtraction' }, Power: { type: 'scrape', urls: { airpods: 'https://www.power.no/airpods-pro' } } },
+    ADTRACTION_FEEDS: JSON.stringify({ Komplett: 'https://feed.test/komplett.xml' }),
+  };
+  const errors = [];
+  const realError = console.error;
+  console.error = (...a) => errors.push(a.join(' '));
+  try {
+    await withFetch(async (url) => String(url).includes('feed.test')
+      ? new Response('nope', { status: 500 })
+      : new Response(html, { status: 200 }),
+    () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
+  } finally { console.error = realError; }
+
+  const after = await (await call('/api/catalog.json')).json();
+  for (const p of after) {
+    const komplett = p.offers.find(o => o.shop === 'Komplett');
+    if (komplett) {
+      const prev = before.find(q => q.id === p.id).offers.find(q => q.shop === 'Komplett');
+      assert.strictEqual(komplett.price, prev.price, 'the failed shop must freeze');
+    }
+  }
+  assert.strictEqual(after.find(p => p.id === 'airpods').offers.find(o => o.shop === 'Power').price, 1111, 'the healthy source must still ingest');
+  assert.ok(errors.some(e => e.includes('Komplett') && e.includes('frozen')), 'the failure must be logged');
 });
