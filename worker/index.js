@@ -346,6 +346,13 @@ export default {
       await ensureSchema(env.DB);
       return mcp(request, env.DB);
     }
+    // MCP clients probe /.well-known/oauth-* for auth discovery; the SPA
+    // fallback answering 200+HTML there reads as a (garbage) OAuth server
+    // and breaks no-auth connection. 404 the whole prefix — we serve no
+    // well-knowns.
+    if (url.pathname.startsWith('/.well-known/')) {
+      return json({ error: 'not found' }, 404);
+    }
     if (!url.pathname.startsWith('/api/')) {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('not found', { status: 404 });
     }

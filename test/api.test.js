@@ -429,6 +429,16 @@ function mcpClient(env) {
   return { rpc, tool };
 }
 
+test('mcp: /.well-known/* is 404, never the SPA fallback (OAuth discovery must fail cleanly)', async () => {
+  const spa = { fetch: async () => new Response('<!DOCTYPE html>', { status: 200, headers: { 'content-type': 'text/html' } }) };
+  const env = { DB: d1(), ASSETS: spa };
+  const call = (p) => worker.fetch(new Request('http://pricy.test' + p), env);
+  assert.strictEqual((await call('/')).status, 200, 'the SPA itself still serves');
+  for (const p of ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp', '/.well-known/oauth-authorization-server', '/.well-known/openid-configuration']) {
+    assert.strictEqual((await call(p)).status, 404, p);
+  }
+});
+
 test('mcp: initialize mints a session id, lists tools, rejects junk', async () => {
   const env = { DB: d1() };
   const { rpc } = mcpClient(env);
