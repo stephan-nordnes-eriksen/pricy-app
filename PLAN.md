@@ -149,21 +149,44 @@ is stable in prod. `offers` gained `url` + `updated_at`; the catalog API now
 carries `url` per offer (UI adoption of deep links is an upstream Claude
 Design change, recorded in CLAUDE.md).
 
-**Human steps to go live (in order):**
-1. Sign up as an Adtraction publisher (site: pricy.no), apply to the 8
-   brands' programs; check the brand directory for Power/Proshop, fall back
-   to Awin/Partner-ads/Tradedoubler for shops not on Adtraction.
-2. As approvals land: `wrangler secret put ADTRACTION_FEEDS` with
-   `{"Komplett": "https://…", …}` and add
-   `"Komplett": {"type": "adtraction"}` to `vars.SOURCES` in wrangler.jsonc.
-3. Verify the first real feed's field names against the candidates in
-   `worker/sources.js` (ean/price/instock/trackingurl variants).
-4. For shops without any network: collect product-page URLs (+ robots.txt
-   check), configure `{"type": "scrape", "urls": {…}}`.
-5. Deploy, watch cron logs for `ingest: <shop> … rows`, spot-check prices
-   against the shops.
-6. Kelkoo Group (contract-based shopping API) is the future single-feed
-   option — fits the same source seam if ever signed.
+**Interim decision (2026-07-15): manual crawl from the local laptop
+first**, better sources (Adtraction etc.) rolled out later. The Worker-side
+source registry above stays as-is — it's the "later".
+
+Outstanding tasks (in rough order):
+
+1. **Laptop ingestion path (the interim, not built yet).** Nothing accepts
+   pushed rows today — `ingest()` only runs inside the cron. Needs:
+   - an authenticated `POST /api/ingest` (shared-secret bearer, e.g. an
+     `INGEST_TOKEN` secret) accepting `ingest()`-shaped rows
+     `{product_id, shop, price, ship?, stock, eta?, url?}`, validating at
+     the trust boundary like `PUT /api/watches` does
+   - a local crawler script (`tools/crawl.js` or similar) that reuses
+     `scrapeSource`/`parsePrice` from `worker/sources.js` (they're plain
+     exports, Node-compatible) against a laptop-side URL map, then POSTs
+     the rows. Run by hand / launchd — no scheduling infra.
+   - once the first manual push lands, empty the synthetic fallback
+     question: cron with empty `SOURCES` still jiggles hourly and would
+     overwrite pushed prices — the fallback must go (or gate on "any
+     offer has updated_at") **at the same time** as the endpoint ships.
+2. **Adtraction rollout (the better solution, later):** publisher signup
+   (site: pricy.no), apply to the 8 brands (Power/Proshop coverage
+   unverified — check the brand directory; fall back to
+   Awin/Partner-ads/Tradedoubler); `wrangler secret put ADTRACTION_FEEDS`;
+   flip shops into `vars.SOURCES`; verify the first real feed's field names
+   against the candidates in `worker/sources.js`
+   (ean/price/instock/trackingurl variants).
+3. **Worker-side scrape config** for shops without any network: product-page
+   URLs + robots.txt check, `{"type": "scrape", "urls": {…}}`.
+4. **Delete `syntheticFeed()`** once real ingestion (manual or cron) is the
+   steady state.
+5. **Extend `worker/eans.json`** variant arrays as real feeds reveal missed
+   colors/regional SKUs (Hue kit SKUs are the fuzziest).
+6. **Upstream UI (Claude Design):** "go to shop" button from `offers[].url`;
+   maybe a "last updated" hint from `offers.updated_at` (not exposed in the
+   API yet).
+7. **Kelkoo Group** (contract-based shopping API) — future single-feed
+   option; fits the same source seam if ever signed.
 
 Order matters: 4a proves the hydration seam cheaply, 4b builds the first
 real backend on a proven seam, 4c fills the pipeline, 4d swaps in real
