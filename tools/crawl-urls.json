@@ -1,6 +1,28 @@
 {
+  "Clas Ohlson": {
+    "airpods": "https://www.clasohlson.com/no/p/39-2739",
+    "xm5": "https://www.clasohlson.com/no/p/39-4543",
+    "dyson": "https://www.clasohlson.com/no/p/44-6659",
+    "lego": "https://www.clasohlson.com/no/p/31-7197",
+    "bose-ultra": "https://www.clasohlson.com/no/p/39-4493",
+    "airpods4": "https://www.clasohlson.com/no/p/39-4034",
+    "xbox": "https://www.clasohlson.com/no/p/39-3609"
+  },
   "Power": {
     "beats-pro": "https://www.power.no/tv-og-lyd/hodetelefoner/traadloese-hodetelefoner/beats-studio-pro-traadloese-hodetelefoner-svart/p-2331130/",
-    "xbox": "https://www.power.no/gaming/xbox/xbox-konsoll/xbox-series-x-konsoll/p-1119853/"
+    "xbox": "https://www.power.no/gaming/xbox/xbox-konsoll/xbox-series-x-konsoll/p-1119853/",
+    "xm5": "https://www.power.no/tv-og-lyd/hodetelefoner/traadloese-hodetelefoner/sony-wh-1000xm5-traadloes-stoeyreduserende-hodetelefoner-svart/p-1478246/",
+    "airpods": "https://www.power.no/tv-og-lyd/hodetelefoner/true-wireless-hodetelefoner/apple-airpods-pro-2/p-2669641/",
+    "airpods4": "https://www.power.no/tv-og-lyd/hodetelefoner/true-wireless-hodetelefoner/apple-airpods-4-med-aktiv-stoeyreduksjon/p-3614400/",
+    "switch": "https://www.power.no/gaming/nintendo/nintendo-konsoll/nintendo-switch-oled-spillkonsoll-hvit/p-1194972/",
+    "dyson": "https://www.power.no/hjem-og-hage/rengjoering-og-stoevsuging/traadloes-stoevsuger/dyson-v15-detect-absolute-ledningsfri-stoevsuger/p-4299085/",
+    "kindle": "https://www.power.no/data-og-tilbehoer/nettbrett-og-tilbehoer/lesebrett/amazon-kindle-paperwhite-7-lesebrett-svart/p-4218639/",
+    "senn-m4": "https://www.power.no/tv-og-lyd/hodetelefoner/traadloese-hodetelefoner/sennheiser-momentum-4-wireless-stoeydempende-hodetelefoner-svart/p-1649874/",
+    "jbl-tour2": "https://www.power.no/tv-og-lyd/hodetelefoner/traadloese-hodetelefoner/jbl-tour-one-m2-traadloese-hodetelefoner-svart/p-1934731/",
+    "iphone": "https://www.power.no/mobil-og-foto/mobiltelefon/apple-iphone-15-128-gb-svart/p-2668232/"
+  },
+  "CDON": {
+    "lego": "https://cdon.no/produkt/lego-botanicals-10311-orkide-07cd4326f0df4a02/",
+    "sonos-ace": "https://cdon.no/produkt/sonos-ace-hodetelefoner-med-mikrofon-full-storrelse-bluetooth-kablet-tradlos-aktiv-stoydemping-svart-d60b874e80064819/"
   }
 }

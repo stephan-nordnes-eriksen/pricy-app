@@ -102,6 +102,9 @@ export async function scrapeSource(shop, cfg) {
       const offer = productOffer(await res.text());
       const price = parsePrice(offer?.price ?? offer?.lowPrice);
       if (!price) throw new Error('no JSON-LD offer price');
+      // money path: multi-country shops (clasohlson.com/se, cdon SE mirrors)
+      // serve the same JSON-LD shape in SEK — never ingest those as NOK
+      if (offer.priceCurrency && offer.priceCurrency !== 'NOK') throw new Error(`currency ${offer.priceCurrency}, want NOK`);
       return {
         product_id, shop, price,
         ship: null,

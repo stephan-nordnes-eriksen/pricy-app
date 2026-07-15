@@ -217,13 +217,28 @@ Per-shop ritual (repeat for each scrapeable shop):
 
 Shop order, easiest first:
 
-- **Power** — pipeline proven (2/24); finish by hand-adding URLs for the
-  misses (step 3).
-- **Komplett, Proshop, NetOnNet, Dustin** — tech-heavy, should stock most
-  of the catalog; run the ritual as-is.
-- **Clas Ohlson, CDON** — partial coverage expected (few catalog matches /
-  marketplace JSON-LD quality unknown); do last, accept gaps.
+- **Power** — 11 products (2026-07-16): sitemap grep + page-EAN verify;
+  their flat `/services/sitemap.xml` (38.5k URLs) is missing whole
+  categories (no PS5/S24/Hue/MacBook/TV product pages) — revisit, or wait
+  for Adtraction. lgc3/bravia/tv models look delisted.
+- **Komplett, Proshop, NetOnNet** — scrape-blocked (403 / connection
+  reset on robots.txt with our UA, 2026-07-16); park for Adtraction.
+- **Clas Ohlson** — 7 products (2026-07-16). Their JSON-LD has price/stock
+  but **no GTIN**, so identity is hand-confirmed by page title; use
+  `/no/p/<id>` URLs — `/se/` pages serve the same shape in SEK (guarded:
+  scrapeSource now rejects non-NOK). No PS5-disc/Hue-kit match (Digital
+  Edition only / kit variants too ambiguous without EAN).
+- **CDON** — 2 products EAN-confirmed (lego, sonos-ace); marketplace
+  noise (ear-pads, cases) is real but the EAN gate filters it.
 - **Elkjøp** — scrape-blocked; waits for the Adtraction feed.
+
+Coverage 2026-07-16: 20 real cells / 14 products. Ten products still have
+zero real offers (tv, ps5, steamdeck, s24, pixel8, lgc3, bravia, roborock,
+hue, mba) — all in the blocked/delisted buckets above, so they wait for
+Adtraction. Seeded demo prices still undercut real ones on 10/14 covered
+products, so the "Best" row (and its Visit button) stays a dead seed row
+until either the demo offers are purged or real feeds cover those shops —
+product decision pending.
 
 Cadence: re-run `node tools/crawl.mjs` manually every day or two so
 `price_points` history accrues. Graduation: once a shop's URL set is
