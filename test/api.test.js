@@ -139,6 +139,33 @@ test('magic link: request logs a single-use link, verify sets the session', asyn
   assert.strictEqual(again.headers.get('location'), 'http://pricy.test/login', 'reused token must not log in');
 });
 
+test('magic link: with a SEND_EMAIL binding the link is emailed, not logged', async () => {
+  const sent = [];
+  const call = api({ DB: d1(), SEND_EMAIL: { send: async (msg) => { sent.push(msg); } } });
+  const logs = [];
+  const realLog = console.log;
+  console.log = (...a) => logs.push(a.join(' '));
+  try {
+    assert.strictEqual((await call('/api/auth/request', { method: 'POST', body: { email: 'kari.nordmann@example.no' } })).status, 200);
+  } finally { console.log = realLog; }
+
+  assert.strictEqual(sent.length, 1, 'exactly one email sent');
+  assert.strictEqual(sent[0].to, 'kari.nordmann@example.no');
+  assert.strictEqual(sent[0].from.email, 'login@pricy.no');
+  const link = sent[0].text.match(/http:\/\/pricy\.test(\/api\/auth\/verify\?token=[0-9a-f]{64})/);
+  assert.ok(link, 'email text must contain the verify link');
+  assert.ok(sent[0].html.includes(link[0]), 'email html must contain the verify link');
+  assert.ok(!logs.join('\n').includes('magic link'), 'link must not be console-logged when emailed');
+
+  const verify = await call(link[1]);
+  assert.strictEqual(verify.status, 302);
+  assert.strictEqual(verify.headers.get('location'), 'http://pricy.test/');
+
+  // a failing send surfaces as an error, not a silent ok
+  const broken = api({ DB: d1(), SEND_EMAIL: { send: async () => { throw new Error('boom'); } } });
+  assert.strictEqual((await broken('/api/auth/request', { method: 'POST', body: { email: 'kari.nordmann@example.no' } })).status, 502);
+});
+
 test('bad email is rejected on all auth endpoints', async () => {
   const call = api({ DB: d1() });
   for (const p of ['/api/auth/login', '/api/auth/signup', '/api/auth/request']) {

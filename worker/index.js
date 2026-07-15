@@ -206,10 +206,24 @@ export default {
       const token = newToken();
       await db.prepare('INSERT INTO login_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)')
         .bind(await sha(token), email, Date.now() + TOKEN_MINUTES * 60e3).run();
-      // ponytail: no email infra yet (local-only) — log the link. At deploy,
-      // send it via a Cloudflare Email Service binding instead (load the
-      // cloudflare-email-service skill for the wiring); never return it.
-      console.log(`magic link for ${email}: ${url.origin}/api/auth/verify?token=${token}`);
+      const link = `${url.origin}/api/auth/verify?token=${token}`;
+      if (env.SEND_EMAIL) {
+        try {
+          await env.SEND_EMAIL.send({
+            to: email,
+            from: { email: 'login@pricy.no', name: 'pricy.no' },
+            subject: 'Log in to pricy.no',
+            html: `<p>Click to log in to pricy.no:</p><p><a href="${link}">Log in</a></p><p>The link expires in ${TOKEN_MINUTES} minutes. If you didn't request it, ignore this email.</p>`,
+            text: `Log in to pricy.no: ${link}\n\nThe link expires in ${TOKEN_MINUTES} minutes. If you didn't request it, ignore this email.`,
+          });
+        } catch (e) {
+          console.error(`magic link send failed for ${email}: ${e.code || ''} ${e.message}`);
+          return json({ error: 'could not send the email — try again' }, 502);
+        }
+      } else {
+        // ponytail: no SEND_EMAIL binding (tests / local dev) — log the link; never return it.
+        console.log(`magic link for ${email}: ${link}`);
+      }
       return json({ ok: true });
     }
 

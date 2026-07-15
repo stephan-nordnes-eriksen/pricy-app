@@ -43,8 +43,13 @@ workers.dev URL is disabled (routes present, no `workers_dev`).
 - Workers Builds push-to-deploy: repo got a remote 2026-07-15
   (github.com/stephan-nordnes-eriksen/pricy-app, `origin`/`main`) — can be
   set up whenever manual `npm run deploy` gets old.
-- Email Service binding still unwired (see 4b) — magic-link mail is
-  console-logged; login works via the demo bridges.
+- Email Service: worker code + tests done 2026-07-15 — sends via
+  `env.SEND_EMAIL` (from login@pricy.no) when bound, console-logs the link
+  when not. Binding stays commented out in wrangler.jsonc: Email Sending
+  needs the Workers **paid** plan (decided to wait). To go live: upgrade,
+  onboard pricy.no in the dashboard (Email Service → Email Sending, adds
+  SPF/DKIM/DMARC), uncomment the binding, deploy. Login meanwhile works
+  via the demo bridges.
 
 ## Phase 3 — The design-sync loop (ongoing ritual)
 

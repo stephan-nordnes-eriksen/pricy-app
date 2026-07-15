@@ -24,6 +24,10 @@
   // hourly offer refresh (worker scheduled handler); price_points stay
   // one-per-day via the upsert
   "triggers": { "crons": ["0 * * * *"] }
-  // At deploy, add the Email Service binding for real magic-link mail:
+  // Feature flag for real magic-link mail: the worker sends via
+  // env.SEND_EMAIL when bound, console.logs the link when not. Email
+  // Sending needs the Workers paid plan — once upgraded, onboard pricy.no
+  // (dashboard: Email Service → Email Sending → Onboard Domain, adds
+  // SPF/DKIM/DMARC), then uncomment and deploy:
   // "send_email": [{ "name": "SEND_EMAIL" }]
 }
