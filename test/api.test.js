@@ -429,14 +429,99 @@ function mcpClient(env) {
   return { rpc, tool };
 }
 
-test('mcp: /.well-known/* is 404, never the SPA fallback (OAuth discovery must fail cleanly)', async () => {
+test('mcp oauth: discovery metadata serves for oauth well-knowns, 404 (json, not SPA) otherwise', async () => {
   const spa = { fetch: async () => new Response('<!DOCTYPE html>', { status: 200, headers: { 'content-type': 'text/html' } }) };
   const env = { DB: d1(), ASSETS: spa };
   const call = (p) => worker.fetch(new Request('http://pricy.test' + p), env);
   assert.strictEqual((await call('/')).status, 200, 'the SPA itself still serves');
-  for (const p of ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp', '/.well-known/oauth-authorization-server', '/.well-known/openid-configuration']) {
-    assert.strictEqual((await call(p)).status, 404, p);
+
+  for (const p of ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp']) {
+    const res = await call(p);
+    assert.strictEqual(res.status, 200, p);
+    const meta = await res.json();
+    assert.strictEqual(meta.resource, 'http://pricy.test/mcp');
+    assert.deepStrictEqual(meta.authorization_servers, ['http://pricy.test']);
   }
+  const as = await (await call('/.well-known/oauth-authorization-server')).json();
+  assert.strictEqual(as.issuer, 'http://pricy.test');
+  assert.strictEqual(as.authorization_endpoint, 'http://pricy.test/authorize');
+  assert.strictEqual(as.token_endpoint, 'http://pricy.test/token');
+  assert.strictEqual(as.registration_endpoint, 'http://pricy.test/register');
+  assert.deepStrictEqual(as.code_challenge_methods_supported, ['S256']);
+
+  const other = await call('/.well-known/openid-configuration');
+  assert.strictEqual(other.status, 404);
+  assert.match(other.headers.get('content-type'), /json/, 'well-known 404s must be json, never the SPA shell');
+});
+
+const CALLBACK = 'https://claude.ai/api/mcp/auth_callback';
+const pkce = async (verifier) => Buffer.from(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))).toString('base64url');
+
+test('mcp oauth: register → authorize (login page) → code → token = working bearer for /mcp', async () => {
+  const env = { DB: d1() };
+  const post = (p, body, form) => worker.fetch(new Request('http://pricy.test' + p, {
+    method: 'POST',
+    body: form ? new URLSearchParams(body) : JSON.stringify(body),
+    ...(form ? {} : { headers: { 'content-type': 'application/json' } }),
+  }), env);
+
+  // DCR: known AI-client callback registers; anything else is refused
+  const reg = await post('/register', { client_name: 'Claude', redirect_uris: [CALLBACK], grant_types: ['authorization_code', 'refresh_token'] });
+  assert.strictEqual(reg.status, 201);
+  const client = await reg.json();
+  assert.ok(client.client_id, 'registration must mint a client_id');
+  assert.deepStrictEqual(client.grant_types, ['authorization_code', 'refresh_token'], 'requested grant types are echoed');
+  assert.strictEqual((await post('/register', { redirect_uris: ['https://evil.example/cb'] })).status, 400, 'unknown callback hosts must be refused');
+
+  // authorize: GET serves the login form
+  const verifier = 'test-verifier-abcdefghijklmnop';
+  const challenge = await pkce(verifier);
+  const authUrl = `/authorize?response_type=code&client_id=${client.client_id}&redirect_uri=${encodeURIComponent(CALLBACK)}&state=xyz-123&code_challenge=${challenge}&code_challenge_method=S256`;
+  const page = await worker.fetch(new Request('http://pricy.test' + authUrl), env);
+  assert.strictEqual(page.status, 200);
+  assert.match(await page.text(), /form method="post"/, 'authorize must serve a login form');
+  assert.strictEqual((await worker.fetch(new Request(`http://pricy.test/authorize?response_type=code&redirect_uri=${encodeURIComponent('https://evil.example/cb')}&code_challenge=${challenge}`), env)).status, 400, 'evil redirect_uri never gets a form');
+
+  // wrong password re-renders the form instead of redirecting
+  await api(env)('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } });
+  const bad = await post('/authorize', { action: 'login', email: 'ola@nordmann.no', password: 'wrong-wrong', redirect_uri: CALLBACK, state: 'xyz-123', code_challenge: challenge }, true);
+  assert.strictEqual(bad.status, 401);
+  assert.match(await bad.text(), /incorrect password/);
+
+  // correct login 303s back to the callback with code + state
+  const ok = await post('/authorize', { action: 'login', email: 'ola@nordmann.no', password: 'correcthorse1', redirect_uri: CALLBACK, state: 'xyz-123', code_challenge: challenge }, true);
+  assert.strictEqual(ok.status, 303, 'must be 303, not 307 — the callback is fetched with GET');
+  const loc = new URL(ok.headers.get('location'));
+  assert.strictEqual(loc.origin + loc.pathname, CALLBACK);
+  assert.strictEqual(loc.searchParams.get('state'), 'xyz-123');
+  const code = loc.searchParams.get('code');
+  assert.match(code, /^[0-9a-f]{64}$/);
+
+  // token exchange: PKCE enforced, code single-use
+  assert.strictEqual((await post('/token', { grant_type: 'authorization_code', code, code_verifier: 'not-the-verifier' }, true)).status, 400, 'wrong verifier must be rejected');
+  // the failed attempt consumed the code (single-use) — get a fresh one
+  const loc2 = new URL((await post('/authorize', { action: 'login', email: 'ola@nordmann.no', password: 'correcthorse1', redirect_uri: CALLBACK, code_challenge: challenge }, true)).headers.get('location'));
+  const code2 = loc2.searchParams.get('code');
+  const tok = await post('/token', { grant_type: 'authorization_code', code: code2, code_verifier: verifier, redirect_uri: CALLBACK }, true);
+  assert.strictEqual(tok.status, 200);
+  const { access_token, token_type } = await tok.json();
+  assert.strictEqual(token_type, 'Bearer');
+  assert.strictEqual((await post('/token', { grant_type: 'authorization_code', code: code2, code_verifier: verifier }, true)).status, 400, 'code must be single-use');
+
+  // the bearer authenticates MCP tool calls with no login tool involved
+  const res = await worker.fetch(new Request('http://pricy.test/mcp', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${access_token}` },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'search_products', arguments: { query: 'airpods' } } }),
+  }), env);
+  const { result } = await res.json();
+  assert.ok(!result.isError, 'bearer from the oauth flow must authenticate tool calls');
+  assert.strictEqual(JSON.parse(result.content[0].text).results[0].id, 'airpods');
+
+  // signup path creates the account and hands back a working code too
+  const signupLoc = (await post('/authorize', { action: 'signup', email: 'kari@example.no', password: 'newpassword1', redirect_uri: CALLBACK, code_challenge: challenge }, true)).headers.get('location');
+  assert.ok(new URL(signupLoc).searchParams.get('code'), 'signup via the authorize form must issue a code');
+  assert.strictEqual((await api(env)('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'newpassword1' } })).status, 200, 'the account is a real pricy account');
 });
 
 test('mcp: initialize mints a session id, lists tools, rejects junk', async () => {

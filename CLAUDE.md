@@ -43,14 +43,20 @@ Two Claude Design projects feed this repo:
   feeds reveal missed colors/SKUs. Rollout checklist: PLAN.md 4d.
 
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
-  Streamable-HTTP MCP server (no SDK, no OAuth — add to an AI client as a
-  no-auth remote server). Tools: login/signup (binds the `Mcp-Session-Id`
-  header to the shared `sessions` table), search_products, get_product,
-  buy_now (records an order in the `purchases` table — MVP, payment
-  assumed handled), watch_product/unwatch_product/list_watches (same
-  `watches` rows the web sees), list_purchases. Unlike the web signup
+  Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
+  `Mcp-Session-Id` header to the shared `sessions` table), search_products,
+  get_product, buy_now (records an order in the `purchases` table — MVP,
+  payment assumed handled), watch_product/unwatch_product/list_watches
+  (same `watches` rows the web sees), list_purchases. Unlike the web signup
   bridge, MCP signup on an existing passworded account verifies the
-  password (no hijack).
+  password (no hijack). claude.ai forces OAuth+DCR on custom connectors, so
+  the Worker also serves a minimal OAuth stack (`/.well-known/oauth-*`,
+  `/register`, `/authorize` login page, `/token`, PKCE S256): the access
+  token is a plain pricy session token, redirect_uris are allowlisted to
+  known AI-client callbacks (`redirectAllowed`) — extend per new client. No
+  refresh tokens; sessions last 30 days, then the client reconnects. These
+  paths are in `run_worker_first` (wrangler.jsonc) or the SPA fallback
+  swallows them.
 
 ## Rules
 

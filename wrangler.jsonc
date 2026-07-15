@@ -6,9 +6,10 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    // the SPA fallback must not answer MCP OAuth discovery probes with
-    // 200+HTML — the worker 404s /.well-known/* itself
-    "run_worker_first": ["/.well-known/*"]
+    // MCP OAuth surface: discovery, DCR, login page, token exchange must
+    // reach the worker — the SPA fallback answering 200+HTML there breaks
+    // claude.ai's connector flow
+    "run_worker_first": ["/.well-known/*", "/authorize", "/token", "/register", "/mcp"]
   },
   "d1_databases": [
     {

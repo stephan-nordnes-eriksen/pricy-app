@@ -15,6 +15,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, url TEXT, updated_at INTEGER, PRIMARY KEY (product_id, shop))',
   'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
   'CREATE TABLE IF NOT EXISTS purchases (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, created_at INTEGER NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS oauth_codes (code_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, redirect_uri TEXT NOT NULL, code_challenge TEXT NOT NULL, expires_at INTEGER NOT NULL)',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -105,11 +106,33 @@ async function upsertUser(db, email, passwordHash = null) {
   ).bind(email, displayName(email), passwordHash).first();
 }
 
-async function startSession(db, userId) {
+async function createSession(db, userId) {
   const token = newToken();
   await db.prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
     .bind(await sha(token), userId, Date.now() + SESSION_DAYS * 86400e3).run();
-  return `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
+  return token;
+}
+async function startSession(db, userId) {
+  return `${COOKIE}=${await createSession(db, userId)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
+}
+
+// shared by the MCP login/signup tools and the OAuth /authorize form.
+// login is strict; signup upserts but must verify the resulting password —
+// upsert never clobbers an existing one, so a wrong password on an existing
+// account fails here instead of hijacking it (unlike the web demo bridge).
+async function passwordAuth(db, action, email, password) {
+  if (!EMAIL_RE.test(email)) return { error: 'invalid email' };
+  if (action === 'signup') {
+    if (password.length < MIN_PASSWORD_LEN) return { error: `password must be at least ${MIN_PASSWORD_LEN} characters` };
+    const user = await upsertUser(db, email, await hashPassword(password));
+    if (!(await verifyPassword(password, user.password_hash))) return { error: 'an account with this email already exists — log in with its password' };
+    return { user };
+  }
+  const user = await db.prepare('SELECT id, email, name, password_hash FROM users WHERE email = ?').bind(email).first();
+  if (!user) return { error: 'no account for this email — create one first' };
+  if (!user.password_hash) return { error: 'this account has no password — set one on pricy.no (Account → Set password) first' };
+  if (!(await verifyPassword(password, user.password_hash))) return { error: 'incorrect password' };
+  return { user };
 }
 
 // one lookup for both auth surfaces: the web cookie and the MCP session id
@@ -212,23 +235,8 @@ async function mcpTool(db, sid, name, a) {
 
   if (name === 'login' || name === 'signup') {
     if (!sid) throw new Error('no MCP session id — reconnect to the server and try again');
-    const email = String(a.email || '').trim().toLowerCase();
-    const password = String(a.password || '');
-    if (!EMAIL_RE.test(email)) throw new Error('invalid email');
-    let user;
-    if (name === 'signup') {
-      if (password.length < MIN_PASSWORD_LEN) throw new Error(`password must be at least ${MIN_PASSWORD_LEN} characters`);
-      user = await upsertUser(db, email, await hashPassword(password));
-      // upsert never clobbers an existing password, so verify the result:
-      // unlike the web demo bridge, signup here must not log into someone
-      // else's account with the wrong password
-      if (!(await verifyPassword(password, user.password_hash))) throw new Error('an account with this email already exists — use the login tool with its password');
-    } else {
-      user = await db.prepare('SELECT id, email, name, password_hash FROM users WHERE email = ?').bind(email).first();
-      if (!user) throw new Error('no account for this email — use the signup tool');
-      if (!user.password_hash) throw new Error('this account has no password — set one on pricy.no (Account → Set password) first');
-      if (!(await verifyPassword(password, user.password_hash))) throw new Error('incorrect password');
-    }
+    const { user, error } = await passwordAuth(db, name, String(a.email || '').trim().toLowerCase(), String(a.password || ''));
+    if (error) throw new Error(error);
     await db.prepare('INSERT OR REPLACE INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
       .bind(await sha(sid), user.id, Date.now() + SESSION_DAYS * 86400e3).run();
     return { ok: true, user: { email: user.email, name: user.name } };
@@ -302,6 +310,121 @@ async function mcpTool(db, sid, name, a) {
   return { purchases: results.map(r => ({ order_id: r.id, product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price_nok: r.price, purchased_at: new Date(r.created_at).toISOString() })) };
 }
 
+// ── OAuth for MCP clients ──────────────────────────────────────────────────
+// claude.ai forces OAuth + Dynamic Client Registration on custom connectors
+// (no anonymous fallback — anthropics/claude-ai-mcp#457), so we serve the
+// minimum: RFC 8414 metadata, /register, /authorize (a real pricy login
+// page), /token with PKCE. The access token is a plain pricy session token
+// in the same `sessions` table the cookie and Mcp-Session-Id use.
+// ponytail: no refresh tokens (the 30-day session just expires; the client
+// reconnects), no scopes, no client table — redirect_uris are allowlisted
+// to known AI-client callbacks instead; extend the list per new client.
+const OAUTH_CODE_MINUTES = 5;
+const redirectAllowed = (u) =>
+  ['https://claude.ai/api/mcp/auth_callback', 'https://claude.com/api/mcp/auth_callback'].includes(u)
+  || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u); // MCP inspector / local dev
+
+const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function oauthWellKnown(url) {
+  if (url.pathname.startsWith('/.well-known/oauth-protected-resource')) {
+    return json({ resource: url.origin + '/mcp', authorization_servers: [url.origin] });
+  }
+  if (url.pathname.startsWith('/.well-known/oauth-authorization-server')) {
+    return json({
+      issuer: url.origin,
+      authorization_endpoint: url.origin + '/authorize',
+      token_endpoint: url.origin + '/token',
+      registration_endpoint: url.origin + '/register',
+      response_types_supported: ['code'],
+      grant_types_supported: ['authorization_code'],
+      code_challenge_methods_supported: ['S256'],
+      token_endpoint_auth_methods_supported: ['none'],
+    });
+  }
+  // anything else under /.well-known/ must 404 as JSON, never the SPA shell
+  return json({ error: 'not found' }, 404);
+}
+
+function authorizePage(q, error) {
+  const hidden = ['redirect_uri', 'state', 'code_challenge']
+    .map(k => `<input type="hidden" name="${k}" value="${esc(q[k] || '')}">`).join('');
+  return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connect to pricy.no</title>
+<body style="font-family:'Space Grotesk',system-ui,sans-serif;max-width:24rem;margin:10vh auto;padding:0 1rem;color:#0E0E0E">
+<h1 style="font-size:1.5rem;margin-bottom:.25rem">pricy.no</h1>
+<p style="margin-top:0">Log in to connect your pricy.no account.</p>
+${error ? `<p style="color:#b00020;border:2px solid #b00020;padding:.5rem">${esc(error)}</p>` : ''}
+<form method="post" style="display:grid;gap:.6rem">${hidden}
+<input name="email" type="email" placeholder="email" required autofocus style="padding:.6rem;border:2px solid #0E0E0E;font:inherit">
+<input name="password" type="password" placeholder="password" required minlength="${MIN_PASSWORD_LEN}" style="padding:.6rem;border:2px solid #0E0E0E;font:inherit">
+<button name="action" value="login" style="padding:.7rem;border:2px solid #0E0E0E;background:#0E0E0E;color:#fff;font:inherit;cursor:pointer">Log in</button>
+<button name="action" value="signup" style="padding:.7rem;border:2px solid #0E0E0E;background:#fff;font:inherit;cursor:pointer">Create account</button>
+</form></body></html>`, { status: error ? 401 : 200, headers: { 'content-type': 'text/html; charset=utf-8' } });
+}
+
+async function oauth(request, db, url) {
+  const route = request.method + ' ' + url.pathname;
+
+  if (route === 'POST /register') {
+    const body = await request.json().catch(() => ({}));
+    const uris = Array.isArray(body.redirect_uris) ? body.redirect_uris : [];
+    if (!uris.length || !uris.every(redirectAllowed)) return json({ error: 'invalid_redirect_uri' }, 400);
+    // no client table: the allowlist is the registration. client_id is opaque.
+    return json({
+      client_id: newToken(),
+      redirect_uris: uris,
+      grant_types: body.grant_types ?? ['authorization_code'],
+      response_types: ['code'],
+      token_endpoint_auth_method: 'none',
+      ...(body.client_name ? { client_name: String(body.client_name) } : {}),
+    }, 201);
+  }
+
+  if (url.pathname === '/authorize' && (request.method === 'GET' || request.method === 'POST')) {
+    const q = request.method === 'GET'
+      ? Object.fromEntries(url.searchParams)
+      : Object.fromEntries((await request.formData().catch(() => new FormData())).entries());
+    // re-validated on POST too — the hidden fields are attacker-writable
+    if (!redirectAllowed(String(q.redirect_uri || ''))) return json({ error: 'invalid redirect_uri' }, 400);
+    if (!q.code_challenge) return json({ error: 'code_challenge (PKCE S256) required' }, 400);
+    if (request.method === 'GET') {
+      if (q.response_type !== 'code' || (q.code_challenge_method || 'S256') !== 'S256') {
+        return json({ error: 'only response_type=code with S256 PKCE is supported' }, 400);
+      }
+      return authorizePage(q);
+    }
+    const { user, error } = await passwordAuth(db, q.action === 'signup' ? 'signup' : 'login',
+      String(q.email || '').trim().toLowerCase(), String(q.password || ''));
+    if (error) return authorizePage(q, error);
+    const code = newToken();
+    await db.prepare('INSERT INTO oauth_codes (code_hash, user_id, redirect_uri, code_challenge, expires_at) VALUES (?, ?, ?, ?, ?)')
+      .bind(await sha(code), user.id, q.redirect_uri, q.code_challenge, Date.now() + OAUTH_CODE_MINUTES * 60e3).run();
+    const loc = new URL(q.redirect_uri);
+    loc.searchParams.set('code', code);
+    if (q.state) loc.searchParams.set('state', q.state);
+    // 303, not 307 — the client must GET the callback, not replay the POST
+    return new Response(null, { status: 303, headers: { location: loc.toString() } });
+  }
+
+  if (route === 'POST /token') {
+    const form = Object.fromEntries((await request.formData().catch(() => new FormData())).entries());
+    if (form.grant_type !== 'authorization_code') return json({ error: 'unsupported_grant_type' }, 400);
+    // DELETE … RETURNING = atomic single-use, like login_tokens
+    const row = await db.prepare('DELETE FROM oauth_codes WHERE code_hash = ? AND expires_at > ? RETURNING user_id, redirect_uri, code_challenge')
+      .bind(await sha(String(form.code || '')), Date.now()).first();
+    const challenge = row && b64url(new Uint8Array(
+      await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(form.code_verifier || '')))));
+    if (!row || challenge !== row.code_challenge || (form.redirect_uri && form.redirect_uri !== row.redirect_uri)) {
+      return json({ error: 'invalid_grant' }, 400);
+    }
+    return json({ access_token: await createSession(db, row.user_id), token_type: 'Bearer', expires_in: SESSION_DAYS * 86400 });
+  }
+
+  return json({ error: 'not found' }, 404);
+}
+
 async function mcp(request, db) {
   if (request.method === 'DELETE') return new Response(null, { status: 204 }); // session end — nothing to tear down
   if (request.method !== 'POST') return new Response(null, { status: 405, headers: { allow: 'POST, DELETE' } });
@@ -310,7 +433,10 @@ async function mcp(request, db) {
     return json({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'parse error' } }, 400);
   }
   if (msg.id === undefined) return new Response(null, { status: 202 }); // notifications need no reply
-  const sid = request.headers.get('mcp-session-id');
+  // OAuth-connected clients (claude.ai) send a bearer session token; bare
+  // clients fall back to the Mcp-Session-Id + login-tool dance
+  const sid = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+    || request.headers.get('mcp-session-id');
   const reply = (body, headers = {}) => json({ jsonrpc: '2.0', id: msg.id, ...body }, 200, headers);
 
   if (msg.method === 'initialize') {
@@ -346,12 +472,12 @@ export default {
       await ensureSchema(env.DB);
       return mcp(request, env.DB);
     }
-    // MCP clients probe /.well-known/oauth-* for auth discovery; the SPA
-    // fallback answering 200+HTML there reads as a (garbage) OAuth server
-    // and breaks no-auth connection. 404 the whole prefix — we serve no
-    // well-knowns.
     if (url.pathname.startsWith('/.well-known/')) {
-      return json({ error: 'not found' }, 404);
+      return oauthWellKnown(url);
+    }
+    if (['/authorize', '/token', '/register'].includes(url.pathname)) {
+      await ensureSchema(env.DB);
+      return oauth(request, env.DB, url);
     }
     if (!url.pathname.startsWith('/api/')) {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('not found', { status: 404 });
