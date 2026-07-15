@@ -42,6 +42,16 @@ Two Claude Design projects feed this repo:
   `eans.json` arrays hold confirmed variants only — extend them as real
   feeds reveal missed colors/SKUs. Rollout checklist: PLAN.md 4d.
 
+- MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
+  Streamable-HTTP MCP server (no SDK, no OAuth — add to an AI client as a
+  no-auth remote server). Tools: login/signup (binds the `Mcp-Session-Id`
+  header to the shared `sessions` table), search_products, get_product,
+  buy_now (records an order in the `purchases` table — MVP, payment
+  assumed handled), watch_product/unwatch_product/list_watches (same
+  `watches` rows the web sees), list_purchases. Unlike the web signup
+  bridge, MCP signup on an existing passworded account verifies the
+  password (no hijack).
+
 ## Rules
 
 - `proto/index.html` and the repo-root design files are **sync-owned —

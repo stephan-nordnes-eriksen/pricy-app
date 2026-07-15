@@ -14,6 +14,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, url TEXT, updated_at INTEGER, PRIMARY KEY (product_id, shop))',
   'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
+  'CREATE TABLE IF NOT EXISTS purchases (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, created_at INTEGER NOT NULL)',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -111,6 +112,14 @@ async function startSession(db, userId) {
   return `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
 }
 
+// one lookup for both auth surfaces: the web cookie and the MCP session id
+async function sessionUser(db, token) {
+  if (!token) return null;
+  return db.prepare(
+    'SELECT u.id, u.email, u.name, u.password_hash, u.settings FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
+  ).bind(await sha(token), Date.now()).first();
+}
+
 const dayOf = (t) => new Date(t).toISOString().slice(0, 10);
 
 // products.meta = the static display fields; offers/history live in their
@@ -174,12 +183,168 @@ async function meBody(db, user) {
   return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {} };
 }
 
+// ── MCP (experiment) ───────────────────────────────────────────────────────
+// Streamable-HTTP MCP server, hand-rolled: single JSON-RPC POST endpoint at
+// /mcp, plain-JSON responses (no SSE stream — the spec allows 405 on GET).
+// Auth: the Mcp-Session-Id header minted at initialize doubles as a pricy
+// session token — the login/signup tools bind it to a user in the same
+// `sessions` table the web cookie uses, so every later tool call is
+// authenticated by the header the MCP client echoes back anyway.
+// ponytail: no OAuth, no Agents SDK, no Durable Objects — add the OAuth
+// dance when a client that requires it shows up.
+const MCP_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
+const obj = (properties = {}, required = []) => ({ type: 'object', properties, required });
+const str = (description) => ({ type: 'string', description });
+const MCP_TOOLS = [
+  { name: 'login', description: 'Log in to an existing pricy.no account. Required before using the other tools.', inputSchema: obj({ email: str('account email'), password: str('account password') }, ['email', 'password']) },
+  { name: 'signup', description: 'Create a pricy.no account (and log in). If the account already exists, the password must match.', inputSchema: obj({ email: str('email'), password: str(`password, min ${MIN_PASSWORD_LEN} characters`) }, ['email', 'password']) },
+  { name: 'search_products', description: 'Search the pricy.no catalog (Norwegian shops, prices in NOK). Returns matching products with their current best price.', inputSchema: obj({ query: str('free-text search, e.g. "headphones" or "sony tv"') }, ['query']) },
+  { name: 'get_product', description: 'Full detail for one product: every shop offer (price, shipping, stock, link) and recent price history.', inputSchema: obj({ product_id: str('id from search_products') }, ['product_id']) },
+  { name: 'buy_now', description: 'Buy the product immediately at the current cheapest in-stock price (or from a specific shop). Returns the order with the exact price charged.', inputSchema: obj({ product_id: str('id from search_products'), shop: str('optional: buy from this shop instead of the cheapest') }, ['product_id']) },
+  { name: 'watch_product', description: 'Add a product to your watchlist, optionally with a target price in NOK to be notified at.', inputSchema: obj({ product_id: str('id from search_products'), target_price: { type: 'number', description: 'optional target price in NOK' } }, ['product_id']) },
+  { name: 'unwatch_product', description: 'Remove a product from your watchlist.', inputSchema: obj({ product_id: str('id from search_products') }, ['product_id']) },
+  { name: 'list_watches', description: 'Your watchlist with current best prices.', inputSchema: obj() },
+  { name: 'list_purchases', description: 'Your buy_now order history.', inputSchema: obj() },
+];
+
+async function mcpTool(db, sid, name, a) {
+  if (!MCP_TOOLS.some(t => t.name === name)) throw new Error(`unknown tool: ${name}`);
+
+  if (name === 'login' || name === 'signup') {
+    if (!sid) throw new Error('no MCP session id — reconnect to the server and try again');
+    const email = String(a.email || '').trim().toLowerCase();
+    const password = String(a.password || '');
+    if (!EMAIL_RE.test(email)) throw new Error('invalid email');
+    let user;
+    if (name === 'signup') {
+      if (password.length < MIN_PASSWORD_LEN) throw new Error(`password must be at least ${MIN_PASSWORD_LEN} characters`);
+      user = await upsertUser(db, email, await hashPassword(password));
+      // upsert never clobbers an existing password, so verify the result:
+      // unlike the web demo bridge, signup here must not log into someone
+      // else's account with the wrong password
+      if (!(await verifyPassword(password, user.password_hash))) throw new Error('an account with this email already exists — use the login tool with its password');
+    } else {
+      user = await db.prepare('SELECT id, email, name, password_hash FROM users WHERE email = ?').bind(email).first();
+      if (!user) throw new Error('no account for this email — use the signup tool');
+      if (!user.password_hash) throw new Error('this account has no password — set one on pricy.no (Account → Set password) first');
+      if (!(await verifyPassword(password, user.password_hash))) throw new Error('incorrect password');
+    }
+    await db.prepare('INSERT OR REPLACE INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
+      .bind(await sha(sid), user.id, Date.now() + SESSION_DAYS * 86400e3).run();
+    return { ok: true, user: { email: user.email, name: user.name } };
+  }
+
+  const user = await sessionUser(db, sid);
+  if (!user) throw new Error('not logged in — use the login tool (or signup to create an account)');
+  await seedIfEmpty(db);
+
+  const brief = (p) => ({ id: p.id, name: p.name, brand: p.brand, category: p.cat, best_price_nok: p.best, was_nok: p.was, drop_pct: p.drop, shops: p.shops, in_stock: p.stock });
+
+  if (name === 'search_products') {
+    const terms = String(a.query || '').toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) throw new Error('query required');
+    const cat = await catalogBody(db);
+    const scored = cat
+      .map(p => [terms.filter(t => `${p.name} ${p.brand ?? ''} ${p.cat ?? ''} ${p.icon ?? ''}`.toLowerCase().includes(t)).length, p])
+      .filter(([s]) => s > 0)
+      .sort((x, y) => y[0] - x[0]);
+    if (!scored.length) return { results: [], hint: 'no matches — categories: ' + [...new Set(cat.map(p => p.cat))].join(', ') };
+    return { results: scored.slice(0, 8).map(([, p]) => brief(p)) };
+  }
+
+  if (name === 'get_product') {
+    const p = (await catalogBody(db)).find(q => q.id === String(a.product_id || ''));
+    if (!p) throw new Error('unknown product_id');
+    return { ...brief(p), offers: p.offers, price_history_nok: p.history };
+  }
+
+  if (name === 'buy_now') {
+    const pid = String(a.product_id || '');
+    const prod = await db.prepare('SELECT meta FROM products WHERE id = ?').bind(pid).first();
+    if (!prod) throw new Error('unknown product_id');
+    const offer = a.shop
+      ? await db.prepare('SELECT shop, price, stock, url FROM offers WHERE product_id = ? AND shop = ?').bind(pid, String(a.shop)).first()
+      : await db.prepare('SELECT shop, price, stock, url FROM offers WHERE product_id = ? AND stock = 1 ORDER BY price LIMIT 1').bind(pid).first();
+    if (!offer) throw new Error(a.shop ? 'no offer from that shop' : 'no in-stock offer for this product');
+    if (!offer.stock) throw new Error(`${offer.shop} is out of stock`);
+    const order = await db.prepare('INSERT INTO purchases (user_id, product_id, shop, price, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id, created_at')
+      .bind(user.id, pid, offer.shop, offer.price, Date.now()).first();
+    // ponytail: MVP order record only — payment/fulfillment assumed handled
+    return { ok: true, order_id: order.id, product_id: pid, product: JSON.parse(prod.meta).name, shop: offer.shop, price_nok: offer.price, purchased_at: new Date(order.created_at).toISOString() };
+  }
+
+  if (name === 'watch_product') {
+    const pid = String(a.product_id || '');
+    if (!(await db.prepare('SELECT 1 FROM products WHERE id = ?').bind(pid).first())) throw new Error('unknown product_id');
+    const target = a.target_price == null ? null : Math.round(Number(a.target_price));
+    if (target !== null && !(target > 0)) throw new Error('target_price must be a positive number');
+    await db.prepare('INSERT INTO watches (user_id, product_id, target, paused) VALUES (?, ?, ?, 0) ON CONFLICT(user_id, product_id) DO UPDATE SET target = excluded.target, paused = 0')
+      .bind(user.id, pid, target).run();
+    return { ok: true, watching: pid, target_price_nok: target };
+  }
+
+  if (name === 'unwatch_product') {
+    const row = await db.prepare('DELETE FROM watches WHERE user_id = ? AND product_id = ? RETURNING product_id')
+      .bind(user.id, String(a.product_id || '')).first();
+    return { ok: true, removed: !!row };
+  }
+
+  if (name === 'list_watches') {
+    const byId = Object.fromEntries((await catalogBody(db)).map(p => [p.id, p]));
+    const { results } = await db.prepare('SELECT product_id, target, paused FROM watches WHERE user_id = ? ORDER BY rowid').bind(user.id).all();
+    return { watches: results.map(w => ({ product_id: w.product_id, name: byId[w.product_id]?.name, best_price_nok: byId[w.product_id]?.best, target_price_nok: w.target, paused: !!w.paused })) };
+  }
+
+  // list_purchases
+  const { results } = await db.prepare(
+    'SELECT pu.id, pu.product_id, pu.shop, pu.price, pu.created_at, pr.meta FROM purchases pu LEFT JOIN products pr ON pr.id = pu.product_id WHERE pu.user_id = ? ORDER BY pu.id DESC'
+  ).bind(user.id).all();
+  return { purchases: results.map(r => ({ order_id: r.id, product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price_nok: r.price, purchased_at: new Date(r.created_at).toISOString() })) };
+}
+
+async function mcp(request, db) {
+  if (request.method === 'DELETE') return new Response(null, { status: 204 }); // session end — nothing to tear down
+  if (request.method !== 'POST') return new Response(null, { status: 405, headers: { allow: 'POST, DELETE' } });
+  const msg = await request.json().catch(() => null);
+  if (!msg || msg.jsonrpc !== '2.0' || typeof msg.method !== 'string') {
+    return json({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'parse error' } }, 400);
+  }
+  if (msg.id === undefined) return new Response(null, { status: 202 }); // notifications need no reply
+  const sid = request.headers.get('mcp-session-id');
+  const reply = (body, headers = {}) => json({ jsonrpc: '2.0', id: msg.id, ...body }, 200, headers);
+
+  if (msg.method === 'initialize') {
+    const v = msg.params?.protocolVersion;
+    return reply({ result: {
+      protocolVersion: MCP_VERSIONS.includes(v) ? v : MCP_VERSIONS[0],
+      capabilities: { tools: {} },
+      serverInfo: { name: 'pricy.no', version: '0.1.0' },
+      instructions: 'pricy.no — Norwegian price comparison. Log in with the login tool (or signup to create an account) first; then search_products, get_product, watch_product, and buy_now. All prices are NOK.',
+    } }, { 'mcp-session-id': newToken() });
+  }
+  if (msg.method === 'ping') return reply({ result: {} });
+  if (msg.method === 'tools/list') return reply({ result: { tools: MCP_TOOLS } });
+  if (msg.method === 'tools/call') {
+    try {
+      const out = await mcpTool(db, sid, msg.params?.name, msg.params?.arguments || {});
+      return reply({ result: { content: [{ type: 'text', text: JSON.stringify(out) }] } });
+    } catch (e) {
+      return reply({ result: { content: [{ type: 'text', text: e.message }], isError: true } });
+    }
+  }
+  return reply({ error: { code: -32601, message: 'method not found' } });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.hostname === 'www.pricy.no') {
       url.hostname = 'pricy.no';
       return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname === '/mcp') {
+      await ensureSchema(env.DB);
+      return mcp(request, env.DB);
     }
     if (!url.pathname.startsWith('/api/')) {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('not found', { status: 404 });
@@ -278,9 +443,7 @@ export default {
     }
 
     const token = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`))?.[1];
-    const user = token && await db.prepare(
-      'SELECT u.id, u.email, u.name, u.password_hash, u.settings FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
-    ).bind(await sha(token), Date.now()).first();
+    const user = await sessionUser(db, token);
 
     if (route === 'GET /api/me') {
       return user ? json(await meBody(db, user)) : json({ error: 'unauthenticated' }, 401);

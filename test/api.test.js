@@ -409,6 +409,108 @@ test('a failing source freezes its shop without aborting the others', async () =
   assert.ok(errors.some(e => e.includes('Komplett') && e.includes('frozen')), 'the failure must be logged');
 });
 
+// MCP experiment: Streamable-HTTP JSON-RPC at /mcp; login binds the
+// Mcp-Session-Id header to the shared sessions table.
+function mcpClient(env) {
+  let sid = null, id = 0;
+  const rpc = async (method, params) => {
+    const res = await worker.fetch(new Request('http://pricy.test/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(sid ? { 'mcp-session-id': sid } : {}) },
+      body: JSON.stringify({ jsonrpc: '2.0', id: ++id, method, params }),
+    }), env);
+    sid ??= res.headers.get('mcp-session-id');
+    return res.json();
+  };
+  const tool = async (name, args = {}) => {
+    const { result } = await rpc('tools/call', { name, arguments: args });
+    return { error: !!result.isError, ...(result.isError ? { message: result.content[0].text } : { data: JSON.parse(result.content[0].text) }) };
+  };
+  return { rpc, tool };
+}
+
+test('mcp: initialize mints a session id, lists tools, rejects junk', async () => {
+  const env = { DB: d1() };
+  const { rpc } = mcpClient(env);
+  const init = await rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 't', version: '0' } });
+  assert.strictEqual(init.result.protocolVersion, '2025-06-18');
+  assert.strictEqual(init.result.serverInfo.name, 'pricy.no');
+
+  const tools = (await rpc('tools/list')).result.tools.map(t => t.name);
+  assert.deepStrictEqual(tools, ['login', 'signup', 'search_products', 'get_product', 'buy_now', 'watch_product', 'unwatch_product', 'list_watches', 'list_purchases']);
+
+  assert.strictEqual((await rpc('nope/nope')).error.code, -32601);
+  const get = await worker.fetch(new Request('http://pricy.test/mcp'), env);
+  assert.strictEqual(get.status, 405, 'GET (SSE stream) is not supported');
+});
+
+test('mcp: tools require login; signup → search → buy → history round-trips', async () => {
+  const env = { DB: d1() };
+  const { rpc, tool } = mcpClient(env);
+  await rpc('initialize', { protocolVersion: '2025-06-18' });
+
+  const locked = await tool('search_products', { query: 'airpods' });
+  assert.ok(locked.error && locked.message.includes('not logged in'), 'search before login must fail with guidance');
+
+  assert.deepStrictEqual((await tool('signup', { email: 'ola@nordmann.no', password: 'correcthorse1' })).data.user.email, 'ola@nordmann.no');
+
+  const search = await tool('search_products', { query: 'airpods' });
+  assert.strictEqual(search.data.results[0].id, 'airpods');
+  assert.strictEqual(search.data.results[0].best_price_nok, seed.find(p => p.id === 'airpods').offers.reduce((m, o) => Math.min(m, o.price), Infinity));
+
+  const detail = (await tool('get_product', { product_id: 'airpods' })).data;
+  assert.ok(detail.offers.length > 1 && detail.price_history_nok.length, 'detail carries offers and history');
+
+  const buy = (await tool('buy_now', { product_id: 'airpods' })).data;
+  const cheapestInStock = detail.offers.find(o => o.stock); // offers are price-ordered
+  assert.strictEqual(buy.price_nok, cheapestInStock.price, 'buy_now charges the cheapest in-stock price');
+  assert.strictEqual(buy.shop, cheapestInStock.shop);
+
+  const orders = (await tool('list_purchases')).data.purchases;
+  assert.strictEqual(orders.length, 1);
+  assert.strictEqual(orders[0].order_id, buy.order_id);
+  assert.strictEqual(orders[0].product_id, 'airpods');
+
+  assert.ok((await tool('buy_now', { product_id: 'nope' })).error, 'unknown product must not create an order');
+  const oos = detail.offers.find(o => !o.stock);
+  if (oos) assert.ok((await tool('buy_now', { product_id: 'airpods', shop: oos.shop })).error, 'out-of-stock shop must be refused');
+});
+
+test('mcp: login is strict and signup cannot hijack an existing passworded account', async () => {
+  const env = { DB: d1() };
+  const web = api(env);
+  await web('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } });
+
+  const { rpc, tool } = mcpClient(env);
+  await rpc('initialize', { protocolVersion: '2025-06-18' });
+  assert.ok((await tool('login', { email: 'nobody@example.no', password: 'whatever12' })).error, 'unknown account');
+  assert.ok((await tool('login', { email: 'kari@example.no', password: 'wrong-wrong' })).error, 'wrong password');
+  assert.ok((await tool('signup', { email: 'kari@example.no', password: 'wrong-wrong' })).error, 'signup with wrong password must not log into the existing account');
+  assert.strictEqual((await tool('login', { email: 'kari@example.no', password: 'correcthorse1' })).data.ok, true);
+});
+
+test('mcp: watches are the same list the web sees', async () => {
+  const env = { DB: d1() };
+  const { rpc, tool } = mcpClient(env);
+  await rpc('initialize', { protocolVersion: '2025-06-18' });
+  await tool('signup', { email: 'ola@nordmann.no', password: 'correcthorse1' });
+
+  assert.strictEqual((await tool('watch_product', { product_id: 'airpods', target_price: 1999 })).data.target_price_nok, 1999);
+  const watches = (await tool('list_watches')).data.watches;
+  assert.strictEqual(watches.length, 1);
+  assert.strictEqual(watches[0].product_id, 'airpods');
+  assert.ok(watches[0].best_price_nok > 0, 'watchlist carries current best price');
+
+  // same rows through the web surface
+  const web = api(env);
+  const cookie = cookieOf(await web('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  assert.deepStrictEqual((await (await web('/api/me', { cookie })).json()).watches, [{ id: 'airpods', target: 1999, paused: 0 }]);
+
+  assert.strictEqual((await tool('unwatch_product', { product_id: 'airpods' })).data.removed, true);
+  assert.deepStrictEqual((await tool('list_watches')).data.watches, []);
+  assert.ok((await tool('watch_product', { product_id: 'not-a-product' })).error, 'unknown product cannot be watched');
+});
+
 // 4d interim: the laptop crawler pushes rows to POST /api/ingest
 test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one price point per day', async () => {
   const DB = d1();
