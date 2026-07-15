@@ -26,8 +26,16 @@ Two Claude Design projects feed this repo:
   (gitignored). `/api/catalog.json` is a Worker route (4c): D1
   `products`/`offers`/`price_points`, seeded from that file on first use,
   offers refreshed by the hourly cron `scheduled` handler.
-  `syntheticFeed()` in `worker/index.js` is the swap point for a real
-  price source — until one is signed, prices are synthetic jiggle.
+- real price sources (4d) live in `worker/sources.js`: per-shop config in
+  the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
+  feeds, URLs in the `ADTRACTION_FEEDS` secret, rows matched to products
+  by EAN via hand-written `worker/eans.json`) and `scrape` (first-party
+  JSON-LD off the shop's own product pages). **Never scrape competing
+  comparison services (Prisjakt etc.).** A shop with no/failing source
+  freezes at its last stored price; empty `SOURCES` (current prod state)
+  falls back to the synthetic jiggle. `eans.json` arrays hold confirmed
+  variants only — extend them as real feeds reveal missed colors/SKUs.
+  Go-live checklist (Adtraction signup etc.) is in PLAN.md 4d.
 
 ## Rules
 
@@ -67,6 +75,9 @@ Two Claude Design projects feed this repo:
    Workers Builds push-to-deploy not set up.
 
 Known upstream gaps (fix in Claude Design, then extend tests):
+- Offers now carry a `url` (tracking deep link / shop page) in the catalog
+  API, but the prototype's offer rows render no "go to shop" link yet —
+  add it upstream when convenient.
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
   passed out, awaitable verdict, server errors shown in the form), and
   password login/signup/change are real (PBKDF2-hashed, verified

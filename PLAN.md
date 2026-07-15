@@ -124,9 +124,50 @@ piece is `syntheticFeed()` in `worker/index.js` — it jiggles current offer
 prices. Swapping in a real source (affiliate feeds were the runner-up)
 means replacing that single function; nothing else in the pipeline moves.
 
+### 4d — Real price ingestion (multi-source)  ← current
+
+Code shipped: `worker/sources.js` — a source registry keyed by shop in the
+`SOURCES` JSON var (wrangler.jsonc), every source emitting `ingest()`-shaped
+rows. Two source types:
+
+- **`adtraction`** — per-brand XML product feeds (Adtraction is the dominant
+  Nordic network; Elkjøp, Komplett, NetOnNet, Dustin, Clas Ohlson, CDON
+  confirmed on it, Power/Proshop unverified). Stream-parsed, rows matched to
+  the catalog by EAN via `worker/eans.json`, tracking deep link →
+  `offers.url`. Feed URLs (they embed the channel token) live in the
+  `ADTRACTION_FEEDS` secret `{shop: url}`.
+- **`scrape`** — first-party schema.org JSON-LD off the shop's own product
+  pages (`urls: {productId: page}` in the shop's SOURCES entry), honest
+  User-Agent, robots.txt checked by hand when configuring a shop. **Never
+  scrape competing comparison services (Prisjakt/Prisguiden etc.).**
+
+Semantics: a shop with no source (or a failing one) **freezes** at its last
+stored price — ingest only upserts rows it receives; failures are logged,
+never abort other shops. Empty `SOURCES` falls back to `syntheticFeed()`
+(today's prod state); delete the synthetic path once the first real source
+is stable in prod. `offers` gained `url` + `updated_at`; the catalog API now
+carries `url` per offer (UI adoption of deep links is an upstream Claude
+Design change, recorded in CLAUDE.md).
+
+**Human steps to go live (in order):**
+1. Sign up as an Adtraction publisher (site: pricy.no), apply to the 8
+   brands' programs; check the brand directory for Power/Proshop, fall back
+   to Awin/Partner-ads/Tradedoubler for shops not on Adtraction.
+2. As approvals land: `wrangler secret put ADTRACTION_FEEDS` with
+   `{"Komplett": "https://…", …}` and add
+   `"Komplett": {"type": "adtraction"}` to `vars.SOURCES` in wrangler.jsonc.
+3. Verify the first real feed's field names against the candidates in
+   `worker/sources.js` (ean/price/instock/trackingurl variants).
+4. For shops without any network: collect product-page URLs (+ robots.txt
+   check), configure `{"type": "scrape", "urls": {…}}`.
+5. Deploy, watch cron logs for `ingest: <shop> … rows`, spot-check prices
+   against the shops.
+6. Kelkoo Group (contract-based shopping API) is the future single-feed
+   option — fits the same source seam if ever signed.
+
 Order matters: 4a proves the hydration seam cheaply, 4b builds the first
-real backend on a proven seam, 4c fills the pipeline (real feed pending a
-business signature).
+real backend on a proven seam, 4c fills the pipeline, 4d swaps in real
+sources shop-by-shop behind the same `ingest()`.
 
 Not planned here: payments, SSR/SEO — separate decisions once real data
 is live. Real BankID is parked until mostly everything else is done
