@@ -2990,7 +2990,7 @@ function ResultRow({ p, go, spark, saved, onSave }) {
         <Price value={p.best} size={24} />
         <div className="rrow__shops">{p.shops} shops →</div>
       </div>
-      <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Track price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}>
+      <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}>
         <Icon name="bookmark" size={17} />
       </button>
     </div>
@@ -3156,11 +3156,10 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
   const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat]);
   const [sort, setSort] = useState('best');
   const [f, setF] = useState({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, nc: false });
-  const [saved, setSaved] = useState({});
+  useWatchStore();
   // reset filters when the search changes
   useEffect(() => { setF({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, nc: false }); }, [query, cat]);
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
-  const onSave = (id) => setSaved(s => ({ ...s, [id]: !s[id] }));
 
   const prices = baseResults.map(p => p.best);
   const base = {
@@ -3239,7 +3238,7 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
             </div>
           ) : (
             <div className="rlist">
-              {list.map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} saved={saved[p.id]} onSave={onSave} />)}
+              {list.map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round(p.best * 0.92 / 10) * 10)} />)}
             </div>
           )}
         </main>
