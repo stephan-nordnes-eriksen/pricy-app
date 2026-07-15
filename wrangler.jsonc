@@ -16,6 +16,11 @@
       "database_id": "ae84c6cb-b7f8-4025-b7a8-7bfb1f9f8dc1"
     }
   ],
+  "routes": [
+    { "pattern": "pricy.no", "custom_domain": true },
+    // www 301s to apex in the fetch handler — keeps the session cookie on one host
+    { "pattern": "www.pricy.no", "custom_domain": true }
+  ],
   // hourly offer refresh (worker scheduled handler); price_points stay
   // one-per-day via the upsert
   "triggers": { "crons": ["0 * * * *"] }

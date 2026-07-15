@@ -29,19 +29,20 @@ the token/kit reference, but nothing is built from it.
 dist/index.html's real script pipeline (gating, login, BankID→onboarding,
 search suggest, product nav, logout, icons).
 
-## Phase 2 — Deploy to Cloudflare ✅ (manual deploys; domain not attached)
+## Phase 2 — Deploy to Cloudflare ✅ (manual deploys; pricy.no attached)
 
-Live at https://pricy.stephanruler.workers.dev — Worker `pricy`, D1
-`pricy-app`, hourly cron. Deploy with `npm run deploy`.
+Live at https://pricy.no — Worker `pricy`, D1 `pricy-app`, hourly cron.
+Deploy with `npm run deploy`. Domain cut over 2026-07-15: pricy.no +
+www.pricy.no are custom domains on `pricy` (www 301s to apex in the
+worker); the old SvelteKit site's attachment was deleted, and the
+workers.dev URL is disabled (routes present, no `workers_dev`).
 
-- **The account's `pricy` D1 is NOT ours** — it belongs to the project
-  currently serving pricy.no (a SvelteKit app on the same account), even
-  though `d1 list` misreports it as 0 tables. Never bind it.
+- **The account's `pricy` D1 is NOT ours** — it belonged to the old
+  pricy.no SvelteKit project (now dark), even though `d1 list` misreports
+  it as 0 tables. Never bind it.
 - Workers Builds push-to-deploy: repo got a remote 2026-07-15
   (github.com/stephan-nordnes-eriksen/pricy-app, `origin`/`main`) — can be
   set up whenever manual `npm run deploy` gets old.
-- Attach pricy.no in the dashboard only when deliberately cutting over
-  from the existing site.
 - Email Service binding still unwired (see 4b) — magic-link mail is
   console-logged; login works via the demo bridges.
 

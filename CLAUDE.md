@@ -61,9 +61,9 @@ Two Claude Design projects feed this repo:
    view switch in its last babel block), mirror that in `boot.jsx`.
 3. Commit (sync and boot/test adjustments separately), push to `origin
    main` (github.com/stephan-nordnes-eriksen/pricy-app), then
-   `npm run deploy` (live: https://pricy.stephanruler.workers.dev — Worker
-   `pricy`, D1 `pricy-app`; the account's other `pricy` D1 belongs to the
-   project serving pricy.no — never bind it). Deploys are still manual —
+   `npm run deploy` (live: https://pricy.no — Worker `pricy`, D1
+   `pricy-app`; the account's other `pricy` D1 belonged to the old
+   pricy.no project — never bind it). Deploys are still manual —
    Workers Builds push-to-deploy not set up.
 
 Known upstream gaps (fix in Claude Design, then extend tests):
