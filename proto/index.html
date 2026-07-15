@@ -2439,14 +2439,14 @@ function AppHeader({ go, onLogout }) {
   const [q, setQ] = useState('');
   const [focus, setFocus] = useState(false);
   const [menu, setMenu] = useState(false);
-  useWatchStore();
-  const hits = WatchStore.hits();
   useEffect(() => {
     if (!menu) return;
     const close = () => setMenu(false);
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, [menu]);
+  useWatchStore();
+  const hits = WatchStore.hits();
   const submit = (e) => { e && e.preventDefault(); const query = q.trim(); if (!query) return; setFocus(false); go('results', { query }); };
   return (
     <header className="app-hdr">
