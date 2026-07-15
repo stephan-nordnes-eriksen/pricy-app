@@ -10,12 +10,12 @@
 
 import eans from './eans.json' with { type: 'json' };
 
-const UA = 'pricy.no price watcher (kontakt@pricy.no)';
+export const UA = 'pricy.no price watcher (kontakt@pricy.no)';
 
 // digits only, leading zeros dropped, so a 12-digit UPC and its 13-digit
 // zero-padded EAN form land on the same key
-const eanKey = (s) => String(s || '').replace(/\D/g, '').replace(/^0+/, '');
-const EAN_TO_PRODUCT = {};
+export const eanKey = (s) => String(s || '').replace(/\D/g, '').replace(/^0+/, '');
+export const EAN_TO_PRODUCT = {};
 for (const [productId, list] of Object.entries(eans)) {
   for (const e of list) EAN_TO_PRODUCT[eanKey(e)] = productId;
 }

@@ -165,6 +165,12 @@ Outstanding tasks (in rough order):
    `SOURCES` makes the cron a no-op, so pushed prices are never
    overwritten. To crawl: fill `crawl-urls.json`, check robots.txt for
    each shop, `node tools/crawl.mjs --dry`, then without `--dry`.
+   Since shipped on top (2026-07-15): `tools/discover.mjs` (sitemap →
+   slug shortlist → JSON-LD EAN confirm → `--write` into
+   `crawl-urls.json`), crawl flags `--shop/--limit/--out`, and
+   `npm run test:crawlers` (on-demand live check, one page per shop —
+   never part of `npm test`). First real rows are live in prod:
+   Power beats-pro + xbox. Coverage plan below.
 2. **Adtraction rollout (the better solution, later):** publisher signup
    (site: pricy.no), apply to the 8 brands (Power/Proshop coverage
    unverified — check the brand directory; fall back to
@@ -181,6 +187,50 @@ Outstanding tasks (in rough order):
    API yet).
 6. **Kelkoo Group** (contract-based shopping API) — future single-feed
    option; fits the same source seam if ever signed.
+
+#### Coverage rollout — ingest more products (2026-07-15)
+
+State: 24 products × 8 shops = 192 offer cells; 2 are real (Power), the
+rest still serve seeded demo prices and stay frozen until a real row
+arrives. Goal: every product shows ≥2 shops with real prices and deep
+links, or a note here on why not (shop blocks us / doesn't stock it).
+
+Per-shop ritual (repeat for each scrapeable shop):
+
+1. **Bot posture:** `curl -A "<UA in worker/sources.js>" <origin>/robots.txt`.
+   429/403 → shop is feed-only; park it for Adtraction (task 2), no UA
+   games. Elkjøp confirmed blocked 2026-07-15.
+2. **Discover:** `node tools/discover.mjs <Shop> <origin>` (no `--write`).
+   Triage the output: "confirmed by EAN" is done; "unconfirmed candidate"
+   with an EAN that is genuinely the same product (color/regional variant)
+   → append it to `worker/eans.json` (13-digit, zero-padded) and re-run
+   with `--write`; anything else ignore.
+3. **Hand-fill the misses:** the slug heuristic is English-token based and
+   misses Norwegian slugs/marketing paths — paste product-page URLs
+   straight into `tools/crawl-urls.json` for whatever discovery didn't
+   find. Tune the 0.5 token threshold in `discover.mjs` only if
+   hand-adding gets old.
+4. **Validate:** `npm run test:crawlers`, then
+   `node tools/crawl.mjs --dry --shop <Shop>`.
+5. **Ship:** `node tools/crawl.mjs`, spot-check
+   `https://pricy.no/api/catalog.json`.
+
+Shop order, easiest first:
+
+- **Power** — pipeline proven (2/24); finish by hand-adding URLs for the
+  misses (step 3).
+- **Komplett, Proshop, NetOnNet, Dustin** — tech-heavy, should stock most
+  of the catalog; run the ritual as-is.
+- **Clas Ohlson, CDON** — partial coverage expected (few catalog matches /
+  marketplace JSON-LD quality unknown); do last, accept gaps.
+- **Elkjøp** — scrape-blocked; waits for the Adtraction feed.
+
+Cadence: re-run `node tools/crawl.mjs` manually every day or two so
+`price_points` history accrues. Graduation: once a shop's URL set is
+stable and robots-ok, move it into `vars.SOURCES` as
+`{"type":"scrape","urls":{…}}` (task 3) — the hourly Worker cron takes
+over and the laptop drops out for that shop. Adtraction (task 2) replaces
+scraping per shop as feeds get approved.
 
 Order matters: 4a proves the hydration seam cheaply, 4b builds the first
 real backend on a proven seam, 4c fills the pipeline, 4d swaps in real

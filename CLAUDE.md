@@ -34,8 +34,10 @@ Two Claude Design projects feed this repo:
   comparison services (Prisjakt etc.).** A shop with no/failing source
   freezes at its last stored price; empty `SOURCES` (current prod state)
   makes the cron a no-op. The interim price writer is manual:
-  `node tools/crawl.mjs [--dry]` scrapes first-party pages listed in
-  `tools/crawl-urls.json` and POSTs to `/api/ingest` (bearer =
+  `node tools/crawl.mjs [--dry] [--shop X] [--limit N] [--out f.json]`
+  scrapes first-party pages listed in `tools/crawl-urls.json` and POSTs to
+  `/api/ingest` (`npm run test:crawlers` live-checks one page per shop,
+  on demand only) (bearer =
   `INGEST_TOKEN` secret; token also in untracked `tools/.ingest-token`).
   `eans.json` arrays hold confirmed variants only — extend them as real
   feeds reveal missed colors/SKUs. Rollout checklist: PLAN.md 4d.

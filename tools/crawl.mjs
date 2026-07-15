@@ -4,8 +4,11 @@
 // /api/ingest. Never point this at competing comparison services
 // (Prisjakt etc.) — shops' own pages only.
 //
-// Usage:  node tools/crawl.mjs [--dry]
+// Usage:  node tools/crawl.mjs [--dry] [--shop <name>] [--limit <n>] [--out <file>]
 //   --dry          crawl and print rows, POST nothing
+//   --shop <name>  only crawl this shop (validate one crawler before going all in)
+//   --limit <n>    at most n products per shop
+//   --out <file>   also write the scraped rows as JSON to <file>
 // Env:
 //   PRICY_URL      target origin (default https://pricy.no)
 //   INGEST_TOKEN   bearer token; falls back to tools/.ingest-token (untracked)
@@ -13,16 +16,21 @@
 // crawl-urls.json shape: { "Elkjøp": { "airpods": "https://www.elkjop.no/…" } }
 // Shop names must match the catalog's; product ids come from worker/seed.json.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { scrapeSource } from '../worker/sources.js';
 
+const arg = (name) => { const i = process.argv.indexOf(name); return i >= 0 ? process.argv[i + 1] : null; };
 const dry = process.argv.includes('--dry');
+const shopFilter = arg('--shop');
+const limit = Number(arg('--limit')) || Infinity;
+const out = arg('--out');
 const base = process.env.PRICY_URL || 'https://pricy.no';
 const urlsByShop = JSON.parse(readFileSync(new URL('./crawl-urls.json', import.meta.url), 'utf8'));
 
 const rows = [];
 for (const [shop, urls] of Object.entries(urlsByShop)) {
-  for (const [pid, url] of Object.entries(urls)) {
+  if (shopFilter && shop !== shopFilter) continue;
+  for (const [pid, url] of Object.entries(urls).slice(0, limit)) {
     // ponytail: one page at a time with a pause — polite to the shops,
     // and a manual run is in no hurry
     rows.push(...await scrapeSource(shop, { urls: { [pid]: url } }));
@@ -31,7 +39,8 @@ for (const [shop, urls] of Object.entries(urlsByShop)) {
 }
 
 for (const r of rows) console.log(`${r.shop}\t${r.product_id}\tkr ${r.price}${r.stock ? '' : '\t(out of stock)'}`);
-console.log(`crawled ${rows.length} row(s) from ${Object.keys(urlsByShop).length} shop(s)`);
+console.log(`crawled ${rows.length} row(s)`);
+if (out) writeFileSync(out, JSON.stringify(rows, null, 2) + '\n');
 if (!rows.length) process.exit(1);
 if (dry) process.exit(0);
 
