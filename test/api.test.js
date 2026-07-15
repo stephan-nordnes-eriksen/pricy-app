@@ -504,9 +504,18 @@ test('mcp oauth: register → authorize (login page) → code → token = workin
   const code2 = loc2.searchParams.get('code');
   const tok = await post('/token', { grant_type: 'authorization_code', code: code2, code_verifier: verifier, redirect_uri: CALLBACK }, true);
   assert.strictEqual(tok.status, 200);
-  const { access_token, token_type } = await tok.json();
+  const { access_token, token_type, refresh_token } = await tok.json();
   assert.strictEqual(token_type, 'Bearer');
+  assert.ok(refresh_token && refresh_token !== access_token, 'a distinct refresh token is issued');
   assert.strictEqual((await post('/token', { grant_type: 'authorization_code', code: code2, code_verifier: verifier }, true)).status, 400, 'code must be single-use');
+
+  // refresh grant mints a fresh access token; junk refresh tokens are rejected
+  const refreshed = await post('/token', { grant_type: 'refresh_token', refresh_token }, true);
+  assert.strictEqual(refreshed.status, 200);
+  const r = await refreshed.json();
+  assert.ok(r.access_token && r.access_token !== access_token, 'refresh must mint a new access token');
+  assert.strictEqual(r.refresh_token, refresh_token, 'refresh token is stable, not rotated');
+  assert.strictEqual((await post('/token', { grant_type: 'refresh_token', refresh_token: 'f'.repeat(64) }, true)).status, 400, 'unknown refresh token rejected');
 
   // the bearer authenticates MCP tool calls with no login tool involved
   const res = await worker.fetch(new Request('http://pricy.test/mcp', {

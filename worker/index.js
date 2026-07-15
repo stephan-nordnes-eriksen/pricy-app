@@ -338,7 +338,7 @@ function oauthWellKnown(url) {
       token_endpoint: url.origin + '/token',
       registration_endpoint: url.origin + '/register',
       response_types_supported: ['code'],
-      grant_types_supported: ['authorization_code'],
+      grant_types_supported: ['authorization_code', 'refresh_token'],
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
     });
@@ -347,21 +347,46 @@ function oauthWellKnown(url) {
   return json({ error: 'not found' }, 404);
 }
 
+// design tokens hand-copied from colors_and_type.css (ink-900, green-500,
+// shadow-green, Space Grotesk) — the page is standalone by design, it must
+// not pull the whole SPA in
 function authorizePage(q, error) {
   const hidden = ['redirect_uri', 'state', 'code_challenge']
     .map(k => `<input type="hidden" name="${k}" value="${esc(q[k] || '')}">`).join('');
-  return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Connect to pricy.no</title>
-<body style="font-family:'Space Grotesk',system-ui,sans-serif;max-width:24rem;margin:10vh auto;padding:0 1rem;color:#0E0E0E">
-<h1 style="font-size:1.5rem;margin-bottom:.25rem">pricy.no</h1>
-<p style="margin-top:0">Log in to connect your pricy.no account.</p>
-${error ? `<p style="color:#b00020;border:2px solid #b00020;padding:.5rem">${esc(error)}</p>` : ''}
-<form method="post" style="display:grid;gap:.6rem">${hidden}
-<input name="email" type="email" placeholder="email" required autofocus style="padding:.6rem;border:2px solid #0E0E0E;font:inherit">
-<input name="password" type="password" placeholder="password" required minlength="${MIN_PASSWORD_LEN}" style="padding:.6rem;border:2px solid #0E0E0E;font:inherit">
-<button name="action" value="login" style="padding:.7rem;border:2px solid #0E0E0E;background:#0E0E0E;color:#fff;font:inherit;cursor:pointer">Log in</button>
-<button name="action" value="signup" style="padding:.7rem;border:2px solid #0E0E0E;background:#fff;font:inherit;cursor:pointer">Create account</button>
-</form></body></html>`, { status: error ? 401 : 200, headers: { 'content-type': 'text/html; charset=utf-8' } });
+<link rel="icon" href="/assets/logo-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #0E0E0E; --green: #00B964; --green-100: #D8F8E6; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: 'Space Grotesk', system-ui, sans-serif; color: var(--ink); background: #fff; display: grid; place-items: center; min-height: 100vh; padding: 1rem; }
+  .card { width: 100%; max-width: 24rem; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--green); padding: 2rem 1.5rem; }
+  .brand { display: flex; align-items: center; gap: .5rem; font-weight: 700; font-size: 1.4rem; margin-bottom: .25rem; }
+  .brand img { width: 1.6rem; height: 1.6rem; }
+  p.sub { margin-bottom: 1.25rem; color: #2E2E2C; }
+  .err { border: 2px solid var(--ink); background: #FFE9E6; padding: .6rem; margin-bottom: 1rem; font-size: .9rem; }
+  form { display: grid; gap: .6rem; }
+  input { padding: .7rem; border: 2px solid var(--ink); font: inherit; }
+  input:focus { outline: 3px solid var(--green); outline-offset: 0; }
+  button { padding: .75rem; border: 2px solid var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+  .primary { background: var(--ink); color: #fff; }
+  .primary:hover { background: var(--green); color: var(--ink); }
+  .secondary { background: #fff; }
+  .secondary:hover { background: var(--green-100); }
+</style></head><body>
+<main class="card">
+<div class="brand"><img src="/assets/logo-mark.svg" alt="">pricy.no</div>
+<p class="sub">Log in to connect your pricy.no account.</p>
+${error ? `<p class="err">${esc(error)}</p>` : ''}
+<form method="post">${hidden}
+<input name="email" type="email" placeholder="email" required autofocus autocomplete="email">
+<input name="password" type="password" placeholder="password" required minlength="${MIN_PASSWORD_LEN}" autocomplete="current-password">
+<button class="primary" name="action" value="login">Log in</button>
+<button class="secondary" name="action" value="signup">Create account</button>
+</form>
+</main></body></html>`, { status: error ? 401 : 200, headers: { 'content-type': 'text/html; charset=utf-8' } });
 }
 
 async function oauth(request, db, url) {
@@ -410,6 +435,19 @@ async function oauth(request, db, url) {
 
   if (route === 'POST /token') {
     const form = Object.fromEntries((await request.formData().catch(() => new FormData())).entries());
+    // both tokens are plain session rows; the "refresh" token just never
+    // reaches the MCP endpoint, it only mints fresh access tokens here
+    const grant = async (userId, refreshToken) => json({
+      access_token: await createSession(db, userId),
+      token_type: 'Bearer',
+      expires_in: SESSION_DAYS * 86400,
+      refresh_token: refreshToken ?? await createSession(db, userId),
+    });
+    if (form.grant_type === 'refresh_token') {
+      const user = await sessionUser(db, String(form.refresh_token || ''));
+      if (!user) return json({ error: 'invalid_grant' }, 400);
+      return grant(user.id, String(form.refresh_token));
+    }
     if (form.grant_type !== 'authorization_code') return json({ error: 'unsupported_grant_type' }, 400);
     // DELETE … RETURNING = atomic single-use, like login_tokens
     const row = await db.prepare('DELETE FROM oauth_codes WHERE code_hash = ? AND expires_at > ? RETURNING user_id, redirect_uri, code_challenge')
@@ -419,7 +457,7 @@ async function oauth(request, db, url) {
     if (!row || challenge !== row.code_challenge || (form.redirect_uri && form.redirect_uri !== row.redirect_uri)) {
       return json({ error: 'invalid_grant' }, 400);
     }
-    return json({ access_token: await createSession(db, row.user_id), token_type: 'Bearer', expires_in: SESSION_DAYS * 86400 });
+    return grant(row.user_id);
   }
 
   return json({ error: 'not found' }, 404);
