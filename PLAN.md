@@ -37,8 +37,9 @@ Live at https://pricy.stephanruler.workers.dev — Worker `pricy`, D1
 - **The account's `pricy` D1 is NOT ours** — it belongs to the project
   currently serving pricy.no (a SvelteKit app on the same account), even
   though `d1 list` misreports it as 0 tables. Never bind it.
-- Workers Builds push-to-deploy: deferred — repo has no git remote.
-  Revisit if/when it gets one.
+- Workers Builds push-to-deploy: repo got a remote 2026-07-15
+  (github.com/stephan-nordnes-eriksen/pricy-app, `origin`/`main`) — can be
+  set up whenever manual `npm run deploy` gets old.
 - Attach pricy.no in the dashboard only when deliberately cutting over
   from the existing site.
 - Email Service binding still unwired (see 4b) — magic-link mail is
