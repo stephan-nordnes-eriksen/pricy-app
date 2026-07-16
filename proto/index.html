@@ -1473,10 +1473,12 @@ const CAT_COUNTS = {
 };
 
 function searchSuggest(q) {
+  const POOL = window.CATALOG || PRODUCTS;
+  const REAL_CATS = CATEGORIES.filter(c => !window.CAT_OF || window.CAT_OF[c]);
   const s = (q || '').toLowerCase().trim();
-  if (!s) return { products: PRODUCTS.slice(0, 4), cats: CATEGORIES.slice(0, 4), props: [] };
-  const products = PRODUCTS.filter(p => (p.name + ' ' + p.brand + ' ' + p.cat).toLowerCase().includes(s)).slice(0, 5);
-  const cats = CATEGORIES.filter(c => c.toLowerCase().includes(s)).slice(0, 3);
+  if (!s) return { products: POOL.slice(0, 4), cats: REAL_CATS.slice(0, 4), props: [] };
+  const products = POOL.filter(p => (p.name + ' ' + p.brand + ' ' + p.cat).toLowerCase().includes(s)).slice(0, 5);
+  const cats = REAL_CATS.filter(c => c.toLowerCase().includes(s)).slice(0, 3);
   const props = PROP_SUGGEST.filter(p => p.toLowerCase().includes(s)).slice(0, 4);
   return { products, cats, props };
 }
@@ -2423,7 +2425,7 @@ function SearchSuggest({ q, onPick, onClose }) {
           <div key={c} className="suggest__item" onClick={() => onPick(c)}>
             <span className="ic"><Icon name={CAT_ICONS[c] || 'tag'} size={18} /></span>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{c}</div>
-            <span className="sub" style={{ marginLeft: 'auto' }}>{CAT_COUNTS[c]} products</span>
+            <span className="sub" style={{ marginLeft: 'auto' }}>{(window.CAT_OF && window.CAT_OF[c]) ? fmt(window.CAT_OF[c].length) : CAT_COUNTS[c]} products</span>
           </div>
         ))}
       </>}
@@ -2469,7 +2471,7 @@ function AppHeader({ go, onLogout }) {
               {q && <button type="button" className="pw-toggle" onMouseDown={() => setQ('')} aria-label="Clear"><Icon name="x" size={16} /></button>}
             </div>
           </form>
-          {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : go('results', { query: v }); }} />}
+          {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : CATEGORIES.includes(v) ? go('results', { cat: v }) : go('results', { query: v }); }} />}
         </div>
         <nav className="app-hdr__nav">
           <div className="app-hdr__icon" title="Browse" onClick={() => go('home')}><Icon name="layout-grid" size={19} /></div>
@@ -2698,7 +2700,7 @@ function SearchHero({ go }) {
             <input value={q} onChange={e => setQ(e.target.value)} onFocus={() => setFocus(true)} onBlur={() => setTimeout(() => setFocus(false), 120)} placeholder="Search any product, brand or category…" />
           </div>
           <button type="submit" className="btn btn--primary btn--lg" style={{ borderLeft: 0, height: 60 }}>Compare</button>
-          {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : go('results', { query: v }); }} />}
+          {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : CATEGORIES.includes(v) ? go('results', { cat: v }) : go('results', { query: v }); }} />}
         </form>
         <div className="searchhero__chips">
           <span className="lbl">Trending</span>
@@ -3383,7 +3385,7 @@ function ProductPage({ go, id }) {
   );
 }
 
-Object.assign(window, { CATALOG, getListing, searchCatalog, Results, ProductPage, ResultRow, ResultCard, Stars });
+Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, Results, ProductPage, ResultRow, ResultCard, Stars });
 
 </script>
 
