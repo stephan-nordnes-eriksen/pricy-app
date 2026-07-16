@@ -12,6 +12,7 @@ const DIST = path.join(__dirname, '..', 'dist');
 
 let CATALOG_JSON;
 const mari = { email: 'mari@hansen.no', name: 'Mari', initials: 'M' };
+const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 20000, payment: 'vipps', orders: [] };
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
@@ -42,6 +43,7 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {})
     }
     if (u === '/api/logout') { ME = null; return ok({ ok: true }); }
     if (u === '/api/watches') return ok({ ok: true });
+    if (u === '/api/autobuy') { ME.autobuy = body; return ok({ ok: true }); }
     if (u === '/api/buy') {
       const p = (catalog || CATALOG_JSON).find(x => x.id === body.id);
       const offer = (body.shop && p.offers.find(o => o.shop === body.shop)) || p.offers.find(o => o.stock);
@@ -266,7 +268,8 @@ test('PDP: editing the target shows Update alert and persists the new target', a
 });
 
 test('PDP: Buy now buys at the current best price', async () => {
-  const win = boot('http://pricy.test/product/xm5', { session: true });
+  // fullmakt already signed — an unsigned user gets the ceremony first
+  const win = boot('http://pricy.test/product/xm5', { session: true, me: { user: mari, watches: [], autobuy: signedFullmakt } });
   const buyBtn = await until(() => qa(win, '.btn').find(b => /buy now/i.test(b.textContent)));
   assert.ok(buyBtn, 'Buy now button missing on PDP');
   buyBtn.click();
@@ -286,7 +289,7 @@ test('PDP: Buy now buys at the current best price', async () => {
 
 test('/autobuy on a reloaded session shows real purchases, not the demo orders', async () => {
   const me = {
-    user: mari, watches: [],
+    user: mari, watches: [], autobuy: signedFullmakt,
     purchases: [{ order_id: 7, product_id: 'xm5', product: 'Sony WH-1000XM5', shop: 'Elkjøp', price_nok: 3190, purchased_at: '2026-07-10T09:00:00.000Z' }],
   };
   const win = boot('http://pricy.test/autobuy', { session: true, me });
@@ -298,6 +301,34 @@ test('/autobuy on a reloaded session shows real purchases, not the demo orders',
   assert.ok(meta.includes('10 Jul 2026'), 'purchase date missing: ' + meta);
   assert.ok(meta.includes('24 Jul 2026'), 'angrerett must be 14 days out: ' + meta);
   assert.strictEqual(win.AutobuyStore.orders[0].exec.ref, 'PY-7', 'order ref must come from the server order id');
+});
+
+test('/autobuy hydrates the persisted fullmakt + armed orders; revoking persists', async () => {
+  const me = {
+    user: mari, watches: [], purchases: [],
+    autobuy: { ...signedFullmakt, orders: [{ id: 'xm5', max: 2800, expires: '10 Aug 2026', shops: 'Any shop' }] },
+  };
+  const win = boot('http://pricy.test/autobuy', { session: true, me });
+  assert.ok(await until(() => qa(win, '.abrow').length === 1), 'armed order must survive a reload');
+  assert.ok(q(win, '.fm-signed').textContent.includes('11 Jul 2026, 09:12'), 'persisted signedAt missing from the receipt');
+  assert.ok(!win.api.some(c => c.call === 'PUT /api/autobuy'), 'hydration must not PUT the state it just read');
+
+  qa(win, '.btn').find(b => /revoke/i.test(b.textContent)).click();
+  const confirm = await until(() => qa(win, '.btn').find(b => /revoke now/i.test(b.textContent)));
+  assert.ok(confirm, 'revoke confirm dialog missing');
+  confirm.click();
+  const put = await until(() => win.api.find(c => c.call === 'PUT /api/autobuy'));
+  assert.ok(put, 'revoking must persist to the server');
+  assert.strictEqual(put.body.signed, false, 'revoked fullmakt must persist as unsigned');
+  assert.deepStrictEqual(put.body.orders, [], 'revoking cancels the armed orders server-side too');
+  assert.ok(await until(() => q(win, '.fm-cer')), 'revoked state must render the sign-again ceremony');
+});
+
+test('new user on /autobuy: nothing signed → the real "Auto-buy is off" ceremony', async () => {
+  const win = boot('http://pricy.test/autobuy', { session: true }); // no autobuy blob
+  assert.ok(await until(() => q(win, '.fm-cer')), 'unsigned user must see the fullmakt ceremony');
+  assert.ok(/auto-buy is off/i.test(q(win, '.ab-inactive').textContent), 'off-state copy missing');
+  assert.strictEqual(q(win, '.ab-cap'), null, 'cap bar must not render before signing');
 });
 
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {

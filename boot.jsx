@@ -60,19 +60,29 @@ function hydrateMe(me) {
     const p = WatchStore.prod(w.id);
     return p && { ...p, target: w.target, hit: w.hit, spark: (p.history || []).slice(-12) };
   }).filter(Boolean));
-  // Real purchase history replaces the store's demo orders (including the
-  // demo *active* auto-buys — active orders aren't persisted anywhere yet).
-  // ponytail: signed/cap stay demo state until the fullmakt is persisted.
-  AutobuyStore.orders = (me.purchases || [])
-    .filter(pu => AutobuyStore.prod(pu.product_id)) // a purchase of a product gone from the catalog can't render
-    .map(pu => ({
-      id: pu.product_id, max: pu.price_nok, expires: '—', shops: pu.shop, status: 'executed',
-      exec: {
-        shop: pu.shop, price: pu.price_nok, at: shortDate(Date.parse(pu.purchased_at)),
-        ref: 'PY-' + pu.order_id, angrerett: shortDate(Date.parse(pu.purchased_at) + 14 * 864e5),
-      },
-    })).reverse(); // server lists newest first; in-session buys append, so keep newest last
-  AutobuyStore.emit();
+  // Real purchase history + the persisted fullmakt/active-orders blob replace
+  // the store's demo state. New users have signed nothing → signed=false and
+  // /autobuy shows the real "Auto-buy is off" ceremony.
+  const ab = me.autobuy || {};
+  AutobuyStore.signed = !!ab.signed;
+  AutobuyStore.signedAt = ab.signedAt || null;
+  if (ab.cap != null) AutobuyStore.cap = ab.cap;
+  if (ab.payment) AutobuyStore.payment = ab.payment;
+  AutobuyStore.orders = [
+    ...(ab.orders || [])
+      .filter(o => AutobuyStore.prod(o.id)) // an order for a product gone from the catalog can't render
+      .map(o => ({ id: o.id, max: o.max, expires: o.expires, shops: o.shops, status: 'active' })),
+    ...(me.purchases || [])
+      .filter(pu => AutobuyStore.prod(pu.product_id))
+      .map(pu => ({
+        id: pu.product_id, max: pu.price_nok, expires: '—', shops: pu.shop, status: 'executed',
+        exec: {
+          shop: pu.shop, price: pu.price_nok, at: shortDate(Date.parse(pu.purchased_at)),
+          ref: 'PY-' + pu.order_id, angrerett: shortDate(Date.parse(pu.purchased_at) + 14 * 864e5),
+        },
+      })).reverse(), // server lists newest first; in-session buys append, so keep newest last
+  ];
+  _autobuyEmit.call(AutobuyStore); // original emit: hydration must not PUT back what it just read
 }
 
 function saveProfile(name) {
@@ -124,6 +134,26 @@ WatchStore.emit = function () {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(this.items.map(w => ({ id: w.id, target: w.target, paused: !!w.paused }))),
+    }).catch(() => {});
+  }
+};
+
+// Every auto-buy mutation (sign/revoke/add/cancel/payment change) funnels
+// through AutobuyStore.emit — persist the fullmakt + active orders from
+// there, same seam as WatchStore.emit above. Executed orders are derived
+// from the purchases table, so only the active ones are sent.
+const _autobuyEmit = AutobuyStore.emit;
+AutobuyStore.emit = function () {
+  _autobuyEmit.call(this);
+  if (ME && typeof fetch === 'function') {
+    fetch('/api/autobuy', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        signed: this.signed, signedAt: this.signedAt, cap: this.cap, payment: this.payment,
+        orders: this.orders.filter(o => o.status === 'active')
+          .map(o => ({ id: o.id, max: o.max, expires: o.expires, shops: o.shops })),
+      }),
     }).catch(() => {});
   }
 };

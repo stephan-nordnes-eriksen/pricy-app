@@ -7,7 +7,7 @@ import seed from './seed.json' with { type: 'json' };
 import { collectRows } from './sources.js';
 
 const SCHEMA = [
-  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT)',
+  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT)',
   'CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
@@ -26,6 +26,7 @@ async function ensureSchema(db) {
     // migration for DBs created before password auth / settings existed
     await db.prepare('ALTER TABLE users ADD COLUMN password_hash TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE users ADD COLUMN settings TEXT').run().catch(() => {});
+    await db.prepare('ALTER TABLE users ADD COLUMN autobuy TEXT').run().catch(() => {});
     // 4d: real-source offers carry a deep link and a freshness stamp
     await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
@@ -102,7 +103,7 @@ async function upsertUser(db, email, passwordHash = null) {
   // dropped (the bug: signing up with a password on a pre-existing
   // passwordless email logged you in fine but never actually saved it)
   return db.prepare(
-    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email, password_hash = COALESCE(users.password_hash, excluded.password_hash) RETURNING id, email, name, password_hash, settings'
+    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email, password_hash = COALESCE(users.password_hash, excluded.password_hash) RETURNING id, email, name, password_hash, settings, autobuy'
   ).bind(email, displayName(email), passwordHash).first();
 }
 
@@ -139,7 +140,7 @@ async function passwordAuth(db, action, email, password) {
 async function sessionUser(db, token) {
   if (!token) return null;
   return db.prepare(
-    'SELECT u.id, u.email, u.name, u.password_hash, u.settings FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
+    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
   ).bind(await sha(token), Date.now()).first();
 }
 
@@ -210,7 +211,7 @@ async function purchasesBody(db, userId) {
 
 async function meBody(db, user) {
   const { results } = await db.prepare('SELECT product_id AS id, target, paused FROM watches WHERE user_id = ? ORDER BY rowid').bind(user.id).all(); // rowid = the order the client PUT them in
-  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, purchases: await purchasesBody(db, user.id) };
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) };
 }
 
 // ── MCP (experiment) ───────────────────────────────────────────────────────
@@ -617,7 +618,7 @@ export default {
         return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 
-      const user = await db.prepare('SELECT id, email, name, password_hash, settings FROM users WHERE email = ?').bind(email).first();
+      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy FROM users WHERE email = ?').bind(email).first();
       if (!user) return json({ error: 'no account for this email' }, 401);
       if (!password) return json({ error: 'enter your password' }, 400);
       if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);
@@ -670,6 +671,19 @@ export default {
       const bad = !settings || typeof settings !== 'object' || Array.isArray(settings) || JSON.stringify(settings).length > 2000;
       if (bad) return json({ error: 'bad settings' }, 400);
       await db.prepare('UPDATE users SET settings = ? WHERE id = ?').bind(JSON.stringify(settings), user.id).run();
+      return json({ ok: true });
+    }
+
+    // ponytail: same JSON-blob seam as PUT /api/settings — the client owns
+    // the fullmakt + active-orders shape and round-trips it verbatim.
+    // Executed orders are NOT in here; they live in the purchases table.
+    if (route === 'PUT /api/autobuy') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const ab = await request.json().catch(() => null);
+      const bad = !ab || typeof ab !== 'object' || Array.isArray(ab) || !Array.isArray(ab.orders)
+        || ab.orders.length > 200 || JSON.stringify(ab).length > 8000;
+      if (bad) return json({ error: 'bad autobuy state' }, 400);
+      await db.prepare('UPDATE users SET autobuy = ? WHERE id = ?').bind(JSON.stringify(ab), user.id).run();
       return json({ ok: true });
     }
 

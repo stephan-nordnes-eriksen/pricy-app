@@ -231,6 +231,35 @@ test('account name and notification settings persist per user and require auth',
   assert.strictEqual((await call('/api/settings', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
 });
 
+test('fullmakt + active auto-buy orders persist per user via PUT /api/autobuy', async () => {
+  const call = api({ DB: d1() });
+  const blob = {
+    signed: true, signedAt: '11 Jul 2026, 09:12', cap: 20000, payment: 'vipps',
+    orders: [{ id: 'xm5', max: 2800, expires: '10 Aug 2026', shops: 'Any shop' }],
+  };
+  assert.strictEqual((await call('/api/autobuy', { method: 'PUT', body: blob })).status, 401, 'PUT without session must 401');
+
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  assert.strictEqual((await (await call('/api/me', { cookie: ola })).json()).autobuy, null, 'a new user has signed nothing');
+
+  assert.strictEqual((await call('/api/autobuy', { method: 'PUT', body: blob, cookie: ola })).status, 200);
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).autobuy, blob, 'the blob must round-trip verbatim');
+
+  // revoke: signed false, no armed orders — also round-trips
+  const revoked = { signed: false, signedAt: null, cap: 20000, payment: 'vipps', orders: [] };
+  await call('/api/autobuy', { method: 'PUT', body: revoked, cookie: ola });
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).autobuy, revoked);
+
+  // another user is untouched
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  assert.strictEqual((await (await call('/api/me', { cookie: kari })).json()).autobuy, null);
+
+  for (const bad of [[], 'nope', { signed: true }, { orders: 'nope' }]) {
+    assert.strictEqual((await call('/api/autobuy', { method: 'PUT', body: bad, cookie: ola })).status, 400, JSON.stringify(bad));
+  }
+  assert.strictEqual((await call('/api/autobuy', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
+});
+
 test('changing password requires the current one and re-hashes; passwordless accounts just set one', async () => {
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/account/password', { method: 'POST', body: { newPassword: 'correcthorse1' } })).status, 401, 'POST without session must 401');
