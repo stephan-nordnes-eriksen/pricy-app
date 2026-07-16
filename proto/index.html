@@ -867,6 +867,8 @@ button { font-family: inherit; }
 .watchbox__field { display: flex; align-items: center; gap: 4px; border: 2px solid var(--ink-900); background: var(--paper); padding: 8px 12px; }
 .watchbox__field .cur { font-family: var(--font-mono); font-weight: 700; color: var(--ink-600); }
 .watchbox__field input { border: 0; outline: 0; background: transparent; font-family: var(--font-mono); font-weight: 800; font-size: 20px; width: 96px; }
+.watchbox__on { display: flex; align-items: center; gap: 6px; }
+.watchbox__status { display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; height: 42px; border: 2px solid var(--green-700); background: var(--green-100, #e6f9ef); color: var(--green-700); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
 .pdp__grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--s-6); margin-top: var(--s-6); align-items: start; }
 .chart__legend { display: flex; gap: var(--s-5); margin-top: var(--s-3); font-family: var(--font-mono); font-size: 11px; color: var(--ink-600); }
 .chart__legend .dot { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 6px; }
@@ -3255,7 +3257,11 @@ function ProductPage({ go, id }) {
   useWatchStore();
   const w = WatchStore.get(p.id);
   const [target, setTarget] = useState(w ? w.target : Math.round(p.best * 0.92 / 10) * 10);
-  const watching = WatchStore.has(p.id);
+  const watching = !!w;
+  const dirty = watching && +target !== w.target;
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const flash = (msg) => { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2400); };
   const [weeks, setWeeks] = useState(24);
   const RANGES = [{ w: 6, label: '6W' }, { w: 12, label: '12W' }, { w: 24, label: '24W' }];
   const histView = p.history.slice(-weeks);
@@ -3307,11 +3313,27 @@ function ProductPage({ go, id }) {
                     <input type="number" value={target} onChange={e => setTarget(+e.target.value)} />
                   </div>
                 </div>
-                <Btn variant={watching ? '' : 'primary'} icon={watching ? 'check' : 'bell'} onClick={() => WatchStore.toggle(p.id, target)}>
-                  {watching ? 'Watching' : 'Watch price'}
-                </Btn>
+                {!watching ? (
+                  <Btn variant="primary" icon="bell" onClick={() => { WatchStore.add(p.id, +target || p.best); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || p.best)); }}>
+                    Watch price
+                  </Btn>
+                ) : (
+                  <div className="watchbox__on">
+                    {dirty ? (
+                      <Btn variant="primary" icon="check" onClick={() => { WatchStore.setTarget(p.id, +target); flash('Alert updated to kr ' + fmt(+target)); }}>
+                        Update alert
+                      </Btn>
+                    ) : (
+                      <span className="watchbox__status"><Icon name="bell-ring" size={15} /> Watching</span>
+                    )}
+                    <button className="iconbtn danger" type="button" title="Stop watching" aria-label="Stop watching" onClick={() => { WatchStore.remove(p.id); flash('Stopped watching'); }}>
+                      <Icon name="bell-off" size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
+            {toast && <Toast>{toast}</Toast>}
 
             <AutobuyBox p={p}></AutobuyBox>
           </div>
