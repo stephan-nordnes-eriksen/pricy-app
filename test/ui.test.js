@@ -324,11 +324,20 @@ test('/autobuy hydrates the persisted fullmakt + armed orders; revoking persists
   assert.ok(await until(() => q(win, '.fm-cer')), 'revoked state must render the sign-again ceremony');
 });
 
-test('new user on /autobuy: nothing signed → the real "Auto-buy is off" ceremony', async () => {
+test('new user on /autobuy: nothing signed → the real "Auto-buy is off" ceremony; signing persists today\'s date', async () => {
   const win = boot('http://pricy.test/autobuy', { session: true }); // no autobuy blob
   assert.ok(await until(() => q(win, '.fm-cer')), 'unsigned user must see the fullmakt ceremony');
   assert.ok(/auto-buy is off/i.test(q(win, '.ab-inactive').textContent), 'off-state copy missing');
   assert.strictEqual(q(win, '.ab-cap'), null, 'cap bar must not render before signing');
+
+  // fake BankID sign (parked per plan — must keep working) persists the fullmakt
+  q(win, '.fm-agree input').click();
+  q(win, '.bankid-btn').click();
+  const put = await until(() => win.api.find(c => c.call === 'PUT /api/autobuy')); // BankIDButton fakes 1.4s
+  assert.ok(put, 'signing must persist to the server');
+  assert.strictEqual(put.body.signed, true);
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  assert.ok(put.body.signedAt.startsWith(today + ','), `signedAt must be the real signing date, got: ${put.body.signedAt}`);
 });
 
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {
