@@ -281,6 +281,28 @@ test('signed in: picking a header suggestion navigates', async () => {
   }), 'suggestion pick should open the product or results');
 });
 
+test('signed in: suggestions come from the served catalog, not the demo 8', async () => {
+  const cat = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  const DEMO = ['airpods', 'xm5', 'switch', 'dyson', 'iphone', 'tv', 'kindle', 'lego'];
+  const fresh = cat.find(p => !DEMO.includes(p.id));
+  const win = boot('http://pricy.test/', { session: true });
+  await tick();
+  const input = q(win, '.app-hdr__search input');
+  input.focus();
+  type(win, input, fresh.name);
+  assert.ok(await until(() => qa(win, '.suggest__item').some(el => el.textContent.includes(fresh.name))),
+    'served-catalog product missing from suggestions: ' + fresh.name);
+  // category suggestion: real count from the served catalog, picks as a cat filter
+  type(win, input, 'audio');
+  const audioCount = cat.filter(p => p.cat === 'Audio').length;
+  const audioItem = await until(() =>
+    qa(win, '.suggest__item').find(el => /Audio/.test(el.textContent) && el.textContent.includes(audioCount + ' products')));
+  assert.ok(audioItem, 'Audio category must show the real catalog count, not the demo string');
+  audioItem.click();
+  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?cat=Audio'),
+    'category pick should filter by category, not run a text query');
+});
+
 test('signed in: results rows open the product page', async () => {
   const win = boot('http://pricy.test/search?cat=Audio', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results rows missing');
