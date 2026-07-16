@@ -240,6 +240,13 @@ test('signed in: header alerts badge counts real below-target watches, not demo 
   assert.strictEqual(q(win, '.app-hdr .badge').textContent, '1');
 });
 
+test('PDP alert field inherits the saved watch target', async () => {
+  const me = { user: mari, watches: [{ id: 'xm5', target: 3100 }] };
+  const win = boot('http://pricy.test/product/xm5', { session: true, me });
+  assert.ok(await until(() => q(win, '.watchbox__field input')), 'watchbox input missing');
+  assert.strictEqual(q(win, '.watchbox__field input').value, '3100', 'input must show the saved target, not the suggested price');
+});
+
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {
   const win = boot('http://pricy.test/', { session: true });
   assert.ok(await until(() => q(win, '.avatar')), 'signed-in header missing');
