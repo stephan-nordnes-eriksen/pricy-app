@@ -3252,8 +3252,9 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
 // ===========================================================
 function ProductPage({ go, id }) {
   const p = getListing(id) || CATALOG[0];
-  const [target, setTarget] = useState(Math.round(p.best * 0.92 / 10) * 10);
   useWatchStore();
+  const w = WatchStore.get(p.id);
+  const [target, setTarget] = useState(w ? w.target : Math.round(p.best * 0.92 / 10) * 10);
   const watching = WatchStore.has(p.id);
   const [weeks, setWeeks] = useState(24);
   const RANGES = [{ w: 6, label: '6W' }, { w: 12, label: '12W' }, { w: 24, label: '24W' }];
