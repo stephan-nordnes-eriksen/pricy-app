@@ -280,6 +280,8 @@ test('PDP: Buy now buys at the current best price', async () => {
   assert.ok(order, 'executed order missing from store');
   assert.strictEqual(order.max, best.price, 'buy-now limit must be the current price');
   assert.strictEqual(order.exec.price, best.price, 'buy-now charges the current price');
+  assert.ok(win.api.some(c => c.call === 'POST /api/buy' && c.body.id === 'xm5' && c.body.shop === best.shop), 'purchase must hit the Worker');
+  assert.strictEqual(order.exec.ref, 'PY-4711', 'order ref must come from the server order id');
 });
 
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {
