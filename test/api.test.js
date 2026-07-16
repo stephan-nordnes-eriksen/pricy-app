@@ -558,6 +558,34 @@ test('mcp: initialize mints a session id, lists tools, rejects junk', async () =
   assert.strictEqual(get.status, 405, 'GET (SSE stream) is not supported');
 });
 
+test('POST /api/buy records a real purchase for the web session, same table as MCP', async () => {
+  const env = { DB: d1() };
+  const call = api(env);
+  assert.strictEqual((await call('/api/buy', { method: 'POST', body: { id: 'airpods' } })).status, 401, 'buying requires a session');
+
+  const signup = await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@nordmann.no', password: 'correcthorse1' } });
+  const cookie = cookieOf(signup);
+  const cat = await (await call('/api/catalog.json')).json();
+  const best = cat.find(p => p.id === 'airpods').offers.find(o => o.stock); // offers are price-ordered
+
+  const res = await call('/api/buy', { method: 'POST', body: { id: 'airpods', shop: best.shop }, cookie });
+  assert.strictEqual(res.status, 200);
+  const buy = await res.json();
+  assert.strictEqual(buy.price_nok, best.price, 'server charges its stored price for the shop');
+  assert.strictEqual(buy.shop, best.shop);
+  assert.ok(buy.order_id, 'order id missing');
+
+  // the purchase is the same row MCP list_purchases sees
+  const { rpc, tool } = mcpClient(env);
+  await rpc('initialize', { protocolVersion: '2025-06-18' });
+  await tool('login', { email: 'kari@nordmann.no', password: 'correcthorse1' });
+  const orders = (await tool('list_purchases')).data.purchases;
+  assert.strictEqual(orders.length, 1);
+  assert.strictEqual(orders[0].order_id, buy.order_id);
+
+  assert.strictEqual((await call('/api/buy', { method: 'POST', body: { id: 'nope' }, cookie })).status, 400, 'unknown product must not create an order');
+});
+
 test('mcp: tools require login; signup → search → buy → history round-trips', async () => {
   const env = { DB: d1() };
   const { rpc, tool } = mcpClient(env);

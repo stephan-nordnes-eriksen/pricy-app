@@ -686,6 +686,19 @@ export default {
       return json({ ok: true });
     }
 
+    // Web Buy now — the exact MCP buy_now path (the session cookie token
+    // lives in the same sessions table as Mcp-Session-Id, so mcpTool's
+    // own auth lookup just works)
+    if (route === 'POST /api/buy') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const body = await request.json().catch(() => ({}));
+      try {
+        return json(await mcpTool(db, token, 'buy_now', { product_id: body.id, shop: body.shop }));
+      } catch (e) {
+        return json({ error: e.message }, 400);
+      }
+    }
+
     return json({ error: 'not found' }, 404);
   },
 

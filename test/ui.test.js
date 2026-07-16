@@ -42,6 +42,11 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {})
     }
     if (u === '/api/logout') { ME = null; return ok({ ok: true }); }
     if (u === '/api/watches') return ok({ ok: true });
+    if (u === '/api/buy') {
+      const p = (catalog || CATALOG_JSON).find(x => x.id === body.id);
+      const offer = (body.shop && p.offers.find(o => o.shop === body.shop)) || p.offers.find(o => o.stock);
+      return ok({ ok: true, order_id: 4711, product_id: body.id, shop: offer.shop, price_nok: offer.price, purchased_at: new Date().toISOString() });
+    }
     if (u === '/api/account') { ME.user = { ...ME.user, name: body.name, initials: body.name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('') }; return ok({ user: ME.user }); }
     if (u === '/api/settings') { ME.settings = { ...ME.settings, ...body }; return ok({ ok: true }); }
     if (u === '/api/account/password') {

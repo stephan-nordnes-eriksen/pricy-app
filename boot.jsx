@@ -113,6 +113,29 @@ WatchStore.emit = function () {
   }
 };
 
+// Buy now persists for real: POST /api/buy hits the same purchases table as
+// the MCP buy_now tool, and the server-charged price/order ref win over the
+// UI's snapshot. The synced BuyNowModal awaits window.buyNowApi when present;
+// until that upstream contract lands, the modal ignores this and stays local.
+window.buyNowApi = (p, best) => fetch('/api/buy', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ id: p.id, shop: best.shop }),
+}).then(async r => {
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || 'purchase failed — you were not charged');
+  const order = {
+    id: p.id, max: data.price_nok, expires: '—', shops: data.shop, status: 'executed',
+    exec: {
+      shop: data.shop, price: data.price_nok, at: 'Just now', ref: 'PY-' + data.order_id,
+      angrerett: new Date(Date.now() + 14 * 864e5).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+    },
+  };
+  AutobuyStore.orders = [...AutobuyStore.orders, order];
+  AutobuyStore.emit();
+  return order;
+});
+
 function parseUrl(session) {
   const p = location.pathname;
   const q = new URLSearchParams(location.search);
