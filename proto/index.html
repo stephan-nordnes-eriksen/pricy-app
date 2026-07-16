@@ -3707,7 +3707,7 @@ const AutobuyStore = {
   emit() { this.ls.forEach(fn => fn()); },
   prod(id) { return getListing(id) || byId[id]; },
   capUsed() { return this.orders.filter(o => o.status === 'executed').reduce((s, o) => s + o.exec.price, 0); },
-  sign() { this.signed = true; this.signedAt = '11 Jul 2026, ' + new Date().toTimeString().slice(0, 5); this.emit(); },
+  sign() { this.signed = true; this.signedAt = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + new Date().toTimeString().slice(0, 5); this.emit(); },
   revoke() { this.signed = false; this.orders = this.orders.filter(o => o.status === 'executed'); this.emit(); },
   add(id, max, expires, shops) {
     this.orders = [...this.orders.filter(o => !(o.id === id && o.status === 'active')), { id, max, expires, shops, status: 'active' }];
