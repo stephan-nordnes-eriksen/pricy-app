@@ -47,6 +47,8 @@ function serverLogin(email, path = '/api/auth/login', password) {
 // array (splice), and WatchStore.items a plain reassignable property.
 // Header badge / greeting / saved numbers derive live from WatchStore
 // (hits()/saved()), so setting items is enough.
+const shortDate = ms => new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
 function hydrateMe(me) {
   ME = me;
   Object.assign(USER, me.user);
@@ -58,6 +60,19 @@ function hydrateMe(me) {
     const p = WatchStore.prod(w.id);
     return p && { ...p, target: w.target, hit: w.hit, spark: (p.history || []).slice(-12) };
   }).filter(Boolean));
+  // Real purchase history replaces the store's demo orders (including the
+  // demo *active* auto-buys — active orders aren't persisted anywhere yet).
+  // ponytail: signed/cap stay demo state until the fullmakt is persisted.
+  AutobuyStore.orders = (me.purchases || [])
+    .filter(pu => AutobuyStore.prod(pu.product_id)) // a purchase of a product gone from the catalog can't render
+    .map(pu => ({
+      id: pu.product_id, max: pu.price_nok, expires: '—', shops: pu.shop, status: 'executed',
+      exec: {
+        shop: pu.shop, price: pu.price_nok, at: shortDate(Date.parse(pu.purchased_at)),
+        ref: 'PY-' + pu.order_id, angrerett: shortDate(Date.parse(pu.purchased_at) + 14 * 864e5),
+      },
+    })).reverse(); // server lists newest first; in-session buys append, so keep newest last
+  AutobuyStore.emit();
 }
 
 function saveProfile(name) {
@@ -128,7 +143,7 @@ window.buyNowApi = (p, best) => fetch('/api/buy', {
     id: p.id, max: data.price_nok, expires: '—', shops: data.shop, status: 'executed',
     exec: {
       shop: data.shop, price: data.price_nok, at: 'Just now', ref: 'PY-' + data.order_id,
-      angrerett: new Date(Date.now() + 14 * 864e5).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      angrerett: shortDate(Date.now() + 14 * 864e5),
     },
   };
   AutobuyStore.orders = [...AutobuyStore.orders, order];

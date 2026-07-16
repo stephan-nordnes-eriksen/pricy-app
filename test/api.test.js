@@ -583,6 +583,11 @@ test('POST /api/buy records a real purchase for the web session, same table as M
   assert.strictEqual(orders.length, 1);
   assert.strictEqual(orders[0].order_id, buy.order_id);
 
+  // reloads hydrate from /api/me — the purchase rides along, same shape as list_purchases
+  const me = await (await call('/api/me', { cookie })).json();
+  assert.strictEqual(me.purchases.length, 1);
+  assert.deepStrictEqual(me.purchases[0], orders[0]);
+
   assert.strictEqual((await call('/api/buy', { method: 'POST', body: { id: 'nope' }, cookie })).status, 400, 'unknown product must not create an order');
 });
 

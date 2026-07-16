@@ -201,9 +201,16 @@ async function catalogBody(db) {
   });
 }
 
+async function purchasesBody(db, userId) {
+  const { results } = await db.prepare(
+    'SELECT pu.id, pu.product_id, pu.shop, pu.price, pu.created_at, pr.meta FROM purchases pu LEFT JOIN products pr ON pr.id = pu.product_id WHERE pu.user_id = ? ORDER BY pu.id DESC'
+  ).bind(userId).all();
+  return results.map(r => ({ order_id: r.id, product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price_nok: r.price, purchased_at: new Date(r.created_at).toISOString() }));
+}
+
 async function meBody(db, user) {
   const { results } = await db.prepare('SELECT product_id AS id, target, paused FROM watches WHERE user_id = ? ORDER BY rowid').bind(user.id).all(); // rowid = the order the client PUT them in
-  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {} };
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, purchases: await purchasesBody(db, user.id) };
 }
 
 // ── MCP (experiment) ───────────────────────────────────────────────────────
@@ -304,10 +311,7 @@ async function mcpTool(db, sid, name, a) {
   }
 
   // list_purchases
-  const { results } = await db.prepare(
-    'SELECT pu.id, pu.product_id, pu.shop, pu.price, pu.created_at, pr.meta FROM purchases pu LEFT JOIN products pr ON pr.id = pu.product_id WHERE pu.user_id = ? ORDER BY pu.id DESC'
-  ).bind(user.id).all();
-  return { purchases: results.map(r => ({ order_id: r.id, product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price_nok: r.price, purchased_at: new Date(r.created_at).toISOString() })) };
+  return { purchases: await purchasesBody(db, user.id) };
 }
 
 // ── OAuth for MCP clients ──────────────────────────────────────────────────

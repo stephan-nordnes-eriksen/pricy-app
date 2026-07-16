@@ -284,6 +284,22 @@ test('PDP: Buy now buys at the current best price', async () => {
   assert.strictEqual(order.exec.ref, 'PY-4711', 'order ref must come from the server order id');
 });
 
+test('/autobuy on a reloaded session shows real purchases, not the demo orders', async () => {
+  const me = {
+    user: mari, watches: [],
+    purchases: [{ order_id: 7, product_id: 'xm5', product: 'Sony WH-1000XM5', shop: 'Elkjøp', price_nok: 3190, purchased_at: '2026-07-10T09:00:00.000Z' }],
+  };
+  const win = boot('http://pricy.test/autobuy', { session: true, me });
+  assert.ok(await until(() => q(win, '.ab-exec')), 'executed purchase card missing');
+  assert.strictEqual(qa(win, '.ab-exec').length, 1, 'only the real purchase should show');
+  assert.strictEqual(qa(win, '.abrow').length, 0, 'demo active auto-buy orders must be gone');
+  const meta = q(win, '.ab-exec .meta').textContent;
+  assert.ok(meta.includes('Elkjøp'), 'shop missing: ' + meta);
+  assert.ok(meta.includes('10 Jul 2026'), 'purchase date missing: ' + meta);
+  assert.ok(meta.includes('24 Jul 2026'), 'angrerett must be 14 days out: ' + meta);
+  assert.strictEqual(win.AutobuyStore.orders[0].exec.ref, 'PY-7', 'order ref must come from the server order id');
+});
+
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {
   const win = boot('http://pricy.test/', { session: true });
   assert.ok(await until(() => q(win, '.avatar')), 'signed-in header missing');
