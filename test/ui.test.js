@@ -260,6 +260,23 @@ test('PDP: editing the target shows Update alert and persists the new target', a
   assert.ok(await until(() => q(win, '.watchbox__status')), 'after saving, status returns to Watching');
 });
 
+test('PDP: Buy now buys at the current best price', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  const buyBtn = await until(() => qa(win, '.btn').find(b => /buy now/i.test(b.textContent)));
+  assert.ok(buyBtn, 'Buy now button missing on PDP');
+  buyBtn.click();
+  const best = CATALOG_JSON.find(p => p.id === 'xm5').offers[0];
+  const confirm = await until(() => qa(win, '.buy-modal .btn').find(b => /buy for kr/i.test(b.textContent)));
+  assert.ok(confirm, 'buy-now confirm modal missing');
+  assert.ok(confirm.textContent.includes(String(best.price).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')) || confirm.textContent.replace(/\D/g, '').includes(String(best.price)), 'confirm button must quote the current best price');
+  confirm.click();
+  assert.ok(await until(() => /order placed/i.test((q(win, '.buy-modal') || {}).textContent || '')), 'order confirmation missing');
+  const order = win.AutobuyStore.orders.find(o => o.id === 'xm5' && o.status === 'executed');
+  assert.ok(order, 'executed order missing from store');
+  assert.strictEqual(order.max, best.price, 'buy-now limit must be the current price');
+  assert.strictEqual(order.exec.price, best.price, 'buy-now charges the current price');
+});
+
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {
   const win = boot('http://pricy.test/', { session: true });
   assert.ok(await until(() => q(win, '.avatar')), 'signed-in header missing');
