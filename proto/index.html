@@ -3269,6 +3269,7 @@ function ProductPage({ go, id }) {
   const histView = p.history.slice(-weeks);
   const low = Math.min(...p.history);
   const best = p.offers[0];
+  const [buyNow, setBuyNow] = useState(false);
   const more = CAT_OF[p.cat].filter(x => x.id !== p.id).slice(0, 4);
 
   return (
@@ -3298,7 +3299,10 @@ function ProductPage({ go, id }) {
                   <div className="label">Best price · {best.shop}</div>
                   <div className="bestbox__price"><span className="cur">kr</span><span className="t-price-lg">{fmt(best.price)}</span></div>
                 </div>
-                <Btn variant="dark" icon="external-link">Go to shop</Btn>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)', alignItems: 'stretch' }}>
+                  <Btn variant="dark" icon="zap" onClick={() => setBuyNow(true)}>Buy now</Btn>
+                  <Btn variant="ghost" icon="external-link">Go to shop</Btn>
+                </div>
               </div>
               <div className="bestbox__bot">
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}><span className="strike">was kr {fmt(p.was)}</span><span className="delta delta--down" style={{ whiteSpace: 'nowrap' }}>▼ −{p.drop}%</span><span className="muted">· {p.shops} shops</span></span>
@@ -3338,6 +3342,7 @@ function ProductPage({ go, id }) {
             {toast && <Toast>{toast}</Toast>}
 
             <AutobuyBox p={p}></AutobuyBox>
+            {buyNow && <BuyNowModal p={p} onClose={() => setBuyNow(false)}></BuyNowModal>}
           </div>
         </div>
 
@@ -3710,6 +3715,13 @@ const AutobuyStore = {
   },
   cancel(id) { this.orders = this.orders.filter(o => !(o.id === id && o.status === 'active')); this.emit(); },
   has(id) { return this.orders.find(o => o.id === id && o.status === 'active'); },
+  buyNow(id, shop, price) {
+    const o = { id, max: price, expires: '—', shops: shop, status: 'executed',
+      exec: { shop, price, at: 'Just now', ref: 'PY-' + Math.floor(1000 + Math.random() * 9000) + '-1607', angrerett: '30 Jul 2026' } };
+    this.orders = [...this.orders, o];
+    this.emit();
+    return o;
+  },
   execute(id) {
     const o = this.orders.find(x => x.id === id && x.status === 'active');
     if (!o) return null;
@@ -3880,6 +3892,73 @@ function PurchaseModal({ order, onClose }) {
         </div>
         <Btn variant="primary" icon="check" onClick={onClose} style={{ width: '100%', justifyContent: 'center' }}>Done</Btn>
       </div>
+    </div>
+  );
+}
+
+// --- Buy now (instant purchase at today's best price) ---------
+function BuyNowModal({ p, onClose }) {
+  const store = useAutobuyStore();
+  const best = p.offers[0];
+  const [phase, setPhase] = useState(store.signed ? 'confirm' : 'sign');
+  const [busy, setBusy] = useState(false);
+  const [order, setOrder] = useState(null);
+  const buy = () => { if (busy) return; setBusy(true); setTimeout(() => { setOrder(store.buyNow(p.id, best.shop, best.price)); setBusy(false); setPhase('done'); }, 1100); };
+  return (
+    <div className="overlay" onClick={onClose}>
+      {phase === 'sign' ? (
+        <div className="modal fm-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal__head"><b>Buy now — requires BankID fullmakt</b><button className="iconbtn" onClick={onClose} aria-label="Close"><Icon name="x" size={16} /></button></div>
+          <div className="fm-modal__body"><FullmaktCeremony onSigned={() => setPhase('confirm')}></FullmaktCeremony></div>
+        </div>
+      ) : phase === 'done' ? (
+        <div className="modal buy-modal pop-in" onClick={e => e.stopPropagation()}>
+          <div className="buy-modal__flag"><Icon name="check" size={15} /> Order placed</div>
+          <div className="buy-modal__prod">
+            <div className="wrow__img"><Icon name={p.icon} size={26} /></div>
+            <div style={{ minWidth: 0 }}>
+              <b>{p.name}</b>
+              <div className="meta">{best.shop} · Just now · ref {order.exec.ref}</div>
+            </div>
+          </div>
+          <div className="buy-modal__nums">
+            <div><span>Paid</span><Price value={best.price} size={24}></Price></div>
+            <div><span>Delivery</span><b>{best.eta}</b></div>
+            <div><span>vs. was</span><b className="pos">−kr {fmt(p.was - best.price)}</b></div>
+          </div>
+          <div className="buy-modal__rows">
+            <div><Icon name="wallet" size={14} /> Charged to {store.payment === 'vipps' ? 'Vipps ••481' : 'Visa ••4521'}</div>
+            <div><Icon name="undo-2" size={14} /> Angrerett until {order.exec.angrerett} — one-click return</div>
+            <div><Icon name="mail" size={14} /> Receipt sent to {USER.email}</div>
+          </div>
+          <Btn variant="primary" icon="check" onClick={onClose} style={{ width: '100%', justifyContent: 'center' }}>Done</Btn>
+        </div>
+      ) : (
+        <div className="modal buy-modal pop-in" onClick={e => e.stopPropagation()}>
+          <div className="buy-modal__flag"><Icon name="zap" size={15} /> Buy now</div>
+          <div className="buy-modal__prod">
+            <div className="wrow__img"><Icon name={p.icon} size={26} /></div>
+            <div style={{ minWidth: 0 }}>
+              <b>{p.name}</b>
+              <div className="meta">Today's best price · {best.shop} · {best.ship} · {best.eta}</div>
+            </div>
+          </div>
+          <div className="buy-modal__nums">
+            <div><span>You pay</span><Price value={best.price} size={24}></Price></div>
+            <div><span>Was</span><b className="strike">kr {fmt(p.was)}</b></div>
+            <div><span>Cap left</span><b>kr {fmt(store.cap - store.capUsed())}</b></div>
+          </div>
+          <div className="buy-modal__rows">
+            <div><Icon name="wallet" size={14} /> {store.payment === 'vipps' ? 'Vipps ••481' : 'Visa ••4521'} — charged on purchase</div>
+            <div><Icon name="file-check-2" size={14} /> Covered by your fullmakt · no fees, no markup</div>
+            <div><Icon name="undo-2" size={14} /> 14-day angrerett from delivery</div>
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--s-3)' }}>
+            <Btn variant="ghost" onClick={onClose} style={{ flex: 1, justifyContent: 'center' }}>Cancel</Btn>
+            <Btn variant="dark" icon="zap" onClick={buy} style={{ flex: 2, justifyContent: 'center' }}>{busy ? 'Placing order…' : 'Buy for kr ' + fmt(best.price)}</Btn>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -4106,7 +4185,7 @@ function AutobuyPage({ go }) {
 
 Object.assign(window, {
   AutobuyStore, useAutobuyStore, BankIDMark, BankIDButton, FullmaktDoc, FullmaktCeremony,
-  FullmaktReceipt, FullmaktModal, PaymentPicker, PurchaseModal, AutobuyBox, AutobuyPage,
+  FullmaktReceipt, FullmaktModal, PaymentPicker, PurchaseModal, BuyNowModal, AutobuyBox, AutobuyPage,
 });
 
 </script>
