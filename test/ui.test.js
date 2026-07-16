@@ -247,6 +247,19 @@ test('PDP alert field inherits the saved watch target', async () => {
   assert.strictEqual(q(win, '.watchbox__field input').value, '3100', 'input must show the saved target, not the suggested price');
 });
 
+test('PDP: editing the target shows Update alert and persists the new target', async () => {
+  const me = { user: mari, watches: [{ id: 'xm5', target: 3100 }] };
+  const win = boot('http://pricy.test/product/xm5', { session: true, me });
+  assert.ok(await until(() => q(win, '.watchbox__field input')), 'watchbox input missing');
+  assert.ok(q(win, '.watchbox__status'), 'unedited watch must show the Watching status');
+  type(win, q(win, '.watchbox__field input'), '2999');
+  const update = await until(() => qa(win, '.watchbox .btn').find(b => /update alert/i.test(b.textContent)));
+  assert.ok(update, 'edited target must surface an Update alert button');
+  update.click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PUT /api/watches' && c.body[0] && c.body[0].target === 2999)), 'update must persist the new target');
+  assert.ok(await until(() => q(win, '.watchbox__status')), 'after saving, status returns to Watching');
+});
+
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {
   const win = boot('http://pricy.test/', { session: true });
   assert.ok(await until(() => q(win, '.avatar')), 'signed-in header missing');
