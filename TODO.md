@@ -1,5 +1,7 @@
-- [ ] Create a robot.txt. It should disallow everything. We are not ready for being scraped yet.
-- [ ] The search autocomplete seems to be hardcoded or something. We must make it work for real
-- [ ] We need a new "Buy now" button, which pigybacks the same system as the "Auto-buy" system.
+- [x] Create a robot.txt. It should disallow everything. We are not ready for being scraped yet.
+- [x] The "Alert me when price drops below" in product page seems to not inherit what is set
+- [x] The search autocomplete seems to be hardcoded or something. We must make it work for real
 - [ ] Some kind of button to press if a product or price is incorrect. Design only for now.
-- [ ] The "Alert me when price drops below" in product page seems to not inherit what is set
+- [x] We need a new "Buy now" button, which pigybacks the same system as the "Auto-buy" system.
+- [ ] There should be a "convert to auto-buy" (or some other better wording) for things you have watched. Essentially allowing you to automatically buy in stead of watching for the price change
+- [ ]

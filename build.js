@@ -72,6 +72,8 @@ fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(path.join(DIST, 'vendor'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), html);
 fs.writeFileSync(path.join(DIST, 'app.js'), compiled);
+// ponytail: block all crawlers until we're ready to be indexed
+fs.writeFileSync(path.join(DIST, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 // seed for the Worker's D1 bootstrap (4c) — /api/catalog.json is a dynamic
 // route now, so nothing under dist/api/ may shadow it
 fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify(catalog));
