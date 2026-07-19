@@ -241,7 +241,8 @@ button { font-family: inherit; }
 .hdr__row { display: flex; align-items: center; gap: var(--s-5); height: 68px; }
 .hdr__logo { display: flex; align-items: center; cursor: pointer; flex: 0 0 auto; }
 .hdr__logo img { display: block; height: 30px; }
-.hdr__search { flex: 1; max-width: 560px; }
+.hdr__search { flex: 1; max-width: 560px; min-width: 0; }
+.hdr__search .field input, .app-hdr__search .field input { min-width: 0; width: 100%; }
 .hdr__nav { display: flex; align-items: center; gap: var(--s-2); margin-left: auto; }
 .navlink { font-family: var(--font-mono); font-weight: 700; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-900); text-decoration: none; padding: 8px 10px; cursor: pointer; border: 2px solid transparent; }
 .navlink:hover { background: var(--canvas-2); }
@@ -316,7 +317,7 @@ button { font-family: inherit; }
 .pdp__crumb { font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); margin-bottom: var(--s-4); display: flex; gap: 8px; align-items: center; }
 .pdp__crumb a { color: var(--ink-600); text-decoration: none; cursor: pointer; }
 .pdp__crumb a:hover { color: var(--ink-900); }
-.pdp__top { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-6); }
+.pdp__top { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--s-6); }
 .pdp__gallery { border: var(--bw) solid var(--ink-900); background: var(--paper); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: var(--ink-300); font-size: 120px; }
 .pdp__info h1 { font-size: 34px; line-height: 1.05; margin: 0 0 var(--s-2); }
 .pdp__brand { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-400); margin-bottom: var(--s-4); }
@@ -393,7 +394,7 @@ button { font-family: inherit; }
   .pgrid { grid-template-columns: repeat(2, 1fr); }
   .dealgrid { grid-template-columns: repeat(2, 1fr); }
   .results { grid-template-columns: 1fr; }
-  .pdp__top { grid-template-columns: 1fr; }
+  .pdp__top { grid-template-columns: minmax(0,1fr); }
   .filters { position: static; }
 }
 
@@ -409,7 +410,11 @@ button { font-family: inherit; }
 /* ---- SCREEN TRANSITIONS -------------------------------- */
 .screen { opacity: 1; }
 @media (prefers-reduced-motion: no-preference) {
-  .screen { animation: screen-in var(--dur) var(--ease) both; }
+  /* fill-mode `backwards` (not `both`): the entrance transform must NOT persist
+     at rest, or `.screen` becomes the containing block for `position: fixed`
+     descendants (the mobile search-suggest dropdown) and breaks their viewport
+     anchoring when the page is scrolled. */
+  .screen { animation: screen-in var(--dur) var(--ease) backwards; }
 }
 @keyframes screen-in {
   from { transform: translateY(8px); }
@@ -508,8 +513,8 @@ button { font-family: inherit; }
 .formfield .field { height: 50px; }
 .formfield .field.is-invalid { border-color: var(--up-500); }
 .formfield .field .lead-ic { display: flex; align-items: center; padding: 0 0 0 14px; color: var(--ink-400); }
-.formfield .field .pw-toggle { background: none; border: 0; padding: 0 14px; cursor: pointer; color: var(--ink-400); display: flex; align-items: center; }
-.formfield .field .pw-toggle:hover { color: var(--ink-900); }
+.field .pw-toggle { background: none; border: 0; padding: 0 14px; cursor: pointer; color: var(--ink-400); display: flex; align-items: center; flex: 0 0 auto; }
+.field .pw-toggle:hover { color: var(--ink-900); }
 .formhint { font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); margin: -4px 0 var(--s-4); line-height: 1.5; }
 .formhint.err { color: var(--up-600); }
 
@@ -544,7 +549,7 @@ button { font-family: inherit; }
 .app-hdr__row { display: flex; align-items: center; gap: var(--s-4); height: 64px; }
 .app-hdr__logo { display: flex; align-items: center; cursor: pointer; flex: 0 0 auto; }
 .app-hdr__logo img { display: block; height: 26px; }
-.app-hdr__search { flex: 1; max-width: 620px; position: relative; }
+.app-hdr__search { flex: 1; max-width: 620px; min-width: 0; position: relative; }
 .app-hdr__search .field { height: 44px; box-shadow: none; }
 .app-hdr__search .field:focus-within { box-shadow: var(--shadow-sm); }
 .app-hdr__nav { display: flex; align-items: center; gap: var(--s-1); margin-left: auto; }
@@ -612,7 +617,7 @@ button { font-family: inherit; }
 
 /* WATCHED list rows */
 .watchlist { border: var(--bw) solid var(--ink-900); background: var(--paper); }
-.wrow { display: grid; grid-template-columns: 64px 1fr 150px 132px 120px; gap: var(--s-4); align-items: center; padding: var(--s-3) var(--s-4); border-bottom: var(--bw-hair) solid var(--ink-300); cursor: pointer; transition: background var(--dur-fast) var(--ease); position: relative; }
+.wrow { display: grid; grid-template-columns: 64px minmax(0,1fr) 150px 132px 120px; gap: var(--s-4); align-items: center; padding: var(--s-3) var(--s-4); border-bottom: var(--bw-hair) solid var(--ink-300); cursor: pointer; transition: background var(--dur-fast) var(--ease); position: relative; }
 .wrow:last-child { border-bottom: 0; }
 .wrow:hover { background: var(--canvas); }
 .wrow.is-hit { background: var(--green-100); }
@@ -630,7 +635,7 @@ button { font-family: inherit; }
 .wrow__flag { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--green-500); }
 
 /* recently viewed rail */
-.rail { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border: var(--bw) solid var(--ink-900); border-right: 0; border-bottom: 0; }
+.rail { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 0; border: var(--bw) solid var(--ink-900); border-right: 0; border-bottom: 0; }
 .rcard { border-right: var(--bw) solid var(--ink-900); border-bottom: var(--bw) solid var(--ink-900); padding: var(--s-3); cursor: pointer; display: flex; flex-direction: column; gap: 8px; transition: background var(--dur-fast) var(--ease); }
 .rcard:hover { background: var(--green-100); }
 .rcard__img { aspect-ratio: 1/1; background: var(--canvas-2); border: var(--bw-hair) solid var(--ink-300); display: flex; align-items: center; justify-content: center; color: var(--ink-400); font-size: 32px; }
@@ -638,7 +643,7 @@ button { font-family: inherit; }
 .rcard__price { display: flex; align-items: baseline; justify-content: space-between; margin-top: auto; }
 
 /* category grid */
-.catgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: var(--bw) solid var(--ink-900); border-right: 0; border-bottom: 0; }
+.catgrid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0; border: var(--bw) solid var(--ink-900); border-right: 0; border-bottom: 0; }
 .cat { border-right: var(--bw) solid var(--ink-900); border-bottom: var(--bw) solid var(--ink-900); padding: var(--s-4); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background var(--dur-fast) var(--ease); background: var(--paper); }
 .cat:hover { background: var(--ink-900); color: var(--paper); }
 .cat:hover .cat__ic { color: var(--green-500); }
@@ -648,7 +653,7 @@ button { font-family: inherit; }
 .cat__ct { font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); margin-top: 2px; }
 
 /* dashboard 2-col layout */
-.dash { display: grid; grid-template-columns: 1fr 320px; gap: var(--s-6); align-items: start; }
+.dash { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: var(--s-6); align-items: start; }
 .dash__side { position: sticky; top: 80px; display: flex; flex-direction: column; gap: var(--s-5); }
 .sidecard { border: var(--bw) solid var(--ink-900); background: var(--paper); }
 .sidecard__head { padding: var(--s-3) var(--s-4); border-bottom: var(--bw) solid var(--ink-900); font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; justify-content: space-between; }
@@ -750,11 +755,31 @@ button { font-family: inherit; }
   .dash { grid-template-columns: 1fr; }
   .dash__side { position: static; flex-direction: row; flex-wrap: wrap; }
   .dash__side .sidecard { flex: 1 1 280px; }
-  .rail { grid-template-columns: repeat(3, 1fr); }
-  .catgrid { grid-template-columns: repeat(2, 1fr); }
+  .rail { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .catgrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .metrics { grid-template-columns: repeat(2, 1fr); }
-  .wrow { grid-template-columns: 56px 1fr auto; }
+  .wrow { grid-template-columns: 56px minmax(0,1fr) auto; }
   .wrow__spark, .wrow__target { display: none; }
+}
+.logo-min { display: none; }
+@media (max-width: 640px) {
+  .app-hdr__row { gap: var(--s-2); }
+  .logo-full { display: none; }
+  .logo-min { display: block; }
+  .app-hdr__icon[title="Browse"], .app-hdr__icon[title="Watching"], .app-hdr__icon[title="Auto-buy"] { display: none; }
+  .app-hdr__search .field > span:first-child, .hdr__search .field > span:first-child { padding: 0 8px !important; }
+  .app-hdr__search, .hdr__search { max-width: none; }
+  .app-hdr__search .field .pw-toggle, .hdr__search .field .pw-toggle { padding: 0 10px; }
+  .hdr__row { gap: var(--s-2); }
+  .hdr__nav .navlink:not(:last-child), .app-hdr__nav .navlink { display: none; }
+  .page, .wrap { padding: 0 var(--s-4); }
+  .app-hdr__icon { width: 36px; height: 36px; }
+  .app-hdr__nav { gap: 2px; }
+  .app-hdr__search .suggest, .hdr__search .suggest { position: fixed; left: 0; right: 0; top: 64px; border-left: 0; border-right: 0; }
+  .hdr__search .suggest { top: 68px; }
+  .suggest { max-height: calc(100dvh - 140px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .results__sort { min-width: 0; max-width: 100%; }
+  .results__sort .sortbar { overflow-x: auto; }
 }
 
 /* ============================================================
@@ -869,7 +894,7 @@ button { font-family: inherit; }
 .watchbox__field input { border: 0; outline: 0; background: transparent; font-family: var(--font-mono); font-weight: 800; font-size: 20px; width: 96px; }
 .watchbox__on { display: flex; align-items: center; gap: 6px; }
 .watchbox__status { display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; height: 42px; border: 2px solid var(--green-700); background: var(--green-100, #e6f9ef); color: var(--green-700); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-.pdp__grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--s-6); margin-top: var(--s-6); align-items: start; }
+.pdp__grid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: var(--s-6); margin-top: var(--s-6); align-items: start; }
 .chart__legend { display: flex; gap: var(--s-5); margin-top: var(--s-3); font-family: var(--font-mono); font-size: 11px; color: var(--ink-600); }
 .chart__legend .dot { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 6px; }
 .chart__legend .dot--line { background: var(--ink-900); }
@@ -877,8 +902,21 @@ button { font-family: inherit; }
 
 @media (max-width: 900px) {
   .results .pgrid, .results--topbar .pgrid { grid-template-columns: repeat(2, 1fr); }
-  .pdp__grid { grid-template-columns: 1fr; }
+  .pdp__grid { grid-template-columns: minmax(0,1fr); }
   .rrow__spark { display: none; }
+}
+@media (max-width: 640px) {
+  .pdp__crumb { flex-wrap: wrap; }
+  .bestbox__top { flex-wrap: wrap; gap: var(--s-3); }
+  .offers__h { display: none; }
+  .orow { grid-template-columns: minmax(0,1fr) auto; grid-template-rows: auto auto auto; row-gap: 2px; }
+  .orow__shop { grid-column: 1; grid-row: 1; }
+  .orow > .orow__ship { grid-column: 1; grid-row: 2; }
+  .orow > .orow__ship + .orow__ship { grid-row: 3; }
+  .orow > div:last-child { grid-column: 2; grid-row: 1 / 4; }
+  .abox__form { grid-template-columns: minmax(0,1fr); }
+  .abox__form .btn, .abox__form .abox__sel { width: 100%; }
+  .pgrid, .dealgrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
 
 
@@ -1240,7 +1278,7 @@ button { color: inherit; }
 .ob-ab-pay .t-label { margin-bottom: var(--s-3); }
 
 @media (max-width: 900px) {
-  .abox__form { grid-template-columns: 1fr 1fr; }
+  .abox__form { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .abrow { grid-template-columns: 52px minmax(0,1fr) 100px 44px; }
   .abrow > div:nth-child(4), .abrow > div:nth-child(5) { display: none; }
   .ab-exec { grid-template-columns: 52px minmax(0,1fr) auto; }
@@ -1483,9 +1521,19 @@ function searchSuggest(q) {
   return { products, cats, props };
 }
 
+// On small screens, bring the search field to the top on focus so the
+// suggestion dropdown stays visible above the on-screen keyboard.
+function searchScrollTop(e) {
+  if (!window.matchMedia('(max-width: 640px)').matches) return;
+  if (e.target.closest('.app-hdr, .hdr')) { if (window.scrollY > 2) window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  const f = e.target.closest('.field'); if (!f) return;
+  const top = f.getBoundingClientRect().top, want = 76;
+  if (top - want > 12) window.scrollBy({ top: top - want, behavior: 'smooth' });
+}
+
 Object.assign(window, {
   USER, WATCHED, RECENT, FEED,
-  PROP_SUGGEST, CAT_ICONS, CAT_COUNTS, searchSuggest, byId,
+  PROP_SUGGEST, CAT_ICONS, CAT_COUNTS, searchSuggest, byId, searchScrollTop,
   Wordmark, Mark,
 });
 
@@ -1528,7 +1576,8 @@ function Header({ route, go, query, setQuery }) {
     <header className="hdr">
       <div className="wrap hdr__row">
         <div className="hdr__logo" onClick={() => go('home')}>
-          <img src="assets/logo-wordmark.svg" alt="pricy.no" />
+          <img className="logo-full" src="assets/logo-wordmark.svg" alt="pricy.no" />
+          <img className="logo-min" src="assets/logo-mark.svg" alt="pricy" style={{ height: 30 }} />
         </div>
         <form className="hdr__search" onSubmit={submit}>
           <div className="field" style={{ height: 44 }}>
@@ -2456,7 +2505,8 @@ function AppHeader({ go, onLogout }) {
     <header className="app-hdr">
       <div className="page app-hdr__row">
         <div className="app-hdr__logo" onClick={() => go('home')}>
-          <Wordmark height={26} />
+          <span className="logo-full"><Wordmark height={26} /></span>
+          <span className="logo-min"><Mark size={30} /></span>
         </div>
         <div className="app-hdr__search">
           <form onSubmit={submit}>
@@ -2465,7 +2515,7 @@ function AppHeader({ go, onLogout }) {
               <input
                 value={q}
                 onChange={e => setQ(e.target.value)}
-                onFocus={() => setFocus(true)}
+                onFocus={e => { setFocus(true); searchScrollTop(e); }}
                 onBlur={() => setTimeout(() => setFocus(false), 120)}
                 placeholder="Search products, brands, categories…" />
               {q && <button type="button" className="pw-toggle" onMouseDown={() => setQ('')} aria-label="Clear"><Icon name="x" size={16} /></button>}
@@ -2697,7 +2747,7 @@ function SearchHero({ go }) {
         <form className="searchhero__bar" onSubmit={e => { e.preventDefault(); setFocus(false); go('results', { query: q.trim() || 'headphones' }); }}>
           <div className="field">
             <span style={{ display: 'flex', alignItems: 'center', padding: '0 18px', color: 'var(--ink-600)' }}><Icon name="search" size={22} /></span>
-            <input value={q} onChange={e => setQ(e.target.value)} onFocus={() => setFocus(true)} onBlur={() => setTimeout(() => setFocus(false), 120)} placeholder="Search any product, brand or category…" />
+            <input value={q} onChange={e => setQ(e.target.value)} onFocus={e => { setFocus(true); searchScrollTop(e); }} onBlur={() => setTimeout(() => setFocus(false), 120)} placeholder="Search any product, brand or category…" />
           </div>
           <button type="submit" className="btn btn--primary btn--lg" style={{ borderLeft: 0, height: 60 }}>Compare</button>
           {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : CATEGORIES.includes(v) ? go('results', { cat: v }) : go('results', { query: v }); }} />}
