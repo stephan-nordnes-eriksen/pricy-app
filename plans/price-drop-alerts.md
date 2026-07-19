@@ -52,10 +52,21 @@ as magic links).
    real for free.
 5. **Onboarding fix** — pass an `onSave` into `<Onboarding>` in
    boot.jsx that PUTs the notif prefs on finish (merge into
-   `saveSettings`). May need a tiny upstream change if `finish()`
-   doesn't expose the prefs — check first.
+   `saveSettings`). **Checked 2026-07-19: requires upstream change.**
+   `finish()` (proto/index.html:4733) only saves picks and navigates —
+   the `notif` state never leaves the component and `<Onboarding>` takes
+   no save prop. Skip this step until the upstream fix lands (prompt
+   below); everything else in this plan is buildable now.
 6. **Tests** — worker test: ingest a price below a target → alert row,
    respects threshold/paused/re-arm; UI test: hydrated hit flag.
+
+## Upstream (Claude Design) prompt — paste-ready (step 5 only)
+
+> In the pricy prototype's Onboarding, `finish()` drops the
+> notification prefs the user just chose in step 4 (`notif` local
+> state). Accept an optional `onFinish` prop and call
+> `onFinish?.({ notif })` inside `finish()` before `go('home')` —
+> no behavior change when the prop is absent.
 
 ## Dependencies
 

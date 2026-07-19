@@ -20,9 +20,18 @@ Client-side only — localStorage in boot.jsx, no server, no schema.
 2. Hydrate `RECENT` in place pre-render from that key (same
    mutate-in-place seam as CATALOG), filtered to ids that exist in the
    hydrated catalog.
-3. Check the empty-first-visit render — if the rail looks broken empty,
-   upstream fix is "hide the card when RECENT is empty".
+3. Empty-first-visit render: **checked 2026-07-19 — upstream fix
+   confirmed needed.** Both home layouts (:2725, :2756) render a
+   "Recently viewed" `SectionHead` over an empty rail when `RECENT` is
+   empty. Cosmetic only — doesn't block this plan; prompt below.
 4. One UI test: visit a product, reload, rail shows it.
 
 ponytail: per-browser, not per-account. Move to a server-side
 `views` table only if cross-device recents ever matters.
+
+## Upstream (Claude Design) prompt — paste-ready (empty state)
+
+> In the pricy prototype's home layouts (LayoutSearch and
+> LayoutDashboard), hide the whole "Recently viewed" section
+> (SectionHead + RecentRail) when `RECENT` is empty instead of
+> rendering the header over an empty rail.
