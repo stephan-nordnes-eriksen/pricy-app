@@ -1351,10 +1351,10 @@ function Delta({ pct }) {
 }
 
 // --- Button -------------------------------------------------
-function Btn({ children, variant = '', size = '', icon, onClick, style, disabled }) {
+function Btn({ children, variant = '', size = '', icon, onClick, style, disabled, title }) {
   const cls = ['btn', variant && 'btn--' + variant, size && 'btn--' + size].filter(Boolean).join(' ');
   return (
-    <button className={cls} onClick={onClick} style={style} disabled={disabled}>
+    <button className={cls} onClick={onClick} style={style} disabled={disabled} title={title}>
       {icon && <Icon name={icon} size={16} />}{children}
     </button>
   );
@@ -1456,6 +1456,7 @@ PRODUCTS.forEach(p => {
     ship: i % 3 === 0 ? 'Free shipping' : 'kr 79 shipping',
     stock: i % 4 !== 3,
     eta: i % 2 === 0 ? 'In stock' : '2–4 days',
+    url: i % 4 !== 3 ? 'https://www.' + s.toLowerCase().replace(/[^a-z0-9]/g, '') + '.no' : undefined,
   })).sort((a, b) => a.price - b.price);
   p.offers[0].price = p.best;
   p.history = hist(p.best, p.best * 0.06);
@@ -1571,39 +1572,7 @@ function Mark({ size = 36 }) {
 // Pricy.no Web Kit — Header & Footer
 // ===========================================================
 
-function Header({ route, go, query, setQuery }) {
-  const [val, setVal] = useState(query || '');
-  useEffect(() => { setVal(query || ''); }, [query]);
-  const submit = (e) => { e && e.preventDefault(); const query = val.trim(); if (query) go('results', { query }); };
-  return (
-    <header className="hdr">
-      <div className="wrap hdr__row">
-        <div className="hdr__logo" onClick={() => go('home')}>
-          <img className="logo-full" src="assets/logo-wordmark.svg" alt="pricy.no" />
-          <img className="logo-min" src="assets/logo-mark.svg" alt="pricy" style={{ height: 30 }} />
-        </div>
-        <form className="hdr__search" onSubmit={submit}>
-          <div className="field" style={{ height: 44 }}>
-            <span style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--ink-600)' }}>
-              <Icon name="search" size={18} />
-            </span>
-            <input value={val} onChange={e => setVal(e.target.value)} placeholder="Search 1.4M products across 1,400 shops…" />
-          </div>
-        </form>
-        <nav className="hdr__nav">
-          <span className={'navlink ' + (route === 'deals' ? 'is-active' : '')} onClick={() => go('deals')}>Deals</span>
-          <span className="navlink" onClick={() => go('results', { query: 'audio' })}>Categories</span>
-          <span className="navlink" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-            <Icon name="bell" size={15} /> Alerts
-          </span>
-          <span className="navlink" style={{ border: '2px solid var(--ink-900)', display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-            <Icon name="user" size={15} /> Log in
-          </span>
-        </nav>
-      </div>
-    </header>
-  );
-}
+// (legacy Header component removed — AppHeader / LandingHeader are the live headers)
 
 function Footer({ go, authed = true }) {
   const PUB = { about: 1, landing: 1, login: 1 };
@@ -1632,15 +1601,9 @@ function Footer({ go, authed = true }) {
           ])}
           {col('Company', [
             { label: 'About', route: 'about' },
-            { label: 'How it works', route: 'about' },
+            { label: 'How it works', route: 'about', params: { section: 'how' } },
             { label: 'Pricy Plus', route: authed ? 'account' : 'about', params: authed ? { tab: 'plan' } : undefined },
-            { label: 'Press', route: 'about' },
-          ])}
-          {col('Help', [
-            { label: 'FAQ', route: 'about' },
-            { label: 'Contact', route: 'about' },
             { label: 'Privacy', route: authed ? 'account' : 'about', params: authed ? { tab: 'privacy' } : undefined },
-            { label: 'Terms', route: 'about' },
           ])}
         </div>
       </div>
@@ -1654,7 +1617,7 @@ function Footer({ go, authed = true }) {
   );
 }
 
-Object.assign(window, { Header, Footer });
+Object.assign(window, { Footer });
 
 </script>
 
@@ -2266,6 +2229,7 @@ function BrandDemo() {
 
 function AuthCard({ onAuthed, go }) {
   const [method, setMethod] = useState('password'); // password | magic
+  const [magicHint, setMagicHint] = useState('');
   const [mode, setMode] = useState('login'); // login | signup
   const [bidBusy, setBidBusy] = useState(false);
   const [email, setEmail] = useState('');
@@ -2353,10 +2317,10 @@ function AuthCard({ onAuthed, go }) {
       <div className="or-div"><span>or use email</span></div>
 
       <div className="seg" role="tablist">
-        <button className={method === 'password' ? 'is-on' : ''} onClick={() => { setMethod('password'); setErr(''); }}>
+        <button className={method === 'password' ? 'is-on' : ''} onClick={() => { setMethod('password'); setErr(''); setMagicHint(''); }}>
           <Icon name="lock" size={14} /> Password
         </button>
-        <button className={method === 'magic' ? 'is-on' : ''} onClick={() => { setMethod('magic'); setErr(''); }}>
+        <button className={method === 'magic' ? 'is-on' : ''} onClick={() => { setMethod('magic'); setErr(''); setMagicHint(''); }}>
           <Icon name="wand-sparkles" size={14} /> Magic link
         </button>
       </div>
@@ -2373,7 +2337,7 @@ function AuthCard({ onAuthed, go }) {
 
         {method === 'password' && (
           <div className="formfield">
-            <label htmlFor="pw">Password <span className="forgot" onClick={(e) => e.preventDefault()}>Forgot?</span></label>
+            <label htmlFor="pw">Password <span className="forgot" onClick={() => { setMethod('magic'); setErr(''); setMagicHint('Log in with an email link — you can set a new password afterwards in Settings.'); }}>Forgot?</span></label>
             <div className={'field' + (err && validEmail ? ' is-invalid' : '')}>
               <span className="lead-ic"><Icon name="lock" size={18} /></span>
               <input id="pw" type={showPw ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••••"
@@ -2386,7 +2350,7 @@ function AuthCard({ onAuthed, go }) {
         )}
 
         {method === 'magic' && (
-          <div className="formhint">No password needed — we'll email you a secure one-tap link that signs you in.</div>
+          <div className="formhint">{magicHint || "No password needed — we'll email you a secure one-tap link that signs you in."}</div>
         )}
 
         {err && <div className="formhint err"><Icon name="alert-triangle" size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />{err}</div>}
@@ -2939,6 +2903,7 @@ function genOffers(p) {
     ship: i % 3 === 0 ? 'Free shipping' : 'kr 79 shipping',
     stock: i % 4 !== 3,
     eta: i % 2 === 0 ? 'In stock' : '2–4 days',
+    url: i % 4 !== 3 ? 'https://www.' + s.toLowerCase().replace(/[^a-z0-9]/g, '') + '.no' : undefined,
   })).sort((a, b) => a.price - b.price);
   offers[0].price = p.best;
   return offers;
@@ -3084,10 +3049,6 @@ function ResultCard({ p, go }) {
   );
 }
 
-// ---- filter controls (shared logic) -----------------------
-function useResultFilters() {
-  return null;
-}
 
 // ---- filters rail -----------------------------------------
 function Check({ on, label, count, onClick }) {
@@ -3331,6 +3292,7 @@ function ProductPage({ go, id }) {
   const histView = p.history.slice(-weeks);
   const low = Math.min(...p.history);
   const best = p.offers[0];
+  const shopUrl = best.url || (p.offers.find(o => o.url) || {}).url;
   const [buyNow, setBuyNow] = useState(false);
   const more = CAT_OF[p.cat].filter(x => x.id !== p.id).slice(0, 4);
 
@@ -3363,7 +3325,7 @@ function ProductPage({ go, id }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)', alignItems: 'stretch' }}>
                   <Btn variant="dark" icon="zap" onClick={() => setBuyNow(true)}>Buy now</Btn>
-                  <Btn variant="ghost" icon="external-link">Go to shop</Btn>
+                  <Btn variant="ghost" icon="external-link" disabled={!shopUrl} title={shopUrl ? undefined : 'No shop link available for this product'} onClick={() => shopUrl && window.open(shopUrl, '_blank', 'noopener')}>Go to shop</Btn>
                 </div>
               </div>
               <div className="bestbox__bot">
@@ -3471,7 +3433,7 @@ function LandingHeader({ go }) {
           <Wordmark height={26} />
         </div>
         <nav className="app-hdr__nav" style={{ marginLeft: 'auto', gap: 'var(--s-2)' }}>
-          <span className="navlink" onClick={() => go('login')}>Categories</span>
+          <span className="navlink" onClick={() => go('login')}>Log in to browse</span>
           <span className="navlink" onClick={() => go('about')}>How it works</span>
           <Btn variant="ghost" size="sm" onClick={() => go('login')}>Log in</Btn>
           <Btn variant="primary" size="sm" icon="arrow-right" onClick={() => go('login')}>Sign up free</Btn>
