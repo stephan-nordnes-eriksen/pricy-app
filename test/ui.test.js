@@ -257,6 +257,10 @@ test('signed in: every app screen renders the shared footer exactly once', async
   // public pages inline their own authed={false} footer — no doubling
   const landing = boot('http://pricy.test/');
   assert.strictEqual((await until(() => qa(landing, '.ftr').length)), 1, 'landing renders exactly one footer');
+  // onboarding is footer-less in the prototype's router
+  const ob = boot('http://pricy.test/onboarding', { session: true });
+  assert.ok(await until(() => q(ob, '.ob')), 'onboarding did not render');
+  assert.strictEqual(qa(ob, '.ftr').length, 0, 'onboarding must not render the footer');
 });
 
 test('signed in: header search Enter on an empty query stays put (no "airpods pro" fallback)', async () => {

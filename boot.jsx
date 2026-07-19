@@ -399,16 +399,13 @@ function App() {
   else if (name === 'about') view = <AboutPage go={go} section={params.section} />;
   else view = <SignedHome go={go} onLogout={() => go('landing')} layout={T.homeLayout} />;
 
-  // Mirrors the prototype's App router, which renders the shared Footer under
-  // every signed-in screen (public screens inline their own authed={false} one).
-  // That footer render lives in the harness block build.js discards, so it must
-  // be mirrored here by hand — see the sync note in CLAUDE.md.
-  return (
-    <React.Fragment>
-      <div key={name + JSON.stringify(params)}>{view}</div>
-      {session && !PUBLIC_SCREENS.includes(name) && <Footer go={go} />}
-    </React.Fragment>
-  );
+  // Mirrors the prototype's App router (AppRouter.jsx), which renders the
+  // shared Footer inside the keyed div on every screen except login/landing/
+  // about (they inline their own authed={false} one) and onboarding. That
+  // render lives in the harness block build.js discards, so it must be
+  // mirrored here by hand — see the sync note in CLAUDE.md. No session check
+  // needed: without one, every non-public screen is already gated to login.
+  return <div key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1 })[name] && <Footer go={go} />}</div>;
 }
 
 // Catalog is served, not baked: fetch /api/catalog.json and hydrate the
