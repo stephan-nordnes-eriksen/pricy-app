@@ -278,6 +278,16 @@ async function purchasesBody(db, userId) {
   return results.map(r => ({ order_id: r.id, product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price_nok: r.price, purchased_at: new Date(r.created_at).toISOString() }));
 }
 
+// activity feed rows, joined to the product title. ponytail: hard LIMIT 50
+// for the feed, no paging — add offset paging if anyone's history ever needs
+// to scroll past it; export passes -1 (sqlite: no limit) for completeness
+async function alertsBody(db, userId, limit = 50) {
+  const { results } = await db.prepare(
+    'SELECT a.product_id, a.shop, a.price, a.prev_price, a.target, a.created_at, pr.meta FROM alerts a LEFT JOIN products pr ON pr.id = a.product_id WHERE a.user_id = ? ORDER BY a.id DESC LIMIT ?'
+  ).bind(userId, limit).all();
+  return results.map(r => ({ product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price: r.price, prev_price: r.prev_price, target: r.target, created_at: r.created_at }));
+}
+
 async function meBody(db, user) {
   // hit = an alert fired for this watch and the price is still at/below the
   // target (rising back above re-arms the watch and clears the flag)
@@ -706,15 +716,9 @@ export default {
       return user ? json(await meBody(db, user)) : json({ error: 'unauthenticated' }, 401);
     }
 
-    // activity feed: the session user's fired alerts, joined to the product
-    // title. ponytail: hard LIMIT 50, no paging — add offset paging if
-    // anyone's history ever needs to scroll past it
     if (route === 'GET /api/alerts') {
       if (!user) return json({ error: 'unauthenticated' }, 401);
-      const { results } = await db.prepare(
-        'SELECT a.product_id, a.shop, a.price, a.prev_price, a.target, a.created_at, pr.meta FROM alerts a LEFT JOIN products pr ON pr.id = a.product_id WHERE a.user_id = ? ORDER BY a.id DESC LIMIT 50'
-      ).bind(user.id).all();
-      return json(results.map(r => ({ product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price: r.price, prev_price: r.prev_price, target: r.target, created_at: r.created_at })));
+      return json(await alertsBody(db, user.id));
     }
 
     if (route === 'POST /api/logout') {
@@ -729,6 +733,31 @@ export default {
       if (!name || name.length > MAX_NAME_LEN) return json({ error: 'invalid name' }, 400);
       await db.prepare('UPDATE users SET name = ? WHERE id = ?').bind(name, user.id).run();
       return json({ user: { email: user.email, name, initials: initials(name) } });
+    }
+
+    // GDPR export: everything /api/me returns (user minus password hash,
+    // watches, settings, autobuy, purchases) plus the full alert history,
+    // served as a direct download
+    if (route === 'GET /api/account/export') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1) }, 200,
+        { 'content-disposition': 'attachment; filename="pricy-export.json"' });
+    }
+
+    // GDPR delete: every row keyed to the user dies (settings/autobuy blobs
+    // live on the users row), and the session cookie is expired
+    if (route === 'DELETE /api/account') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      await db.batch([
+        db.prepare('DELETE FROM alerts WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM purchases WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM watches WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM oauth_codes WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM login_tokens WHERE email = ?').bind(user.email),
+        db.prepare('DELETE FROM users WHERE id = ?').bind(user.id),
+      ]);
+      return json({ ok: true }, 200, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
     }
 
     if (route === 'POST /api/account/password') {

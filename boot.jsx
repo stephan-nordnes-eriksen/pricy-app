@@ -154,6 +154,25 @@ function saveSettings(patch) {
   }).then(r => { if (!r.ok) throw new Error('save failed'); ME.settings = next; });
 }
 
+// Privacy bridges (plans/account-privacy.md): the synced PrivacySection
+// prefers these over its demo toast/navigate when they exist.
+window.exportData = async () => {
+  if (!ME) throw new Error('not signed in');
+  const r = await fetch('/api/account/export');
+  if (!r.ok) throw new Error('export failed');
+  const url = URL.createObjectURL(await r.blob());
+  const a = Object.assign(document.createElement('a'), { href: url, download: 'pricy-export.json' });
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+window.deleteAccount = async () => {
+  if (!ME) throw new Error('not signed in');
+  const r = await fetch('/api/account', { method: 'DELETE' });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'could not delete account');
+  ME = null; // server already expired the cookie — no logout POST needed
+};
+
 // Every watch mutation funnels through WatchStore.emit — persist from there.
 const _emit = WatchStore.emit;
 WatchStore.emit = function () {

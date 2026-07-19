@@ -260,6 +260,41 @@ test('fullmakt + active auto-buy orders persist per user via PUT /api/autobuy', 
   assert.strictEqual((await call('/api/autobuy', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
 });
 
+test('GDPR: export downloads the session user\'s data; delete removes every row and kills the session', async () => {
+  const call = api({ DB: d1() });
+  assert.strictEqual((await call('/api/account/export')).status, 401, 'export without session must 401');
+  assert.strictEqual((await call('/api/account', { method: 'DELETE' })).status, 401, 'delete without session must 401');
+
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'xm5', target: 2999 }], cookie: ola });
+  await call('/api/settings', { method: 'PUT', body: { email: false, digest: 'daily' }, cookie: ola });
+
+  const res = await call('/api/account/export', { cookie: ola });
+  assert.strictEqual(res.status, 200);
+  assert.match(res.headers.get('content-disposition'), /attachment; filename="pricy-export\.json"/);
+  const data = await res.json();
+  assert.strictEqual(data.user.email, 'ola@nordmann.no');
+  assert.deepStrictEqual(data.settings, { email: false, digest: 'daily' });
+  assert.deepStrictEqual(data.watches.map(w => w.id), ['xm5']);
+  assert.ok(Array.isArray(data.alerts) && Array.isArray(data.purchases));
+  assert.ok(!JSON.stringify(data).includes('password_hash'), 'export must not leak the password hash');
+  assert.strictEqual(data.user.hasPassword, true); // the boolean is fine, the hash is not
+
+  // scoped to the session user, not all users
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const kariData = await (await call('/api/account/export', { cookie: kari })).json();
+  assert.deepStrictEqual(kariData.watches, []);
+
+  const del = await call('/api/account', { method: 'DELETE', cookie: ola });
+  assert.strictEqual(del.status, 200);
+  assert.match(del.headers.get('set-cookie'), /pricy_session=;.*Max-Age=0/, 'delete must expire the cookie');
+  assert.strictEqual((await call('/api/me', { cookie: ola })).status, 401, 'session must be dead');
+  assert.strictEqual((await call('/api/account', { method: 'DELETE', cookie: ola })).status, 401, 'second delete must 401');
+  const login = await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } });
+  assert.notStrictEqual(login.status, 200, 'the account itself must be gone');
+  assert.strictEqual((await call('/api/me', { cookie: kari })).status, 200, 'other users unaffected');
+});
+
 test('changing password requires the current one and re-hashes; passwordless accounts just set one', async () => {
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/account/password', { method: 'POST', body: { newPassword: 'correcthorse1' } })).status, 401, 'POST without session must 401');
