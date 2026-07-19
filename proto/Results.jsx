@@ -388,6 +388,59 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
   );
 }
 
+// --- Report a problem ---------------------------------------
+const REPORT_REASONS = ['Wrong price', 'Out of stock', 'Wrong product info', 'Other'];
+function ReportProblemModal({ p, onClose, onDone }) {
+  const [reason, setReason] = useState(null);
+  const [shop, setShop] = useState(p.offers[0].shop);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const submit = async () => {
+    if (!reason || busy) return;
+    setErr('');
+    if (window.reportProblem) {
+      setBusy(true);
+      try { await window.reportProblem(p.id, shop, reason, text); }
+      catch (e) { setErr((e && e.message) || 'Could not send report'); setBusy(false); return; }
+    }
+    onDone('Thanks \u2014 we\u2019ll look into it.');
+    onClose();
+  };
+  return (
+    <div className="overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal report-modal" role="dialog" aria-label="Report a problem">
+        <div className="modal__head">
+          <b>Report a problem</b>
+          <button className="iconbtn" onClick={onClose} aria-label="Close"><Icon name="x" size={16} /></button>
+        </div>
+        <div className="report-modal__body">
+          <div>
+            <div className="t-label" style={{ marginBottom: 6 }}>Shop</div>
+            <select className="report-modal__shop" value={shop} onChange={e => setShop(e.target.value)}>
+              {p.offers.map(o => <option key={o.shop} value={o.shop}>{o.shop}</option>)}
+            </select>
+          </div>
+          <div>
+            <div className="t-label" style={{ marginBottom: 6 }}>What's wrong?</div>
+            <div className="report-modal__reasons" role="radiogroup" aria-label="Reason">
+              {REPORT_REASONS.map(r => (
+                <button key={r} type="button" role="radio" aria-checked={reason === r} className={'report-modal__reason' + (reason === r ? ' is-on' : '')} onClick={() => setReason(r)}>{r}</button>
+              ))}
+            </div>
+          </div>
+          <textarea className="report-modal__text" rows={3} placeholder="Anything else we should know? (optional)" value={text} onChange={e => setText(e.target.value)}></textarea>
+          {err && <div className="report-modal__err"><Icon name="alert-triangle" size={14} /> {err}</div>}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--s-3)' }}>
+            <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
+            <Btn variant="primary" disabled={!reason || busy} onClick={submit}>{busy ? 'Sending\u2026' : 'Send report'}</Btn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ===========================================================
 // PRODUCT COMPARISON PAGE (PDP)
 // ===========================================================
@@ -408,6 +461,7 @@ function ProductPage({ go, id }) {
   const best = p.offers[0];
   const shopUrl = best.url || (p.offers.find(o => o.url) || {}).url;
   const [buyNow, setBuyNow] = useState(false);
+  const [report, setReport] = useState(false);
   const more = CAT_OF[p.cat].filter(x => x.id !== p.id).slice(0, 4);
 
   return (
@@ -481,6 +535,7 @@ function ProductPage({ go, id }) {
 
             <AutobuyBox p={p}></AutobuyBox>
             {buyNow && <BuyNowModal p={p} onClose={() => setBuyNow(false)}></BuyNowModal>}
+            {report && <ReportProblemModal p={p} onClose={() => setReport(false)} onDone={flash}></ReportProblemModal>}
           </div>
         </div>
 
@@ -498,6 +553,9 @@ function ProductPage({ go, id }) {
                 </div>
               </div>
             ))}
+            <div className="offers__foot">
+              <button type="button" className="report-link" onClick={() => setReport(true)}><Icon name="flag" size={12} /> Report a problem</button>
+            </div>
           </div>
 
           <div className="chart">
