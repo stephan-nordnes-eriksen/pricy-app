@@ -2704,7 +2704,12 @@ function AlertFeedCard({ go }) {
         <span style={{ color: 'var(--green-700)', cursor: 'pointer' }} onClick={() => go('home')}>All</span>
       </div>
       <div className="afeed">
-        {FEED.map((f, i) => (
+        {FEED.length === 0 ? (
+          <div style={{ padding: 'var(--s-5) var(--s-4)', textAlign: 'center', color: 'var(--ink-600)', fontSize: 13, lineHeight: 1.5 }}>
+            <Icon name="bell-off" size={22} className="ic" style={{ color: 'var(--ink-400)', marginBottom: 8 }} />
+            <div>No alerts yet — set a target price on a watched product and we'll notify you here.</div>
+          </div>
+        ) : FEED.map((f, i) => (
           <div key={i} className="afeed__item" onClick={() => go('product', { id: f.id })}>
             <div className={'afeed__dot ' + f.kind}>
               <Icon name={f.kind === 'up' ? 'trending-up' : f.kind === 'watch' ? 'eye' : 'trending-down'} size={15} />
@@ -4314,7 +4319,13 @@ function AlertRow({ r, go, onRemove }) {
 function ActivityFeed({ go }) {
   return (
     <div className="actfeed">
-      {FEED.map((f, i) => (
+      {FEED.length === 0 ? (
+        <div className="empty">
+          <div className="empty__ic"><Icon name="bell-off" size={40} /></div>
+          <h2>No alerts yet</h2>
+          <p>Set a target price on a watched product and we'll notify you here.</p>
+        </div>
+      ) : FEED.map((f, i) => (
         <div key={i} className="actrow" onClick={() => go('product', { id: f.id })}>
           <div className={'actrow__dot ' + f.kind}>
             <Icon name={f.kind === 'up' ? 'trending-up' : f.kind === 'watch' ? 'eye' : 'trending-down'} size={17} />
