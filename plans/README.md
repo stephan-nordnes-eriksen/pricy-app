@@ -23,8 +23,9 @@ through them in the order below unless something changes.
 
 **Implemented** (moved to [../plans-implemented/](../plans-implemented/)):
 honest-metrics, account-privacy, dead-ui-cleanup, price-drop-alerts,
-activity-feed, recently-viewed, real-magic-link-login — each file keeps
-its remaining upstream/delivery follow-ups.
+activity-feed, recently-viewed, real-magic-link-login,
+report-product-error — each file keeps its remaining upstream/delivery
+follow-ups.
 
 ## Suggested order
 
@@ -39,10 +40,9 @@ its remaining upstream/delivery follow-ups.
 4. [autobuy-copy-honesty](autobuy-copy-honesty.md) — fullmakt doc's
    fabricated org.nr/identity and the "purchases for you" present
    tense; worst honesty offender, copy-only fix.
-5. [report-product-error](report-product-error.md) — TODO.md item.
-6. [profile-email-change](profile-email-change.md) — small; real change
+5. [profile-email-change](profile-email-change.md) — small; real change
    needs email.
-7. [pricy-plus](pricy-plus.md) — decision-heavy (billing). All Plus
+6. [pricy-plus](pricy-plus.md) — decision-heavy (billing). All Plus
    *copy* honesty synced 2026-07-19; what's left is the mechanics
    (server-side plan state, waitlist-vs-preview, billing). Do last.
 

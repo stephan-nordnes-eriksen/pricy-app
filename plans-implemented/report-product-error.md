@@ -1,5 +1,10 @@
 # Report incorrect product/price
 
+**Implemented 2026-07-19.** Upstream modal synced (Results.jsx +
+pages.css), `POST /api/report` + `reports` table live, boot.jsx bridge,
+worker + jsdom tests, deployed. Triage is the wrangler d1 CLI (step 3);
+no follow-ups.
+
 TODO.md item: "Some kind of button to press if a product or price is
 incorrect. Design only for now." Nothing exists yet, in design or code.
 
