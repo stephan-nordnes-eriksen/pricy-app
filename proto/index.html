@@ -948,6 +948,7 @@ button { color: inherit; }
 
 /* ---- Plus tag / lock / modal ------------------------------ */
 .plus-tag { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; background: var(--ink-900); color: var(--green-300); padding: 3px 7px; }
+.soon-tag { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; border: var(--bw-hair) solid var(--ink-400); color: var(--ink-600); padding: 2px 6px; background: var(--paper); }
 .overlay { position: fixed; inset: 0; background: rgba(14,14,14,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; padding: var(--s-5); animation: fade-in var(--dur) var(--ease) both; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .pmodal { width: 100%; max-width: 500px; background: var(--paper); border: var(--bw-bold) solid var(--ink-900); box-shadow: 8px 8px 0 var(--green-500); animation: pop-in var(--dur) var(--ease) both; }
@@ -3666,6 +3667,7 @@ const PLUS_FEATURES = [
 
 // --- Plus tag ------------------------------------------------
 function PlusTag() { return <span className="plus-tag">Plus</span>; }
+function SoonTag() { return <span className="soon-tag">Coming soon</span>; }
 
 // --- Plus paywall modal --------------------------------------
 function PlusModal({ onClose, go }) {
@@ -3678,7 +3680,7 @@ function PlusModal({ onClose, go }) {
       <div className="pmodal" role="dialog" aria-label="Pricy Plus">
         <div className="pmodal__head">
           <div>
-            <PlusTag></PlusTag>
+            <PlusTag></PlusTag> <SoonTag></SoonTag>
             <h2>Let the machine shop around.</h2>
           </div>
           <button className="x" onClick={onClose} aria-label="Close"><Icon name="x" size={20} /></button>
@@ -3691,10 +3693,10 @@ function PlusModal({ onClose, go }) {
             </div>
           ))}
           <div className="pmodal__price">
-            <span className="amt">kr 49</span><span className="per">/ month · cancel anytime</span>
+            <span className="amt">kr 49</span><span className="per">/ month (planned) · subject to change</span>
           </div>
-          <Btn variant="primary" icon="arrow-right" style={{ width: '100%', justifyContent: 'center', height: 50 }} onClick={start}>Start 14-day free trial</Btn>
-          <div className="pmodal__fine">No card needed for the trial. Free plan stays free — forever.</div>
+          <Btn variant="primary" icon="arrow-right" style={{ width: '100%', justifyContent: 'center', height: 50 }} onClick={start}>Preview Plus features</Btn>
+          <div className="pmodal__fine">Pricy Plus hasn't launched yet — this is a preview. Features and pricing are subject to change.</div>
         </div>
       </div>
     </div>
@@ -3707,7 +3709,7 @@ function LockedCard({ icon, title, desc, onOpen }) {
     <div className="lockcard" onClick={onOpen}>
       <div className="lockcard__ic"><Icon name={icon} size={20} /></div>
       <div>
-        <b>{title} <PlusTag></PlusTag></b>
+        <b>{title} <PlusTag></PlusTag> <SoonTag></SoonTag></b>
         <p>{desc}</p>
       </div>
       <span className="go"><Icon name="lock" size={16} /></span>
@@ -3725,7 +3727,7 @@ function Toast({ children }) {
   return <div className="toast"><Icon name="check" size={16} /> {children}</div>;
 }
 
-Object.assign(window, { WatchStore, useWatchStore, usePlan, PLUS_FEATURES, PlusTag, PlusModal, LockedCard, Toggle, Toast });
+Object.assign(window, { WatchStore, useWatchStore, usePlan, PLUS_FEATURES, PlusTag, SoonTag, PlusModal, LockedCard, Toggle, Toast });
 
 </script>
 
@@ -4392,7 +4394,7 @@ function AlertsPage({ go, tab: tab0 }) {
                 <div className="lockcard" style={{ cursor: 'default' }}>
                   <div className="lockcard__ic"><Icon name="sparkles" size={20} /></div>
                   <div>
-                    <b>Price forecast <PlusTag></PlusTag></b>
+                    <b>Price forecast <PlusTag></PlusTag> <SoonTag></SoonTag></b>
                     <p>Sony WH-1000XM5 is likely to drop another 4–6% before Black Week. Samsung OLED is at its floor — buy now.</p>
                   </div>
                 </div>
@@ -4604,12 +4606,12 @@ function NotifSection({ onToast, openPaywall, initial, onSave }) {
         </div>
         <div className={'arow' + (plan === 'plus' ? '' : ' is-locked')}>
           <div className="arow__txt">
-            <b>AI deal digest <PlusTag></PlusTag></b>
+            <b>AI deal digest <PlusTag></PlusTag> <SoonTag></SoonTag></b>
             <p>A short daily read on your watchlist: what to grab, what to wait for.</p>
           </div>
           {plan === 'plus'
             ? <Toggle on={n.hits} onChange={v => set('hits', v)}></Toggle>
-            : <Btn size="sm" icon="lock" onClick={openPaywall}>Unlock</Btn>}
+            : <Btn size="sm" icon="lock" onClick={openPaywall}>Coming soon</Btn>}
         </div>
       </div>
 
@@ -4643,18 +4645,18 @@ function PlanSection({ openPaywall, onToast }) {
           <div className={'planbox' + (isPlus ? ' is-plus' : '')}>
             <div>
               <div className="planbox__name">Current plan</div>
-              <h3>{isPlus ? 'Pricy Plus' : 'Free'}</h3>
+              <h3>{isPlus ? 'Pricy Plus (preview)' : 'Free'}</h3>
             </div>
             <div className="spacer"></div>
             {isPlus ? (
               <React.Fragment>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green-300)' }}>kr 49/mo · renews Aug 1</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green-300)' }}>Preview · pricing subject to change</span>
                 <Btn variant="ghost" style={{ color: 'var(--paper)' }} onClick={() => { window.setPlan && window.setPlan('free'); onToast('Subscription cancelled'); }}>Cancel</Btn>
               </React.Fragment>
             ) : (
               <React.Fragment>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-600)' }}>10 watches · standard alerts</span>
-                <Btn variant="primary" icon="sparkles" onClick={openPaywall}>Upgrade to Plus</Btn>
+                <Btn variant="primary" icon="sparkles" onClick={openPaywall}>Preview Plus</Btn>
               </React.Fragment>
             )}
           </div>
@@ -4662,11 +4664,11 @@ function PlanSection({ openPaywall, onToast }) {
         {PLUS_FEATURES.map(f => (
           <div key={f.name} className={'arow' + (isPlus ? '' : ' is-locked')}>
             <div className="arow__txt">
-              <b><Icon name={f.icon} size={15} /> {f.name} <PlusTag></PlusTag></b>
+              <b><Icon name={f.icon} size={15} /> {f.name} <PlusTag></PlusTag> <SoonTag></SoonTag></b>
               <p>{f.desc}</p>
             </div>
             {isPlus
-              ? <span className="tag tag--best">Active</span>
+              ? <span className="tag tag--best">Preview</span>
               : <span style={{ color: 'var(--ink-400)', display: 'flex' }}><Icon name="lock" size={16} /></span>}
           </div>
         ))}
@@ -4939,7 +4941,7 @@ const ABOUT_FAQ = [
   { q: 'How does pricy make money?', a: 'When you click through to a shop and buy, some shops pay us a small referral fee. That fee never affects ranking — the cheapest price is always on top, whether the shop pays us or not.' },
   { q: 'Do I need an account?', a: 'Yes. Searching, comparing and price alerts all require a free account. It takes 30 seconds, and the free plan stays free forever.' },
   { q: 'How fresh are the prices?', a: 'We re-check every shop around the clock — the most popular products most often. Every price shows when it was last verified.' },
-  { q: 'What is Pricy Plus?', a: 'Our kr 49/month subscription. It adds AI features: a daily deal digest, price forecasts per product, and plain-language search («best robotstøvsuger under 4 000»). Everything else is free.' },
+  { q: 'What is Pricy Plus?', a: 'Our upcoming subscription — coming soon, planned at kr 49/month (pricing subject to change). It adds AI features: a daily deal digest, price forecasts per product, and plain-language search («best robotstøvsuger under 4 000»). Everything else is free.' },
   { q: 'How do price alerts work?', a: 'Watch any product and set a target price. The moment any of the shops we track goes below your target, you get an email or push notification — usually within minutes.' },
 ];
 
