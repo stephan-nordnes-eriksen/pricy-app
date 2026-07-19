@@ -32,6 +32,7 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
   // build-generated seed, the same shape the route serves
   CATALOG_JSON = CATALOG_JSON || JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
   let ME = me || (session ? { user: mari, watches: [] } : null);
+  win.setMe = (v) => { ME = v; }; // "the emailed link was clicked elsewhere" seam
   win.api = []; // 'METHOD /path [body]' log for assertions
   const ok = (data, status = 200) => Promise.resolve({ ok: status < 400, status, json: () => Promise.resolve(data) });
   win.fetch = (u, opts = {}) => {
@@ -44,6 +45,7 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
       ME = { user: { email: body.email, name, initials: name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('') }, watches: [] };
       return ok(ME);
     }
+    if (u === '/api/auth/request') return ok({ ok: true });
     if (u === '/api/logout') { ME = null; return ok({ ok: true }); }
     if (u === '/api/alerts') return ME ? ok(alerts) : ok({ error: 'unauthenticated' }, 401);
     if (u === '/api/watches') return ok({ ok: true });
@@ -186,16 +188,22 @@ test('signup mode creates the account and runs onboarding', async () => {
   assert.strictEqual(call && call.body.password, 'hunter22', 'typed password must reach the server');
 });
 
-test('magic-link "Open the link" acts as a verified signup', async () => {
+test('magic link: waiting state requests a real link and polling /api/me completes login', async () => {
   const win = boot('http://pricy.test/login');
   await tick();
   qa(win, '.seg button').find(b => /magic link/i.test(b.textContent)).click();
   type(win, q(win, '.authcard input[type="email"]'), 'kari@nordmann.no');
   submit(win, q(win, '.authcard form'));
   assert.ok(await until(() => q(win, '.authcard .addr')), 'sent screen missing');
-  qa(win, '.authcard button').find(b => /open the link/i.test(b.textContent)).click();
-  assert.ok(await until(() => q(win, '.avatar')), 'should reach the signed-in app');
-  assert.ok(win.api.some(c => c.call === 'POST /api/auth/signup'), 'emailed-link simulation must upsert like verify does');
+  assert.ok(q(win, '.sent__spinner'), 'waiting spinner missing');
+  assert.ok(!qa(win, '.authcard button').some(b => /open the link/i.test(b.textContent)), 'the simulation button must be gone');
+  // boot.jsx's driver must request a real emailed link for the typed address
+  assert.ok(await until(() => win.api.some(c => c.call === 'POST /api/auth/request' && c.body.email === 'kari@nordmann.no'), 5000), 'must POST /api/auth/request');
+  assert.ok(!win.api.some(c => c.call === 'POST /api/auth/signup'), 'magic flow must not touch the signup bridge');
+  // the link is clicked on another tab/device → /api/me starts answering
+  win.setMe({ user: { email: 'kari@nordmann.no', name: 'Kari', initials: 'K' }, watches: [] });
+  assert.ok(await until(() => q(win, '.avatar'), 8000), 'waiting tab must pick the session up'); // poll runs every 3s
+  assert.strictEqual(win.location.pathname, '/');
 });
 
 test('rejected login stays on the login screen', async () => {

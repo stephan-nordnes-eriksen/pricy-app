@@ -1,5 +1,21 @@
 # Real magic-link login — drop the demo auth bridges
 
+**Status: implemented 2026-07-19** (upstream waiting state synced; boot.jsx
+driver polls `/api/me`; passwordless signup pinned to `demo@pricy.no`;
+signup can no longer take over existing accounts — passworded ones verify,
+magic-link ones refuse). Two deviations from the plan below:
+- `POST /api/auth/login` did not die — it had already become the real
+  password login (strict, verified); only its passwordless demo behavior
+  was gone.
+- Waiting-tab pickup is **same-browser only** (shared cookie jar), not
+  cross-device: a pollable claim token would let whoever *requested* the
+  link steal the session of whoever *clicked* it. A link clicked on another
+  device logs that device in; the waiting tab times out after ~10 min.
+
+**Not deployed** — still blocked on the SEND_EMAIL binding (paid plan,
+PLAN.md Phase 2). Without it prod would console-log the email and the
+waiting screen would spin forever.
+
 ## Current state
 
 The real flow exists server-side: `POST /api/auth/request` +

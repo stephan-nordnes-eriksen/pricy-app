@@ -98,15 +98,14 @@ function displayName(email) {
 const initials = (name) => name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 
 async function upsertUser(db, email, passwordHash = null) {
-  // the DO UPDATE makes RETURNING yield the row on conflict too, and its
-  // password_hash is COALESCEd so an upsert never clobbers a password that's
-  // already set (a magic-link/BankID upsert always passes passwordHash =
-  // null) — but still lets a genuine password-signup set one on an existing
-  // passwordless row, which a plain "only touch email" DO UPDATE silently
-  // dropped (the bug: signing up with a password on a pre-existing
-  // passwordless email logged you in fine but never actually saved it)
+  // the DO UPDATE makes RETURNING yield the row on conflict too, but never
+  // touches password_hash: passwordless rows are real magic-link accounts
+  // now, so letting a password-signup attach a password to one would be an
+  // account takeover. Setting a password on an existing account goes through
+  // the logged-in path (POST /api/account/password) instead; signup callers
+  // verify the returned hash to tell "created" from "already existed".
   return db.prepare(
-    'INSERT INTO users (email, name, password_hash, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email, password_hash = COALESCE(users.password_hash, excluded.password_hash) RETURNING id, email, name, password_hash, settings, autobuy, created_at'
+    'INSERT INTO users (email, name, password_hash, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name, password_hash, settings, autobuy, created_at'
   ).bind(email, displayName(email), passwordHash, Date.now()).first();
 }
 
@@ -122,13 +121,14 @@ async function startSession(db, userId) {
 
 // shared by the MCP login/signup tools and the OAuth /authorize form.
 // login is strict; signup upserts but must verify the resulting password —
-// upsert never clobbers an existing one, so a wrong password on an existing
-// account fails here instead of hijacking it (unlike the web demo bridge).
+// upsert never touches an existing row's hash, so signup on an existing
+// account (passworded or magic-link) fails here instead of hijacking it.
 async function passwordAuth(db, action, email, password) {
   if (!EMAIL_RE.test(email)) return { error: 'invalid email' };
   if (action === 'signup') {
     if (password.length < MIN_PASSWORD_LEN) return { error: `password must be at least ${MIN_PASSWORD_LEN} characters` };
     const user = await upsertUser(db, email, await hashPassword(password));
+    if (!user.password_hash) return { error: 'this account has no password — log in on pricy.no and set one under Account first' };
     if (!(await verifyPassword(password, user.password_hash))) return { error: 'an account with this email already exists — log in with its password' };
     return { user };
   }
@@ -693,22 +693,29 @@ export default {
       return new Response(null, { status: 302, headers: { location: url.origin + '/', 'set-cookie': await startSession(db, user.id) } });
     }
 
-    // Demo bridges — also the real password login/signup path now. BankID
-    // (per plan) and the magic-link "Open the link" simulation still hit
-    // signup with no password, upserting a passwordless account exactly
-    // like a verified magic link does. Real request+verify is above; drop
-    // the whole bridge (and password auth stays) when Login waits on the
-    // actually-emailed link instead of simulating it.
+    // Real password login/signup. The old passwordless-signup demo bridge is
+    // gone (magic links go through request+verify above) — the only
+    // passwordless signup left is the fake BankID button's shared demo
+    // account, pinned here so arbitrary accounts can't be upserted.
     // login = existing accounts only; signup = create-or-log-in.
     if (route === 'POST /api/auth/login' || route === 'POST /api/auth/signup') {
       const { email, password } = await bodyEmailAndPassword(request);
       if (!email) return json({ error: 'invalid email' }, 400);
 
       if (route.endsWith('signup')) {
+        if (password == null && email !== 'demo@pricy.no') {
+          return json({ error: 'signup needs a password — or use the magic link' }, 400);
+        }
         if (password != null && password.length < MIN_PASSWORD_LEN) {
           return json({ error: `password must be at least ${MIN_PASSWORD_LEN} characters` }, 400);
         }
         const user = await upsertUser(db, email, password ? await hashPassword(password) : null);
+        if (password != null) {
+          // existing row → upsert left its hash alone; verify or refuse, same
+          // as the MCP signup tool (no session for someone else's account)
+          if (!user.password_hash) return json({ error: 'this account uses the magic link — log in that way, then set a password under Account' }, 401);
+          if (!(await verifyPassword(password, user.password_hash))) return json({ error: 'an account with this email already exists — log in with its password' }, 401);
+        }
         return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 

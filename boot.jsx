@@ -315,21 +315,68 @@ function App() {
   // AuthCard hands us the attempt as onAuthed(email, {signup, password}) and
   // awaits the verdict: resolve strictly `true` = we set the session and
   // navigated; `false` or `{error}` = it shows its own error and stays.
-  // Upserts (account creation) are: signup submits, the sent-screen "Open
-  // the link" (.addr present — it simulates the emailed verify link, which
-  // is an upsert), and fake BankID (null email → shared demo account, no
-  // password). Password login is strict and now actually checks the
-  // password server-side (worker/index.js verifyPassword).
+  // Null email = fake BankID → shared demo account (the only passwordless
+  // signup the server still accepts); everything else is real password auth
+  // checked server-side (worker/index.js verifyPassword). Magic links never
+  // come through here — the driver effect below owns that flow.
   const onAuthed = (email, opts) => {
     const signup = !!(opts && opts.signup);
     const password = opts && opts.password;
-    const upsert = signup || !email || !!document.querySelector('.authcard .addr');
-    return serverLogin(email || 'demo@pricy.no', upsert ? '/api/auth/signup' : '/api/auth/login', password)
+    return serverLogin(email || 'demo@pricy.no', signup || !email ? '/api/auth/signup' : '/api/auth/login', password)
       .then(ok => {
         if (ok === true) { setSession(true); nav(signup ? 'onboarding' : 'home'); }
         return ok;
       });
   };
+
+  // Magic-link driver: the synced AuthCard only *renders* the waiting screen
+  // (submit never reaches onAuthed for magic links), so the DOM is the seam.
+  // While `.authcard .addr` shows an email we own the real work: POST
+  // /api/auth/request for it, re-POST on "Resend link" clicks, and poll
+  // /api/me every 3s (~10 min cap) until the emailed link is clicked in
+  // another tab — the cookie jar is shared, so this tab picks the session up.
+  // ponytail: same-browser pickup only. A link clicked on another device logs
+  // that device in; handing the waiting tab a session too would need a
+  // pollable claim token, which lets whoever *requested* the link steal the
+  // session of whoever *clicked* it — deliberately not built.
+  useEffect(() => {
+    if (screen.name !== 'login' || session) return;
+    let sentTo = null, iv = null, polls = 0, done = false;
+    const requestLink = (email) => fetch('/api/auth/request', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }).catch(() => {});
+    const poll = () => {
+      if (done || ++polls > 200) { clearInterval(iv); iv = null; return; }
+      fetchJson('/api/me').then(me => {
+        if (done || !me || !me.user) return;
+        done = true;
+        hydrateMe(me);
+        fetchJson('/api/alerts').then(hydrateFeed).catch(() => {});
+        setSession(true);
+        nav('home');
+      }).catch(() => {});
+    };
+    const check = () => {
+      const addr = document.querySelector('.authcard .addr');
+      const email = (addr && addr.textContent.trim()) || null;
+      if (email === sentTo) return;
+      sentTo = email;
+      polls = 0;
+      if (iv) { clearInterval(iv); iv = null; }
+      if (email) { requestLink(email); iv = setInterval(poll, 3000); }
+    };
+    const onResend = (e) => {
+      const a = e.target.closest && e.target.closest('.authcard .auth-foot a');
+      if (sentTo && a && /^Resend/.test(a.textContent)) requestLink(sentTo);
+    };
+    const mo = new MutationObserver(check);
+    mo.observe(document.body, { subtree: true, childList: true });
+    document.addEventListener('click', onResend);
+    check();
+    return () => { mo.disconnect(); if (iv) clearInterval(iv); document.removeEventListener('click', onResend); };
+  }, [screen.name, session]);
 
   useEffect(() => {
     const onPop = () => setScreen(parseUrl(readSession()));

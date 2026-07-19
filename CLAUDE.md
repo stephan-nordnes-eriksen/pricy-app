@@ -47,9 +47,10 @@ Two Claude Design projects feed this repo:
   `Mcp-Session-Id` header to the shared `sessions` table), search_products,
   get_product, buy_now (records an order in the `purchases` table — MVP,
   payment assumed handled), watch_product/unwatch_product/list_watches
-  (same `watches` rows the web sees), list_purchases. Unlike the web signup
-  bridge, MCP signup on an existing passworded account verifies the
-  password (no hijack). claude.ai forces OAuth+DCR on custom connectors, so
+  (same `watches` rows the web sees), list_purchases. Signup (web and MCP
+  alike) on an existing account verifies the password and refuses to touch
+  passwordless (magic-link) accounts — no hijack either way.
+  claude.ai forces OAuth+DCR on custom connectors, so
   the Worker also serves a minimal OAuth stack (`/.well-known/oauth-*`,
   `/register`, `/authorize` login page, `/token`, PKCE S256): the access
   token is a plain pricy session token, redirect_uris are allowlisted to
@@ -99,14 +100,22 @@ Known upstream gaps (fix in Claude Design, then extend tests):
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
   passed out, awaitable verdict, server errors shown in the form), and
   password login/signup/change are real (PBKDF2-hashed, verified
-  server-side). BankID is still a fake button that logs into a shared demo
-  account (`demo@pricy.no`) and lands home. Real BankID is parked until
-  mostly everything else is done (see PLAN.md) — keep the fake button
-  working, spend no other effort on it. Served by the Worker's demo
-  bridges: `POST /api/auth/login` (strict, existing accounts only) and
-  `POST /api/auth/signup` (upsert; also used for BankID and the
-  "Open the link" magic simulation). Drop both when the upstream Login
-  waits for the real emailed link.
+  server-side). Magic-link login is real too: the AuthCard shows a
+  waiting screen, boot.jsx's driver effect POSTs `/api/auth/request` for
+  the shown address (re-POST on Resend) and polls `/api/me` every 3s
+  (~10 min) until the emailed link is clicked in another tab — same-browser
+  pickup via the shared cookie jar. Deliberately NOT cross-device: a
+  pollable claim token would let whoever requested a link steal the session
+  of whoever clicked it; a link clicked on another device just logs that
+  device in. **Magic-link email only actually sends once the SEND_EMAIL
+  binding is live (paid plan, see PLAN.md Phase 2) — without it the Worker
+  console-logs the link and prod users wait forever, so don't deploy this
+  until that's decided.** BankID is still a fake button that logs into a
+  shared demo account (`demo@pricy.no`) and lands home — the only
+  passwordless `POST /api/auth/signup` the server still accepts (any other
+  email must send a password, verified against existing accounts). Real
+  BankID is parked until mostly everything else is done (see PLAN.md) —
+  keep the fake button working, spend no other effort on it.
 
 `npm run test:e2e` (Playwright visual parity vs the prototype) must run
 with the Bash sandbox disabled — Chromium can't bootstrap its mach port

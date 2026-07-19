@@ -44,6 +44,19 @@ const api = (env) => (pathname, { method = 'GET', body, cookie } = {}) =>
 
 const cookieOf = (res) => (res.headers.get('set-cookie') || '').split(';')[0];
 
+// real magic-link login: request logs the link (no SEND_EMAIL in tests),
+// verify redeems it — the only way to mint a passwordless account now
+async function magicLogin(call, email) {
+  const logs = [];
+  const realLog = console.log;
+  console.log = (...a) => logs.push(a.join(' '));
+  try { await call('/api/auth/request', { method: 'POST', body: { email } }); }
+  finally { console.log = realLog; }
+  const link = logs.join('\n').match(/http:\/\/pricy\.test(\/api\/auth\/verify\?token=[0-9a-f]{64})/);
+  assert.ok(link, 'magic link was not logged');
+  return cookieOf(await call(link[1]));
+}
+
 test('signup issues an HttpOnly session cookie and /api/me returns the user', async () => {
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/me')).status, 401, 'unauthenticated /api/me must 401');
@@ -69,7 +82,30 @@ test('login is strict (existing accounts only, correct password); signup is crea
   await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } });
   assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } })).status, 200, 'login must work after signup with the right password');
   assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'wrong-password' } })).status, 401, 'wrong password must be rejected');
-  assert.strictEqual((await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } })).status, 200, 'signup for an existing account just logs in (password bridge, e.g. magic link/BankID)');
+  assert.strictEqual((await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } })).status, 200, 'signup with the right password just logs in');
+});
+
+test('passwordless signup is pinned to the BankID demo account', async () => {
+  const call = api({ DB: d1() });
+  const res = await call('/api/auth/signup', { method: 'POST', body: { email: 'anyone@example.no' } });
+  assert.strictEqual(res.status, 400, 'arbitrary passwordless upsert must be rejected');
+  assert.strictEqual(res.headers.get('set-cookie'), null, 'no session for a rejected signup');
+  assert.strictEqual((await call('/api/auth/signup', { method: 'POST', body: { email: 'demo@pricy.no' } })).status, 200, 'fake BankID demo account still works');
+});
+
+test('signup cannot take over an existing account', async () => {
+  const call = api({ DB: d1() });
+  // passworded account: wrong password → no session
+  await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } });
+  const wrong = await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'attackerpass1' } });
+  assert.strictEqual(wrong.status, 401);
+  assert.strictEqual(wrong.headers.get('set-cookie'), null, 'no session for someone else\'s account');
+  // magic-link (passwordless) account: signup must not attach a password to it
+  await magicLogin(call, 'kari@example.no');
+  const grab = await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'attackerpass1' } });
+  assert.strictEqual(grab.status, 401, 'signup on a magic-link account must be refused');
+  assert.strictEqual(grab.headers.get('set-cookie'), null);
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'attackerpass1' } })).status, 401, 'no password may have been attached');
 });
 
 test('password signup requires 8+ chars; login requires and verifies the password', async () => {
@@ -92,27 +128,12 @@ test('an account created without a password (BankID/magic-link bridge) cannot lo
   assert.strictEqual(res.status, 401);
 });
 
-test('signing up with a password on a pre-existing passwordless account actually sets it', async () => {
-  const call = api({ DB: d1() });
-  // account first exists passwordless (e.g. an earlier magic-link/BankID upsert)
-  await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } });
-  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 401, 'no password yet');
-
-  const signup = await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } });
-  assert.strictEqual(signup.status, 200);
-  assert.strictEqual((await signup.json()).user.hasPassword, true, 'the second signup must actually save the password');
-  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200, 'must be able to log in with the password just set');
-});
-
 test('an upsert never overwrites a password that is already set', async () => {
   const call = api({ DB: d1() });
   await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } });
-  // a later passwordless upsert (magic-link "open the link" / BankID) must not wipe it
-  await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } });
-  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200, 'original password must survive a passwordless upsert');
-  // nor a signup attempt with a different password
-  await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'differentpass1' } });
-  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200, 'a second signup must not silently change the password');
+  // a later magic-link login upserts passwordless — must not wipe the password
+  await magicLogin(call, 'kari@example.no');
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } })).status, 200, 'original password must survive a magic-link login');
 });
 
 test('magic link: request logs a single-use link, verify sets the session', async () => {
@@ -181,7 +202,7 @@ test('watchlist persists per user and requires auth', async () => {
   const watches = [{ id: 'xm5', target: 3100, paused: false }, { id: 'lgc3', target: 12000, paused: true }];
   assert.strictEqual((await call('/api/watches', { method: 'PUT', body: watches })).status, 401, 'PUT without session must 401');
 
-  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   assert.strictEqual((await call('/api/watches', { method: 'PUT', body: watches, cookie: ola })).status, 200);
   const me = await (await call('/api/me', { cookie: ola })).json();
   assert.deepStrictEqual(me.watches, [
@@ -192,7 +213,7 @@ test('watchlist persists per user and requires auth', async () => {
   // replace-all semantics, and another user sees nothing
   await call('/api/watches', { method: 'PUT', body: [{ id: 'xm5', target: 2999 }], cookie: ola });
   assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).watches, [{ id: 'xm5', target: 2999, paused: 0, hit: 0 }]);
-  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
   assert.deepStrictEqual((await (await call('/api/me', { cookie: kari })).json()).watches, []);
 
   for (const bad of ['nope', [{ id: 42 }], [{ id: 'a', target: 'high' }], [{ id: 'a' }, { id: 'a' }]]) {
@@ -205,7 +226,7 @@ test('account name and notification settings persist per user and require auth',
   assert.strictEqual((await call('/api/account', { method: 'PATCH', body: { name: 'Ola' } })).status, 401, 'PATCH without session must 401');
   assert.strictEqual((await call('/api/settings', { method: 'PUT', body: { email: true } })).status, 401, 'PUT without session must 401');
 
-  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   const patch = await call('/api/account', { method: 'PATCH', body: { name: 'Ola Norge' }, cookie: ola });
   assert.strictEqual(patch.status, 200);
   assert.deepStrictEqual((await patch.json()).user, { email: 'ola@nordmann.no', name: 'Ola Norge', initials: 'ON' });
@@ -218,7 +239,7 @@ test('account name and notification settings persist per user and require auth',
   assert.deepStrictEqual(me.settings, { email: false, digest: 'daily' });
 
   // another user's settings/name are untouched
-  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
   const kariMe = await (await call('/api/me', { cookie: kari })).json();
   assert.strictEqual(kariMe.user.name, 'Kari');
   assert.deepStrictEqual(kariMe.settings, {});
@@ -240,7 +261,7 @@ test('fullmakt + active auto-buy orders persist per user via PUT /api/autobuy', 
   };
   assert.strictEqual((await call('/api/autobuy', { method: 'PUT', body: blob })).status, 401, 'PUT without session must 401');
 
-  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   assert.strictEqual((await (await call('/api/me', { cookie: ola })).json()).autobuy, null, 'a new user has signed nothing');
 
   assert.strictEqual((await call('/api/autobuy', { method: 'PUT', body: blob, cookie: ola })).status, 200);
@@ -252,7 +273,7 @@ test('fullmakt + active auto-buy orders persist per user via PUT /api/autobuy', 
   assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).autobuy, revoked);
 
   // another user is untouched
-  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
   assert.strictEqual((await (await call('/api/me', { cookie: kari })).json()).autobuy, null);
 
   for (const bad of [[], 'nope', { signed: true }, { orders: 'nope' }]) {
@@ -282,7 +303,7 @@ test('GDPR: export downloads the session user\'s data; delete removes every row 
   assert.strictEqual(data.user.hasPassword, true); // the boolean is fine, the hash is not
 
   // scoped to the session user, not all users
-  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
   const kariData = await (await call('/api/account/export', { cookie: kari })).json();
   assert.deepStrictEqual(kariData.watches, []);
 
@@ -323,7 +344,7 @@ test('changing password requires the current one and re-hashes; passwordless acc
 
 test('logout kills the session and clears the cookie', async () => {
   const call = api({ DB: d1() });
-  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   const out = await call('/api/logout', { method: 'POST', cookie });
   assert.match(out.headers.get('set-cookie'), /pricy_session=;.*Max-Age=0/, 'cookie must be cleared');
   assert.strictEqual((await call('/api/me', { cookie })).status, 401, 'session must be dead server-side');
@@ -723,7 +744,7 @@ test('mcp: watches are the same list the web sees', async () => {
 
   // same rows through the web surface
   const web = api(env);
-  const cookie = cookieOf(await web('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const cookie = cookieOf(await web('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   assert.deepStrictEqual((await (await web('/api/me', { cookie })).json()).watches, [{ id: 'airpods', target: 1999, paused: 0, hit: 0 }]);
 
   assert.strictEqual((await tool('unwatch_product', { product_id: 'airpods' })).data.removed, true);
@@ -805,7 +826,7 @@ const withLog = async (fn) => {
 test('alerts: crossing below target fires once (logged), no refire while below, re-arms above', async () => {
   const { call, push, alerts } = alertEnv();
   await call('/api/catalog.json'); // seeds
-  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   const target = seedBest - 100;
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target }], cookie });
 
@@ -843,8 +864,8 @@ test('alerts: crossing below target fires once (logged), no refire while below, 
 test('alerts: paused and target-less watches never fire', async () => {
   const { call, push, alerts } = alertEnv();
   await call('/api/catalog.json');
-  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
-  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target: seedBest - 100, paused: true }], cookie: kari });
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods' }], cookie: ola }); // watch with no target
   await withLog(() => push([{ product_id: 'airpods', shop: 'Elkjøp', price: seedBest - 200, stock: 1 }]));
@@ -854,7 +875,7 @@ test('alerts: paused and target-less watches never fire', async () => {
 test('alerts: threshold minimum-drop is respected; an all-time low overrides it unless lows is off', async () => {
   const { call, push, alerts } = alertEnv();
   await call('/api/catalog.json');
-  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   await call('/api/settings', { method: 'PUT', body: { threshold: '10', lows: false }, cookie });
 
   // controlled zone: everything below both the seed offers and the seed history
@@ -893,7 +914,7 @@ test('alerts: SEND_EMAIL binding emails the alert; a failing send still records 
     body: JSON.stringify(rows),
   }), env);
   await call('/api/catalog.json');
-  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target: seedBest - 100 }], cookie });
 
   const logs = await withLog(() => push([{ product_id: 'airpods', shop: 'Elkjøp', price: seedBest - 150, stock: 1 }]));
@@ -926,8 +947,8 @@ test('GET /api/alerts: 401 unauthenticated, scoped to the session user, newest f
   await call('/api/catalog.json'); // seeds
   assert.strictEqual((await call('/api/alerts')).status, 401, 'no session must 401');
 
-  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
-  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
   const target = seedBest - 100;
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target }], cookie: ola });
   const row = (price) => ({ product_id: 'airpods', shop: 'Elkjøp', price, stock: 1 });
