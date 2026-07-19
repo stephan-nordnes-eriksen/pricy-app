@@ -249,6 +249,16 @@ test('signed in: / is the app home and the header search suggests live', async (
   assert.ok(await until(() => win.location.pathname + win.location.search === '/search?q=sony'), 'Enter should open results for the query');
 });
 
+test('signed in: every app screen renders the shared footer exactly once', async () => {
+  for (const p of ['/', '/browse', '/alerts', '/account', '/autobuy', '/product/xm5', '/search?q=sony']) {
+    const win = boot('http://pricy.test' + p, { session: true });
+    assert.strictEqual((await until(() => qa(win, '.ftr').length)), 1, p + ' should render one footer');
+  }
+  // public pages inline their own authed={false} footer — no doubling
+  const landing = boot('http://pricy.test/');
+  assert.strictEqual((await until(() => qa(landing, '.ftr').length)), 1, 'landing renders exactly one footer');
+});
+
 test('signed in: header search Enter on an empty query stays put (no "airpods pro" fallback)', async () => {
   const win = boot('http://pricy.test/', { session: true });
   await tick();

@@ -399,7 +399,16 @@ function App() {
   else if (name === 'about') view = <AboutPage go={go} section={params.section} />;
   else view = <SignedHome go={go} onLogout={() => go('landing')} layout={T.homeLayout} />;
 
-  return <div key={name + JSON.stringify(params)}>{view}</div>;
+  // Mirrors the prototype's App router, which renders the shared Footer under
+  // every signed-in screen (public screens inline their own authed={false} one).
+  // That footer render lives in the harness block build.js discards, so it must
+  // be mirrored here by hand — see the sync note in CLAUDE.md.
+  return (
+    <React.Fragment>
+      <div key={name + JSON.stringify(params)}>{view}</div>
+      {session && !PUBLIC_SCREENS.includes(name) && <Footer go={go} />}
+    </React.Fragment>
+  );
 }
 
 // Catalog is served, not baked: fetch /api/catalog.json and hydrate the

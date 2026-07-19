@@ -19,7 +19,10 @@ Two Claude Design projects feed this repo:
   `boot.jsx`: real session flag (localStorage `pricy_session`), URL routing
   over the prototype's `go(name, params)`, auth gating (logged out →
   landing/login/about only; **search requires login**), layouts frozen to
-  the prototype's TWEAK_DEFAULTS
+  the prototype's TWEAK_DEFAULTS. Anything the prototype's App router block
+  renders around the screens must be mirrored here by hand (it's discarded
+  with the harness) — currently: the shared `<Footer>` under every
+  signed-in screen.
 - CDN dev React/Babel/lucide are swapped for vendored production UMDs
   (`vendor/`)
 - the prototype's enriched CATALOG is extracted to `worker/seed.json`
