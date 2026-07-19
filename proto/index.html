@@ -2779,10 +2779,12 @@ function LayoutSearch({ go }) {
         <SectionHead icon="bookmark" title="Watching" count={WATCHED.length} moreLabel="Manage" go={go} />
         <WatchedList go={go} />
       </div>
+      {RECENT.length > 0 && (
       <div className="sec">
         <SectionHead icon="history" title="Recently viewed" go={go} />
         <RecentRail go={go} />
       </div>
+      )}
       <div className="sec">
         <SectionHead icon="layout-grid" title="Browse categories" go={go} />
         <CategoryGrid go={go} />
@@ -2810,10 +2812,12 @@ function LayoutDashboard({ go }) {
             <SectionHead icon="bookmark" title="Watching" count={WATCHED.length} moreLabel="Manage" go={go} />
             <WatchedList go={go} />
           </div>
+          {RECENT.length > 0 && (
           <div className="sec">
             <SectionHead icon="history" title="Recently viewed" go={go} />
             <RecentRail go={go} />
           </div>
+          )}
           <div className="sec">
             <SectionHead icon="layout-grid" title="Browse categories" go={go} />
             <CategoryGrid go={go} />
@@ -4772,7 +4776,7 @@ Object.assign(window, { AccountPage });
 // 4 steps: categories → first watches → auto-buy fullmakt → notifications
 // ===========================================================
 
-function Onboarding({ go }) {
+function Onboarding({ go, onFinish }) {
   const [step, setStep] = useState(0);
   const [cats, setCats] = useState(['Audio', 'TV']);
   const [picks, setPicks] = useState({}); // id -> target
@@ -4796,6 +4800,7 @@ function Onboarding({ go }) {
 
   const finish = () => {
     Object.entries(picks).forEach(([id, t]) => WatchStore.add(id, t));
+    onFinish?.({ notif });
     go('home');
   };
   const nPicks = Object.keys(picks).length;
