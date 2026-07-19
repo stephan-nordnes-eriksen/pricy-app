@@ -17,6 +17,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS purchases (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS oauth_codes (code_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, redirect_uri TEXT NOT NULL, code_challenge TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, prev_price INTEGER, target INTEGER NOT NULL, created_at INTEGER NOT NULL, delivered_at INTEGER)',
+  'CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT, reason TEXT NOT NULL, text TEXT, created_at INTEGER NOT NULL)',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -758,7 +759,8 @@ export default {
     // served as a direct download
     if (route === 'GET /api/account/export') {
       if (!user) return json({ error: 'unauthenticated' }, 401);
-      return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1) }, 200,
+      const reports = (await db.prepare('SELECT product_id, shop, reason, text, created_at FROM reports WHERE user_id = ? ORDER BY created_at DESC, id DESC').bind(user.id).all()).results;
+      return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1), reports }, 200,
         { 'content-disposition': 'attachment; filename="pricy-export.json"' });
     }
 
@@ -768,6 +770,7 @@ export default {
       if (!user) return json({ error: 'unauthenticated' }, 401);
       await db.batch([
         db.prepare('DELETE FROM alerts WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM reports WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM purchases WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM watches WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM oauth_codes WHERE user_id = ?').bind(user.id),
@@ -832,6 +835,31 @@ export default {
         ...list.map(w => db.prepare('INSERT INTO watches (user_id, product_id, target, paused) VALUES (?, ?, ?, ?)')
           .bind(user.id, w.id, w.target ?? null, w.paused ? 1 : 0)),
       ]);
+      return json({ ok: true });
+    }
+
+    // "Report a problem" on a product page (plans/report-product-error.md).
+    // No admin UI — `wrangler d1 execute pricy-app --command "select * from
+    // reports order by created_at desc limit 20"` is the triage view.
+    if (route === 'POST /api/report') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const b = await request.json().catch(() => ({}));
+      const reason = typeof b.reason === 'string' ? b.reason.trim() : '';
+      const text = b.text == null ? null : String(b.text);
+      const shop = b.shop == null ? null : String(b.shop);
+      if (typeof b.productId !== 'string' || !reason || reason.length > 40
+        || (text && text.length > 1000) || (shop && shop.length > 100)) {
+        return json({ error: 'bad report' }, 400);
+      }
+      await seedIfEmpty(db);
+      const known = await db.prepare('SELECT id FROM products WHERE id = ?').bind(b.productId).first();
+      if (!known) return json({ error: 'unknown product' }, 400);
+      // ponytail: 20/user/day is the whole rate limit — real abuse tooling when abuse exists
+      const { n } = await db.prepare('SELECT COUNT(*) AS n FROM reports WHERE user_id = ? AND created_at > ?')
+        .bind(user.id, Date.now() - 864e5).first();
+      if (n >= 20) return json({ error: 'too many reports today' }, 429);
+      await db.prepare('INSERT INTO reports (user_id, product_id, shop, reason, text, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+        .bind(user.id, b.productId, shop, reason, text, Date.now()).run();
       return json({ ok: true });
     }
 

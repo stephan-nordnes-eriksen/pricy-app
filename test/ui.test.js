@@ -57,6 +57,7 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
     }
     if (u === '/api/account') { ME.user = { ...ME.user, name: body.name, initials: body.name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('') }; return ok({ user: ME.user }); }
     if (u === '/api/settings') { ME.settings = { ...ME.settings, ...body }; return ok({ ok: true }); }
+    if (u === '/api/report') return ok({ ok: true });
     if (u === '/api/account/password') {
       if (ME.user.hasPassword && body.currentPassword !== 'hunter2') return ok({ error: 'current password is incorrect' }, 401);
       return ok({ ok: true });
@@ -345,6 +346,30 @@ test('PDP: Go to shop opens the best offer url; disabled when no offer has one',
   const win2 = boot('http://pricy.test/product/xm5', { session: true, catalog: bare });
   const goBtn2 = await until(() => qa(win2, '.btn').find(b => /go to shop/i.test(b.textContent)));
   assert.ok(goBtn2.disabled, 'Go to shop must be disabled when no offer has a url');
+});
+
+test('PDP: Report a problem posts the report through the /api/report bridge', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  const link = await until(() => q(win, '.report-link'));
+  assert.ok(link, 'Report a problem link missing from the offers table');
+  link.click();
+  const reason = await until(() => qa(win, '.report-modal__reason').find(b => /wrong price/i.test(b.textContent)));
+  assert.ok(reason, 'reason chips did not render');
+  const send = qa(win, '.report-modal .btn').find(b => /send report/i.test(b.textContent));
+  assert.ok(send.disabled, 'Send must be disabled until a reason is picked');
+  reason.click();
+  await until(() => !send.disabled);
+  send.click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'POST /api/report')), 'no POST /api/report');
+  const { body } = win.api.find(c => c.call === 'POST /api/report');
+  assert.deepStrictEqual(body, {
+    productId: 'xm5',
+    shop: CATALOG_JSON.find(p => p.id === 'xm5').offers[0].shop,
+    reason: 'Wrong price',
+    text: '',
+  });
+  assert.ok(await until(() => !q(win, '.report-modal')), 'modal must close after sending');
+  assert.ok(await until(() => /we.ll look into it/i.test((q(win, '.toast') || {}).textContent || '')), 'thanks toast missing');
 });
 
 test('recently viewed: a visited product shows in the home rail on the next visit', async () => {

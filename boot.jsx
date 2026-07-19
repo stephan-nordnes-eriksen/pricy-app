@@ -173,6 +173,18 @@ window.deleteAccount = async () => {
   ME = null; // server already expired the cookie — no logout POST needed
 };
 
+// "Report a problem" bridge (plans/report-product-error.md): the synced
+// report modal awaits this when present, demo-toasts otherwise.
+window.reportProblem = async (productId, shop, reason, text) => {
+  if (!ME) throw new Error('not signed in');
+  const r = await fetch('/api/report', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ productId, shop, reason, text }),
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'could not send the report');
+};
+
 // Every watch mutation funnels through WatchStore.emit — persist from there.
 const _emit = WatchStore.emit;
 WatchStore.emit = function () {

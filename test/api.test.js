@@ -975,3 +975,40 @@ test('GET /api/alerts: 401 unauthenticated, scoped to the session user, newest f
   }
   assert.strictEqual((await (await call('/api/alerts', { cookie: ola })).json()).length, 50, 'capped at 50');
 });
+
+test('POST /api/report: session-gated, validated, capped at 20/day; rows ride the GDPR export and die with the account', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  const report = (body, cookie) => call('/api/report', { method: 'POST', body, cookie });
+
+  assert.strictEqual((await report({ productId: 'airpods', reason: 'wrong price' })).status, 401, 'no session must 401');
+
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  assert.strictEqual((await report({ productId: 'airpods', shop: 'Elkjøp', reason: 'wrong price', text: 'shows 1990, site says 1790' }, ola)).status, 200);
+  assert.strictEqual((await report({ productId: 'airpods', reason: 'other' }, ola)).status, 200, 'shop and text are optional');
+
+  for (const bad of [
+    {}, { productId: 'airpods' }, { reason: 'wrong price' },
+    { productId: 'airpods', reason: '' },
+    { productId: 'airpods', reason: 'x'.repeat(41) },
+    { productId: 'airpods', reason: 'other', text: 'x'.repeat(1001) },
+    { productId: 'no-such-product', reason: 'wrong price' },
+  ]) {
+    assert.strictEqual((await report(bad, ola)).status, 400, JSON.stringify(bad));
+  }
+
+  for (let i = 2; i < 20; i++) assert.strictEqual((await report({ productId: 'airpods', reason: 'other' }, ola)).status, 200);
+  assert.strictEqual((await report({ productId: 'airpods', reason: 'other' }, ola)).status, 429, '21st report today must 429');
+
+  const exported = await (await call('/api/account/export', { cookie: ola })).json();
+  assert.strictEqual(exported.reports.length, 20, 'reports ride the GDPR export');
+  assert.strictEqual(exported.reports[0].reason, 'other');
+  assert.strictEqual(exported.reports.at(-1).text, 'shows 1990, site says 1790');
+
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  assert.strictEqual((await report({ productId: 'airpods', reason: 'out of stock' }, kari)).status, 200, "the cap is per-user, not global");
+
+  await call('/api/account', { method: 'DELETE', cookie: ola });
+  const { n } = await DB.prepare('SELECT COUNT(*) AS n FROM reports').first();
+  assert.strictEqual(n, 1, "GDPR delete must take ola's reports; kari's stays");
+});
