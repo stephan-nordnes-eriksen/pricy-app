@@ -16,7 +16,7 @@ const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 2000
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
-function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [] } = {}) {
+function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -25,6 +25,9 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
   });
   const win = dom.window;
   win.scrollTo = () => {};
+  // seed persisted localStorage (each JSDOM starts empty — this is the
+  // "same browser, next visit" seam)
+  if (storage) Object.entries(storage).forEach(([k, v]) => win.localStorage.setItem(k, v));
   // /api/catalog.json is a Worker route now (4c) — stub it with the
   // build-generated seed, the same shape the route serves
   CATALOG_JSON = CATALOG_JSON || JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
@@ -286,6 +289,18 @@ test('PDP: Buy now buys at the current best price', async () => {
   assert.strictEqual(order.exec.price, best.price, 'buy-now charges the current price');
   assert.ok(win.api.some(c => c.call === 'POST /api/buy' && c.body.id === 'xm5' && c.body.shop === best.shop), 'purchase must hit the Worker');
   assert.strictEqual(order.exec.ref, 'PY-4711', 'order ref must come from the server order id');
+});
+
+test('recently viewed: a visited product shows in the home rail on the next visit', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  assert.ok(await until(() => q(win, '.watchbox')), 'PDP did not render');
+  assert.deepStrictEqual(JSON.parse(win.localStorage.getItem('pricy_recent')), ['xm5'], 'view must persist to pricy_recent');
+  // fresh boot, same browser: carry the persisted key over
+  const home = boot('http://pricy.test/', { session: true, storage: { pricy_recent: win.localStorage.getItem('pricy_recent') } });
+  assert.ok(await until(() => qa(home, '.rcard').length > 0), 'recent rail missing on home');
+  const cards = qa(home, '.rcard').map(el => el.textContent);
+  assert.strictEqual(cards.length, 1, 'rail must show only the actually-viewed product');
+  assert.ok(/Sony WH-1000XM5/.test(cards[0]), 'rail must show the visited product');
 });
 
 test('/autobuy on a reloaded session shows real purchases, not the demo orders', async () => {

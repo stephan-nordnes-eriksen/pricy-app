@@ -210,6 +210,25 @@ window.buyNowApi = (p, best) => fetch('/api/buy', {
   return order;
 });
 
+// Recently viewed: per-browser localStorage ids, hydrated into the prototype's
+// RECENT array in place (same splice seam as CATALOG/WATCHED/FEED) so the home
+// rail shows what this browser actually viewed. recordRecent fires on every
+// product navigation — go() clicks via nav, direct URLs/popstate via parseUrl.
+// ponytail: per-browser, not per-account; server-side views table only if
+// cross-device recents ever matters
+function hydrateRecent() {
+  let ids = [];
+  try { ids = JSON.parse(localStorage.getItem('pricy_recent')) || []; } catch {}
+  RECENT.splice(0, RECENT.length, ...ids.map(id => CATALOG.find(p => p.id === id)).filter(Boolean));
+}
+function recordRecent(id) {
+  let ids = [];
+  try { ids = JSON.parse(localStorage.getItem('pricy_recent')) || []; } catch {}
+  ids = [id, ...ids.filter(x => x !== id)].slice(0, 8);
+  try { localStorage.setItem('pricy_recent', JSON.stringify(ids)); } catch {}
+  hydrateRecent(); // screens remount per nav, so home reads fresh RECENT
+}
+
 function parseUrl(session) {
   const p = location.pathname;
   const q = new URLSearchParams(location.search);
@@ -221,6 +240,7 @@ function parseUrl(session) {
   else if (['/login', '/about', '/browse', '/autobuy', '/onboarding'].includes(p)) s = { name: p.slice(1), params: {} };
   else s = { name: session ? 'home' : 'landing', params: {} };
   if (!session && !PUBLIC_SCREENS.includes(s.name)) s = { name: 'login', params: {} };
+  else if (s.name === 'product') recordRecent(s.params.id);
   return s;
 }
 
@@ -258,6 +278,7 @@ function App() {
 
   // navigate without the auth gate (used right as auth state flips)
   const nav = (name, params = {}) => {
+    if (name === 'product') recordRecent(params.id);
     const url = toUrl(name, params);
     if (url !== location.pathname + location.search) history.pushState(null, '', url);
     window.scrollTo(0, 0);
@@ -334,5 +355,6 @@ Promise.all([
 ]).then(([, me, alerts]) => {
   if (me && me.user) hydrateMe(me); // after catalog: hydrateMe looks up products
   if (alerts) hydrateFeed(alerts); // after catalog too: prod lookups
+  hydrateRecent(); // after catalog too: ids → product objects
   ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
 });
