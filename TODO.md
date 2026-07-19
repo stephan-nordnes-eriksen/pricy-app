@@ -4,4 +4,4 @@
 - [ ] Some kind of button to press if a product or price is incorrect. Design only for now.
 - [x] We need a new "Buy now" button, which pigybacks the same system as the "Auto-buy" system.
 - [ ] There should be a "convert to auto-buy" (or some other better wording) for things you have watched. Essentially allowing you to automatically buy in stead of watching for the price change
-- [ ]
+- [ ] The marketing is incorrect now. It says that we do not take any provision or whatever. For the MVP we will remove such wordings, as we are dependent on adtraction and other platforms to get our price ingestion. We will reduce our wording about "others are bad, we are good" type of thing. We shall focus on having a good product offering, and focus on the auto-buy and buy-now features.

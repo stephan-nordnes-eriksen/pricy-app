@@ -11,6 +11,20 @@
 - Plus-gated features have no backend at all: AI deal digest
   (:3614–3619), price forecast (a hardcoded prediction string, :4344),
   "Ask pricy", locked cards (:4348).
+- **Marketing honesty: mostly fixed upstream** (synced 2026-07-19).
+  The prototype now shows "Coming soon" tags (`SoonTag`) on every
+  Plus-locked card, the paywall modal says "kr 49 / month (planned) ·
+  subject to change" with a "Preview Plus features" button (trial offer
+  gone), PlanSection shows "Pricy Plus (preview)" with no renewal date,
+  and the About FAQ presents Plus as "our upcoming subscription —
+  coming soon". Note the designer chose **preview** wording, not the
+  waitlist this plan proposed — no `window.joinWaitlist()` exists, and
+  "Preview Plus features" still flips the client-side plan tweak.
+- **Still fake upstream** (fix in Claude Design): PLUS_FEATURES claims
+  "Free plan caps at 10" watches — no cap is enforced anywhere; "Price
+  forecasts … based on 24 months of history per shop" — no history
+  exists; onboarding step 4's Plus card still says "try it free for 14
+  days, anytime" — the trial the modal no longer offers.
 
 ## The decision (make it first)
 
@@ -36,24 +50,34 @@ sense once a Plus feature is worth paying for.
    `users.settings` blob (default `free`), exposed via `meBody`;
    boot.jsx sets `window.PLAN` from it instead of the tweak default.
    One honest source of truth, ready for any option above.
-2. **Upstream honesty pass** — PlanSection: replace "renews Aug 1"
-   billing fiction with "Plus is coming soon"; Upgrade → "Join the
-   waitlist" calling `window.joinWaitlist()` (persist a flag in
-   settings); locked feature cards get "coming soon" labels.
+2. **Upstream honesty pass** — mostly done 2026-07-19 (see current
+   state). Remaining upstream: delete the "Free plan caps at 10" line
+   (don't enforce a cap nobody hits just to make the sentence true),
+   soften the "24 months of history" forecast claim, and fix onboarding
+   step 4's leftover "try it free for 14 days". Decide whether to keep
+   preview wording or switch to the waitlist (waitlist measures demand;
+   preview measures nothing — leaning waitlist when step 1 lands).
 3. **Plus features** — each is its own future plan when/if built (AI
    digest, forecasts, Ask pricy — all need real modeling/LLM work).
    Don't scope them here; the waitlist numbers decide.
 
 ## Upstream (Claude Design) prompt — paste-ready
 
-> In the pricy prototype, Pricy Plus currently pretends to be a live
-> subscription. Make it honest: in PlanSection, replace the "kr 49/mo ·
-> renews Aug 1" billing details with "Pricy Plus — coming soon"; the
-> Upgrade button becomes "Join the waitlist" (calls
-> `window.joinWaitlist()` if present, then shows "You're on the list");
-> Cancel disappears for free users. Plus-locked cards (AI digest,
-> forecasts, Ask pricy) keep their lock but say "Coming with Pricy
-> Plus". Keep the paywall modal design for later.
+> In the pricy prototype, three leftover Pricy Plus claims still
+> overpromise (the coming-soon/preview pass is already in):
+> 1. In PLUS_FEATURES, the "Unlimited watchlist" row says "Free plan
+>    caps at 10." — there is no cap; delete that sentence (keep the
+>    row and "Watch as many products as you want.").
+> 2. The "Price forecasts" row says "based on 24 months of history per
+>    shop" — we have no such history; say "based on price history per
+>    shop" instead.
+> 3. Onboarding step 4's Pricy Plus card still says "try it free for
+>    14 days, anytime" — there is no trial anymore; end with "— coming
+>    soon." to match the paywall modal.
+>
+> Later, when the waitlist is wanted: PlusModal's "Preview Plus
+> features" button becomes "Join the waitlist" (calls
+> `window.joinWaitlist()` if present, then shows "You're on the list").
 
 ## Dependencies
 
