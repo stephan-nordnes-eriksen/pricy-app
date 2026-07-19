@@ -16,7 +16,7 @@ below unless something changes.
 - TODO.md's "convert a watch to auto-buy" — auto-buy scope, track it
   with AUTOBUY-PLAN work.
 
-**Implemented** (moved to [../implemented-plans/](../implemented-plans/)):
+**Implemented** (moved to [../plans-implemented/](../plans-implemented/)):
 price-drop-alerts, activity-feed, recently-viewed — each file keeps its
 remaining upstream/delivery follow-ups.
 
