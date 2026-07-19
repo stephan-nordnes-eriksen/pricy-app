@@ -872,3 +872,38 @@ test('alerts: SEND_EMAIL binding emails the alert; a failing send still records 
   assert.strictEqual(rows[1].delivered_at, null, 'failed send must leave the alert undelivered');
   assert.ok(errors.some(e => e.includes('price alert send failed for ola@nordmann.no')));
 });
+
+// activity feed: GET /api/alerts serves the session user's alert history
+test('GET /api/alerts: 401 unauthenticated, scoped to the session user, newest first, capped at 50', async () => {
+  const { DB, call, push } = alertEnv();
+  await call('/api/catalog.json'); // seeds
+  assert.strictEqual((await call('/api/alerts')).status, 401, 'no session must 401');
+
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const target = seedBest - 100;
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target }], cookie: ola });
+  const row = (price) => ({ product_id: 'airpods', shop: 'Elkjøp', price, stock: 1 });
+  await withLog(() => push([row(target - 10)])); // fires
+  await withLog(() => push([row(target + 50)])); // re-arm
+  await withLog(() => push([row(target - 30)])); // fires again, newer
+
+  const mine = await (await call('/api/alerts', { cookie: ola })).json();
+  assert.strictEqual(mine.length, 2);
+  assert.strictEqual(mine[0].price, target - 30, 'newest first');
+  assert.strictEqual(mine[1].price, target - 10);
+  assert.strictEqual(mine[0].product, seed.find(p => p.id === 'airpods').name, 'joined product title');
+  assert.strictEqual(mine[0].product_id, 'airpods');
+  assert.strictEqual(mine[0].shop, 'Elkjøp');
+  assert.strictEqual(mine[0].target, target);
+  assert.ok(mine[0].created_at >= mine[1].created_at);
+
+  assert.deepStrictEqual(await (await call('/api/alerts', { cookie: kari })).json(), [], "another user's alerts must not leak");
+
+  // cap: bulk-insert straight into the table (ola is user 1) and count
+  for (let i = 0; i < 60; i++) {
+    await DB.prepare('INSERT INTO alerts (user_id, product_id, shop, price, prev_price, target, created_at, delivered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(1, 'airpods', 'Elkjøp', 1000 + i, null, 999, Date.now(), null).run();
+  }
+  assert.strictEqual((await (await call('/api/alerts', { cookie: ola })).json()).length, 50, 'capped at 50');
+});

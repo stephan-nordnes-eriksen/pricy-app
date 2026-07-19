@@ -38,7 +38,9 @@ function serverLogin(email, path = '/api/auth/login', password) {
     const data = await r.json().catch(() => ({}));
     if (!r.ok) return data; // { error } — AuthCard shows it and stays on the form
     hydrateMe(data);
-    return true;
+    // swap the demo FEED for this user's real alert history before landing
+    // home (fetch failed → baked demo feed, same fallback as the catalog)
+    return fetchJson('/api/alerts').then(hydrateFeed).then(() => true, () => true);
   }).catch(e => { console.error('login failed:', e); return false; });
 }
 
@@ -83,6 +85,33 @@ function hydrateMe(me) {
       })).reverse(), // server lists newest first; in-session buys append, so keep newest last
   ];
   _autobuyEmit.call(AutobuyStore); // original emit: hydration must not PUT back what it just read
+}
+
+// Real alert history replaces the baked demo FEED — same mutate-in-place seam
+// as CATALOG/WATCHED: FEED is a module const array shared with the prototype
+// blocks, so splicing re-points every consumer (AlertFeedCard, FeedCard,
+// ActivityFeed). "ago" is computed here from created_at, in the demo's voice.
+const ago = (ms) => {
+  const m = Math.floor((Date.now() - ms) / 60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return m + ' min ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' hr ago';
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'Yesterday' : d + ' days ago';
+};
+function hydrateFeed(rows) {
+  // ponytail: the server only records price-drop alerts, so every row is
+  // kind 'down'; 'up'/'watch' feed events don't exist server-side yet
+  FEED.splice(0, FEED.length, ...rows.map(a => {
+    const prod = WatchStore.prod(a.product_id); // a product gone from the catalog can't render
+    return prod && {
+      id: a.product_id, kind: 'down', title: a.product || prod.name,
+      text: 'dropped to your target (kr ' + fmt(a.target) + ')',
+      from: a.prev_price ?? a.price, to: a.price,
+      time: ago(a.created_at), tag: 'Price drop', prod,
+    };
+  }).filter(Boolean));
 }
 
 function saveProfile(name) {
@@ -301,7 +330,9 @@ Promise.all([
   fetchJson('/api/catalog.json').then(hydrateCatalog)
     .catch(() => {}), // ponytail: fetch missing/failed → baked demo catalog (jsdom has no fetch)
   fetchJson('/api/me').catch(() => null), // 401 / static hosting → logged out
-]).then(([, me]) => {
+  fetchJson('/api/alerts').catch(() => null), // 401 → keep the baked demo feed
+]).then(([, me, alerts]) => {
   if (me && me.user) hydrateMe(me); // after catalog: hydrateMe looks up products
+  if (alerts) hydrateFeed(alerts); // after catalog too: prod lookups
   ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
 });

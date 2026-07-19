@@ -706,6 +706,17 @@ export default {
       return user ? json(await meBody(db, user)) : json({ error: 'unauthenticated' }, 401);
     }
 
+    // activity feed: the session user's fired alerts, joined to the product
+    // title. ponytail: hard LIMIT 50, no paging — add offset paging if
+    // anyone's history ever needs to scroll past it
+    if (route === 'GET /api/alerts') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const { results } = await db.prepare(
+        'SELECT a.product_id, a.shop, a.price, a.prev_price, a.target, a.created_at, pr.meta FROM alerts a LEFT JOIN products pr ON pr.id = a.product_id WHERE a.user_id = ? ORDER BY a.id DESC LIMIT 50'
+      ).bind(user.id).all();
+      return json(results.map(r => ({ product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price: r.price, prev_price: r.prev_price, target: r.target, created_at: r.created_at })));
+    }
+
     if (route === 'POST /api/logout') {
       if (token) await db.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(await sha(token)).run();
       return json({ ok: true }, 200, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });

@@ -16,7 +16,7 @@ const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 2000
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
-function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {}) {
+function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [] } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -42,6 +42,7 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog } = {})
       return ok(ME);
     }
     if (u === '/api/logout') { ME = null; return ok({ ok: true }); }
+    if (u === '/api/alerts') return ME ? ok(alerts) : ok({ error: 'unauthenticated' }, 401);
     if (u === '/api/watches') return ok({ ok: true });
     if (u === '/api/autobuy') { ME.autobuy = body; return ok({ ok: true }); }
     if (u === '/api/buy') {
@@ -450,6 +451,20 @@ test('identity and watchlist hydrate from /api/me, not the baked USER/WATCHED', 
   assert.strictEqual(q(win, '.avatar').textContent, 'ON', 'avatar must show the fetched user, not baked Mari');
   assert.ok(await until(() => qa(win, '.alrow').length === 1), 'alerts must show exactly the fetched watchlist');
   assert.ok(q(win, '.alrow .alrow__name').textContent.includes('Sony'), 'watch row must resolve its product');
+});
+
+test('activity feed hydrates from /api/alerts, not the demo five', async () => {
+  const alerts = [{
+    product_id: 'airpods', product: 'AirPods Pro (2nd gen, USB-C)', shop: 'Elkjøp',
+    price: 1899, prev_price: 2199, target: 1900, created_at: Date.now() - 14 * 60000,
+  }];
+  const win = boot('http://pricy.test/alerts?tab=activity', { session: true, alerts });
+  assert.ok(await until(() => q(win, '.actrow')), 'activity feed did not render');
+  const rows = qa(win, '.actrow');
+  assert.strictEqual(rows.length, 1, 'feed must show the hydrated alert, not the demo five');
+  assert.ok(rows[0].textContent.includes('AirPods Pro'), 'row must carry the alerted product');
+  assert.ok(rows[0].textContent.includes('14 min ago'), 'time must be computed from created_at');
+  assert.ok(rows[0].textContent.includes('1\u00A0899'), 'row must show the alert price');
 });
 
 test('removing a watch PUTs the new list to /api/watches', async () => {
