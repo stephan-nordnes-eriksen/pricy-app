@@ -20,11 +20,12 @@
   coming soon". Note the designer chose **preview** wording, not the
   waitlist this plan proposed — no `window.joinWaitlist()` exists, and
   "Preview Plus features" still flips the client-side plan tweak.
-- **Still fake upstream** (fix in Claude Design): PLUS_FEATURES claims
-  "Free plan caps at 10" watches — no cap is enforced anywhere; "Price
-  forecasts … based on 24 months of history per shop" — no history
-  exists; onboarding step 4's Plus card still says "try it free for 14
-  days, anytime" — the trial the modal no longer offers.
+- **Leftover claims fixed upstream too** (synced 2026-07-19, second
+  pass): the fake "Free plan caps at 10" cap and "24 months of
+  history" are gone from PLUS_FEATURES, and onboarding step 4's Plus
+  card says "coming soon" with the SoonTag instead of the dead 14-day
+  trial. The Plus *copy* is now honest everywhere; what remains fake
+  is the mechanics (plan state, preview flip, no billing) below.
 
 ## The decision (make it first)
 
@@ -50,12 +51,9 @@ sense once a Plus feature is worth paying for.
    `users.settings` blob (default `free`), exposed via `meBody`;
    boot.jsx sets `window.PLAN` from it instead of the tweak default.
    One honest source of truth, ready for any option above.
-2. **Upstream honesty pass** — mostly done 2026-07-19 (see current
-   state). Remaining upstream: delete the "Free plan caps at 10" line
-   (don't enforce a cap nobody hits just to make the sentence true),
-   soften the "24 months of history" forecast claim, and fix onboarding
-   step 4's leftover "try it free for 14 days". Decide whether to keep
-   preview wording or switch to the waitlist (waitlist measures demand;
+2. **Upstream honesty pass** — done 2026-07-19 (both passes, see
+   current state). Open question folded into step 1: keep preview
+   wording or switch to the waitlist (waitlist measures demand;
    preview measures nothing — leaning waitlist when step 1 lands).
 3. **Plus features** — each is its own future plan when/if built (AI
    digest, forecasts, Ask pricy — all need real modeling/LLM work).
@@ -63,21 +61,9 @@ sense once a Plus feature is worth paying for.
 
 ## Upstream (Claude Design) prompt — paste-ready
 
-> In the pricy prototype, three leftover Pricy Plus claims still
-> overpromise (the coming-soon/preview pass is already in):
-> 1. In PLUS_FEATURES, the "Unlimited watchlist" row says "Free plan
->    caps at 10." — there is no cap; delete that sentence (keep the
->    row and "Watch as many products as you want.").
-> 2. The "Price forecasts" row says "based on 24 months of history per
->    shop" — we have no such history; say "based on price history per
->    shop" instead.
-> 3. Onboarding step 4's Pricy Plus card still says "try it free for
->    14 days, anytime" — there is no trial anymore; end with "— coming
->    soon." to match the paywall modal.
->
-> Later, when the waitlist is wanted: PlusModal's "Preview Plus
-> features" button becomes "Join the waitlist" (calls
-> `window.joinWaitlist()` if present, then shows "You're on the list").
+> When the waitlist is wanted: PlusModal's "Preview Plus features"
+> button becomes "Join the waitlist" (calls `window.joinWaitlist()` if
+> present, then shows "You're on the list").
 
 ## Dependencies
 

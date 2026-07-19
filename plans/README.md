@@ -42,10 +42,9 @@ its remaining upstream/delivery follow-ups.
 5. [report-product-error](report-product-error.md) — TODO.md item.
 6. [profile-email-change](profile-email-change.md) — small; real change
    needs email.
-7. [pricy-plus](pricy-plus.md) — decision-heavy (billing). The
-   coming-soon/preview copy pass synced 2026-07-19; three leftover
-   claims (fake 10-watch cap, "24 months of history", onboarding's
-   14-day trial) have a paste-ready prompt in the plan. Do last.
+7. [pricy-plus](pricy-plus.md) — decision-heavy (billing). All Plus
+   *copy* honesty synced 2026-07-19; what's left is the mechanics
+   (server-side plan state, waitlist-vs-preview, billing). Do last.
 
 The upstream prompts in 1–4 (and pricy-plus's) can be pasted into
 Claude Design as one combined copy-honesty pass if syncing once is
