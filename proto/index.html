@@ -1310,6 +1310,11 @@ const { useState, useEffect, useRef } = React;
 // --- NOK formatting: "1 499" with thin spaces ----------------
 function fmt(n) { return n.toLocaleString('en-US').replace(/,/g, '\u00A0'); }
 
+// --- catalog meta helpers (real counts; CATALOG.meta set where the catalog is built) ---
+function metaOf() { return (window.CATALOG && window.CATALOG.meta) || null; }
+function relTime(ts) { if (!ts) return 'just now'; const mm = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (mm < 1) return 'just now'; if (mm < 60) return mm + ' min ago'; const h = Math.round(mm / 60); if (h < 24) return h + ' hr ago'; return Math.round(h / 24) + ' d ago'; }
+function trustLine() { const m = metaOf(); return m ? fmt(m.products) + ' products · ' + fmt(m.shops) + ' shops · 0 paid placements' : '0 paid placements'; }
+
 // --- Lucide icon wrapper -------------------------------------
 function Icon({ name, size = 18, style }) {
   const ref = useRef(null);
@@ -1465,7 +1470,7 @@ PRODUCTS.forEach(p => {
 const CATEGORIES = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'Kitchen'];
 const POPULAR = ['airpods pro', 'rtx 4070', 'robot vacuum', 'espresso machine', 'air fryer'];
 
-Object.assign(window, { fmt, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, SHOPS, PRODUCTS, CATEGORIES, POPULAR });
+Object.assign(window, { fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, SHOPS, PRODUCTS, CATEGORIES, POPULAR });
 
 </script>
 
@@ -1476,7 +1481,7 @@ Object.assign(window, { fmt, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryCha
 // Depends on Primitives.jsx (PRODUCTS, SHOPS, CATEGORIES, fmt)
 // ===========================================================
 
-const USER = { name: 'Mari', initials: 'MH', email: 'mari@hansen.no' };
+const USER = { name: 'Mari', initials: 'MH', email: 'mari@hansen.no', createdAt: '2026-03-14' };
 
 // pick a subset of PRODUCTS, give each a target price + alert state
 const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
@@ -1509,10 +1514,8 @@ const CAT_ICONS = {
   Audio: 'headphones', Phones: 'smartphone', TV: 'tv', Gaming: 'gamepad-2',
   Home: 'wind', Computers: 'laptop', Toys: 'blocks', Kitchen: 'utensils-crossed',
 };
-const CAT_COUNTS = {
-  Audio: '38 420', Phones: '12 990', TV: '9 140', Gaming: '21 770',
-  Home: '54 200', Computers: '47 880', Toys: '63 010', Kitchen: '29 540',
-};
+const catCount = (c) => fmt(((window.CAT_OF || {})[c] || []).length);
+const realCats = () => CATEGORIES.filter(c => !window.CAT_OF || window.CAT_OF[c]);
 
 function searchSuggest(q) {
   const POOL = window.CATALOG || PRODUCTS;
@@ -1537,7 +1540,7 @@ function searchScrollTop(e) {
 
 Object.assign(window, {
   USER, WATCHED, RECENT, FEED,
-  PROP_SUGGEST, CAT_ICONS, CAT_COUNTS, searchSuggest, byId, searchScrollTop,
+  PROP_SUGGEST, CAT_ICONS, catCount, realCats, searchSuggest, byId, searchScrollTop,
   Wordmark, Mark,
 });
 
@@ -1610,7 +1613,7 @@ function Footer({ go, authed = true }) {
       <div className="wrap">
         <div className="ftr__bot">
           <span>© 2026 pricy.no — Oslo, Norway</span>
-          <span>Prices updated every 30 min · 1,412 shops tracked</span>
+          <span>Prices updated {relTime((metaOf() || {}).freshest)} · {fmt((metaOf() || {}).shops || 0)} shops tracked</span>
         </div>
       </div>
     </footer>
@@ -2221,7 +2224,7 @@ function BrandDemo() {
         })()}
       </svg>
       <div className="demo__alert">
-        <Icon name="bell-ring" size={15} /> Price-drop alert · you'd save kr {fmt(saved)}
+        <Icon name="bell-ring" size={15} /> Price-drop alert · e.g. save kr {fmt(saved)}
       </div>
     </div>
   );
@@ -2379,7 +2382,7 @@ function Login({ onAuthed, go, layout = 'centered' }) {
             <Wordmark height={30} reversed />
           </div>
           <div className="auth__pitch">
-            <div className="auth__brand-line" style={{ marginBottom: 16 }}>1.4M products · 1,412 shops · 0 paid placements</div>
+            <div className="auth__brand-line" style={{ marginBottom: 16 }}>{trustLine()}</div>
             <h2>Never overpay.<br />Watch the <span className="hl">price</span>, not the clock.</h2>
             <BrandDemo />
           </div>
@@ -2397,7 +2400,7 @@ function Login({ onAuthed, go, layout = 'centered' }) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, cursor: 'pointer' }} onClick={() => go && go('landing')}>
         <Wordmark height={34} />
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-400)' }}>
-          1.4M products · 1,412 shops · 0 paid placements
+          {trustLine()}
         </div>
       </div>
       <div className="card card--raised card--pad" style={{ width: '100%', maxWidth: 440, padding: 'var(--s-6)' }}>
@@ -2441,7 +2444,7 @@ function SearchSuggest({ q, onPick, onClose }) {
           <div key={c} className="suggest__item" onClick={() => onPick(c)}>
             <span className="ic"><Icon name={CAT_ICONS[c] || 'tag'} size={18} /></span>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{c}</div>
-            <span className="sub" style={{ marginLeft: 'auto' }}>{(window.CAT_OF && window.CAT_OF[c]) ? fmt(window.CAT_OF[c].length) : CAT_COUNTS[c]} products</span>
+            <span className="sub" style={{ marginLeft: 'auto' }}>{catCount(c)} products</span>
           </div>
         ))}
       </>}
@@ -2573,14 +2576,14 @@ function MetricStrip() {
         <div className="metric__sub">below target now</div>
       </div>
       <div className="metric">
-        <div className="metric__k"><Icon name="trending-down" size={12} /> Saved YTD</div>
+        <div className="metric__k"><Icon name="trending-down" size={12} /> Potential savings</div>
         <div className="metric__v green">kr {fmt(saved)}</div>
-        <div className="metric__sub">vs. launch price</div>
+        <div className="metric__sub">on your watchlist</div>
       </div>
       <div className="metric">
         <div className="metric__k"><Icon name="store" size={12} /> Coverage</div>
-        <div className="metric__v">1 412</div>
-        <div className="metric__sub">shops · live 24/7</div>
+        <div className="metric__v">{fmt((metaOf() || {}).shops || 0)}</div>
+        <div className="metric__sub">shops tracked live</div>
       </div>
     </div>
   );
@@ -2646,12 +2649,12 @@ function RecentRail({ go }) {
 function CategoryGrid({ go }) {
   return (
     <div className="catgrid">
-      {CATEGORIES.map(c => (
+      {realCats().map(c => (
         <div key={c} className="cat" onClick={() => go('results', { cat: c })}>
           <div className="cat__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={19} /></div>
           <div>
             <div className="cat__name">{c}</div>
-            <div className="cat__ct">{CAT_COUNTS[c]} products</div>
+            <div className="cat__ct">{catCount(c)} products</div>
           </div>
         </div>
       ))}
@@ -2857,7 +2860,7 @@ function LayoutFeed({ go }) {
         </div>
         <div className="metrics" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
           <div className="metric"><div className="metric__k"><Icon name="bell-ring" size={12} /> Active alerts</div><div className="metric__v green">{WatchStore.hits()}</div></div>
-          <div className="metric"><div className="metric__k"><Icon name="trending-down" size={12} /> Saved YTD</div><div className="metric__v green">kr {fmt(WatchStore.saved())}</div></div>
+          <div className="metric"><div className="metric__k"><Icon name="trending-down" size={12} /> Potential savings</div><div className="metric__v green">kr {fmt(WatchStore.saved())}</div></div>
           <div className="metric"><div className="metric__k"><Icon name="bookmark" size={12} /> Watching</div><div className="metric__v">{items.length}</div></div>
         </div>
         {FEED.map((f, i) => <FeedCard key={i} f={f} go={go} />)}
@@ -2969,6 +2972,8 @@ const CATALOG = [
 ];
 const CAT_OF = {};
 CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
+// real, derived counts — all "N products / M shops" copy reads from this
+CATALOG.meta = { products: CATALOG.length, shops: [...new Set(CATALOG.flatMap(p => (p.offers || []).map(o => o.shop)))].length, freshest: Date.now() - 14 * 60 * 1000 };
 const ALL_BRANDS = (cat) => [...new Set(CATALOG.filter(p => !cat || p.cat === cat).map(p => p.brand))].sort();
 function getListing(id) { return CATALOG.find(p => p.id === id); }
 
@@ -3524,6 +3529,7 @@ function StepCard({ n, icon, title, children }) {
 
 function Landing({ go }) {
   const trending = PRODUCTS.slice().sort((a, b) => b.drop - a.drop).slice(0, 8);
+  const m = metaOf() || {};
   return (
     <div className="screen">
       <LandingHeader go={go} />
@@ -3531,7 +3537,7 @@ function Landing({ go }) {
       <section className="lhero">
         <div className="page lhero__grid">
           <div className="lhero__copy">
-            <div className="lhero__eyebrow"><span className="dot" /> Live across 1,412 Norwegian shops</div>
+            <div className="lhero__eyebrow"><span className="dot" /> Live across {fmt(m.shops || 0)} Norwegian shops</div>
             <h1>Never<br />overpay.<br /><span className="hl">Ever.</span></h1>
             <p className="lhero__sub">Track any product. We watch the price across every shop and ping you the moment it drops.</p>
             <div className="lhero__cta">
@@ -3539,8 +3545,8 @@ function Landing({ go }) {
               <Btn variant="ghost" size="lg" onClick={() => go('login')}>Log in</Btn>
             </div>
             <div className="lhero__trust">
-              <span><b>1.4M</b> products</span><span className="sep" />
-              <span><b>1,412</b> shops</span><span className="sep" />
+              <span><b>{fmt(m.products || 0)}</b> products</span><span className="sep" />
+              <span><b>{fmt(m.shops || 0)}</b> shops</span><span className="sep" />
               <span><b>0</b> paid placements</span>
             </div>
           </div>
@@ -3550,7 +3556,7 @@ function Landing({ go }) {
 
       <section className="page" style={{ padding: 'var(--s-8) 0' }}>
         <div className="steps">
-          <StepCard n="1" icon="search" title="Find it">Search 1.4M products or browse by category and spec.</StepCard>
+          <StepCard n="1" icon="search" title="Find it">Search all {fmt(m.products || 0)} products we track, or browse by category and spec.</StepCard>
           <StepCard n="2" icon="bookmark" title="Watch it">Set your target price. One tap, no spreadsheet.</StepCard>
           <StepCard n="3" icon="bell-ring" title="Get pinged">We alert you the second any shop drops below it.</StepCard>
         </div>
@@ -4331,7 +4337,7 @@ function AlertsPage({ go, tab: tab0 }) {
         <div className="al__head">
           <div>
             <h1>Watchlist &amp; alerts</h1>
-            <div className="sub">{rows.length} watched · {hits} below target · kr {fmt(WatchStore.saved())} saved since March</div>
+            <div className="sub">{rows.length} watched · {hits} below target · kr {fmt(WatchStore.saved())} potential savings</div>
           </div>
           <Btn variant="primary" icon="plus" onClick={() => go('browse')}>Watch a product</Btn>
         </div>
@@ -4402,23 +4408,24 @@ function BrowsePage({ go }) {
   const ALL = window.CATALOG || PRODUCTS;
   const topOf = (c) => ALL.filter(p => p.cat === c).sort((a, b) => b.drop - a.drop)[0];
   const drops = ALL.slice().sort((a, b) => b.drop - a.drop).slice(0, 4);
+  const m = metaOf() || {};
   return (
     <div className="screen" data-screen-label="Browse categories">
       <AppHeader go={go} active="browse" onLogout={() => go('landing')} />
       <div className="page browse">
         <div className="browse__head">
           <h1>Browse categories</h1>
-          <div className="sub">1.4M products · 1,412 shops · prices updated every 30 min</div>
+          <div className="sub">{fmt(m.products || 0)} products · {fmt(m.shops || 0)} shops · prices updated {relTime(m.freshest)}</div>
         </div>
 
         <div className="bigcats">
-          {CATEGORIES.map(c => {
+          {realCats().map(c => {
             const top = topOf(c);
             return (
               <div key={c} className="bigcat" onClick={() => go('results', { cat: c })}>
                 <div className="bigcat__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={20} /></div>
                 <h3>{c}</h3>
-                <div className="bigcat__count">{CAT_COUNTS[c] || '—'} products</div>
+                <div className="bigcat__count">{catCount(c)} products</div>
                 <div className="bigcat__drop">
                   {top
                     ? <React.Fragment><Delta pct={-top.drop}></Delta><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{top.name}</span></React.Fragment>
@@ -4524,7 +4531,7 @@ function ProfileSection({ onToast, initialName, onSave, hasPassword, onChangePas
   };
   return (
     <div className="asec">
-      <div className="asec__head"><h2>Profile</h2><span className="hint">Member since March 2026</span></div>
+      <div className="asec__head"><h2>Profile</h2><span className="hint">{USER.createdAt ? 'Member since ' + new Date(USER.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'Member'}</span></div>
       <div className="asec__body">
         <div style={{ display: 'flex', gap: 'var(--s-5)', alignItems: 'flex-start', marginBottom: 'var(--s-4)' }}>
           <div className="avatar" style={{ width: 64, height: 64, fontSize: 22 }}>{USER.initials}</div>
@@ -4791,12 +4798,12 @@ function Onboarding({ go, onFinish }) {
             <h1>Welcome, {USER.name}. What do you <span className="hl">shop for</span>?</h1>
             <p className="ob__sub">Pick a few categories — we'll surface the right deals. You can change this anytime.</p>
             <div className="ob-cats">
-              {CATEGORIES.map(c => (
+              {realCats().map(c => (
                 <button key={c} type="button" className={'ob-cat' + (cats.includes(c) ? ' is-on' : '')} onClick={() => toggleCat(c)}>
                   <span className="ob-cat__chk">{cats.includes(c) && <Icon name="check" size={12} />}</span>
                   <span className="ob-cat__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={22} /></span>
                   <b>{c}</b>
-                  <span>{CAT_COUNTS[c]} products</span>
+                  <span>{catCount(c)} products</span>
                 </button>
               ))}
             </div>
@@ -4915,9 +4922,9 @@ Object.assign(window, { Onboarding });
 const ABOUT_FAQ = [
   { q: 'How does pricy make money?', a: 'When you click through to a shop and buy, some shops pay us a small referral fee. That fee never affects ranking — the cheapest price is always on top, whether the shop pays us or not.' },
   { q: 'Do I need an account?', a: 'Yes. Searching, comparing and price alerts all require a free account. It takes 30 seconds, and the free plan stays free forever.' },
-  { q: 'How fresh are the prices?', a: 'We re-check every shop at least every 30 minutes, and the most popular products far more often. Every price shows when it was last verified.' },
+  { q: 'How fresh are the prices?', a: 'We re-check every shop around the clock — the most popular products most often. Every price shows when it was last verified.' },
   { q: 'What is Pricy Plus?', a: 'Our kr 49/month subscription. It adds AI features: a daily deal digest, price forecasts per product, and plain-language search («best robotstøvsuger under 4 000»). Everything else is free.' },
-  { q: 'How do price alerts work?', a: 'Watch any product and set a target price. The moment any of the 1,412 shops we track goes below your target, you get an email or push notification — usually within minutes.' },
+  { q: 'How do price alerts work?', a: 'Watch any product and set a target price. The moment any of the shops we track goes below your target, you get an email or push notification — usually within minutes.' },
 ];
 
 function AboutFaq() {
@@ -4938,6 +4945,7 @@ function AboutFaq() {
 
 function AboutPage({ go, section }) {
   const stepsRef = React.useRef(null);
+  const m = metaOf() || {};
   useEffect(() => { if (section === 'how' && stepsRef.current) window.scrollTo(0, stepsRef.current.offsetTop - 24); }, [section]);
   return (
     <div className="screen" data-screen-label="About / how it works">
@@ -4946,7 +4954,7 @@ function AboutPage({ go, section }) {
       <section className="page about-hero">
         <div className="kicker">About pricy.no</div>
         <h1>Every price.<br />Every shop.<br /><span className="hl">No favorites.</span></h1>
-        <p>pricy compares 1.4 million products across 1,412 Norwegian shops — and no shop can pay to rank higher. The cheapest price wins. Always.</p>
+        <p>pricy tracks {fmt(m.products || 0)} products across {fmt(m.shops || 0)} Norwegian shops — and no shop can pay to rank higher. The cheapest price wins. Always.</p>
       </section>
 
       <section className="page" id="how" ref={stepsRef} style={{ paddingBottom: 'var(--s-7)' }}>
@@ -4981,11 +4989,10 @@ function AboutPage({ go, section }) {
       </section>
 
       <section className="page" style={{ paddingBottom: 'var(--s-8)' }}>
-        <div className="metrics">
-          <div className="metric"><div className="metric__k">Shops tracked</div><div className="metric__v">1,412</div><div className="metric__sub">all of Norway</div></div>
-          <div className="metric"><div className="metric__k">Products</div><div className="metric__v">1.4M</div><div className="metric__sub">and counting</div></div>
-          <div className="metric"><div className="metric__k">Price checks</div><div className="metric__v">30 min</div><div className="metric__sub">max staleness</div></div>
-          <div className="metric"><div className="metric__k">Saved by users</div><div className="metric__v green">kr 212M</div><div className="metric__sub">since 2024</div></div>
+        <div className="metrics" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div className="metric"><div className="metric__k">Shops tracked</div><div className="metric__v">{fmt(m.shops || 0)}</div><div className="metric__sub">and counting</div></div>
+          <div className="metric"><div className="metric__k">Products</div><div className="metric__v">{fmt(m.products || 0)}</div><div className="metric__sub">across every shop we track</div></div>
+          <div className="metric"><div className="metric__k">Prices updated</div><div className="metric__v">{relTime(m.freshest)}</div><div className="metric__sub">every price timestamped</div></div>
         </div>
       </section>
 
