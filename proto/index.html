@@ -4693,6 +4693,13 @@ function PlanSection({ openPaywall, onToast }) {
 function PrivacySection({ onToast, go, initialMarketing, onSaveMarketing }) {
   const [marketing, setMarketing] = useState(!!initialMarketing);
   const [confirm, setConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const doDelete = async () => {
+    if (!window.deleteAccount) { go('landing'); return; }
+    setDeleting(true);
+    try { await window.deleteAccount(); go('landing'); }
+    catch (e) { setDeleting(false); onToast('Could not delete account: ' + ((e && e.message) || 'unknown error')); }
+  };
   const set = (v) => {
     setMarketing(v);
     Promise.resolve(onSaveMarketing ? onSaveMarketing(v) : null)
@@ -4709,7 +4716,7 @@ function PrivacySection({ onToast, go, initialMarketing, onSaveMarketing }) {
         </div>
         <div className="arow">
           <div className="arow__txt"><b>Export my data</b><p>Watchlist, alert history and settings as JSON.</p></div>
-          <Btn size="sm" icon="download" onClick={() => onToast('Export sent to ' + USER.email)}>Export</Btn>
+          <Btn size="sm" icon="download" onClick={() => { if (window.exportData) { window.exportData(); onToast('Export downloaded'); } else { onToast('Export sent to ' + USER.email); } }}>Export</Btn>
         </div>
       </div>
       <div className="asec asec--danger">
@@ -4718,8 +4725,8 @@ function PrivacySection({ onToast, go, initialMarketing, onSaveMarketing }) {
           <div className="arow__txt"><b>Delete account</b><p>{confirm ? 'Are you sure? This deletes your watchlist and history permanently.' : 'Permanently delete your account and all data.'}</p></div>
           {confirm ? (
             <div style={{ display: 'flex', gap: 8 }}>
-              <Btn size="sm" onClick={() => setConfirm(false)}>Keep account</Btn>
-              <Btn size="sm" variant="dark" style={{ background: 'var(--up-600)', borderColor: 'var(--up-600)' }} onClick={() => go('landing')}>Yes, delete</Btn>
+              <Btn size="sm" disabled={deleting} onClick={() => setConfirm(false)}>Keep account</Btn>
+              <Btn size="sm" variant="dark" disabled={deleting} style={{ background: 'var(--up-600)', borderColor: 'var(--up-600)' }} onClick={doDelete}>{deleting ? 'Deleting…' : 'Yes, delete'}</Btn>
             </div>
           ) : (
             <Btn size="sm" icon="trash-2" onClick={() => setConfirm(true)}>Delete…</Btn>
