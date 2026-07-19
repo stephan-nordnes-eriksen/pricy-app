@@ -16,6 +16,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
   'CREATE TABLE IF NOT EXISTS purchases (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS oauth_codes (code_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, redirect_uri TEXT NOT NULL, code_challenge TEXT NOT NULL, expires_at INTEGER NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, prev_price INTEGER, target INTEGER NOT NULL, created_at INTEGER NOT NULL, delivered_at INTEGER)',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -164,10 +165,26 @@ async function seedIfEmpty(db) {
   await db.batch(stmts);
 }
 
-async function ingest(db, rows) {
+// per-product best in-stock offer — the alert hook reads it after every
+// ingest; AUTOBUY-PLAN AB-1's trigger engine reuses this from the same spot
+async function bestOffer(db, productId) {
+  return db.prepare('SELECT shop, price FROM offers WHERE product_id = ? AND stock = 1 ORDER BY price LIMIT 1').bind(productId).first();
+}
+
+async function ingest(db, rows, env) {
   const today = dayOf(Date.now());
   const best = {};
   for (const r of rows) best[r.product_id] = Math.min(best[r.product_id] ?? Infinity, r.price);
+  // snapshot before the upsert: the crossing check and the all-time-low check
+  // both need the "before" state. ponytail: per-product query loop, fine at
+  // catalog scale (≤500 rows/push); batch the reads if the catalog ever isn't
+  const before = {};
+  for (const pid of Object.keys(best)) {
+    before[pid] = {
+      best: (await bestOffer(db, pid))?.price ?? null,
+      low: (await db.prepare('SELECT MIN(price) AS low FROM price_points WHERE product_id = ?').bind(pid).first())?.low ?? null,
+    };
+  }
   await db.batch([
     ...rows.map(r => db.prepare(
       'INSERT INTO offers (product_id, shop, price, ship, stock, eta, url, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(product_id, shop) DO UPDATE SET price = excluded.price, ship = excluded.ship, stock = excluded.stock, eta = excluded.eta, url = excluded.url, updated_at = excluded.updated_at'
@@ -176,6 +193,58 @@ async function ingest(db, rows) {
       'INSERT INTO price_points (product_id, day, price) VALUES (?, ?, ?) ON CONFLICT(product_id, day) DO UPDATE SET price = MIN(price, excluded.price)'
     ).bind(id, today, price)),
   ]);
+  await fireAlerts(db, env, before);
+}
+
+// Price-drop alerts, fired from ingest() — the single choke point both the
+// cron and POST /api/ingest route through (AB-1's trigger engine hangs here
+// too). ponytail: armed/fired state is derived, not stored — a "crossing" is
+// prev best above target, new best at/below. While the price stays below,
+// prev <= target so nothing refires; rising back above re-arms for free.
+// Ceiling: a watch created while the price is already below its target never
+// fires until the price rises above the target and crosses again.
+async function fireAlerts(db, env, before) {
+  for (const [pid, prev] of Object.entries(before)) {
+    const offer = await bestOffer(db, pid);
+    if (!offer) continue;
+    const { results } = await db.prepare(
+      'SELECT w.user_id, w.target, u.email, u.settings FROM watches w JOIN users u ON u.id = w.user_id WHERE w.product_id = ? AND w.paused = 0 AND w.target IS NOT NULL AND w.target >= ? AND (? IS NULL OR ? > w.target)'
+    ).bind(pid, offer.price, prev.best, prev.best).all();
+    if (!results.length) continue;
+    const meta = await db.prepare('SELECT meta FROM products WHERE id = ?').bind(pid).first();
+    const name = meta ? JSON.parse(meta.meta).name : pid;
+    const dropPct = prev.best ? ((prev.best - offer.price) / prev.best) * 100 : 100;
+    const isLow = prev.low != null && offer.price < prev.low; // new all-time low
+    for (const w of results) {
+      const s = w.settings ? JSON.parse(w.settings) : {};
+      // threshold = minimum drop % ("any"|"5"|"10"); lows = always alert on
+      // an all-time low, even below the threshold (both default permissive)
+      if (Number(s.threshold) > dropPct && !(isLow && s.lows !== false)) continue;
+      let delivered = null;
+      if (s.email !== false) { // channel toggle: record the hit, skip the send
+        if (env?.SEND_EMAIL) {
+          try {
+            await env.SEND_EMAIL.send({
+              to: w.email,
+              from: { email: 'alerts@pricy.no', name: 'pricy.no' },
+              subject: `Price drop: ${name} is now ${offer.price} kr`,
+              html: `<p>${name} dropped to <b>${offer.price} kr</b> at ${offer.shop} — at or below your target of ${w.target} kr.</p><p><a href="https://pricy.no/product/${pid}">See the offer</a></p>`,
+              text: `${name} dropped to ${offer.price} kr at ${offer.shop} — at or below your target of ${w.target} kr.\n\nhttps://pricy.no/product/${pid}`,
+            });
+            delivered = Date.now();
+          } catch (e) {
+            console.error(`price alert send failed for ${w.email}: ${e.code || ''} ${e.message}`);
+          }
+        } else {
+          // ponytail: no SEND_EMAIL binding (tests / local dev) — log it, same as magic links
+          console.log(`price alert for ${w.email}: ${name} ${offer.price} kr at ${offer.shop} (target ${w.target})`);
+          delivered = Date.now();
+        }
+      }
+      await db.prepare('INSERT INTO alerts (user_id, product_id, shop, price, prev_price, target, created_at, delivered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(w.user_id, pid, offer.shop, offer.price, prev.best, w.target, Date.now(), delivered).run();
+    }
+  }
 }
 
 async function catalogBody(db) {
@@ -210,7 +279,11 @@ async function purchasesBody(db, userId) {
 }
 
 async function meBody(db, user) {
-  const { results } = await db.prepare('SELECT product_id AS id, target, paused FROM watches WHERE user_id = ? ORDER BY rowid').bind(user.id).all(); // rowid = the order the client PUT them in
+  // hit = an alert fired for this watch and the price is still at/below the
+  // target (rising back above re-arms the watch and clears the flag)
+  const { results } = await db.prepare(
+    'SELECT product_id AS id, target, paused, COALESCE(EXISTS(SELECT 1 FROM alerts a WHERE a.user_id = watches.user_id AND a.product_id = watches.product_id) AND target >= (SELECT MIN(price) FROM offers o WHERE o.product_id = watches.product_id AND o.stock = 1), 0) AS hit FROM watches WHERE user_id = ? ORDER BY rowid'
+  ).bind(user.id).all(); // rowid = the order the client PUT them in
   return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) };
 }
 
@@ -558,7 +631,7 @@ export default {
       const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(p => p.id));
       const unknown = [...new Set(rows.filter(r => !known.has(r.product_id)).map(r => r.product_id))];
       if (unknown.length) return json({ error: 'unknown product_id', ids: unknown }, 400);
-      await ingest(db, rows);
+      await ingest(db, rows, env);
       return json({ ok: true, ingested: rows.length });
     }
 
@@ -729,6 +802,6 @@ export default {
     await ensureSchema(db);
     await seedIfEmpty(db);
     const rows = await collectRows(env);
-    if (rows.length) await ingest(db, rows);
+    if (rows.length) await ingest(db, rows, env);
   },
 };

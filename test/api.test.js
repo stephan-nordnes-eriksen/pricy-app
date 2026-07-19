@@ -184,13 +184,13 @@ test('watchlist persists per user and requires auth', async () => {
   assert.strictEqual((await call('/api/watches', { method: 'PUT', body: watches, cookie: ola })).status, 200);
   const me = await (await call('/api/me', { cookie: ola })).json();
   assert.deepStrictEqual(me.watches, [
-    { id: 'xm5', target: 3100, paused: 0 },
-    { id: 'lgc3', target: 12000, paused: 1 },
+    { id: 'xm5', target: 3100, paused: 0, hit: 0 },
+    { id: 'lgc3', target: 12000, paused: 1, hit: 0 },
   ]);
 
   // replace-all semantics, and another user sees nothing
   await call('/api/watches', { method: 'PUT', body: [{ id: 'xm5', target: 2999 }], cookie: ola });
-  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).watches, [{ id: 'xm5', target: 2999, paused: 0 }]);
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).watches, [{ id: 'xm5', target: 2999, paused: 0, hit: 0 }]);
   const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
   assert.deepStrictEqual((await (await call('/api/me', { cookie: kari })).json()).watches, []);
 
@@ -680,7 +680,7 @@ test('mcp: watches are the same list the web sees', async () => {
   // same rows through the web surface
   const web = api(env);
   const cookie = cookieOf(await web('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
-  assert.deepStrictEqual((await (await web('/api/me', { cookie })).json()).watches, [{ id: 'airpods', target: 1999, paused: 0 }]);
+  assert.deepStrictEqual((await (await web('/api/me', { cookie })).json()).watches, [{ id: 'airpods', target: 1999, paused: 0, hit: 0 }]);
 
   assert.strictEqual((await tool('unwatch_product', { product_id: 'airpods' })).data.removed, true);
   assert.deepStrictEqual((await tool('list_watches')).data.watches, []);
@@ -730,4 +730,145 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(airpods.offers.find(o => o.shop === 'Elkjøp').price, 2050);
   assert.strictEqual(airpods.history.at(-1), 1999, "the day's price point keeps the day's minimum");
   assert.strictEqual(airpods.history.length, baseline.history.length, 'still one point per day');
+});
+
+// price-drop alerts: the hook in ingest() fires on target crossings
+const alertEnv = () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  return {
+    DB, env, call: api(env),
+    push: (rows) => worker.fetch(new Request('http://pricy.test/api/ingest', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer sekrit-token' },
+      body: JSON.stringify(rows),
+    }), env),
+    alerts: async () => (await DB.prepare('SELECT * FROM alerts ORDER BY id').all()).results,
+  };
+};
+const seedBest = Math.min(...seed.find(p => p.id === 'airpods').offers.map(o => o.price));
+const withLog = async (fn) => {
+  const logs = [];
+  const realLog = console.log;
+  console.log = (...a) => logs.push(a.join(' '));
+  try { await fn(); } finally { console.log = realLog; }
+  return logs;
+};
+
+test('alerts: crossing below target fires once (logged), no refire while below, re-arms above', async () => {
+  const { call, push, alerts } = alertEnv();
+  await call('/api/catalog.json'); // seeds
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  const target = seedBest - 100;
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target }], cookie });
+
+  const row = (price) => ({ product_id: 'airpods', shop: 'Elkjøp', price, stock: 1 });
+  const hit = async () => (await (await call('/api/me', { cookie })).json()).watches[0].hit;
+
+  await withLog(() => push([row(seedBest - 50)]));
+  assert.strictEqual((await alerts()).length, 0, 'above target must not fire');
+  assert.strictEqual(await hit(), 0);
+
+  const logs = await withLog(() => push([row(target - 10)]));
+  let rows = await alerts();
+  assert.strictEqual(rows.length, 1, 'crossing the target must fire exactly one alert');
+  assert.strictEqual(rows[0].product_id, 'airpods');
+  assert.strictEqual(rows[0].shop, 'Elkjøp');
+  assert.strictEqual(rows[0].price, target - 10);
+  assert.strictEqual(rows[0].prev_price, seedBest - 50);
+  assert.strictEqual(rows[0].target, target);
+  assert.ok(rows[0].created_at > 0 && rows[0].delivered_at > 0, 'console delivery counts as delivered');
+  assert.ok(logs.some(l => l.includes('price alert for ola@nordmann.no') && l.includes(String(target - 10))), 'alert must be console-logged without SEND_EMAIL');
+
+  await withLog(() => push([row(target - 20)]));
+  assert.strictEqual((await alerts()).length, 1, 'must not refire while the price stays below target');
+  assert.strictEqual(await hit(), 1, '/api/me must flag the watch as hit');
+
+  await withLog(() => push([row(target + 50)]));
+  assert.strictEqual((await alerts()).length, 1, 'rising back above fires nothing');
+  assert.strictEqual(await hit(), 0, 'the hit flag clears when the price re-arms');
+
+  await withLog(() => push([row(target - 30)]));
+  assert.strictEqual((await alerts()).length, 2, 'a second crossing fires again');
+  assert.strictEqual(await hit(), 1);
+});
+
+test('alerts: paused and target-less watches never fire', async () => {
+  const { call, push, alerts } = alertEnv();
+  await call('/api/catalog.json');
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no' } }));
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target: seedBest - 100, paused: true }], cookie: kari });
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods' }], cookie: ola }); // watch with no target
+  await withLog(() => push([{ product_id: 'airpods', shop: 'Elkjøp', price: seedBest - 200, stock: 1 }]));
+  assert.deepStrictEqual(await alerts(), []);
+});
+
+test('alerts: threshold minimum-drop is respected; an all-time low overrides it unless lows is off', async () => {
+  const { call, push, alerts } = alertEnv();
+  await call('/api/catalog.json');
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  await call('/api/settings', { method: 'PUT', body: { threshold: '10', lows: false }, cookie });
+
+  // controlled zone: everything below both the seed offers and the seed history
+  const histMin = Math.min(...seed.find(p => p.id === 'airpods').history);
+  const a = Math.min(seedBest, histMin) - 100;
+  const d = Math.round(a * 0.04); // 4% of the baseline — under the 10% threshold
+  const row = (price) => ({ product_id: 'airpods', shop: 'Elkjøp', price, stock: 1 });
+
+  await withLog(() => push([row(a)])); // baseline best; today's price point = a (all-time low so far)
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target: a - d }], cookie });
+
+  await withLog(() => push([row(a - d - 1)])); // crossing, drop ~4% < 10%, and a new low — but lows is off
+  assert.strictEqual((await alerts()).length, 0, 'a sub-threshold drop must not fire, even at an all-time low, when lows is off');
+
+  await call('/api/settings', { method: 'PUT', body: { threshold: '10', lows: true }, cookie });
+  await withLog(() => push([row(a)])); // re-arm; all-time low so far = a - d - 1
+  await withLog(() => push([row(a - d)])); // crossing, ~4% drop, NOT a new low (a-d > a-d-1)
+  assert.strictEqual((await alerts()).length, 0, 'sub-threshold and not a low: still skipped with lows on');
+
+  await withLog(() => push([row(a)])); // re-arm
+  await withLog(() => push([row(a - 2 * d - 1)])); // ~8% drop < threshold, but 1 kr under the all-time low
+  assert.strictEqual((await alerts()).length, 1, 'a sub-threshold drop at a new all-time low fires when lows is on');
+
+  await withLog(() => push([row(a)])); // re-arm; low is now a - 2d - 1
+  await withLog(() => push([row(a - 3 * d)])); // ~12% drop ≥ threshold
+  assert.strictEqual((await alerts()).length, 2, 'an over-threshold drop fires regardless of lows');
+});
+
+test('alerts: SEND_EMAIL binding emails the alert; a failing send still records the alert undelivered', async () => {
+  const sent = [];
+  const { DB, call, alerts } = alertEnv();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token', SEND_EMAIL: { send: async (msg) => { sent.push(msg); } } };
+  const push = (rows) => worker.fetch(new Request('http://pricy.test/api/ingest', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer sekrit-token' },
+    body: JSON.stringify(rows),
+  }), env);
+  await call('/api/catalog.json');
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no' } }));
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target: seedBest - 100 }], cookie });
+
+  const logs = await withLog(() => push([{ product_id: 'airpods', shop: 'Elkjøp', price: seedBest - 150, stock: 1 }]));
+  assert.strictEqual(sent.length, 1, 'exactly one alert email sent');
+  assert.strictEqual(sent[0].to, 'ola@nordmann.no');
+  assert.strictEqual(sent[0].from.email, 'alerts@pricy.no');
+  assert.ok(sent[0].subject.includes(String(seedBest - 150)), 'subject carries the new price');
+  assert.ok(sent[0].text.includes('/product/airpods'), 'email links the product');
+  assert.ok(!logs.some(l => l.includes('price alert')), 'must not console-log when emailed');
+  assert.ok((await alerts())[0].delivered_at > 0);
+
+  // failing send: alert recorded, delivered_at stays null (re-arm first)
+  env.SEND_EMAIL = { send: async () => { throw new Error('boom'); } };
+  await push([{ product_id: 'airpods', shop: 'Elkjøp', price: seedBest - 50, stock: 1 }]); // re-arm
+  const errors = [];
+  const realError = console.error;
+  console.error = (...a) => errors.push(a.join(' '));
+  try {
+    await push([{ product_id: 'airpods', shop: 'Elkjøp', price: seedBest - 160, stock: 1 }]);
+  } finally { console.error = realError; }
+  const rows = await alerts();
+  assert.strictEqual(rows.length, 2);
+  assert.strictEqual(rows[1].delivered_at, null, 'failed send must leave the alert undelivered');
+  assert.ok(errors.some(e => e.includes('price alert send failed for ola@nordmann.no')));
 });

@@ -52,10 +52,10 @@ const shortDate = ms => new Date(ms).toLocaleDateString('en-GB', { day: 'numeric
 function hydrateMe(me) {
   ME = me;
   Object.assign(USER, me.user);
-  WatchStore.items = (me.watches || []).map(w => {
-    const p = WatchStore.prod(w.id);
-    return { id: w.id, target: w.target, paused: !!w.paused, hit: !!p && p.best <= w.target };
-  });
+  // hit comes from the server now: a real alert fired and the price is still
+  // at/below target (worker meBody) — not the old best-vs-target guess
+  WatchStore.items = (me.watches || []).map(w =>
+    ({ id: w.id, target: w.target, paused: !!w.paused, hit: !!w.hit }));
   WATCHED.splice(0, WATCHED.length, ...WatchStore.items.map(w => {
     const p = WatchStore.prod(w.id);
     return p && { ...p, target: w.target, hit: w.hit, spark: (p.history || []).slice(-12) };

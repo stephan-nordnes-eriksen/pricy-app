@@ -238,13 +238,13 @@ test('signed in: header search Enter on an empty query stays put (no "airpods pr
   assert.strictEqual(win.location.pathname, '/', 'empty or whitespace query must not navigate');
 });
 
-test('signed in: header alerts badge counts real below-target watches, not demo WATCH_HITS', async () => {
-  const cat = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
-  const p = cat.find(p => p.was > p.best);
-  const me = { user: mari, watches: [{ id: p.id, target: p.best + 10 }] }; // best <= target → hit
+test('signed in: header alerts badge counts server-fired hits, not client best-vs-target math', async () => {
+  // xm5 is below its (huge) target but the server says no alert fired → not
+  // counted; lgc3 is above its target but the server flags a hit → counted.
+  const me = { user: mari, watches: [{ id: 'xm5', target: 999999, paused: 0, hit: 0 }, { id: 'lgc3', target: 1, paused: 0, hit: 1 }] };
   const win = boot('http://pricy.test/', { session: true, me });
-  assert.ok(await until(() => q(win, '.app-hdr .badge')), 'alerts badge missing for a below-target watch');
-  assert.strictEqual(q(win, '.app-hdr .badge').textContent, '1');
+  assert.ok(await until(() => q(win, '.app-hdr .badge')), 'alerts badge missing for a server-hit watch');
+  assert.strictEqual(q(win, '.app-hdr .badge').textContent, '1', 'only the server-flagged hit counts');
 });
 
 test('PDP alert field inherits the saved watch target', async () => {
