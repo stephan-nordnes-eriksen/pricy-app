@@ -540,6 +540,10 @@ button { font-family: inherit; }
 .sent h1 { font-size: 28px; margin: 0 0 var(--s-3); }
 .sent p { color: var(--ink-600); font-size: 15px; margin: 0 0 var(--s-5); }
 .sent .addr { font-family: var(--font-mono); font-weight: 700; color: var(--ink-900); }
+.sent__wait { display: flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--font-mono); font-size: 13px; color: var(--ink-600); }
+.sent__spinner { width: 14px; height: 14px; flex: 0 0 auto; border: 2px solid var(--ink-300); border-top-color: var(--ink-900); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.sent__cd { color: var(--ink-400); }
+.sent__sep { margin: 0 8px; color: var(--ink-400); }
 @keyframes pop-in { from { opacity: 0; transform: scale(0.94) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
 /* ============================================================
@@ -2240,7 +2244,15 @@ function AuthCard({ onAuthed, go }) {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [err, setErr] = useState('');
+
+  // Resend cooldown ticker (only while the sent screen is showing)
+  useEffect(() => {
+    if (!sent || cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [sent, cooldown]);
 
   const validEmail = /.+@.+\..+/.test(email);
 
@@ -2282,7 +2294,7 @@ function AuthCard({ onAuthed, go }) {
     if (method === 'magic') {
       // Sending the link is not an auth event — show the "check your inbox" screen.
       setLoading(true);
-      setTimeout(() => { setLoading(false); setSent(true); }, 850);
+      setTimeout(() => { setLoading(false); setSent(true); setCooldown(30); }, 850);
       return;
     }
     if (mode === 'signup') runAuth(setLoading, 850, "Couldn't create your account — try again.", email, { signup: true, password: pw });
@@ -2295,9 +2307,13 @@ function AuthCard({ onAuthed, go }) {
         <div className="sent">
           <div className="sent__icon"><Icon name="mail-check" size={34} /></div>
           <h1>Check your inbox</h1>
-          <p>We sent a one-tap login link to<br /><span className="addr">{email}</span></p>
-          <Btn variant="primary" size="lg" style={{ width: '100%' }} icon={loading ? undefined : 'arrow-right'} disabled={loading} onClick={() => runAuth(setLoading, 850, "That link didn't work — request a new one.", email)}>{loading ? 'Opening…' : 'Open the link'}</Btn>
+          <p>We sent a link to <span className="addr">{email}</span> — this page will continue automatically once you click it.</p>
+          <div className="sent__wait"><span className="sent__spinner" aria-hidden="true"></span> Waiting for you to open the link…</div>
           <div className="auth-foot" style={{ marginTop: 20 }}>
+            {cooldown > 0
+              ? <span className="sent__cd">Resend in {cooldown}s</span>
+              : <a onClick={() => setCooldown(30)}>Resend link</a>}
+            <span className="sent__sep">·</span>
             Wrong address? <a onClick={() => { setSent(false); setMethod('magic'); }}>Go back</a>
           </div>
         </div>
