@@ -112,6 +112,16 @@ test('logged out: / shows the public landing, and the header has NO search', asy
   assert.ok(!q(win, '.avatar'), 'no signed-in avatar when logged out');
 });
 
+test('footer "How it works" routes to /about?section=how and the anchor exists', async () => {
+  const win = boot();
+  const link = await until(() => qa(win, '.foot a, .foot span, footer a, footer span').find(el => /^how it works$/i.test(el.textContent.trim())));
+  assert.ok(link, 'footer How it works link missing');
+  link.click();
+  assert.ok(await until(() => win.location.pathname === '/about'), 'must land on /about');
+  assert.strictEqual(win.location.search, '?section=how', 'section param must round-trip in the URL');
+  assert.ok(await until(() => q(win, '#how')), 'About page must render the #how anchor section');
+});
+
 test('logged out: search URL is gated to the login screen', async () => {
   const win = boot('http://pricy.test/search?q=sony');
   await tick();

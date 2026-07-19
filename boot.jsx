@@ -256,7 +256,8 @@ function parseUrl(session) {
   else if (p === '/search') s = { name: 'results', params: { query: q.get('q') || undefined, cat: q.get('cat') || undefined } };
   else if (p === '/alerts') s = { name: 'alerts', params: { tab: q.get('tab') || undefined } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
-  else if (['/login', '/about', '/browse', '/autobuy', '/onboarding'].includes(p)) s = { name: p.slice(1), params: {} };
+  else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
+  else if (['/login', '/browse', '/autobuy', '/onboarding'].includes(p)) s = { name: p.slice(1), params: {} };
   else s = { name: session ? 'home' : 'landing', params: {} };
   if (!session && !PUBLIC_SCREENS.includes(s.name)) s = { name: 'login', params: {} };
   else if (s.name === 'product') recordRecent(s.params.id);
@@ -274,6 +275,7 @@ function toUrl(name, params = {}) {
   }
   if (name === 'alerts') return '/alerts' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
   if (name === 'account') return '/account' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
+  if (name === 'about') return '/about' + (params.section ? '?section=' + encodeURIComponent(params.section) : '');
   if (name === 'home' || name === 'landing') return '/';
   return '/' + name;
 }
@@ -347,7 +349,7 @@ function App() {
   else if (name === 'account') view = <AccountPage go={go} tab={params.tab} me={ME} onSaveProfile={saveProfile} onSaveSettings={saveSettings} onChangePassword={changePassword} />;
   else if (name === 'autobuy') view = <AutobuyPage go={go} />;
   else if (name === 'onboarding') view = <Onboarding go={go} onFinish={({ notif }) => saveSettings(notif).catch(() => {})} />;
-  else if (name === 'about') view = <AboutPage go={go} />;
+  else if (name === 'about') view = <AboutPage go={go} section={params.section} />;
   else view = <SignedHome go={go} onLogout={() => go('landing')} layout={T.homeLayout} />;
 
   return <div key={name + JSON.stringify(params)}>{view}</div>;
