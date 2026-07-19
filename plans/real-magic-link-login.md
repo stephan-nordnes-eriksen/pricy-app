@@ -12,9 +12,10 @@ magic-link ones refuse). Two deviations from the plan below:
   link steal the session of whoever *clicked* it. A link clicked on another
   device logs that device in; the waiting tab times out after ~10 min.
 
-**Not deployed** — still blocked on the SEND_EMAIL binding (paid plan,
-PLAN.md Phase 2). Without it prod would console-log the email and the
-waiting screen would spin forever.
+**Deployed 2026-07-19** (user's call) with the SEND_EMAIL binding still
+unbound (paid plan, PLAN.md Phase 2): in prod the magic-link email is only
+console-logged, so the waiting screen spins until its ~10 min cap. Password
+login and fake BankID work. Bind SEND_EMAIL to light magic links up.
 
 ## Current state
 

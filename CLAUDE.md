@@ -108,9 +108,9 @@ Known upstream gaps (fix in Claude Design, then extend tests):
   pollable claim token would let whoever requested a link steal the session
   of whoever clicked it; a link clicked on another device just logs that
   device in. **Magic-link email only actually sends once the SEND_EMAIL
-  binding is live (paid plan, see PLAN.md Phase 2) — without it the Worker
-  console-logs the link and prod users wait forever, so don't deploy this
-  until that's decided.** BankID is still a fake button that logs into a
+  binding is live (paid plan, see PLAN.md Phase 2) — until then prod
+  console-logs the link and the waiting screen spins to its ~10 min cap
+  (deployed in this state 2026-07-19, user's call).** BankID is still a fake button that logs into a
   shared demo account (`demo@pricy.no`) and lands home — the only
   passwordless `POST /api/auth/signup` the server still accepts (any other
   email must send a password, verified against existing accounts). Real
