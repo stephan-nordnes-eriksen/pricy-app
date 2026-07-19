@@ -3660,9 +3660,9 @@ function usePlan() { return window.PLAN || 'free'; }
 
 const PLUS_FEATURES = [
   { icon: 'sparkles',   name: 'AI deal digest',        desc: 'A daily summary, written for you: what dropped, what to wait for, what to grab now.' },
-  { icon: 'trending-down', name: 'Price forecasts',    desc: 'Prediction of where a price is heading, based on 24 months of history per shop.' },
+  { icon: 'trending-down', name: 'Price forecasts',    desc: 'Prediction of where a price is heading, based on price history per shop.' },
   { icon: 'message-square', name: 'Ask pricy',         desc: 'Search in plain Norwegian — «best robotstøvsuger under 4 000 med mopp».' },
-  { icon: 'infinity',   name: 'Unlimited watchlist',   desc: 'Watch as many products as you want. Free plan caps at 10.' },
+  { icon: 'infinity',   name: 'Unlimited watchlist',   desc: 'Watch as many products as you want.' },
 ];
 
 // --- Plus tag ------------------------------------------------
@@ -4902,8 +4902,8 @@ function Onboarding({ go, onFinish }) {
               <div className="lockcard" style={{ cursor: 'default' }}>
                 <div className="lockcard__ic"><Icon name="sparkles" size={20} /></div>
                 <div>
-                  <b>Pricy Plus <PlusTag></PlusTag></b>
-                  <p>AI deal digest, price forecasts and plain-language search — try it free for 14 days, anytime.</p>
+                  <b>Pricy Plus <PlusTag></PlusTag> <SoonTag></SoonTag></b>
+                  <p>AI deal digest, price forecasts and plain-language search — coming soon.</p>
                 </div>
               </div>
             </div>
