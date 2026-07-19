@@ -7,7 +7,7 @@ import seed from './seed.json' with { type: 'json' };
 import { collectRows } from './sources.js';
 
 const SCHEMA = [
-  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT)',
+  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, created_at INTEGER)',
   'CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
@@ -28,6 +28,8 @@ async function ensureSchema(db) {
     await db.prepare('ALTER TABLE users ADD COLUMN password_hash TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE users ADD COLUMN settings TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE users ADD COLUMN autobuy TEXT').run().catch(() => {});
+    // honest metrics: signup date for "Member since" (pre-existing rows stay NULL)
+    await db.prepare('ALTER TABLE users ADD COLUMN created_at INTEGER').run().catch(() => {});
     // 4d: real-source offers carry a deep link and a freshness stamp
     await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
@@ -104,8 +106,8 @@ async function upsertUser(db, email, passwordHash = null) {
   // dropped (the bug: signing up with a password on a pre-existing
   // passwordless email logged you in fine but never actually saved it)
   return db.prepare(
-    'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email, password_hash = COALESCE(users.password_hash, excluded.password_hash) RETURNING id, email, name, password_hash, settings, autobuy'
-  ).bind(email, displayName(email), passwordHash).first();
+    'INSERT INTO users (email, name, password_hash, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email, password_hash = COALESCE(users.password_hash, excluded.password_hash) RETURNING id, email, name, password_hash, settings, autobuy, created_at'
+  ).bind(email, displayName(email), passwordHash, Date.now()).first();
 }
 
 async function createSession(db, userId) {
@@ -141,7 +143,7 @@ async function passwordAuth(db, action, email, password) {
 async function sessionUser(db, token) {
   if (!token) return null;
   return db.prepare(
-    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
+    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy, u.created_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
   ).bind(await sha(token), Date.now()).first();
 }
 
@@ -250,10 +252,10 @@ async function fireAlerts(db, env, before) {
 async function catalogBody(db) {
   await seedIfEmpty(db);
   const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
-  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url FROM offers ORDER BY price').all();
+  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers ORDER BY price').all();
   const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
   const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
-  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: !!o.stock, eta: o.eta, url: o.url }));
+  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at }));
   const history = group(pts.results, p => p.price);
   return prods.results.map(({ id, meta }) => {
     const m = JSON.parse(meta);
@@ -294,7 +296,7 @@ async function meBody(db, user) {
   const { results } = await db.prepare(
     'SELECT product_id AS id, target, paused, COALESCE(EXISTS(SELECT 1 FROM alerts a WHERE a.user_id = watches.user_id AND a.product_id = watches.product_id) AND target >= (SELECT MIN(price) FROM offers o WHERE o.product_id = watches.product_id AND o.stock = 1), 0) AS hit FROM watches WHERE user_id = ? ORDER BY rowid'
   ).bind(user.id).all(); // rowid = the order the client PUT them in
-  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) };
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) };
 }
 
 // ── MCP (experiment) ───────────────────────────────────────────────────────
@@ -621,7 +623,16 @@ export default {
     const route = request.method + ' ' + url.pathname;
 
     if (route === 'GET /api/catalog.json') {
-      return json(await catalogBody(db));
+      // honest metrics: real aggregates ride along — freshest is null until
+      // an ingest has stamped an offer (seed rows carry no updated_at)
+      const products = await catalogBody(db);
+      const stamps = products.flatMap(p => p.offers.map(o => o.updated_at)).filter(Boolean);
+      const meta = {
+        products: products.length,
+        shops: new Set(products.flatMap(p => p.offers.map(o => o.shop))).size,
+        freshest: stamps.length ? Math.max(...stamps) : null,
+      };
+      return json({ meta, products });
     }
 
     // 4d interim: the laptop crawler (tools/crawl.mjs) pushes ingest()-shaped
@@ -701,7 +712,7 @@ export default {
         return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 
-      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy FROM users WHERE email = ?').bind(email).first();
+      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, created_at FROM users WHERE email = ?').bind(email).first();
       if (!user) return json({ error: 'no account for this email' }, 401);
       if (!password) return json({ error: 'enter your password' }, 400);
       if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);

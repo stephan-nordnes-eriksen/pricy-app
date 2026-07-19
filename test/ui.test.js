@@ -480,6 +480,16 @@ test('account menu logs out: back to landing, session cleared', async () => {
 
 // ---------- catalog hydration (Phase 4a) ----------
 
+test('honest metrics: {meta, products} body renders the served aggregates', async () => {
+  const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  const meta = { products: 123, shops: 7, freshest: Date.now() - 5 * 60000 };
+  const win = boot('http://pricy.test/browse', { session: true, catalog: { meta, products } });
+  assert.ok(await until(() => qa(win, '.browse__head .sub').length > 0), 'browse header did not render');
+  const sub = qa(win, '.browse__head .sub')[0].textContent;
+  assert.ok(sub.includes('123 products') && sub.includes('7 shops'), 'header must show meta counts, got: ' + sub);
+  assert.ok(sub.includes('5 min ago'), 'freshness must derive from meta.freshest, got: ' + sub);
+});
+
 test('rendered catalog comes from /api/catalog.json, not the baked constants', async () => {
   const served = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'))
     .filter(p => p.cat !== 'Gaming') // dropped category must vanish from CAT_OF

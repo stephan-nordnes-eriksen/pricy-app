@@ -362,8 +362,17 @@ function App() {
 // searchCatalog and ALL_BRANDS read CATALOG live and follow automatically.
 // window.CATALOG is the same array object, so it stays in sync too.
 function hydrateCatalog(data) {
+  // body is {meta, products} since the honest-metrics pass; a bare array
+  // (older stubs) still works — meta is recomputed from the rows either way
+  // the prototype's demo meta doesn't survive
+  const rows = Array.isArray(data) ? data : data.products;
   CATALOG.length = 0;
-  CATALOG.push(...data);
+  CATALOG.push(...rows);
+  CATALOG.meta = (!Array.isArray(data) && data.meta) || {
+    products: CATALOG.length,
+    shops: new Set(CATALOG.flatMap(p => (p.offers || []).map(o => o.shop))).size,
+    freshest: CATALOG.flatMap(p => (p.offers || []).map(o => o.updated_at)).filter(Boolean).sort((a, b) => a - b).pop() || null,
+  };
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
 }
