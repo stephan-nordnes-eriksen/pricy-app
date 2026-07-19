@@ -327,7 +327,7 @@ function App() {
   else if (name === 'alerts') view = <AlertsPage go={go} tab={params.tab} />;
   else if (name === 'account') view = <AccountPage go={go} tab={params.tab} me={ME} onSaveProfile={saveProfile} onSaveSettings={saveSettings} onChangePassword={changePassword} />;
   else if (name === 'autobuy') view = <AutobuyPage go={go} />;
-  else if (name === 'onboarding') view = <Onboarding go={go} />;
+  else if (name === 'onboarding') view = <Onboarding go={go} onFinish={({ notif }) => saveSettings(notif).catch(() => {})} />;
   else if (name === 'about') view = <AboutPage go={go} />;
   else view = <SignedHome go={go} onLogout={() => go('landing')} layout={T.homeLayout} />;
 

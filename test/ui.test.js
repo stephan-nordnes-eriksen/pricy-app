@@ -303,6 +303,27 @@ test('recently viewed: a visited product shows in the home rail on the next visi
   assert.ok(/Sony WH-1000XM5/.test(cards[0]), 'rail must show the visited product');
 });
 
+test('recently viewed: section is hidden entirely when nothing has been viewed', async () => {
+  const win = boot('http://pricy.test/', { session: true });
+  assert.ok(await until(() => qa(win, '.sec').length > 0), 'home sections did not render');
+  assert.ok(!/Recently viewed/i.test(win.document.body.textContent), 'empty rail must not render its header');
+});
+
+test('onboarding: finishing saves the chosen notification prefs', async () => {
+  const win = boot('http://pricy.test/onboarding', { session: true });
+  const next = () => qa(win, '.ob__foot .btn').find(b => /continue|skip for now/i.test(b.textContent));
+  assert.ok(await until(next), 'onboarding did not render');
+  for (let i = 0; i < 3; i++) { next().click(); await tick(); }
+  const pushRow = qa(win, '.arow').find(r => /push notifications/i.test(r.textContent));
+  pushRow.querySelector('.tgl').click();
+  await tick();
+  qa(win, '.ob__foot .btn').find(b => /start saving/i.test(b.textContent)).click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PUT /api/settings')), 'finish must PUT /api/settings');
+  const body = win.api.find(c => c.call === 'PUT /api/settings').body;
+  assert.strictEqual(body.email, true, 'default email pref must persist');
+  assert.strictEqual(body.push, true, 'flipped push pref must persist');
+});
+
 test('/autobuy on a reloaded session shows real purchases, not the demo orders', async () => {
   const me = {
     user: mari, watches: [], autobuy: signedFullmakt,

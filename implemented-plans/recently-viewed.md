@@ -1,7 +1,7 @@
 # Recently viewed — track it for real
 
-**Status: implemented 2026-07-19 (ff07d7b).** Remaining: the upstream
-empty-state fix (prompt below).
+**Status: implemented 2026-07-19 (ff07d7b); upstream empty-state fix
+synced same day.** Complete.
 
 ## Current state
 
