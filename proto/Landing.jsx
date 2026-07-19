@@ -9,6 +9,7 @@ function LandingHeader({ go }) {
       <div className="page app-hdr__row">
         <div className="app-hdr__logo" onClick={() => go('landing')}>
           <Wordmark height={26} />
+          <span className="alpha-badge">Alpha<span className="alpha-badge__tip">pricy.no is in early alpha — not yet fully released. Prices, features and data are for testing and may be incomplete.</span></span>
         </div>
         <nav className="app-hdr__nav" style={{ marginLeft: 'auto', gap: 'var(--s-2)' }}>
           <span className="navlink" onClick={() => go('login')}>Log in to browse</span>
@@ -112,7 +113,7 @@ function Landing({ go }) {
           <div className="lhero__copy">
             <div className="lhero__eyebrow"><span className="dot" /> Live across {fmt(m.shops || 0)} Norwegian shops</div>
             <h1>Never<br />overpay.<br /><span className="hl">Ever.</span></h1>
-            <p className="lhero__sub">Track any product. We watch the price across every shop and ping you the moment it drops.</p>
+            <p className="lhero__sub">Track any product. We keep an eye on prices across the shops we track and ping you when we spot a drop.</p>
             <div className="lhero__cta">
               <Btn variant="primary" size="lg" icon="arrow-right" onClick={() => go('login')}>Start watching — free</Btn>
               <Btn variant="ghost" size="lg" onClick={() => go('login')}>Log in</Btn>

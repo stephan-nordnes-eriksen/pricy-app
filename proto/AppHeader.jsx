@@ -59,6 +59,7 @@ function AppHeader({ go, onLogout }) {
         <div className="app-hdr__logo" onClick={() => go('home')}>
           <span className="logo-full"><Wordmark height={26} /></span>
           <span className="logo-min"><Mark size={30} /></span>
+          <span className="alpha-badge">Alpha<span className="alpha-badge__tip">pricy.no is in early alpha — not yet fully released. Prices, features and data are for testing and may be incomplete.</span></span>
         </div>
         <div className="app-hdr__search">
           <form onSubmit={submit}>
