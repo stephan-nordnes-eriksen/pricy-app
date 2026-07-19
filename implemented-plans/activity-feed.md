@@ -1,8 +1,5 @@
 # Real alert/activity feed
 
-**Status: implemented 2026-07-19 (70e5c1f).** Remaining: the upstream
-empty-state fix (prompt below).
-
 Every logged-in user sees the same five fabricated alert events.
 
 ## Current state
@@ -29,10 +26,9 @@ The feed shows the user's actual alert history from the `alerts` table
    seam as CATALOG/WATCHED. Map rows to the feed item shape the
    components expect ("ago" strings computed client-side from
    `created_at`).
-3. Empty state: **checked 2026-07-19 — upstream fix confirmed needed.**
-   With `FEED = []` both `AlertFeedCard` (:2646) and `ActivityFeed`
-   (:4261) render their header/frame over an empty body. Cosmetic only —
-   doesn't block the rest of this plan; use the prompt below.
+3. Empty state: check what the components render with `FEED = []` — if
+   they look broken, that's an upstream Claude Design fix (empty-state
+   card), prompt below.
 4. Worker test: alerts endpoint scoped to session user; UI test: feed
    renders hydrated events, not the demo five.
 
@@ -40,7 +36,7 @@ The feed shows the user's actual alert history from the `alerts` table
 
 [price-drop-alerts](price-drop-alerts.md) — no alerts table, no feed.
 
-## Upstream (Claude Design) prompt — paste-ready (empty state confirmed needed)
+## Upstream (Claude Design) prompt — only if empty state is broken
 
 > In the pricy prototype, `AlertFeedCard` and `ActivityFeed` render the
 > hardcoded `FEED` array. Give both a proper empty state when `FEED` is
