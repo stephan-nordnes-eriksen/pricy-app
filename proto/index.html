@@ -5074,10 +5074,10 @@ function App(){
   else if(name==="account") view=<AccountPage go={go} tab={params.tab} />;
   else if(name==="autobuy") view=<AutobuyPage go={go} />;
   else if(name==="onboarding") view=<Onboarding go={go} />;
-  else if(name==="about") view=<AboutPage go={go} />;
+  else if(name==="about") view=<AboutPage go={go} section={params.section} />;
   else view=<SignedHome go={go} onLogout={()=>go("landing")} layout={t.homeLayout} />;
   return (<React.Fragment>
-    <div key={name+JSON.stringify(params)+t.loginLayout+t.homeLayout+t.resultsView+t.filterLayout+t.density+t.sparklines+t.plan}>{view}</div>
+    <div key={name+JSON.stringify(params)+t.loginLayout+t.homeLayout+t.resultsView+t.filterLayout+t.density+t.sparklines+t.plan}>{view}{!({login:1,landing:1,about:1,onboarding:1})[name] && <Footer go={go} />}</div>
     <TweaksPanel>
       <TweakSection label="Preview" />
       <TweakSelect label="Screen" value={name} options={[{value:"results",label:"Search results"},{value:"product",label:"Product / compare"},{value:"home",label:"Signed-in home"},{value:"browse",label:"Categories browse"},{value:"alerts",label:"Alerts / watchlist"},{value:"autobuy",label:"Auto-buy orders"},{value:"account",label:"Account & settings"},{value:"onboarding",label:"Onboarding"},{value:"login",label:"Login"},{value:"landing",label:"Public landing"},{value:"about",label:"About (public)"}]} onChange={(v)=>go(v, v==="results"?{cat:"Audio"}:v==="product"?{id:"xm5"}:{})} />
