@@ -90,11 +90,14 @@ Two Claude Design projects feed this repo:
 
 ## "sync design changes" ritual
 
-1. DesignSync get_file `pricy/index.html` from the prototype project →
-   write to `proto/index.html`. Pull every `.jsx`/`.css` it references
-   (plus `pricy/assets/*`) the same way into `proto/`. If a pulled file
-   arrives with `truncated: true`, stop and split it further upstream —
-   never splice.
+1. DesignSync get_file `pricy/index.html` from the prototype project,
+   then every `.jsx`/`.css` it references (plus `pricy/assets/*`). A
+   PostToolUse hook (`tools/designsync-save.mjs` via
+   `.claude/settings.json`) writes each fetched `pricy/*` file to
+   `proto/` byte-faithfully — do NOT re-emit contents by hand, just
+   `git diff` after each fetch. (DesignSync only exists in the main
+   session — subagents can't pull.) If a pulled file arrives with
+   `truncated: true`, stop and split it further upstream — never splice.
 2. `npm test`. If the prototype's App gained/renamed screens (see the
    view switch in `AppRouter.jsx`), mirror that in `boot.jsx`.
 3. Commit (sync and boot/test adjustments separately), push to `origin

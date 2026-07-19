@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "DesignSync",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tools/designsync-save.mjs\"",
+            "timeout": 15,
+            "statusMessage": "Saving fetched prototype file to proto/"
+          }
+        ]
+      }
+    ]
+  }
+}
