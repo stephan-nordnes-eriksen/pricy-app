@@ -17,11 +17,7 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 function serve(dir, { spa } = {}) {
   return new Promise(resolve => {
     const srv = http.createServer((req, res) => {
-      let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-      // the prototype references assets/ and components.css relative to
-      // /proto/ — in Claude Design they exist next to it; here they live
-      // at the repo root
-      p = p.replace(/^\/proto\/(?!index\.html)/, '/');
+      const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
       let f = path.join(dir, p);
       if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) {
         if (!spa) { res.writeHead(404); return res.end(); }

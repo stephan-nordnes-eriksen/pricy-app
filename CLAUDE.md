@@ -4,22 +4,24 @@ Price comparison site for Norway, deployed to Cloudflare Workers.
 Two Claude Design projects feed this repo:
 
 - **Prototype (the product):** `7fa9cba6-ae13-4aa3-9ae4-f76a18ff1573`,
-  file `pricy/index.html` → synced to `proto/index.html`. Self-contained:
-  all CSS and all screen JSX inline.
+  dir `pricy/` → synced to `proto/`. `pricy/index.html` is a thin loader:
+  babel `<script src="X.jsx">` refs + `<link>`ed css, one split file per
+  component, all next to it (every file is under the 256 KiB get_file cap).
 - **Design system (tokens/kit):** `ee80f3e5-c405-4e58-9c44-689deea0f932`
   → synced to repo root (`colors_and_type.css`, `ui_kits/`, `preview/`,
   `assets/`, `_ds_*`). Reference only; the app is built from the prototype.
 
 ## How it works
 
-`node build.js` turns `proto/index.html` into `dist/` (what deploys):
-- every inline babel block EXCEPT the last is compiled with esbuild into
-  `dist/app.js`, byte-faithful to the prototype
-- the last block is the designer's tweaks-panel harness — replaced by
+`node build.js` turns `proto/` into `dist/` (what deploys):
+- every `.jsx` the loader references EXCEPT the last (`AppRouter.jsx`) is
+  compiled with esbuild into `dist/app.js`, byte-faithful to the prototype;
+  the `<link>`ed css files are copied from `proto/` into `dist/`
+- `AppRouter.jsx` is the designer's preview-router harness — replaced by
   `boot.jsx`: real session flag (localStorage `pricy_session`), URL routing
   over the prototype's `go(name, params)`, auth gating (logged out →
   landing/login/about only; **search requires login**), layouts frozen to
-  the prototype's TWEAK_DEFAULTS. Anything the prototype's App router block
+  the prototype's TWEAK_DEFAULTS. Anything the prototype's `AppRouter.jsx`
   renders around the screens must be mirrored here by hand (it's discarded
   with the harness) — currently: the shared `<Footer>` under every
   signed-in screen.
@@ -89,9 +91,12 @@ Two Claude Design projects feed this repo:
 ## "sync design changes" ritual
 
 1. DesignSync get_file `pricy/index.html` from the prototype project →
-   write to `proto/index.html`.
+   write to `proto/index.html`. Pull every `.jsx`/`.css` it references
+   (plus `pricy/assets/*`) the same way into `proto/`. If a pulled file
+   arrives with `truncated: true`, stop and split it further upstream —
+   never splice.
 2. `npm test`. If the prototype's App gained/renamed screens (see the
-   view switch in its last babel block), mirror that in `boot.jsx`.
+   view switch in `AppRouter.jsx`), mirror that in `boot.jsx`.
 3. Commit (sync and boot/test adjustments separately), push to `origin
    main` (github.com/stephan-nordnes-eriksen/pricy-app), then
    `npm run deploy` (live: https://pricy.no — Worker `pricy`, D1

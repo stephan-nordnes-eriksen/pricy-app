@@ -1,8 +1,10 @@
-// Build: proto/index.html (synced Claude Design prototype) → dist/
-//   dist/app.js     all prototype babel blocks except the last (the design
-//                   harness), plus boot.jsx, compiled with esbuild
-//   dist/index.html prototype html with CDN dev React/Babel swapped for
-//                   vendored production UMDs and the babel blocks replaced
+// Build: proto/ (synced Claude Design prototype) → dist/
+//   proto/index.html is a thin loader: babel <script src="X.jsx"> refs +
+//   <link>ed css, all living next to it in proto/.
+//   dist/app.js     all referenced .jsx files except the last (AppRouter,
+//                   the design harness), plus boot.jsx, compiled with esbuild
+//   dist/index.html the loader html with CDN dev React/Babel swapped for
+//                   vendored production UMDs and the babel refs replaced
 //                   by <script src="app.js">
 const fs = require('node:fs');
 const path = require('node:path');
@@ -13,11 +15,15 @@ const REPO = __dirname;
 const DIST = path.join(REPO, 'dist');
 let html = fs.readFileSync(path.join(REPO, 'proto', 'index.html'), 'utf8');
 
-// --- pull out the babel blocks --------------------------------
-const BLOCK_RE = /[ \t]*<script type="text\/babel"[^>]*>([\s\S]*?)<\/script>\n?/g;
-const blocks = [...html.matchAll(BLOCK_RE)].map(m => m[1]);
-if (blocks.length < 2) throw new Error('expected multiple babel blocks in proto/index.html');
-const harness = blocks.pop(); // tweaks panel + preview App — replaced by boot.jsx
+// --- resolve the babel blocks from their split files ----------
+const BLOCK_RE = /[ \t]*<script type="text\/babel"[^>]*\bsrc="([^"]+)"[^>]*><\/script>\n?/g;
+const srcs = [...html.matchAll(BLOCK_RE)].map(m => m[1]);
+if (srcs.length < 2) throw new Error('expected multiple babel script refs in proto/index.html');
+if (/<script type="text\/babel"(?![^>]*\bsrc=)/.test(html)) {
+  throw new Error('inline babel block found — the prototype must reference split .jsx files only');
+}
+const blocks = srcs.map(f => '\n' + fs.readFileSync(path.join(REPO, 'proto', f), 'utf8') + '\n');
+const harness = blocks.pop(); // AppRouter.jsx — the designer's preview router, replaced by boot.jsx
 
 // designer's frozen layout choices live in the harness between EDITMODE markers
 const defaults = harness.match(/\/\*EDITMODE-BEGIN\*\/([\s\S]*?)\/\*EDITMODE-END\*\//);
@@ -61,10 +67,10 @@ if (!html.includes('<script src="app.js">')) throw new Error('app.js injection f
 for (const cdn of ['unpkg.com', 'text/babel']) {
   if (html.includes(cdn)) throw new Error(`build output still references ${cdn}`);
 }
-// every locally-linked stylesheet must exist in the repo (it gets copied below)
+// every locally-linked stylesheet must exist next to the loader in proto/
 const localCss = [...html.matchAll(/<link[^>]*href="(?!https?:)([^"]+\.css)"/g)].map(m => m[1]);
 for (const f of localCss) {
-  if (!fs.existsSync(path.join(REPO, f))) throw new Error(`html links ${f} but it's not in the repo`);
+  if (!fs.existsSync(path.join(REPO, 'proto', f))) throw new Error(`html links ${f} but it's not in proto/`);
 }
 
 // --- write dist -------------------------------------------------
@@ -81,5 +87,5 @@ for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));
 }
 fs.cpSync(path.join(REPO, 'assets'), path.join(DIST, 'assets'), { recursive: true });
-for (const f of localCss) fs.copyFileSync(path.join(REPO, f), path.join(DIST, f));
+for (const f of localCss) fs.copyFileSync(path.join(REPO, 'proto', f), path.join(DIST, f));
 console.log(`built dist/: app.js ${Math.round(compiled.length / 1024)}KB from ${blocks.length} prototype blocks + boot.jsx`);
