@@ -760,6 +760,9 @@ button { font-family: inherit; }
   .metrics { grid-template-columns: repeat(2, 1fr); }
   .wrow { grid-template-columns: 56px minmax(0,1fr) auto; }
   .wrow__spark, .wrow__target { display: none; }
+  .wrow > div:not([class]) { min-width: 0; }
+  .wrow__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wrow__meta { flex-wrap: wrap; row-gap: 4px; }
 }
 .logo-min { display: none; }
 @media (max-width: 640px) {
