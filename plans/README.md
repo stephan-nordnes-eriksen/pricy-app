@@ -16,21 +16,21 @@ below unless something changes.
 - TODO.md's "convert a watch to auto-buy" — auto-buy scope, track it
   with AUTOBUY-PLAN work.
 
+**Implemented** (moved to [../implemented-plans/](../implemented-plans/)):
+price-drop-alerts, activity-feed, recently-viewed — each file keeps its
+remaining upstream/delivery follow-ups.
+
 ## Suggested order
 
-1. [price-drop-alerts](price-drop-alerts.md) — the core promise; the
-   price-check hook it builds is the same one AUTOBUY-PLAN AB-1 needs.
-2. [activity-feed](activity-feed.md) — depends on 1's alerts table.
-3. [honest-metrics](honest-metrics.md) — kill the fabricated numbers;
+1. [honest-metrics](honest-metrics.md) — kill the fabricated numbers;
    small worker additions + one upstream copy pass.
-4. [recently-viewed](recently-viewed.md) — small, client-side.
-5. [account-privacy](account-privacy.md) — GDPR export + delete; real
+2. [account-privacy](account-privacy.md) — GDPR export + delete; real
    obligations, currently pure theatre.
-6. [dead-ui-cleanup](dead-ui-cleanup.md) — dead buttons/links/dead code,
+3. [dead-ui-cleanup](dead-ui-cleanup.md) — dead buttons/links/dead code,
    mostly one upstream Claude Design pass.
-7. [report-product-error](report-product-error.md) — TODO.md item.
-8. [profile-email-change](profile-email-change.md) — small; real change
+4. [report-product-error](report-product-error.md) — TODO.md item.
+5. [profile-email-change](profile-email-change.md) — small; real change
    needs email.
-9. [real-magic-link-login](real-magic-link-login.md) — blocked on the
+6. [real-magic-link-login](real-magic-link-login.md) — blocked on the
    Email Service binding; drops the demo auth bridges.
-10. [pricy-plus](pricy-plus.md) — decision-heavy (billing); do last.
+7. [pricy-plus](pricy-plus.md) — decision-heavy (billing); do last.
