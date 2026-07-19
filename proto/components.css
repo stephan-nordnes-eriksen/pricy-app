@@ -35,6 +35,7 @@
 .btn--ghost:hover { background: var(--canvas-2); transform: none; box-shadow: none; }
 .btn--lg { padding: 16px 28px; font-size: 15px; }
 .btn--sm { padding: 8px 14px; font-size: 12px; box-shadow: none; }
+.btn--sm:hover { transform: none; box-shadow: var(--shadow-sm); }
 
 /* ---- CARD ---------------------------------------------- */
 .card {
