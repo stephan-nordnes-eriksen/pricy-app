@@ -291,6 +291,30 @@ test('PDP: Buy now buys at the current best price', async () => {
   assert.strictEqual(order.exec.ref, 'PY-4711', 'order ref must come from the server order id');
 });
 
+test('PDP: Go to shop opens the best offer url; disabled when no offer has one', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  const opened = [];
+  win.open = (...args) => { opened.push(args); return null; };
+  const goBtn = await until(() => qa(win, '.btn').find(b => /go to shop/i.test(b.textContent)));
+  assert.ok(goBtn, 'Go to shop button missing on PDP');
+  const offers = CATALOG_JSON.find(p => p.id === 'xm5').offers;
+  const expected = offers[0].url || offers.find(o => o.url)?.url;
+  assert.ok(expected, 'seed must give xm5 an offer url for this test');
+  goBtn.click();
+  assert.deepStrictEqual(opened, [[expected, '_blank', 'noopener']], 'must open the best offer url in a new tab');
+  const visit = qa(win, '.btn').find(b => /^visit$/i.test(b.textContent.trim()) && !b.disabled);
+  assert.ok(visit, 'at least one per-offer Visit button must be enabled when offers have urls');
+  visit.click();
+  assert.strictEqual(opened.length, 2, 'Visit must open the offer url');
+  assert.ok(offers.some(o => o.url === opened[1][0]), 'Visit must open one of the offer urls');
+
+  // no urls anywhere (prod state before real ingest) → disabled, not broken
+  const bare = CATALOG_JSON.map(p => ({ ...p, offers: p.offers.map(({ url, ...o }) => o) }));
+  const win2 = boot('http://pricy.test/product/xm5', { session: true, catalog: bare });
+  const goBtn2 = await until(() => qa(win2, '.btn').find(b => /go to shop/i.test(b.textContent)));
+  assert.ok(goBtn2.disabled, 'Go to shop must be disabled when no offer has a url');
+});
+
 test('recently viewed: a visited product shows in the home rail on the next visit', async () => {
   const win = boot('http://pricy.test/product/xm5', { session: true });
   assert.ok(await until(() => q(win, '.watchbox')), 'PDP did not render');
