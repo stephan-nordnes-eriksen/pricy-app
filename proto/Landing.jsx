@@ -136,7 +136,7 @@ function Landing({ go }) {
       </section>
 
       <section className="page" style={{ paddingBottom: 'var(--s-8)' }}>
-        <div className="sec__head"><h2 style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}><span className="ico" style={{ color: 'var(--green-700)', display: 'flex' }}><Icon name="flame" size={20} /></span>Biggest drops today</h2><span className="more" onClick={() => go('login')}>See all <Icon name="arrow-right" size={14} /></span></div>
+        <div className="sec__head"><h2 style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}><span className="ico" style={{ color: 'var(--green-700)', display: 'flex' }}><Icon name="flame" size={20} /></span>Biggest discounts</h2><span className="more" onClick={() => go('login')}>See all <Icon name="arrow-right" size={14} /></span></div>
         <div className="pgrid">
           {trending.map(p => (
             <div key={p.id} className="pcard" onClick={() => go('login')}>

@@ -3,9 +3,9 @@
 // ===========================================================
 
 const ABOUT_FAQ = [
-  { q: 'How does pricy make money?', a: 'When you click through to a shop and buy, some shops pay us a small referral fee. That fee never affects ranking — the cheapest price is always on top, whether the shop pays us or not.' },
+  { q: 'How does pricy make money?', a: 'When you click through to a shop and buy, some shops can pay us a small referral fee. That fee never affects ranking — the cheapest price is always on top, whether the shop pays us or not.' },
   { q: 'Do I need an account?', a: 'Yes. Searching, comparing and price alerts all require a free account. It takes 30 seconds, and the free plan stays free forever.' },
-  { q: 'How fresh are the prices?', a: 'We re-check every shop around the clock — the most popular products most often. Every price shows when it was last verified.' },
+  { q: 'How fresh are the prices?', a: 'We re-check shops regularly, and every price shows when it was last checked.' },
   { q: 'What is Pricy Plus?', a: 'Our upcoming subscription — coming soon, planned at kr 49/month (pricing subject to change). It adds AI features: a daily deal digest, price forecasts per product, and plain-language search («best robotstøvsuger under 4 000»). Everything else is free.' },
   { q: 'How do price alerts work?', a: 'Watch any product and set a target price. The moment any of the shops we track goes below your target, you get an email or push notification — usually within minutes.' },
 ];

@@ -27,7 +27,7 @@ function BrowsePage({ go }) {
                 <div className="bigcat__drop">
                   {top
                     ? <React.Fragment><Delta pct={-top.drop}></Delta><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{top.name}</span></React.Fragment>
-                    : <span style={{ color: 'var(--ink-400)' }}>No drops today</span>}
+                    : <span style={{ color: 'var(--ink-400)' }}>No drops</span>}
                 </div>
               </div>
             );

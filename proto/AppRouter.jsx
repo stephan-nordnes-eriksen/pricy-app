@@ -24,6 +24,7 @@ function App(){
   useEffect(()=>{ document.getElementById("root").classList.toggle("no-anim", !t.animations); },[t.animations]);
   window.PLAN = t.plan;
   window.setPlan = (v)=>setTweak("plan",v);
+  window.go = go;
   let view;
   if(name==="login") view=<Login onAuthed={(email,opts)=>go(opts&&opts.signup?"onboarding":"home")} go={go} layout={t.loginLayout} />;
   else if(name==="landing") view=<Landing go={go} />;
