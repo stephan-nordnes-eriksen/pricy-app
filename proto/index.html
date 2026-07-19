@@ -3434,7 +3434,7 @@ function LandingHeader({ go }) {
         </div>
         <nav className="app-hdr__nav" style={{ marginLeft: 'auto', gap: 'var(--s-2)' }}>
           <span className="navlink" onClick={() => go('login')}>Log in to browse</span>
-          <span className="navlink" onClick={() => go('about')}>How it works</span>
+          <span className="navlink" onClick={() => go('about', { section: 'how' })}>How it works</span>
           <Btn variant="ghost" size="sm" onClick={() => go('login')}>Log in</Btn>
           <Btn variant="primary" size="sm" icon="arrow-right" onClick={() => go('login')}>Sign up free</Btn>
         </nav>
@@ -4936,7 +4936,9 @@ function AboutFaq() {
   );
 }
 
-function AboutPage({ go }) {
+function AboutPage({ go, section }) {
+  const stepsRef = React.useRef(null);
+  useEffect(() => { if (section === 'how' && stepsRef.current) window.scrollTo(0, stepsRef.current.offsetTop - 24); }, [section]);
   return (
     <div className="screen" data-screen-label="About / how it works">
       <LandingHeader go={go} />
@@ -4947,7 +4949,7 @@ function AboutPage({ go }) {
         <p>pricy compares 1.4 million products across 1,412 Norwegian shops — and no shop can pay to rank higher. The cheapest price wins. Always.</p>
       </section>
 
-      <section className="page" style={{ paddingBottom: 'var(--s-7)' }}>
+      <section className="page" id="how" ref={stepsRef} style={{ paddingBottom: 'var(--s-7)' }}>
         <div className="steps">
           <div className="step">
             <span className="step__n">01</span>
