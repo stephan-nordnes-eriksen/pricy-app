@@ -171,7 +171,9 @@ Outstanding tasks (in rough order):
    `npm run test:crawlers` (on-demand live check, one page per shop —
    never part of `npm test`). First real rows are live in prod:
    Power beats-pro + xbox. Coverage plan below.
-2. **Adtraction rollout (the better solution, later):** publisher signup
+2. **Adtraction rollout (the better solution, later):** account created
+   2026-07-19, approvals pending — runbook in `ADTRACTION-COOKBOOK.md`.
+   Publisher signup
    (site: pricy.no), apply to the 8 brands (Power/Proshop coverage
    unverified — check the brand directory; fall back to
    Awin/Partner-ads/Tradedoubler); `wrangler secret put ADTRACTION_FEEDS`;
