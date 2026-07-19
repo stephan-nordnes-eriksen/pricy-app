@@ -482,6 +482,13 @@ test('activity feed hydrates from /api/alerts, not the demo five', async () => {
   assert.ok(rows[0].textContent.includes('1\u00A0899'), 'row must show the alert price');
 });
 
+test('empty alert history renders the empty state, not the demo five', async () => {
+  const win = boot('http://pricy.test/alerts?tab=activity', { session: true, alerts: [] });
+  assert.ok(await until(() => q(win, '.actfeed .empty')), 'empty state did not render');
+  assert.ok(q(win, '.actfeed .empty').textContent.includes('No alerts yet'));
+  assert.strictEqual(qa(win, '.actrow').length, 0, 'no demo rows may leak through');
+});
+
 test('removing a watch PUTs the new list to /api/watches', async () => {
   const me = {
     user: { email: 'ola@nordmann.no', name: 'Ola Nordmann', initials: 'ON' },
