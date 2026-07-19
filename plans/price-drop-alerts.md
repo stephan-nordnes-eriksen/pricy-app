@@ -1,5 +1,9 @@
 # Price-drop alerts actually fire
 
+**Status: implemented 2026-07-19 (234dbd0) — steps 1–4, 6.** Remaining:
+step 5 (upstream, prompt below) and real email/push delivery (Email
+Service binding).
+
 The core promise — "the moment any shop goes below your target, you get
 an email or push" (proto/index.html:4882) — has no implementation.
 

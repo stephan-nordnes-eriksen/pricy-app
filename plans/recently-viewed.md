@@ -1,5 +1,8 @@
 # Recently viewed — track it for real
 
+**Status: implemented 2026-07-19 (ff07d7b).** Remaining: the upstream
+empty-state fix (prompt below).
+
 ## Current state
 
 `const RECENT` (proto/index.html:1452) is a hardcoded five-product list

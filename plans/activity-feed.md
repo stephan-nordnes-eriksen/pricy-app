@@ -1,5 +1,8 @@
 # Real alert/activity feed
 
+**Status: implemented 2026-07-19 (70e5c1f).** Remaining: the upstream
+empty-state fix (prompt below).
+
 Every logged-in user sees the same five fabricated alert events.
 
 ## Current state
