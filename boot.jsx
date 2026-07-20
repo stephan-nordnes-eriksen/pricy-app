@@ -446,6 +446,9 @@ function hydrateCatalog(data) {
   // variantListing/variantBest prefer over their synth fallback.
   CATALOG.length = 0;
   CATALOG.push(...rows.filter(p => !p.family));
+  // served specs win over the client-baked design table — specsFor (sync-owned)
+  // reads SPECS[p.id], so refresh that table in place
+  rows.forEach(r => { if (r.specs) SPECS[r.id] = r.specs; });
   rows.forEach(r => {
     const head = r.family && CATALOG.find(p => p.id === r.family);
     if (head) (head.listings = head.listings || {})[r.id.slice(r.id.indexOf('~') + 1)] = r;

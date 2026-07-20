@@ -110,7 +110,12 @@ fs.writeFileSync(path.join(DIST, 'app.js'), compiled);
 fs.writeFileSync(path.join(DIST, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 // seed for the Worker's D1 bootstrap (4c) — /api/catalog.json is a dynamic
 // route now, so nothing under dist/api/ may shadow it
-fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify([...catalog, ...children]));
+// specs ride along on head rows (children inherit via family, specsFor is
+// head-keyed) so the served catalog — not the client-baked table — is truth
+fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify([
+  ...catalog.map(p => ctx.SPECS[p.id] ? { ...p, specs: ctx.SPECS[p.id] } : p),
+  ...children,
+]));
 for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith('.js'))) {
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));
 }

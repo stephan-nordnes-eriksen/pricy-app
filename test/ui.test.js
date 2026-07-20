@@ -586,6 +586,15 @@ test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise
   assert.ok(q(win, '.orow.is-best .orow__checked'), 'the stamp must sit on the offer that carries updated_at');
 });
 
+test('PDP specs render from the served catalog, not the baked design table', async () => {
+  const served = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'))
+    .map(p => p.id !== 'xm5' ? p : { ...p, specs: { ...p.specs, fit: 'Served-fit' } });
+  const win = boot('http://pricy.test/product/xm5', { session: true, catalog: served });
+  assert.ok(await until(() => q(win, '#pdp-specs')), 'specs section missing on the PDP');
+  const rows = qa(win, '#pdp-specs .srow').map(el => el.textContent);
+  assert.ok(rows.some(t => t.includes('Served-fit')), 'specs must show the served value, got: ' + rows[0]);
+});
+
 // ---------- product variants (Phase 4e) ----------
 
 test('PDP: variant picker renders from hydrated listings — selecting a combo swaps in the child row', async () => {

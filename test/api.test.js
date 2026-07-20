@@ -387,6 +387,12 @@ test('catalog route seeds D1 on first request and serves the demo shape, no auth
   assert.strictEqual(got.best, Math.min(...want.offers.map(o => o.price)), 'best derives from offers');
   assert.strictEqual(got.shops, got.offers.length);
   assert.deepStrictEqual(got.offers.map(o => o.price), [...got.offers.map(o => o.price)].sort((a, b) => a - b), 'offers are price-ordered');
+
+  // specs ride on head rows and round-trip through products.meta
+  const seedSpecs = seed.find(p => p.id === 'airpods').specs;
+  assert.ok(seedSpecs && seedSpecs.fit, 'seed head rows must carry specs from the prototype');
+  assert.deepStrictEqual(cat.find(p => p.id === 'airpods').specs, seedSpecs, 'specs must round-trip through the catalog route');
+  assert.ok(!child.specs, 'variant children must not duplicate head specs');
 });
 
 // 4e step 1: seed evolution — a new seed.json refreshes meta for every row
