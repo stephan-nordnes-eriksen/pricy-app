@@ -249,6 +249,86 @@ stable and robots-ok, move it into `vars.SOURCES` as
 over and the laptop drops out for that shop. Adtraction (task 2) replaces
 scraping per shop as feeds get approved.
 
+### 4e — Product variants for real (planned 2026-07-20)
+
+Upstream shipped variants (2026-07-20 sync): `Variants.jsx` defines
+`VARIANT_DEFS` (per-product axes: storage/colour, per-option price
+deltas), `Results.jsx` attaches them as `p.variants`, and the PDP's
+`VariantPicker` swaps in a *derived* listing — `variantListing()`
+synthesizes offers/history per combo via a hash. Six products have
+variants: iphone (3×5), s24 (3×4), pixel8 (2×3), xm5 (3), mba (2×4),
+steamdeck (2) — 46 combos, 40 non-default. In prod the feature is
+dormant: D1 was seeded before variants existed, so API rows carry no
+`variants` and the picker never renders. Making it real:
+
+**Model decision — variant combo = product row.** Every non-default
+combo becomes its own `products` row, id `<head>~<combo>` (combo = axis
+option ids in axis order, e.g. `iphone~256-blue`; `~` survives URLs and
+is unused in current ids). The head row doubles as the default combo
+(matches the prototype: default sel = base listing). Child meta carries
+`family: '<head>'` and a display name with the vlabel baked in
+("iPhone 15 · 256 GB · Blue"). Everything that keys on product_id —
+offers, price_points, watches, alerts, autobuy, purchases, `/api/ingest`,
+MCP buy/watch — works on children with **zero schema or query changes**;
+that's the whole point of this shape. The alternative (a `variant`
+column on offers/price_points + every consumer) touches every table and
+was rejected.
+
+Steps, in order:
+
+1. **Seed evolution (prereq, standalone win).** `seedIfEmpty` only fires
+   on an empty DB, so prod meta is frozen at first deploy — it has the
+   old names ("iPhone 15 128GB") and will never learn `variants`. Add a
+   `seed_meta` marker (one row, hash of seed.json): when it changes,
+   upsert `meta` for every seed row (`ON CONFLICT(id) DO UPDATE SET
+   meta = excluded.meta`) — meta is display-only, offers/price_points
+   are never touched, so this is always safe. Rows dropped upstream are
+   left in place (purchases/watches reference them). Worker test: seed,
+   mutate a name in the seed, re-seed → meta updated, offers untouched.
+2. **Child rows in the seed.** build.js already executes the prototype
+   blocks; the extracted CATALOG rows now carry `p.variants`. Extend the
+   extraction: for each product with variants, emit the 40 child rows by
+   calling the prototype's own `variantListing()` in the same vm context
+   — demo offers/history per combo stay byte-consistent with what the
+   preview shows today, and real ingest overwrites them per child
+   exactly like heads. Head meta keeps `variants` (axes/labels/swatches)
+   for the picker; child meta gets `family` + `vlabel`, no `variants`.
+   Seeding + step 1's upsert delivers all of it to prod.
+3. **Frontend seam (boot.jsx) + upstream contract.** `hydrateCatalog`
+   splits rows on `meta.family`: children don't enter CATALOG/CAT_OF
+   (search, results, browse stay head-only — VariantHint already covers
+   the "comes in variants" signal); instead each head gets
+   `p.listings = { combo: childRow }`. Upstream (Claude Design, prompt
+   below): `variantListing(p, sel)` returns `p.listings[comboKey]` when
+   present and only falls back to the synth path (preview keeps working
+   unchanged); watch/autobuy/buy-now on the PDP use `v.id` so a watch on
+   a non-default combo stores the child id — watchlist/alerts then show
+   the vlabel-baked name for free. jsdom tests: picker renders from
+   hydrated listings, selecting a combo swaps the offer table to the
+   child's rows, watch on a selected combo persists the child id.
+4. **Ingest goes variant-aware (data, not code).** `worker/eans.json`
+   keys and `tools/crawl-urls.json` product keys may now be child ids —
+   no shape change, `/api/ingest` already validates ids against
+   `products`. The existing per-product EAN arrays are collapsed
+   variants by definition; re-home each EAN to its child id as
+   confirmed (Adtraction feeds carry per-SKU EANs — this is mostly
+   waiting on task 2 of 4d). Until re-homed, an EAN keeps feeding the
+   head row — today's behavior, no regression.
+5. **MCP.** `search_products` filters out children (`meta.family`);
+   `get_product` on a head appends its children (id, vlabel, best) so a
+   client can `get_product`/`buy_now`/`watch_product` a concrete combo —
+   which already work, children being ordinary rows. Tool description
+   nudge, ~10 lines.
+6. **Deferred (note, don't build):** deep-linking a PDP to a selected
+   combo (`/product/iphone~256-blue` resolving head + preselect), picker
+   options greyed by real stock, discover.mjs vlabel-aware slug
+   matching. All additive later; nothing above blocks on them.
+
+Risks: step 2 must keep `variantListing`'s determinism (same hash → same
+demo prices as the deployed preview — assert one known combo's price in
+the build test); step 3's upstream edit is the only sync-owned surface —
+everything else is boot/worker/build/tools, inside the seam.
+
 Order matters: 4a proves the hydration seam cheaply, 4b builds the first
 real backend on a proven seam, 4c fills the pipeline, 4d swaps in real
 sources shop-by-shop behind the same `ingest()`.
