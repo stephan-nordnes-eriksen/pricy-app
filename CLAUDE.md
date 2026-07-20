@@ -111,15 +111,16 @@ Two Claude Design projects feed this repo:
    Workers Builds push-to-deploy not set up.
 
 Known upstream gaps (fix in Claude Design, then extend tests):
-- Product variants (`Variants.jsx`, synced 2026-07-20): upstream side is
-  DONE — `variantListing`/`variantBest` prefer hydrated
-  `p.listings[combo]` over synth, PDP watch/buy key on `v.id`, and
-  `resolveVariantId('<head>~<combo>')` resolves child ids in the PDP,
-  WatchStore.prod, AutobuyStore.prod. Dormant in prod (D1 was seeded
-  pre-variants, so API rows lack `variants` and the picker never
-  renders). Backend/boot implementation: PLAN.md 4e — variant combo =
-  child `products` row (`iphone~256-blue`). Axis option ids must never
-  contain `-` (combo-key separator).
+- Product variants are LIVE end to end (4e, 2026-07-20): variant combo =
+  child `products` row (`iphone~256-blue`) — build.js emits the 40
+  non-default combos via the prototype's own `variantListing`, the
+  seed_meta hash marker re-upserts meta on every new seed (offers/
+  price_points untouched), boot's `hydrateCatalog` keeps children out of
+  CATALOG and hangs them on `head.listings[combo]`, MCP search hides
+  them / `get_product` lists them. Axis option ids must never contain
+  `-` (combo-key separator). Still data-only pending: re-homing
+  `eans.json`/`crawl-urls.json` keys to child ids as Adtraction feeds
+  confirm SKUs (PLAN.md 4e step 4).
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
   passed out, awaitable verdict, server errors shown in the form), and
   password login/signup/change are real (PBKDF2-hashed, verified

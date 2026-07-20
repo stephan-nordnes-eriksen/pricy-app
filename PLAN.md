@@ -249,7 +249,9 @@ stable and robots-ok, move it into `vars.SOURCES` as
 over and the laptop drops out for that shop. Adtraction (task 2) replaces
 scraping per shop as feeds get approved.
 
-### 4e — Product variants for real (planned 2026-07-20)
+### 4e — Product variants for real (planned 2026-07-20; SHIPPED 2026-07-20
+— steps 1–3 + 5 live, step 4 is data-only and waits on Adtraction feeds,
+step 6 stays deferred)
 
 Upstream shipped variants (2026-07-20 sync): `Variants.jsx` defines
 `VARIANT_DEFS` (per-product axes: storage/colour, per-option price
