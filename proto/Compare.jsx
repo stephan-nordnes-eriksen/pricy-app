@@ -78,9 +78,15 @@ function CompareTray({ go, hidden }) {
         <span className="ctray__lbl">Compare</span>
         <div className="ctray__items">
           {ps.map(p => (
-            <span key={p.id} className="ctray__item" title={p.name}>
-              <ProdImg p={p} size={20} />
+            <span key={p.id} className="ctray__item">
+              <button type="button" className="ctray__tile" aria-label={p.name + ' — open product'} onClick={() => go('product', { id: p.id })}><ProdImg p={p} size={20} /></button>
               <button type="button" className="ctray__x" aria-label={'Remove ' + p.name} onClick={() => CompareStore.remove(p.id)}><Icon name="x" size={11} /></button>
+              <span className="ctray__pop" role="tooltip">
+                <span className="ctray__pop-brand">{p.brand}</span>
+                <span className="ctray__pop-name">{p.name}</span>
+                <span className="ctray__pop-price">kr {fmt(p.best)} · {p.shops} shops</span>
+                <span className="ctray__pop-hint">Click to open product</span>
+              </span>
             </span>
           ))}
           {Array.from({ length: Math.max(0, 2 - ps.length) }).map((_, i) => <span key={'e' + i} className="ctray__slot">+</span>)}
@@ -118,24 +124,37 @@ const CMP_OVERVIEW = [
 
 function CmpAdd({ ps, go }) {
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
   const ref = useRef(null);
+  const inRef = useRef(null);
   useEffect(() => {
     const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h);
   }, []);
+  useEffect(() => { if (open) { setQ(''); if (inRef.current) inRef.current.focus(); } }, [open]);
   const kind = specKindOf(ps[0]);
-  const cands = CATALOG.filter(x => !CompareStore.has(x.id) && specKindOf(x) === kind).sort((a, b) => b.rating - a.rating).slice(0, 6);
+  const s = q.toLowerCase().trim();
+  const cands = CATALOG.filter(x => !CompareStore.has(x.id) && specKindOf(x) === kind)
+    .filter(x => !s || (x.name + ' ' + x.brand + ' ' + (x.kw || '')).toLowerCase().includes(s))
+    .sort((a, b) => b.rating - a.rating).slice(0, 6);
   const cat = ps[0].cat;
+  const pick = (id) => { CompareStore.add(id); setOpen(false); };
   return (
     <div className="cmp__addc" ref={ref}>
       <button type="button" className="cmp__addbtn" onClick={() => setOpen(o => !o)}><Icon name="plus" size={18} />Add product</button>
       {open && (
         <div className="cmp__menu">
+          <div className="cmp__search">
+            <Icon name="search" size={14} />
+            <input ref={inRef} type="text" placeholder={'Search ' + SPEC_KINDS[kind].label.toLowerCase() + '…'} value={q} onChange={e => setQ(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Escape') setOpen(false); if (e.key === 'Enter' && cands.length) pick(cands[0].id); }} />
+          </div>
           {cands.map(c => (
-            <button key={c.id} type="button" className="cmp__cand" onClick={() => { CompareStore.add(c.id); setOpen(false); }}>
+            <button key={c.id} type="button" className="cmp__cand" onClick={() => pick(c.id)}>
               <ProdImg p={c} size={16} /><span>{c.name}</span><span className="pr">kr {fmt(c.best)}</span>
             </button>
           ))}
+          {cands.length === 0 && <div className="cmp__none">No {SPEC_KINDS[kind].label.toLowerCase()} match “{q}”</div>}
           <button type="button" className="cmp__cand cmp__cand--all" onClick={() => go('results', { cat })}>Browse all {cat} →</button>
         </div>
       )}

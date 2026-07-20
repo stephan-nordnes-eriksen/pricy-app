@@ -18,7 +18,15 @@
 .ctray__bar { display: flex; align-items: center; gap: var(--s-4); background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow-green); padding: 10px var(--s-4); }
 .ctray__lbl { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-600); }
 .ctray__items { display: flex; gap: 10px; }
-.ctray__item { position: relative; width: 46px; height: 46px; border: 2px solid var(--ink-900); background: var(--canvas-2); display: flex; align-items: center; justify-content: center; }
+.ctray__item { position: relative; width: 46px; height: 46px; }
+.ctray__tile { width: 100%; height: 100%; border: 2px solid var(--ink-900); background: var(--canvas-2); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; color: var(--ink-900); }
+.ctray__tile:hover { background: var(--green-100); }
+.ctray__pop { display: none; position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); flex-direction: column; gap: 2px; width: max-content; max-width: 230px; background: var(--paper); border: 2px solid var(--ink-900); box-shadow: var(--shadow-green); padding: 9px 11px; z-index: 5; pointer-events: none; text-align: left; }
+.ctray__item:hover .ctray__pop, .ctray__item:focus-within .ctray__pop { display: flex; animation: pop-in 0.12s ease-out; }
+.ctray__pop-brand { font-family: var(--font-mono); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-400); }
+.ctray__pop-name { font-family: var(--font-display); font-size: 13px; font-weight: 600; line-height: 1.25; color: var(--ink-900); }
+.ctray__pop-price { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--green-700); margin-top: 2px; }
+.ctray__pop-hint { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-400); margin-top: 3px; }
 .ctray__x { position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; background: var(--ink-900); color: var(--paper); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
 .ctray__x:hover { background: var(--up-600); }
 .ctray__slot { width: 46px; height: 46px; border: 2px dashed var(--ink-300); color: var(--ink-400); display: flex; align-items: center; justify-content: center; font-size: 18px; font-family: var(--font-mono); }
@@ -48,7 +56,12 @@ body:has(.ctray) .toast { bottom: 118px; }
 .cmp__addbtn { flex: 1; border: 2px dashed var(--ink-300); background: none; color: var(--ink-600); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 120px; }
 .cmp__addbtn:hover { border-color: var(--ink-900); color: var(--ink-900); background: var(--canvas-2); }
 .cmp__addbtn .icon { display: flex; }
-.cmp__menu { position: absolute; top: calc(100% - 8px); right: var(--s-3); left: var(--s-3); background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow-green); z-index: 40; max-height: 320px; overflow-y: auto; }
+.cmp__menu { position: absolute; top: calc(100% - 8px); right: var(--s-3); left: var(--s-3); background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow-green); z-index: 40; max-height: 360px; overflow-y: auto; }
+.cmp__search { position: sticky; top: 0; display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--paper); border-bottom: 2px solid var(--ink-900); z-index: 2; color: var(--ink-600); }
+.cmp__search .icon { display: flex; flex: 0 0 auto; }
+.cmp__search input { flex: 1; min-width: 0; border: none; background: none; outline: none; font-family: var(--font-display); font-size: 13px; font-weight: 500; color: var(--ink-900); padding: 2px 0; }
+.cmp__search input::placeholder { color: var(--ink-400); }
+.cmp__none { padding: 12px 10px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); border-bottom: var(--bw-hair) solid var(--ink-300); }
 .cmp__cand { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; background: none; border: none; border-bottom: var(--bw-hair) solid var(--ink-300); cursor: pointer; text-align: left; font-family: var(--font-display); font-size: 13px; font-weight: 500; color: var(--ink-900); }
 .cmp__cand:hover { background: var(--green-100); }
 .cmp__cand .pr { margin-left: auto; font-family: var(--font-mono); font-size: 12px; font-weight: 700; white-space: nowrap; }
