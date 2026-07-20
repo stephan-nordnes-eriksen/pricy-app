@@ -454,7 +454,7 @@ function ProductPage({ go, id }) {
   useEffect(() => { setSel(defaultSel(p)); }, [p.id]);
   const v = useMemo(() => variantListing(p, sel), [p, sel]);
   useWatchStore();
-  const w = WatchStore.get(p.id);
+  const w = WatchStore.get(v.id);
   const [target, setTarget] = useState(w ? w.target : Math.round(v.best * 0.92 / 10) * 10);
   const watching = !!w;
   useEffect(() => { if (!watching) setTarget(Math.round(v.best * 0.92 / 10) * 10); }, [v.best]);
@@ -522,19 +522,19 @@ function ProductPage({ go, id }) {
                   </div>
                 </div>
                 {!watching ? (
-                  <Btn variant="primary" icon="bell" onClick={() => { WatchStore.add(p.id, +target || p.best); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || p.best)); }}>
+                  <Btn variant="primary" icon="bell" onClick={() => { WatchStore.add(v.id, +target || v.best); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || p.best)); }}>
                     Watch price
                   </Btn>
                 ) : (
                   <div className="watchbox__on">
                     {dirty ? (
-                      <Btn variant="primary" icon="check" onClick={() => { WatchStore.setTarget(p.id, +target); flash('Alert updated to kr ' + fmt(+target)); }}>
+                      <Btn variant="primary" icon="check" onClick={() => { WatchStore.setTarget(v.id, +target); flash('Alert updated to kr ' + fmt(+target)); }}>
                         Update alert
                       </Btn>
                     ) : (
                       <span className="watchbox__status"><Icon name="bell-ring" size={15} /> Watching</span>
                     )}
-                    <button className="iconbtn danger" type="button" title="Stop watching" aria-label="Stop watching" onClick={() => { WatchStore.remove(p.id); flash('Stopped watching'); }}>
+                    <button className="iconbtn danger" type="button" title="Stop watching" aria-label="Stop watching" onClick={() => { WatchStore.remove(v.id); flash('Stopped watching'); }}>
                       <Icon name="bell-off" size={16} />
                     </button>
                   </div>

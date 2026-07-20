@@ -76,6 +76,8 @@ function variantListing(p, sel) {
   if (!p.variants) return p;
   const opts = variantOpts(p, sel);
   const vlabel = opts.map(o => o.label).join(' · ');
+  const key = opts.map(o => o.id).join('-');
+  if (p.listings && p.listings[key]) return { ...p.listings[key], vlabel };
   if (opts.every((o, i) => o.id === p.variants.axes[i].options[0].id)) return { ...p, vlabel }; // default combo = base listing
   const delta = opts.reduce((n, o) => n + (o.delta || 0), 0);
   const h = _vhash(p.id + ':' + opts.map(o => o.id).join('-'));
