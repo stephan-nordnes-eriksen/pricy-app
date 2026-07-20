@@ -10,13 +10,14 @@ const ACCT_SECTIONS = [
   { id: 'privacy',       label: 'Privacy & data', icon: 'shield' },
 ];
 
-function AcctField({ label, value, onChange, type = 'text' }) {
+function AcctField({ label, value, onChange, type = 'text', readOnly, hint }) {
   return (
     <div className="formfield" style={{ marginBottom: 'var(--s-4)' }}>
       <label>{label}</label>
-      <div className="field" style={{ height: 46, boxShadow: 'none' }}>
-        <input type={type} value={value} onChange={e => onChange(e.target.value)} style={{ padding: '0 14px' }} />
+      <div className="field" style={{ height: 46, boxShadow: 'none', background: readOnly ? 'var(--ink-50)' : undefined }}>
+        <input type={type} value={value} onChange={e => onChange(e.target.value)} readOnly={readOnly} style={{ padding: '0 14px', cursor: readOnly ? 'default' : undefined, color: readOnly ? 'var(--ink-500)' : undefined }} />
       </div>
+      {hint && <div className="formhint" style={{ marginTop: 6 }}>{hint}</div>}
     </div>
   );
 }
@@ -70,7 +71,7 @@ function ProfileSection({ onToast, initialName, onSave, hasPassword, onChangePas
           <div className="avatar" style={{ width: 64, height: 64, fontSize: 22 }}>{USER.initials}</div>
           <div style={{ flex: 1 }}>
             <AcctField label="Full name" value={name} onChange={set(setName)} />
-            <AcctField label="Email" value={email} onChange={set(setEmail)} type="email" />
+            <AcctField label="Email" value={email} type="email" readOnly hint="Your email is your login — changing it isn't available yet." />
           </div>
         </div>
         <div style={{ display: 'flex', gap: 'var(--s-3)', justifyContent: 'flex-end' }}>
