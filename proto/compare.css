@@ -15,7 +15,7 @@
 .ctray__notice { background: var(--ink-900); color: var(--paper); padding: 9px 14px; font-family: var(--font-mono); font-size: 12px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-green); max-width: 560px; }
 .ctray__notice .icon { color: var(--green-500); display: flex; flex: 0 0 auto; }
 .ctray__notice button { background: none; border: none; color: var(--green-500); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; padding: 0; white-space: nowrap; }
-.ctray__bar { display: flex; align-items: center; gap: var(--s-4); background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow-green); padding: 10px var(--s-4); }
+.ctray__bar { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--s-4); background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow-green); padding: 10px var(--s-4); max-width: 100%; }
 .ctray__lbl { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-600); }
 .ctray__items { display: flex; gap: 10px; }
 .ctray__item { position: relative; width: 46px; height: 46px; }
@@ -86,9 +86,12 @@ body:has(.ctray) .toast { bottom: 118px; }
 @media (max-width: 900px) {
   .cmp__scroll { overflow-x: auto; }
   .cmp__head { position: static; }
+  .cmp__head, .cmp__body { min-width: min-content; }
 }
 @media (max-width: 640px) {
   .ctray__lbl { display: none; }
   .ctray__bar { gap: var(--s-3); padding: 8px 10px; }
+  .ctray__items { flex-wrap: wrap; justify-content: center; }
+  .ctray { width: calc(100vw - 20px); }
   .cmp__tools { width: 100%; justify-content: space-between; }
 }

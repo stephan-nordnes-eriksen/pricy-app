@@ -91,7 +91,7 @@ function CompareTray({ go, hidden }) {
           ))}
           {Array.from({ length: Math.max(0, 2 - ps.length) }).map((_, i) => <span key={'e' + i} className="ctray__slot">+</span>)}
         </div>
-        <Btn variant="primary" icon="git-compare" disabled={ps.length < 2} title={ps.length < 2 ? 'Pick at least 2 products' : undefined} onClick={() => go('compare')}>Compare{ps.length > 1 ? ' (' + ps.length + ')' : ''}</Btn>
+        <Btn variant="primary" icon="git-compare" onClick={() => go('compare')}>Compare{ps.length > 1 ? ' (' + ps.length + ')' : ''}</Btn>
         <button type="button" className="ctray__clear" onClick={() => CompareStore.clear()}>Clear</button>
       </div>
     </div>
