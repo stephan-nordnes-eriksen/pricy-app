@@ -294,7 +294,13 @@ Steps, in order:
    exactly like heads. Head meta keeps `variants` (axes/labels/swatches)
    for the picker; child meta gets `family` + `vlabel`, no `variants`.
    Seeding + step 1's upsert delivers all of it to prod.
-3. **Frontend seam (boot.jsx) + upstream contract.** `hydrateCatalog`
+3. **Frontend seam (boot.jsx) + upstream contract.** *(Upstream half
+   shipped 2026-07-20: `variantListing`/`variantBest` prefer
+   `p.listings[combo]`, PDP watch/buy key on `v.id`, and
+   `resolveVariantId('<head>~<combo>')` backs the PDP, WatchStore.prod
+   and AutobuyStore.prod — child ids resolve everywhere. Note: axis
+   option ids must never contain `-`, the combo-key separator. Remaining
+   here: the boot.jsx side below.)* `hydrateCatalog`
    splits rows on `meta.family`: children don't enter CATALOG/CAT_OF
    (search, results, browse stay head-only — VariantHint already covers
    the "comes in variants" signal); instead each head gets
