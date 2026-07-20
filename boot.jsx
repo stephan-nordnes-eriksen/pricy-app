@@ -247,10 +247,19 @@ window.buyNowApi = (p, best) => fetch('/api/buy', {
 // product navigation — go() clicks via nav, direct URLs/popstate via parseUrl.
 // ponytail: per-browser, not per-account; server-side views table only if
 // cross-device recents ever matters
+// id → hydrated product; child ids (iphone~256-blue) resolve through the
+// prototype's variant seam (watch/alert/order hydration already does, via
+// WatchStore.prod/AutobuyStore.prod)
+function prodOf(id) {
+  const p = CATALOG.find(x => x.id === id);
+  if (p) return p;
+  const rv = resolveVariantId(id);
+  return rv ? variantListing(rv.p, rv.sel) : undefined;
+}
 function hydrateRecent() {
   let ids = [];
   try { ids = JSON.parse(localStorage.getItem('pricy_recent')) || []; } catch {}
-  RECENT.splice(0, RECENT.length, ...ids.map(id => CATALOG.find(p => p.id === id)).filter(Boolean));
+  RECENT.splice(0, RECENT.length, ...ids.map(prodOf).filter(Boolean));
 }
 function recordRecent(id) {
   let ids = [];
@@ -431,8 +440,16 @@ function hydrateCatalog(data) {
   // (older stubs) still works — meta is recomputed from the rows either way
   // the prototype's demo meta doesn't survive
   const rows = Array.isArray(data) ? data : data.products;
+  // 4e: variant children (meta.family) stay out of CATALOG/CAT_OF — search,
+  // results and browse are head-only; each head instead gets
+  // p.listings = { comboKey: childRow }, which the prototype's
+  // variantListing/variantBest prefer over their synth fallback.
   CATALOG.length = 0;
-  CATALOG.push(...rows);
+  CATALOG.push(...rows.filter(p => !p.family));
+  rows.forEach(r => {
+    const head = r.family && CATALOG.find(p => p.id === r.family);
+    if (head) (head.listings = head.listings || {})[r.id.slice(r.id.indexOf('~') + 1)] = r;
+  });
   CATALOG.meta = (!Array.isArray(data) && data.meta) || {
     products: CATALOG.length,
     shops: new Set(CATALOG.flatMap(p => (p.offers || []).map(o => o.shop))).size,

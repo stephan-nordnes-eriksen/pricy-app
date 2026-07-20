@@ -498,7 +498,7 @@ test('signed in: suggestions come from the served catalog, not the demo 8', asyn
     'served-catalog product missing from suggestions: ' + fresh.name);
   // category suggestion: real count from the served catalog, picks as a cat filter
   type(win, input, 'audio');
-  const audioCount = cat.filter(p => p.cat === 'Audio').length;
+  const audioCount = cat.filter(p => p.cat === 'Audio' && !p.family).length; // heads only — children stay out of CAT_OF
   const audioItem = await until(() =>
     qa(win, '.suggest__item').find(el => /Audio/.test(el.textContent) && el.textContent.includes(audioCount + ' products')));
   assert.ok(audioItem, 'Audio category must show the real catalog count, not the demo string');
@@ -584,6 +584,51 @@ test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise
   assert.strictEqual(stamps.length, 1, 'only the stamped offer may show a checked line');
   assert.match(stamps[0].textContent, /checked 14 min ago/, 'stamp must render relTime of updated_at');
   assert.ok(q(win, '.orow.is-best .orow__checked'), 'the stamp must sit on the offer that carries updated_at');
+});
+
+// ---------- product variants (Phase 4e) ----------
+
+test('PDP: variant picker renders from hydrated listings — selecting a combo swaps in the child row', async () => {
+  // mutate the served child so the hydrated row is distinguishable from the
+  // synth fallback (which is byte-identical to the seed by design)
+  const served = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'))
+    .map(p => p.id === 'iphone~256-black'
+      ? { ...p, best: 1111, offers: [{ shop: 'TestShop', price: 1111, stock: true, ship: 'Free shipping', eta: 'In stock' }] }
+      : p);
+  const win = boot('http://pricy.test/product/iphone', { session: true, catalog: served });
+  assert.ok(await until(() => q(win, '.vpick')), 'variant picker missing on a head with served variants');
+  qa(win, '.vpick .vopt').find(b => /256 GB/.test(b.textContent)).click();
+  assert.ok(await until(() => /256 GB · Black/.test((q(win, '.pdp__vtag') || {}).textContent || '')), 'selected combo label missing');
+  assert.ok(await until(() => q(win, '.bestbox .t-price-lg').textContent.replace(/\D/g, '') === '1111'),
+    'best price must come from the hydrated child row, not the synth');
+  assert.strictEqual(qa(win, '.orow').length, 1, 'offer table must swap to the child row\'s offers');
+  assert.ok(q(win, '.orow.is-best').textContent.includes('TestShop'), 'best offer must be the child\'s shop');
+  // children must not leak into search/results
+  assert.ok(!win.CATALOG.some(p => p.family), 'child rows must stay out of CATALOG');
+});
+
+test('PDP: watching a selected combo persists the child id; the watchlist renders it', async () => {
+  const win = boot('http://pricy.test/product/iphone', { session: true });
+  assert.ok(await until(() => q(win, '.vpick')), 'variant picker missing');
+  qa(win, '.vpick .vopt').find(b => /256 GB/.test(b.textContent)).click();
+  const watch = await until(() => qa(win, '.watchbox .btn').find(b => /watch price/i.test(b.textContent)));
+  assert.ok(watch, 'Watch price button missing');
+  watch.click();
+  assert.ok(await until(() => win.api.some(c => c.call === 'PUT /api/watches')), 'watch must persist');
+  const put = win.api.find(c => c.call === 'PUT /api/watches');
+  assert.strictEqual(put.body[0].id, 'iphone~256-black', 'watch must store the child id, not the head');
+
+  // a reload hydrates the child watch and the watchlist shows the variant
+  const me = { user: mari, watches: [{ id: 'iphone~256-black', target: 9500, paused: 0 }] };
+  const win2 = boot('http://pricy.test/alerts', { session: true, me });
+  assert.ok(await until(() => qa(win2, '.alrow').length === 1), 'child watch row missing from the watchlist');
+  assert.ok(/256 GB/.test(q(win2, '.alrow .alrow__name').textContent), 'watch row must carry the variant label');
+});
+
+test('recently viewed: a visited variant PDP resolves its child id on the home rail', async () => {
+  const home = boot('http://pricy.test/', { session: true, storage: { pricy_recent: JSON.stringify(['iphone~256-blue']) } });
+  assert.ok(await until(() => qa(home, '.rcard').length === 1), 'recent rail missing');
+  assert.ok(/iPhone 15/.test(qa(home, '.rcard')[0].textContent), 'rail must resolve the child id to its product');
 });
 
 // ---------- per-user hydration + watch persistence (Phase 4b) ----------
