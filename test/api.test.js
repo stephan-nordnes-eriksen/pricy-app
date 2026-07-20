@@ -495,7 +495,8 @@ test('scrape source: first-party JSON-LD product page updates the offer', async 
 
   const html = `<html><head><script type="application/ld+json">
     {"@context":"https://schema.org","@graph":[{"@type":"Product","name":"AirPods Pro",
-     "offers":{"@type":"Offer","price":"2349.00","priceCurrency":"NOK","availability":"https://schema.org/InStock"}}]}
+     "offers":{"@type":"Offer","price":"2349.00","priceCurrency":"NOK","availability":"https://schema.org/InStock",
+       "shippingDetails":{"@type":"OfferShippingDetails","shippingRate":{"@type":"MonetaryAmount","value":89,"currency":"NOK"}}}}]}
   </script></head><body>hi</body></html>`;
   const env = { DB, SOURCES: { Power: { type: 'scrape', urls: { airpods: 'https://www.power.no/airpods-pro' } } } };
   await withFetch(async () => new Response(html, { status: 200 }), () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
@@ -505,6 +506,7 @@ test('scrape source: first-party JSON-LD product page updates the offer', async 
   assert.strictEqual(offer.price, 2349);
   assert.strictEqual(offer.stock, true);
   assert.strictEqual(offer.url, 'https://www.power.no/airpods-pro', 'scraped offers link the shop page');
+  assert.strictEqual(offer.ship, 'kr 89 shipping', 'JSON-LD shippingRate becomes the ship line');
 });
 
 test('scrape source: NetOnNet shape — priceSpecification price, browser UA opt-in', async () => {
@@ -516,6 +518,10 @@ test('scrape source: NetOnNet shape — priceSpecification price, browser UA opt
     {"@context":"https://schema.org","@type":"Product","name":"AirPods Pro",
      "offers":{"@type":"Offer","availability":"https://schema.org/InStock",
        "priceSpecification":[{"@type":"UnitPriceSpecification","priceCurrency":"NOK","price":"2349.00"}]}}
+  </script><script type="application/ld+json">
+    {"@type":"OfferShippingDetails","deliveryTime":{"@type":"ShippingDeliveryTime",
+      "handlingTime":{"@type":"QuantitativeValue","minValue":0,"maxValue":1,"unitCode":"DAY"},
+      "transitTime":{"@type":"QuantitativeValue","minValue":1,"maxValue":3,"unitCode":"DAY"}}}
   </script></head><body>hi</body></html>`;
   const env = { DB, SOURCES: { NetOnNet: { type: 'scrape', ua: 'browser', urls: { airpods: 'https://www.netonnet.no/art/airpods' } } } };
   await withFetch(async (url, init) => {
@@ -526,6 +532,7 @@ test('scrape source: NetOnNet shape — priceSpecification price, browser UA opt
   const offer = (await catBody(call)).find(p => p.id === 'airpods').offers.find(o => o.shop === 'NetOnNet');
   assert.strictEqual(offer.price, 2349);
   assert.strictEqual(offer.stock, true);
+  assert.strictEqual(offer.eta, '1–4 days', 'deliveryTime in a separate JSON-LD block becomes the eta (handling + transit)');
 });
 
 test('a failing source freezes its shop without aborting the others', async () => {

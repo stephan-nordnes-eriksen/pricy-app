@@ -103,7 +103,9 @@ export async function scrapeSource(shop, cfg) {
     try {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       if (!res.ok) throw new Error(`http ${res.status}`);
-      const { offer, image } = productOffer(await res.text()) ?? {};
+      const html = await res.text();
+      const { offer, image } = productOffer(html) ?? {};
+      const sd = shippingInfo(html);
       // NetOnNet nests price in offer.priceSpecification instead of offer.price
       const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
       const price = parsePrice(offer?.price ?? offer?.lowPrice ?? spec?.price);
@@ -114,9 +116,9 @@ export async function scrapeSource(shop, cfg) {
       if (currency && currency !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
       return {
         product_id, shop, price,
-        ship: null,
+        ship: sd?.ship ?? null,
         stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
-        eta: null,
+        eta: sd?.eta ?? null,
         url,
         image,
       };
@@ -141,6 +143,35 @@ function productOffer(html) {
     for (const n of nodes) {
       const o = [n?.offers].flat().find(o => o && (o.price != null || o.lowPrice != null || o.priceSpecification));
       if (o) return { offer: o, image: imageUrl(n.image) };
+    }
+  }
+  return null;
+}
+
+// First OfferShippingDetails anywhere in the page's JSON-LD → display strings
+// { ship, eta }. It may live in a different block than the offer (CDON), so
+// scan every block. Delivery = handlingTime + transitTime, assumed DAY units
+// (all shops seen send unitCode DAY). ponytail: one shipping policy per page
+// in practice; first usable hit wins.
+function shippingInfo(html) {
+  const dig = (o, out) => {
+    if (o && typeof o === 'object') {
+      if (o['@type'] === 'OfferShippingDetails') out.push(o);
+      for (const v of Object.values(o)) dig(v, out);
+    }
+    return out;
+  };
+  for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    let doc;
+    try { doc = JSON.parse(body.trim()); } catch { continue; }
+    for (const d of dig(doc, [])) {
+      const t = d.deliveryTime;
+      const lo = (t?.handlingTime?.minValue ?? 0) + (t?.transitTime?.minValue ?? 0);
+      const hi = (t?.handlingTime?.maxValue ?? 0) + (t?.transitTime?.maxValue ?? 0);
+      const rate = d.shippingRate?.currency && d.shippingRate.currency !== 'NOK' ? null : d.shippingRate?.value;
+      const ship = rate == null ? null : Number(rate) === 0 ? 'Free shipping' : `kr ${rate} shipping`;
+      const eta = t && hi > 0 ? (lo === hi ? `${hi} days` : `${lo}–${hi} days`) : null;
+      if (ship || eta) return { ship, eta };
     }
   }
   return null;
