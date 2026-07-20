@@ -96,8 +96,9 @@ Two Claude Design projects feed this repo:
    parallel (the hook is per-call and parallel-safe). A
    PostToolUse hook (`tools/designsync-save.mjs` via
    `.claude/settings.json`) writes each fetched `pricy/*` file to
-   `proto/` byte-faithfully — do NOT re-emit contents by hand, just
-   `git diff` after each fetch. (DesignSync only exists in the main
+   `proto/` byte-faithfully and replaces the tool result with a short
+   receipt (`updatedToolOutput`) so file contents never enter context —
+   do NOT re-emit contents by hand, just `git diff` after each fetch. (DesignSync only exists in the main
    session — subagents can't pull.) If a pulled file arrives with
    `truncated: true`, stop and split it further upstream — never splice.
 2. `npm test`. If the prototype's App gained/renamed screens (see the
