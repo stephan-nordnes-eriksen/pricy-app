@@ -91,7 +91,9 @@ Two Claude Design projects feed this repo:
 ## "sync design changes" ritual
 
 1. DesignSync get_file `pricy/index.html` from the prototype project,
-   then every `.jsx`/`.css` it references (plus `pricy/assets/*`). A
+   then every `.jsx`/`.css` it references (plus `pricy/assets/*`) —
+   batch those follow-up get_file calls in ONE message so they run in
+   parallel (the hook is per-call and parallel-safe). A
    PostToolUse hook (`tools/designsync-save.mjs` via
    `.claude/settings.json`) writes each fetched `pricy/*` file to
    `proto/` byte-faithfully — do NOT re-emit contents by hand, just
