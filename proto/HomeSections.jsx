@@ -103,7 +103,7 @@ function RecentRail({ go }) {
     <div className="rail">
       {RECENT.map(p => (
         <div key={p.id} className="rcard" onClick={() => go('product', { id: p.id })}>
-          <div className="rcard__img"><Icon name={p.icon} size={32} /></div>
+          <div className="rcard__img"><ProdImg p={p} fill size={32} /></div>
           <div className="rcard__name">{p.name}</div>
           <div className="rcard__price">
             <PriceTag value={p.best} size={15} />

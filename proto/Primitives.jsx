@@ -11,6 +11,15 @@ function metaOf() { return (window.CATALOG && window.CATALOG.meta) || null; }
 function relTime(ts) { if (!ts) return 'just now'; const mm = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (mm < 1) return 'just now'; if (mm < 60) return mm + ' min ago'; const h = Math.round(mm / 60); if (h < 24) return h + ' hr ago'; return Math.round(h / 24) + ' d ago'; }
 function trustLine() { const m = metaOf(); return m ? fmt(m.products) + ' products · ' + fmt(m.shops) + ' shops · 0 paid placements' : '0 paid placements'; }
 
+// --- Product image / icon tile content ----------------------
+function ProdImg({ p, size = 18, fill, style }) {
+  if (p && p.img) {
+    const s = fill ? { width: '100%', height: '100%', objectFit: 'contain', display: 'block', ...style } : { width: size, height: size, objectFit: 'contain', display: 'block', ...style };
+    return <img src={p.img} alt={p.name} style={s} />;
+  }
+  return <Icon name={p.icon} size={size} style={style} />;
+}
+
 // --- Lucide icon wrapper -------------------------------------
 function Icon({ name, size = 18, style }) {
   const ref = useRef(null);
@@ -167,4 +176,4 @@ PRODUCTS.forEach(p => {
 const CATEGORIES = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'Kitchen'];
 const POPULAR = ['airpods pro', 'rtx 4070', 'robot vacuum', 'espresso machine', 'air fryer'];
 
-Object.assign(window, { fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, SHOPS, PRODUCTS, CATEGORIES, POPULAR });
+Object.assign(window, { ProdImg, fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, SHOPS, PRODUCTS, CATEGORIES, POPULAR });

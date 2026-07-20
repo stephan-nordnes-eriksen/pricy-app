@@ -121,7 +121,7 @@ function Spark({ points, hit }) {
 function ResultRow({ p, go, spark, saved, onSave }) {
   return (
     <div className="rrow" onClick={() => go('product', { id: p.id })}>
-      <div className="rrow__img"><Icon name={p.icon} size={34} /></div>
+      <div className="rrow__img"><ProdImg p={p} fill size={34} /></div>
       <div className="rrow__main">
         <div className="rrow__brand">{p.brand}</div>
         <div className="rrow__name">{p.name}</div>
@@ -151,7 +151,7 @@ function ResultCard({ p, go }) {
   return (
     <div className="pcard" onClick={() => go('product', { id: p.id })}>
       {p.drop >= 12 && <span className="pcard__tag"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
-      <div className="pcard__img"><Icon name={p.icon} size={42} /></div>
+      <div className="pcard__img"><ProdImg p={p} fill size={42} /></div>
       <div className="pcard__name">{p.name}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}><Stars rating={p.rating} /><VariantHint p={p} /></div>
       <div className="pcard__foot">
@@ -484,7 +484,7 @@ function ProductPage({ go, id }) {
         </div>
 
         <div className="pdp__top">
-          <div className="pdp__gallery">{v.vlabel ? <span className="pdp__vtag">{v.vlabel}</span> : null}<Icon name={p.icon} size={120} /></div>
+          <div className="pdp__gallery">{v.vlabel ? <span className="pdp__vtag">{v.vlabel}</span> : null}<ProdImg p={p} fill size={120} /></div>
           <div className="pdp__info">
             <div className="pdp__brand">{p.brand}</div>
             <h1>{p.name}</h1>
@@ -492,6 +492,7 @@ function ProductPage({ go, id }) {
               <Stars rating={p.rating} reviews={p.reviews} />
               {p.nc && <span className="rrow__feat">Noise cancelling</span>}
               <span className={'rrow__stock ' + (p.stock ? 'ok' : 'no')}>{p.stock ? 'In stock' : 'Backorder'}</span>
+              {specsFor(p) && <a className="pdp__speclink" onClick={scrollToSpecs}>Specifications ↓</a>}
             </div>
 
             <VariantPicker p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))} onSelAll={(s) => setSel(s)} />
@@ -585,6 +586,8 @@ function ProductPage({ go, id }) {
             </div>
           </div>
         </div>
+
+        <SpecsSection p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))}></SpecsSection>
 
         <div className="sec" style={{ marginTop: 'var(--s-7)' }}>
           <div className="sec__head"><h2>More in {p.cat}</h2><span className="more" onClick={() => go('results', { cat: p.cat })}>See all <Icon name="arrow-right" size={14} /></span></div>

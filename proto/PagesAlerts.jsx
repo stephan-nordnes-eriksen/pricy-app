@@ -12,7 +12,7 @@ function AlertRow({ r, go, onRemove }) {
   return (
     <div className={'alrow' + (active ? ' is-hit' : '') + (r.paused ? ' is-paused' : '')}>
       {active && <span className="wrow__flag"></span>}
-      <div className="wrow__img"><Icon name={p.icon} size={24} /></div>
+      <div className="wrow__img"><ProdImg p={p} fill size={24} /></div>
       <div style={{ minWidth: 0 }}>
         <div className="alrow__name" onClick={() => go('product', { id: p.id })}>{p.name}</div>
         <div className="alrow__meta">

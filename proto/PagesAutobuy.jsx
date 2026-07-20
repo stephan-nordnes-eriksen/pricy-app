@@ -202,7 +202,7 @@ function PurchaseModal({ order, onClose }) {
       <div className="modal buy-modal pop-in" onClick={e2 => e2.stopPropagation()}>
         <div className="buy-modal__flag"><Icon name="zap" size={15} /> Bought for you</div>
         <div className="buy-modal__prod">
-          <div className="wrow__img"><Icon name={p.icon} size={26} /></div>
+          <div className="wrow__img"><ProdImg p={p} fill size={26} /></div>
           <div style={{ minWidth: 0 }}>
             <b>{p.name}</b>
             <div className="meta">{e.shop} · {e.at} · ref {e.ref}</div>
@@ -254,7 +254,7 @@ function BuyNowModal({ p, onClose }) {
         <div className="modal buy-modal pop-in" onClick={e => e.stopPropagation()}>
           <div className="buy-modal__flag"><Icon name="check" size={15} /> Order placed</div>
           <div className="buy-modal__prod">
-            <div className="wrow__img"><Icon name={p.icon} size={26} /></div>
+            <div className="wrow__img"><ProdImg p={p} fill size={26} /></div>
             <div style={{ minWidth: 0 }}>
               <b>{p.name}</b>
               <div className="meta">{best.shop} · Just now · ref {order.exec.ref}</div>
@@ -276,7 +276,7 @@ function BuyNowModal({ p, onClose }) {
         <div className="modal buy-modal pop-in" onClick={e => e.stopPropagation()}>
           <div className="buy-modal__flag"><Icon name="zap" size={15} /> Buy now</div>
           <div className="buy-modal__prod">
-            <div className="wrow__img"><Icon name={p.icon} size={26} /></div>
+            <div className="wrow__img"><ProdImg p={p} fill size={26} /></div>
             <div style={{ minWidth: 0 }}>
               <b>{p.name}</b>
               <div className="meta">Today's best price · {best.shop} · {best.ship} · {best.eta}{best.updated_at ? ' · checked ' + relTime(best.updated_at) : ''}</div>
@@ -376,7 +376,7 @@ function AutobuyOrderRow({ o, go }) {
   const gap = p.best - o.max;
   return (
     <div className="abrow">
-      <div className="wrow__img"><Icon name={p.icon} size={24} /></div>
+      <div className="wrow__img"><ProdImg p={p} fill size={24} /></div>
       <div style={{ minWidth: 0 }}>
         <div className="alrow__name" onClick={() => go('product', { id: o.id })}>{p.name}</div>
         <div className="alrow__meta"><span>{o.shops}</span><span>expires {o.expires}</span></div>
@@ -406,7 +406,7 @@ function AutobuyExecCard({ o, onReceipt }) {
   return (
     <div className="ab-exec">
       <span className="ab-exec__flag"><Icon name="zap" size={12} /> Bought for you</span>
-      <div className="wrow__img" style={{ background: 'var(--paper)' }}><Icon name={p.icon} size={24} /></div>
+      <div className="wrow__img" style={{ background: 'var(--paper)' }}><ProdImg p={p} fill size={24} /></div>
       <div style={{ minWidth: 0 }}>
         <b>{p.name}</b>
         <div className="meta">{o.exec.shop} · {o.exec.at} · angrerett until {o.exec.angrerett}</div>

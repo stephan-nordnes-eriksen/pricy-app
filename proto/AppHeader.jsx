@@ -11,7 +11,7 @@ function SearchSuggest({ q, onPick, onClose }) {
         <div className="suggest__grp">Products</div>
         {products.map(p => (
           <div key={p.id} className="suggest__item" onClick={() => onPick(p.name)}>
-            <span className="ic"><Icon name={p.icon} size={18} /></span>
+            <span className="ic"><ProdImg p={p} size={18} /></span>
             <div>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{p.name}</div>
               <div className="sub">{p.brand} · {p.shops} shops</div>

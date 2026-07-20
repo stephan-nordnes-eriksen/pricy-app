@@ -32,7 +32,7 @@ function HeroDemo() {
     <div className="card card--raised" style={{ boxShadow: 'var(--shadow-lg)' }}>
       <div style={{ padding: 'var(--s-4)', borderBottom: 'var(--border)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-          <div className="wrow__img" style={{ width: 52, height: 52, flex: '0 0 auto' }}><Icon name={p.icon} size={26} /></div>
+          <div className="wrow__img" style={{ width: 52, height: 52, flex: '0 0 auto' }}><ProdImg p={p} fill size={26} /></div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 16, lineHeight: 1.15 }}>{p.name}</div>
             <div className="afeed__time" style={{ marginTop: 4 }}>Tracking {p.shops} shops · live</div>
@@ -79,7 +79,7 @@ function Ticker() {
     <div className="tick-row" key={key}>
       {items.map((p, i) => (
         <span className="tick-item" key={key + i}>
-          <Icon name={p.icon} size={14} />
+          <ProdImg p={p} size={14} />
           <span className="tick-name">{p.name}</span>
           <span className="tick-drop">▼ −{p.drop}%</span>
           <span className="tick-price">kr {fmt(p.best)}</span>
@@ -142,7 +142,7 @@ function Landing({ go }) {
           {trending.map(p => (
             <div key={p.id} className="pcard" onClick={() => go('login')}>
               {p.drop >= 20 && <span className="pcard__tag"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
-              <div className="pcard__img"><Icon name={p.icon} size={42} /></div>
+              <div className="pcard__img"><ProdImg p={p} fill size={42} /></div>
               <div className="pcard__name">{p.name}</div>
               <div className="pcard__foot">
                 <div><div className="pcard__from">from</div><PriceTag value={p.best} size={20} /></div>

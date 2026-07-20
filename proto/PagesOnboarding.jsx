@@ -71,7 +71,7 @@ function Onboarding({ go, onFinish }) {
                 const on = picks[p.id] != null;
                 return (
                   <div key={p.id} className={'ob-prod' + (on ? ' is-on' : '')}>
-                    <div className="ob-prod__img"><Icon name={p.icon} size={22} /></div>
+                    <div className="ob-prod__img"><ProdImg p={p} fill size={22} /></div>
                     <div style={{ minWidth: 0 }}>
                       <b>{p.name}</b>
                       <div className="meta">{p.cat} · best kr {fmt(p.best)} · ▼ −{p.drop}%</div>
