@@ -111,12 +111,15 @@ Two Claude Design projects feed this repo:
    Workers Builds push-to-deploy not set up.
 
 Known upstream gaps (fix in Claude Design, then extend tests):
-- Product variants (`Variants.jsx`, synced 2026-07-20) are prototype-only:
-  `variantListing()` synthesizes offers per combo. Dormant in prod (D1 was
-  seeded pre-variants, so API rows lack `variants` and the picker never
-  renders). Real implementation planned: PLAN.md 4e — variant combo =
-  child `products` row (`iphone~256-blue`), upstream change needed so
-  `variantListing` prefers hydrated `p.listings[combo]` over synth.
+- Product variants (`Variants.jsx`, synced 2026-07-20): upstream side is
+  DONE — `variantListing`/`variantBest` prefer hydrated
+  `p.listings[combo]` over synth, PDP watch/buy key on `v.id`, and
+  `resolveVariantId('<head>~<combo>')` resolves child ids in the PDP,
+  WatchStore.prod, AutobuyStore.prod. Dormant in prod (D1 was seeded
+  pre-variants, so API rows lack `variants` and the picker never
+  renders). Backend/boot implementation: PLAN.md 4e — variant combo =
+  child `products` row (`iphone~256-blue`). Axis option ids must never
+  contain `-` (combo-key separator).
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
   passed out, awaitable verdict, server errors shown in the form), and
   password login/signup/change are real (PBKDF2-hashed, verified
