@@ -20,6 +20,24 @@ function ProdImg({ p, size = 18, fill, style }) {
   return <Icon name={p.icon} size={size} style={style} />;
 }
 
+// --- Stock status badge (availability states per Google Merchant:
+//     in stock / out of stock / backorder / unknown) ----------
+const STOCK_STATES = {
+  in:      { icon: 'check',       cls: 'ok',   label: 'In stock' },
+  out:     { icon: 'x',           cls: 'out',  label: 'Out of stock' },
+  back:    { icon: 'clock',       cls: 'back', label: 'Backorder' },
+  unknown: { icon: 'circle-help', cls: 'unk',  label: 'Unknown' },
+};
+function StockBadge({ state, label }) {
+  const s = STOCK_STATES[state] || STOCK_STATES.unknown;
+  return (
+    <span className={'stockb stockb--' + s.cls}>
+      <span className="stockb__ic"><Icon name={s.icon} size={13} /></span>
+      {label || s.label}
+    </span>
+  );
+}
+
 // --- Lucide icon wrapper -------------------------------------
 function Icon({ name, size = 18, style }) {
   const ref = useRef(null);
@@ -164,7 +182,7 @@ PRODUCTS.forEach(p => {
     shop: s,
     price: p.best + Math.round((i * (p.best * 0.04) + (i === 0 ? 0 : 50)) / 10) * 10,
     ship: i % 3 === 0 ? 'Free shipping' : 'kr 79 shipping',
-    stock: i % 4 !== 3,
+    stock: i % 5 === 4 ? undefined : i % 4 !== 3, // undefined = never checked → unknown
     eta: i % 2 === 0 ? 'In stock' : '2–4 days',
     url: i % 4 !== 3 ? 'https://www.' + s.toLowerCase().replace(/[^a-z0-9]/g, '') + '.no' : undefined,
     updated_at: i % 5 === 4 ? undefined : Date.now() - (6 + i * 13 + (p.name.length * 7) % 45) * 60000,
@@ -176,4 +194,4 @@ PRODUCTS.forEach(p => {
 const CATEGORIES = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'Kitchen'];
 const POPULAR = ['airpods pro', 'rtx 4070', 'robot vacuum', 'espresso machine', 'air fryer'];
 
-Object.assign(window, { ProdImg, fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, SHOPS, PRODUCTS, CATEGORIES, POPULAR });
+Object.assign(window, { ProdImg, fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, StockBadge, SHOPS, PRODUCTS, CATEGORIES, POPULAR });

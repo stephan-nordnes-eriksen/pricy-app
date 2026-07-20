@@ -13,7 +13,7 @@ function genOffers(p) {
     shop: s,
     price: p.best + Math.round((i * (p.best * 0.035) + (i === 0 ? 0 : 40 + _seed(p.idn + i) * 120)) / 10) * 10,
     ship: i % 3 === 0 ? 'Free shipping' : 'kr 79 shipping',
-    stock: i % 4 !== 3,
+    stock: i % 5 === 4 ? undefined : i % 4 !== 3, // undefined = never checked → unknown
     eta: i % 2 === 0 ? 'In stock' : '2–4 days',
     url: i % 4 !== 3 ? 'https://www.' + s.toLowerCase().replace(/[^a-z0-9]/g, '') + '.no' : undefined,
     updated_at: i % 5 === 4 ? undefined : Date.now() - Math.round(5 + _seed(p.idn + i * 7) * 170) * 60000,
@@ -128,7 +128,7 @@ function ResultRow({ p, go, spark, saved, onSave }) {
         <div className="rrow__metarow">
           <Stars rating={p.rating} reviews={p.reviews} />
           {p.nc && <span className="rrow__feat">Noise cancelling</span>}
-          <span className={'rrow__stock ' + (p.stock ? 'ok' : 'no')}>{p.stock ? 'In stock' : 'Backorder'}</span>
+          <StockBadge state={p.stock ? 'in' : 'back'} />
           <VariantHint p={p} />
         </div>
       </div>
@@ -491,7 +491,7 @@ function ProductPage({ go, id }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)', margin: '0 0 var(--s-4)', flexWrap: 'wrap' }}>
               <Stars rating={p.rating} reviews={p.reviews} />
               {p.nc && <span className="rrow__feat">Noise cancelling</span>}
-              <span className={'rrow__stock ' + (p.stock ? 'ok' : 'no')}>{p.stock ? 'In stock' : 'Backorder'}</span>
+              <StockBadge state={p.stock ? 'in' : 'back'} />
               {specsFor(p) && <a className="pdp__speclink" onClick={scrollToSpecs}>Specifications ↓</a>}
             </div>
 
@@ -558,7 +558,7 @@ function ProductPage({ go, id }) {
               <div key={o.shop} className={'orow' + (i === 0 ? ' is-best' : '')}>
                 <div className="orow__shop">{o.shop}{i === 0 && <Tag kind="best">★ Best</Tag>}</div>
                 <div className="orow__ship">{o.ship}</div>
-                <div className="orow__ship">{o.stock ? o.eta : 'Out of stock'}{o.updated_at ? <div className="orow__checked">checked {relTime(o.updated_at)}</div> : null}</div>
+                <div className="orow__ship"><StockBadge state={o.stock === undefined ? 'unknown' : o.stock ? 'in' : 'out'} label={o.stock ? o.eta : undefined} />{o.updated_at ? <div className="orow__checked">checked {relTime(o.updated_at)}</div> : null}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--s-3)' }}>
                   <Price value={o.price} size={18} />
                   <Btn variant={i === 0 ? 'primary' : 'ghost'} size="sm" disabled={!o.url} onClick={() => o.url && window.open(o.url, '_blank', 'noopener')}>Visit</Btn>

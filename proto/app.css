@@ -454,9 +454,15 @@
 .rrow__name { font-family: var(--font-display); font-weight: 600; font-size: 18px; line-height: 1.15; margin: 2px 0 6px; }
 .rrow__metarow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .rrow__feat { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-600); border: 1px solid var(--ink-300); padding: 2px 6px; white-space: nowrap; }
-.rrow__stock { font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
-.rrow__stock.ok { color: var(--green-700); }
-.rrow__stock.no { color: var(--ink-400); }
+/* stock status badge — icon + label, one class per availability state */
+.stockb { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
+.stockb__ic { display: flex; flex: 0 0 auto; }
+.stockb__ic svg { stroke-width: 3; }
+.stockb--ok { color: var(--green-700); }
+.stockb--out { color: var(--up-600); }
+.stockb--back, .stockb--unk { color: var(--ink-600); }
+.stockb--back .stockb__ic, .stockb--unk .stockb__ic { color: var(--warn-500); }
+.stockb--unk .stockb__ic svg { stroke-width: 2.5; }
 .rrow__spark { flex: 0 0 auto; display: flex; align-items: center; padding: 0 var(--s-2); }
 .rrow__price { flex: 0 0 auto; text-align: right; min-width: 122px; }
 .rrow__drop { display: block; margin-bottom: 6px; }
