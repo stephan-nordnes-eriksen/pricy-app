@@ -158,6 +158,7 @@ PRODUCTS.forEach(p => {
     stock: i % 4 !== 3,
     eta: i % 2 === 0 ? 'In stock' : '2–4 days',
     url: i % 4 !== 3 ? 'https://www.' + s.toLowerCase().replace(/[^a-z0-9]/g, '') + '.no' : undefined,
+    updated_at: i % 5 === 4 ? undefined : Date.now() - (6 + i * 13 + (p.name.length * 7) % 45) * 60000,
   })).sort((a, b) => a.price - b.price);
   p.offers[0].price = p.best;
   p.history = hist(p.best, p.best * 0.06);

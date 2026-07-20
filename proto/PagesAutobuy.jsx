@@ -264,7 +264,7 @@ function BuyNowModal({ p, onClose }) {
             <div className="wrow__img"><Icon name={p.icon} size={26} /></div>
             <div style={{ minWidth: 0 }}>
               <b>{p.name}</b>
-              <div className="meta">Today's best price · {best.shop} · {best.ship} · {best.eta}</div>
+              <div className="meta">Today's best price · {best.shop} · {best.ship} · {best.eta}{best.updated_at ? ' · checked ' + relTime(best.updated_at) : ''}</div>
             </div>
           </div>
           <div className="buy-modal__nums">

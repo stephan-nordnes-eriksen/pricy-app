@@ -128,6 +128,7 @@ button { font-family: inherit; }
 .offers__h { display: grid; grid-template-columns: 1fr 110px 120px 120px; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-bottom: var(--bw) solid var(--ink-900); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-400); }
 .orow { display: grid; grid-template-columns: 1fr 110px 120px 120px; gap: var(--s-3); padding: var(--s-3) var(--s-4); align-items: center; border-bottom: var(--bw-hair) solid var(--ink-300); }
 .orow:last-child { border-bottom: 0; }
+.orow__checked { font-family: var(--font-mono); font-size: 10px; color: var(--ink-400); white-space: nowrap; margin-top: 2px; }
 .orow.is-best { background: var(--green-100); }
 .orow__shop { font-family: var(--font-display); font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 8px; }
 .orow__ship { font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); }
