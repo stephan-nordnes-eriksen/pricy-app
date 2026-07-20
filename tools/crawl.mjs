@@ -14,6 +14,8 @@
 //   INGEST_TOKEN   bearer token; falls back to tools/.ingest-token (untracked)
 //
 // crawl-urls.json shape: { "Elkjøp": { "airpods": "https://www.elkjop.no/…" } }
+// A "$ua": "browser" key in a shop's map makes its fetches use BROWSER_UA
+// (for shops that 403 every bot UA, honest or not — e.g. NetOnNet).
 // Shop names must match the catalog's; product ids come from worker/seed.json.
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -28,12 +30,12 @@ const base = process.env.PRICY_URL || 'https://pricy.no';
 const urlsByShop = JSON.parse(readFileSync(new URL('./crawl-urls.json', import.meta.url), 'utf8'));
 
 const rows = [];
-for (const [shop, urls] of Object.entries(urlsByShop)) {
+for (const [shop, { $ua, ...urls }] of Object.entries(urlsByShop)) {
   if (shopFilter && shop !== shopFilter) continue;
   for (const [pid, url] of Object.entries(urls).slice(0, limit)) {
     // ponytail: one page at a time with a pause — polite to the shops,
     // and a manual run is in no hurry
-    rows.push(...await scrapeSource(shop, { urls: { [pid]: url } }));
+    rows.push(...await scrapeSource(shop, { ua: $ua, urls: { [pid]: url } }));
     await new Promise(r => setTimeout(r, 500));
   }
 }

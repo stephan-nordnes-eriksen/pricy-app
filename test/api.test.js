@@ -507,6 +507,27 @@ test('scrape source: first-party JSON-LD product page updates the offer', async 
   assert.strictEqual(offer.url, 'https://www.power.no/airpods-pro', 'scraped offers link the shop page');
 });
 
+test('scrape source: NetOnNet shape — priceSpecification price, browser UA opt-in', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/catalog.json'); // seeds
+
+  const html = `<html><head><script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Product","name":"AirPods Pro",
+     "offers":{"@type":"Offer","availability":"https://schema.org/InStock",
+       "priceSpecification":[{"@type":"UnitPriceSpecification","priceCurrency":"NOK","price":"2349.00"}]}}
+  </script></head><body>hi</body></html>`;
+  const env = { DB, SOURCES: { NetOnNet: { type: 'scrape', ua: 'browser', urls: { airpods: 'https://www.netonnet.no/art/airpods' } } } };
+  await withFetch(async (url, init) => {
+    assert.match(init.headers['user-agent'], /^Mozilla/, 'ua: browser must send BROWSER_UA');
+    return new Response(html, { status: 200 });
+  }, () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
+
+  const offer = (await catBody(call)).find(p => p.id === 'airpods').offers.find(o => o.shop === 'NetOnNet');
+  assert.strictEqual(offer.price, 2349);
+  assert.strictEqual(offer.stock, true);
+});
+
 test('a failing source freezes its shop without aborting the others', async () => {
   const DB = d1();
   const call = api({ DB });

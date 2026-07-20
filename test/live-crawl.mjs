@@ -14,10 +14,10 @@ test('crawl-urls.json has shops configured', () => {
   assert.ok(shops.length, 'tools/crawl-urls.json is empty — nothing to test');
 });
 
-for (const [shop, urls] of shops) {
+for (const [shop, { $ua, ...urls }] of shops) {
   test(`${shop} crawler`, async () => {
     const [pid, url] = Object.entries(urls)[0]; // ponytail: one page per shop is enough to prove the crawler works
-    const rows = await scrapeSource(shop, { urls: { [pid]: url } });
+    const rows = await scrapeSource(shop, { ua: $ua, urls: { [pid]: url } });
     assert.equal(rows.length, 1, `no row scraped from ${url} (see warn above for why)`);
     assert.ok(rows[0].price > 0, `bad price ${rows[0].price}`);
   });

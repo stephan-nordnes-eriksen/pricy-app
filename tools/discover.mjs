@@ -6,18 +6,21 @@
 // URLs are then scraped once via scrapeSource as an end-to-end check.
 // First-party shop domains only — never competing comparison services.
 //
-// Usage:  node tools/discover.mjs <Shop> <https://origin> [--write]
-//   --write   merge confirmed { product_id: url } into tools/crawl-urls.json
+// Usage:  node tools/discover.mjs <Shop> <https://origin> [--write] [--browser-ua]
+//   --write       merge confirmed { product_id: url } into tools/crawl-urls.json
+//   --browser-ua  fetch with BROWSER_UA (shops that 403 every bot UA); with
+//                 --write also records "$ua": "browser" for the shop
 //
 // Pages whose EAN we don't know yet are printed for human review (extend
 // worker/eans.json with the variant), never auto-written.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
-import { UA, eanKey, EAN_TO_PRODUCT, scrapeSource } from '../worker/sources.js';
+import { UA, BROWSER_UA, eanKey, EAN_TO_PRODUCT, scrapeSource } from '../worker/sources.js';
 
 const [shop, origin] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const write = process.argv.includes('--write');
+const browserUa = process.argv.includes('--browser-ua');
 if (!shop || !origin) { console.error('usage: node tools/discover.mjs <Shop> <https://origin> [--write]'); process.exit(2); }
 
 let seed;
@@ -29,7 +32,7 @@ const MAX_SITEMAPS = 40, CANDIDATES_PER_PRODUCT = 3;
 const pause = () => new Promise(r => setTimeout(r, 500));
 
 async function fetchText(url) {
-  const res = await fetch(url, { headers: { 'user-agent': UA } });
+  const res = await fetch(url, { headers: { 'user-agent': browserUa ? BROWSER_UA : UA } });
   if (!res.ok) throw new Error(`${url} → http ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
   // .gz sitemaps arrive as literal gzip bytes (magic 1f 8b), not content-encoding
@@ -102,14 +105,14 @@ for (const p of seed) {
 }
 
 // 4. end-to-end check: do the confirmed pages actually scrape?
-const rows = await scrapeSource(shop, { urls: found });
+const rows = await scrapeSource(shop, { urls: found, ua: browserUa ? 'browser' : undefined });
 for (const r of rows) console.log(`${r.shop}\t${r.product_id}\tkr ${r.price}`);
 console.log(`discovered ${Object.keys(found).length}, scraped ${rows.length}`);
 
 if (write && Object.keys(found).length) {
   const path = new URL('./crawl-urls.json', import.meta.url);
   const all = JSON.parse(readFileSync(path, 'utf8'));
-  all[shop] = { ...all[shop], ...found };
+  all[shop] = { ...all[shop], ...(browserUa ? { $ua: 'browser' } : {}), ...found };
   writeFileSync(path, JSON.stringify(all, null, 2) + '\n');
   console.log(`merged ${Object.keys(found).length} url(s) into tools/crawl-urls.json["${shop}"]`);
 }

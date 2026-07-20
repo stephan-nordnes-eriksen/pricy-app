@@ -11,6 +11,9 @@
 import eans from './eans.json' with { type: 'json' };
 
 export const UA = 'pricy.no price watcher (kontakt@pricy.no)';
+// Some shops (NetOnNet) 403 every non-browser UA, honest or not. Opt in per
+// shop with cfg.ua = 'browser'; the honest UA stays the default everywhere.
+export const BROWSER_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
 // digits only, leading zeros dropped, so a 12-digit UPC and its 13-digit
 // zero-padded EAN form land on the same key
@@ -97,14 +100,17 @@ export async function adtractionSource(shop, _cfg, env) {
 export async function scrapeSource(shop, cfg) {
   const rows = await Promise.all(Object.entries(cfg.urls || {}).map(async ([product_id, url]) => {
     try {
-      const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'text/html' } });
+      const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       if (!res.ok) throw new Error(`http ${res.status}`);
       const offer = productOffer(await res.text());
-      const price = parsePrice(offer?.price ?? offer?.lowPrice);
+      // NetOnNet nests price in offer.priceSpecification instead of offer.price
+      const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
+      const price = parsePrice(offer?.price ?? offer?.lowPrice ?? spec?.price);
       if (!price) throw new Error('no JSON-LD offer price');
       // money path: multi-country shops (clasohlson.com/se, cdon SE mirrors)
       // serve the same JSON-LD shape in SEK — never ingest those as NOK
-      if (offer.priceCurrency && offer.priceCurrency !== 'NOK') throw new Error(`currency ${offer.priceCurrency}, want NOK`);
+      const currency = offer.priceCurrency ?? spec?.priceCurrency;
+      if (currency && currency !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
       return {
         product_id, shop, price,
         ship: null,
@@ -127,7 +133,7 @@ function productOffer(html) {
     try { doc = JSON.parse(body.trim()); } catch { continue; }
     const nodes = [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])];
     for (const n of nodes) {
-      const o = [n?.offers].flat().find(o => o && (o.price != null || o.lowPrice != null));
+      const o = [n?.offers].flat().find(o => o && (o.price != null || o.lowPrice != null || o.priceSpecification));
       if (o) return o;
     }
   }

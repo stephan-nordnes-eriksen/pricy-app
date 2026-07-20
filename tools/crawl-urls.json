@@ -36,5 +36,14 @@
     "airpods4": "https://www.proshop.no/Hodetelefoner/Apple-AirPods-4-med-aktiv-stoeyreduksjon-ANC/3298331",
     "beats-pro": "https://www.proshop.no/Hodetelefoner/Apple-Beats-Studio-Pro-Navy/3201114",
     "hue": "https://www.proshop.no/Smarthus/Philips-Hue-White-and-Color-Ambiance-Starter-Kit/3396801"
+  },
+  "NetOnNet": {
+    "$ua": "browser",
+    "xm5": "https://www.netonnet.no/art/lyd/hodetelefoner/over-ear-hodetelefoner/sony-wh-1000xm5-black/1024760.16281/",
+    "switch": "https://www.netonnet.no/art/gaming/spillogkonsoll/nintendo/nintendo-konsoll/nintendo-switch-oled-neon-red-neon-blue/1019709.15692/",
+    "bose-ultra": "https://www.netonnet.no/art/lyd/hodetelefoner/over-ear-hodetelefoner/bose-quietcomfort-ultra-headphones-black/1031063.16281/",
+    "senn-m4": "https://www.netonnet.no/art/lyd/hodetelefoner/over-ear-hodetelefoner/sennheiser-momentum-4-wireless-white/1026291.16281/",
+    "airpods4": "https://www.netonnet.no/art/lyd/hodetelefoner/in-ear-hodetelefoner/apple-airpods-4-with-active-noise-cancellation/1035504.11399/",
+    "xbox": "https://www.netonnet.no/art/best-i-test/gaming/microsoft-xbox-series-x/1011151.0/"
   }
 }
