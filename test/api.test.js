@@ -767,6 +767,37 @@ test('mcp: login is strict and signup cannot hijack an existing passworded accou
   assert.strictEqual((await tool('login', { email: 'kari@example.no', password: 'correcthorse1' })).data.ok, true);
 });
 
+// 4e step 4: variants over MCP — search stays head-only, get_product on a
+// head lists its children, and a child id buys/watches like any product
+test('mcp: search hides variant children; get_product lists them; a child id buys', async () => {
+  const env = { DB: d1() };
+  const { rpc, tool } = mcpClient(env);
+  await rpc('initialize', { protocolVersion: '2025-06-18' });
+  await tool('signup', { email: 'ola@nordmann.no', password: 'correcthorse1' });
+
+  const search = (await tool('search_products', { query: 'iphone' })).data;
+  assert.ok(search.results.length, 'iphone must be findable');
+  assert.ok(search.results.every(r => !r.id.includes('~')), 'search must not return variant children');
+
+  const detail = (await tool('get_product', { product_id: 'iphone' })).data;
+  const want = seed.find(p => p.id === 'iphone~256-blue');
+  assert.strictEqual(detail.variants.length, seed.filter(p => p.family === 'iphone').length, 'head must list all its children');
+  const blue = detail.variants.find(v => v.id === 'iphone~256-blue');
+  assert.strictEqual(blue.variant, want.vlabel);
+  assert.strictEqual(blue.best_price_nok, Math.min(...want.offers.map(o => o.price)), 'child best derives from its own offers');
+
+  const child = (await tool('get_product', { product_id: 'iphone~256-blue' })).data;
+  assert.ok(/256 GB.*Blue/.test(child.name), 'child detail carries the vlabel-baked name');
+  assert.ok(!child.variants, 'a child has no children');
+
+  const buy = (await tool('buy_now', { product_id: 'iphone~256-blue' })).data;
+  const cheapest = child.offers.find(o => o.in_stock !== false && o.stock); // offers are price-ordered
+  assert.strictEqual(buy.price_nok, cheapest.price, 'buy_now on a child charges the child\'s own price');
+  assert.strictEqual((await tool('watch_product', { product_id: 'iphone~256-blue', target_price: 9000 })).data.watching, 'iphone~256-blue');
+  const watches = (await tool('list_watches')).data.watches;
+  assert.ok(/256 GB.*Blue/.test(watches[0].name), 'watchlist names the exact variant');
+});
+
 test('mcp: watches are the same list the web sees', async () => {
   const env = { DB: d1() };
   const { rpc, tool } = mcpClient(env);

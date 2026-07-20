@@ -327,7 +327,7 @@ const MCP_TOOLS = [
   { name: 'login', description: 'Log in to an existing pricy.no account. Only for clients not connected via OAuth — if this tool is listed, the user is not logged in yet.', inputSchema: obj({ email: str('account email'), password: str('account password') }, ['email', 'password']) },
   { name: 'signup', description: 'Create a pricy.no account (and log in). Only for clients not connected via OAuth. If the account already exists, the password must match.', inputSchema: obj({ email: str('email'), password: str(`password, min ${MIN_PASSWORD_LEN} characters`) }, ['email', 'password']) },
   { name: 'search_products', description: 'Search the pricy.no catalog (Norwegian shops, prices in NOK). Returns matching products with their current best price.', inputSchema: obj({ query: str('free-text search, e.g. "headphones" or "sony tv"') }, ['query']) },
-  { name: 'get_product', description: 'Full detail for one product: every shop offer (price, shipping, stock, link) and recent price history.', inputSchema: obj({ product_id: str('id from search_products') }, ['product_id']) },
+  { name: 'get_product', description: 'Full detail for one product: every shop offer (price, shipping, stock, link) and recent price history. Products sold in variants (storage/colour) list them under `variants` — use a variant id with get_product, buy_now or watch_product for that exact configuration.', inputSchema: obj({ product_id: str('id from search_products') }, ['product_id']) },
   { name: 'buy_now', description: 'Buy the product immediately at the current cheapest in-stock price (or from a specific shop). Returns the order with the exact price charged.', inputSchema: obj({ product_id: str('id from search_products'), shop: str('optional: buy from this shop instead of the cheapest') }, ['product_id']) },
   { name: 'watch_product', description: 'Add a product to your watchlist, optionally with a target price in NOK to be notified at.', inputSchema: obj({ product_id: str('id from search_products'), target_price: { type: 'number', description: 'optional target price in NOK' } }, ['product_id']) },
   { name: 'unwatch_product', description: 'Remove a product from your watchlist.', inputSchema: obj({ product_id: str('id from search_products') }, ['product_id']) },
@@ -356,7 +356,9 @@ async function mcpTool(db, sid, name, a) {
   if (name === 'search_products') {
     const terms = String(a.query || '').toLowerCase().split(/\s+/).filter(Boolean);
     if (!terms.length) throw new Error('query required');
-    const cat = await catalogBody(db);
+    // 4e: variant children (meta.family) are configurations — search stays
+    // head-only; get_product on the head lists them
+    const cat = (await catalogBody(db)).filter(p => !p.family);
     const scored = cat
       .map(p => [terms.filter(t => `${p.name} ${p.brand ?? ''} ${p.cat ?? ''} ${p.icon ?? ''}`.toLowerCase().includes(t)).length, p])
       .filter(([s]) => s > 0)
@@ -366,9 +368,14 @@ async function mcpTool(db, sid, name, a) {
   }
 
   if (name === 'get_product') {
-    const p = (await catalogBody(db)).find(q => q.id === String(a.product_id || ''));
+    const all = await catalogBody(db);
+    const p = all.find(q => q.id === String(a.product_id || ''));
     if (!p) throw new Error('unknown product_id');
-    return { ...brief(p), offers: p.offers, price_history_nok: p.history };
+    const out = { ...brief(p), offers: p.offers, price_history_nok: p.history };
+    // a head lists its variant children — their ids work with every tool
+    const variants = all.filter(q => q.family === p.id).map(q => ({ id: q.id, variant: q.vlabel, best_price_nok: q.best }));
+    if (variants.length) out.variants = variants;
+    return out;
   }
 
   if (name === 'buy_now') {
