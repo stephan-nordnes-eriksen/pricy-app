@@ -139,9 +139,12 @@ function ResultRow({ p, go, spark, saved, onSave }) {
         <Price value={p.best} size={24} />
         <div className="rrow__shops">{p.shops} shops →</div>
       </div>
-      <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}>
-        <Icon name="bookmark" size={17} />
-      </button>
+      <div className="rrow__acts">
+        <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}>
+          <Icon name="bookmark" size={17} />
+        </button>
+        <CompareBtn p={p} />
+      </div>
     </div>
   );
 }
@@ -151,6 +154,7 @@ function ResultCard({ p, go }) {
   return (
     <div className="pcard" onClick={() => go('product', { id: p.id })}>
       {p.drop >= 12 && <span className="pcard__tag"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
+      <CompareBtn p={p} className="pcard__cmp" />
       <div className="pcard__img"><ProdImg p={p} fill size={42} /></div>
       <div className="pcard__name">{p.name}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}><Stars rating={p.rating} /><VariantHint p={p} /></div>
@@ -493,6 +497,7 @@ function ProductPage({ go, id }) {
               {p.nc && <span className="rrow__feat">Noise cancelling</span>}
               <StockBadge state={p.stock ? 'in' : 'back'} />
               {specsFor(p) && <a className="pdp__speclink" onClick={scrollToSpecs}>Specifications ↓</a>}
+              <CompareBtn p={p} variant="pill" />
             </div>
 
             <VariantPicker p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))} onSelAll={(s) => setSel(s)} />
