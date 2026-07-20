@@ -14,9 +14,9 @@ verification.
 
 ## Plan
 
-**Phase 1 (now, upstream one-liner):** make the email read-only with a
-hint ("Email changes are coming — contact us if you need this"). Honest
-and free.
+**Phase 1 (DONE 2026-07-20):** email field is read-only upstream with
+the hint "Your email is your login — changing it isn't available yet."
+Synced; UI test asserts readOnly + hint.
 
 **Phase 2 (after Email Service is live):** real change flow —
 `POST /api/account/email` sends a verification link to the *new*

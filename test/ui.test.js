@@ -702,6 +702,16 @@ test('a passwordless (magic-link/BankID) account can set a password with no curr
   assert.strictEqual(win.api.find(c => c.call === 'POST /api/account/password').body.currentPassword, '');
 });
 
+test('profile email field is read-only with a hint — it must not pretend to save', async () => {
+  const me = { user: mari, watches: [], settings: {} };
+  const win = boot('http://pricy.test/account', { me });
+  assert.ok(await until(() => q(win, '.acct input[type="email"]')), 'email field did not render');
+  const email = q(win, '.acct input[type="email"]');
+  assert.strictEqual(email.readOnly, true, 'email input must be readOnly');
+  assert.strictEqual(email.value, mari.email);
+  assert.ok(/changing it isn't available yet/i.test(q(win, '.acct').textContent), 'read-only hint missing');
+});
+
 test('toggling a notification preference PUTs /api/settings and survives a reload', async () => {
   const me = { user: mari, watches: [], settings: { weekly: false } };
   const win = boot('http://pricy.test/account?tab=notifications', { me });
