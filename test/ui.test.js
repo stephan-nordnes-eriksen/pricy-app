@@ -452,7 +452,7 @@ test('new user on /autobuy: nothing signed → the real "Auto-buy is off" ceremo
   assert.ok(q(win, '.beta-banner'), 'ceremony must carry the Beta — coming soon banner');
   const doc = q(win, '.fm-doc').textContent;
   assert.ok(!/Hansen|14\.03\.1991|923 456 789/.test(doc), 'fullmakt must not print invented name/birthdate/org.nr');
-  assert.ok(/org\.nr\. —/.test(doc), 'org.nr must render as a placeholder until a real one exists');
+  assert.ok(/SNE Studio AS.*org\.nr\. 925 621 900/.test(doc), 'fullmakt must name the real company and org.nr');
 
   // fake BankID sign (parked per plan — must keep working) persists the fullmakt
   q(win, '.fm-agree input').click();
