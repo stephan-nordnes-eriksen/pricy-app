@@ -49,9 +49,11 @@ function variantLabel(p, sel) { return p.variants ? variantOpts(p, sel).map(o =>
 function variantBest(p, sel) {
   if (!p.variants) return p.best;
   const opts = variantOpts(p, sel);
+  const key = opts.map(o => o.id).join('-');
+  if (p.listings && p.listings[key]) return p.listings[key].best;
   if (opts.every((o, i) => o.id === p.variants.axes[i].options[0].id)) return p.best;
   const delta = opts.reduce((n, o) => n + (o.delta || 0), 0);
-  const h = _vhash(p.id + ':' + opts.map(o => o.id).join('-'));
+  const h = _vhash(p.id + ':' + key);
   return p.best + delta + (h % 5) * 30; // small per-combo market variance
 }
 // cheapest option on one axis, holding the other selections
@@ -86,6 +88,24 @@ function variantListing(p, sel) {
   v.offers = window.genOffers(v);
   v.history = window.genHist(v.idn, best);
   return v;
+}
+
+// resolve a hydrated variant id "<productId>~<comboKey>" (e.g. iphone~256-blue)
+// into { p, sel } — the head product plus the combo's selection. null on any miss.
+function resolveVariantId(id) {
+  if (typeof id !== 'string') return null;
+  const i = id.indexOf('~'); if (i < 0) return null;
+  const p = window.getListing && getListing(id.slice(0, i));
+  if (!p || !p.variants) return null;
+  const parts = id.slice(i + 1).split('-');
+  if (parts.length !== p.variants.axes.length) return null;
+  const sel = {};
+  for (let k = 0; k < parts.length; k++) {
+    const ax = p.variants.axes[k];
+    if (!ax.options.some(o => o.id === parts[k])) return null;
+    sel[ax.id] = parts[k];
+  }
+  return { p, sel };
 }
 
 // ---- picker (PDP) -----------------------------------------
@@ -135,4 +155,4 @@ function VariantHint({ p }) {
   );
 }
 
-Object.assign(window, { VARIANT_DEFS, defaultSel, variantLabel, variantListing, variantBest, cheapestOn, cheapestCombo, VariantPicker, VariantHint });
+Object.assign(window, { VARIANT_DEFS, defaultSel, variantLabel, variantListing, variantBest, cheapestOn, cheapestCombo, resolveVariantId, VariantPicker, VariantHint });

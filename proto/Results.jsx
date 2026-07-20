@@ -449,9 +449,10 @@ function ReportProblemModal({ p, onClose, onDone }) {
 // PRODUCT COMPARISON PAGE (PDP)
 // ===========================================================
 function ProductPage({ go, id }) {
-  const p = getListing(id) || CATALOG[0];
-  const [sel, setSel] = useState(() => defaultSel(p));
-  useEffect(() => { setSel(defaultSel(p)); }, [p.id]);
+  const rv = getListing(id) ? null : resolveVariantId(id);
+  const p = getListing(id) || (rv && rv.p) || CATALOG[0];
+  const [sel, setSel] = useState(() => rv ? rv.sel : defaultSel(p));
+  useEffect(() => { setSel(rv ? rv.sel : defaultSel(p)); }, [id]);
   const v = useMemo(() => variantListing(p, sel), [p, sel]);
   useWatchStore();
   const w = WatchStore.get(v.id);

@@ -10,7 +10,14 @@ const WatchStore = {
   ls: new Set(),
   emit() { this.items = [...this.items]; this.ls.forEach(f => f()); },
   sub(f) { this.ls.add(f); return () => this.ls.delete(f); },
-  prod(id) { return (window.byId && byId[id]) || (window.CATALOG || []).find(p => p.id === id) || (window.PRODUCTS || []).find(p => p.id === id); },
+  prod(id) {
+    const p = (window.byId && byId[id]) || (window.CATALOG || []).find(x => x.id === id) || (window.PRODUCTS || []).find(x => x.id === id);
+    if (p) return p;
+    const rv = window.resolveVariantId && resolveVariantId(id);
+    if (!rv) return undefined;
+    const v = variantListing(rv.p, rv.sel);
+    return { ...v, id, name: rv.p.name + ' — ' + v.vlabel };
+  },
   get(id) { return this.items.find(w => w.id === id); },
   has(id) { return this.items.some(w => w.id === id); },
   hits() { return this.items.filter(w => w.hit && !w.paused).length; },

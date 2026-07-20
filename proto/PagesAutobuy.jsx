@@ -18,7 +18,14 @@ const AutobuyStore = {
   ls: new Set(),
   sub(fn) { this.ls.add(fn); return () => this.ls.delete(fn); },
   emit() { this.ls.forEach(fn => fn()); },
-  prod(id) { return getListing(id) || byId[id]; },
+  prod(id) {
+    const p = getListing(id) || byId[id];
+    if (p) return p;
+    const rv = window.resolveVariantId && resolveVariantId(id);
+    if (!rv) return undefined;
+    const v = variantListing(rv.p, rv.sel);
+    return { ...v, id, name: rv.p.name + ' — ' + v.vlabel };
+  },
   capUsed() { return this.orders.filter(o => o.status === 'executed').reduce((s, o) => s + o.exec.price, 0); },
   sign() { this.signed = true; this.signedAt = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + new Date().toTimeString().slice(0, 5); this.emit(); },
   revoke() { this.signed = false; this.orders = this.orders.filter(o => o.status === 'executed'); this.emit(); },
