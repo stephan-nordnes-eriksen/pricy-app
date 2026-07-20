@@ -304,7 +304,9 @@ button { color: inherit; }
 .abox__title .icon { color: var(--green-500); display: flex; }
 .abox__cov { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--green-300); }
 .abox__cov.off { color: var(--ink-400); }
-.abox__form { display: grid; grid-template-columns: 1fr auto auto auto; gap: var(--s-4); align-items: end; padding: var(--s-4); }
+.abox__form { display: flex; flex-wrap: wrap; gap: var(--s-4); align-items: flex-end; padding: var(--s-4); }
+.abox__form > div:first-child { flex: 1 1 180px; min-width: 0; }
+.abox__form .watchbox__field { width: 100%; }
 .abox__sel { height: 46px; border: var(--bw) solid var(--ink-900); background: var(--paper); font-family: var(--font-mono); font-size: 13px; font-weight: 700; padding: 0 var(--s-3); cursor: pointer; }
 .abox__row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: var(--s-4); flex-wrap: wrap; }
 .abox__pitch { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-600); max-width: 380px; }
@@ -377,7 +379,8 @@ button { color: inherit; }
 .ob-ab-pay .t-label { margin-bottom: var(--s-3); }
 
 @media (max-width: 900px) {
-  .abox__form { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .abox__form > div { flex: 1 1 40%; min-width: 0; }
+  .abox__form .abox__sel { width: 100%; }
   .abrow { grid-template-columns: 52px minmax(0,1fr) 100px 44px; }
   .abrow > div:nth-child(4), .abrow > div:nth-child(5) { display: none; }
   .ab-exec { grid-template-columns: 52px minmax(0,1fr) auto; }

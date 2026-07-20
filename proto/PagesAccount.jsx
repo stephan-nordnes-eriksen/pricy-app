@@ -49,7 +49,7 @@ function ChangePasswordForm({ hasPassword, onChangePassword, onDone, onToast }) 
 }
 
 function ProfileSection({ onToast, initialName, onSave, hasPassword, onChangePassword }) {
-  const [name, setName] = useState(initialName || (USER.name + ' Hansen'));
+  const [name, setName] = useState(initialName || USER.name);
   const [email, setEmail] = useState(USER.email);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
