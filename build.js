@@ -49,6 +49,34 @@ if (!Array.isArray(catalog) || !catalog.length || catalog.some(p => !p.id || !p.
   throw new Error('catalog extraction from the prototype blocks produced bad data');
 }
 
+// --- 4e: variant children — every non-default combo becomes its own product
+// row (id `<head>~<comboKey>`), derived by the prototype's own variantListing
+// in the same vm context so demo offers/history stay byte-identical to the
+// deployed preview's synth. Child meta: family + vlabel + vlabel-baked name,
+// no variants (the picker's axes live on the head only).
+const children = [];
+for (const p of catalog.filter(p => p.variants)) {
+  let combos = [{}];
+  for (const ax of p.variants.axes) {
+    for (const o of ax.options) {
+      if (o.id.includes('-')) throw new Error(`variant option id "${o.id}" contains "-" (the combo-key separator)`);
+    }
+    combos = combos.flatMap(c => ax.options.map(o => ({ ...c, [ax.id]: o.id })));
+  }
+  for (const sel of combos.slice(1)) { // combos[0] = all defaults = the head row itself
+    const { variants, ...v } = ctx.variantListing(p, sel);
+    const key = p.variants.axes.map(ax => sel[ax.id]).join('-');
+    children.push({ ...v, id: `${p.id}~${key}`, name: `${p.name} · ${v.vlabel}`, family: p.id });
+  }
+}
+if (catalog.some(p => p.variants)) {
+  // determinism guard: the deployed preview synthesizes this combo at 10190
+  const probe = children.find(c => c.id === 'iphone~256-blue');
+  if (!probe || probe.best !== 10190 || probe.offers[0].price !== probe.best) {
+    throw new Error(`variant child prices diverged from the preview's synth (iphone~256-blue = ${probe && probe.best})`);
+  }
+}
+
 // --- rewrite the html ------------------------------------------
 html = html
   .replace(BLOCK_RE, '')
@@ -82,7 +110,7 @@ fs.writeFileSync(path.join(DIST, 'app.js'), compiled);
 fs.writeFileSync(path.join(DIST, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 // seed for the Worker's D1 bootstrap (4c) — /api/catalog.json is a dynamic
 // route now, so nothing under dist/api/ may shadow it
-fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify(catalog));
+fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify([...catalog, ...children]));
 for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith('.js'))) {
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));
 }

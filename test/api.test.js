@@ -368,7 +368,13 @@ test('catalog route seeds D1 on first request and serves the demo shape, no auth
   assert.strictEqual(cat.length, seed.length, 'every seed product must be served');
 
   // honest metrics: meta = real aggregates; seed rows carry no freshness stamp
-  assert.strictEqual(meta.products, seed.length);
+  // (variant children ride in the seed but only heads count as products)
+  assert.strictEqual(meta.products, seed.filter(p => !p.family).length);
+  assert.ok(seed.some(p => p.family), 'seed must carry variant child rows (4e)');
+  const child = seed.find(p => p.id === 'iphone~256-blue');
+  assert.ok(child && child.family === 'iphone' && /256 GB.*Blue/.test(child.name), 'child meta must bake family + vlabel into the name');
+  assert.ok(!child.variants, 'child rows must not carry the picker axes');
+  assert.ok(seed.find(p => p.id === 'iphone').variants, 'head rows must keep their variants for the picker');
   assert.strictEqual(meta.shops, new Set(seed.flatMap(p => p.offers.map(o => o.shop))).size);
   assert.strictEqual(meta.freshest, null, 'freshest must be null until an ingest stamps an offer');
 

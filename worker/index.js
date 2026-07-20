@@ -640,7 +640,8 @@ export default {
       const products = await catalogBody(db);
       const stamps = products.flatMap(p => p.offers.map(o => o.updated_at)).filter(Boolean);
       const meta = {
-        products: products.length,
+        // 4e: variant children are configurations, not products — count heads
+        products: products.filter(p => !p.family).length,
         shops: new Set(products.flatMap(p => p.offers.map(o => o.shop))).size,
         freshest: stamps.length ? Math.max(...stamps) : null,
       };
