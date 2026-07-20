@@ -566,6 +566,20 @@ test('offer rows: Visit opens the offer url, url-less offers are disabled', asyn
   assert.ok(visits.slice(1).every(b => b.disabled), 'offers without a url must render a disabled Visit');
 });
 
+test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise', async () => {
+  const seed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  const served = seed.map(p => p.id !== 'xm5' ? p : {
+    ...p,
+    offers: p.offers.map(({ updated_at, ...o }, i) => i === 0 ? { ...o, updated_at: Date.now() - 14 * 60000 } : o),
+  });
+  const win = boot('http://pricy.test/product/xm5', { session: true, catalog: served });
+  assert.ok(await until(() => qa(win, '.orow').length > 1), 'offer rows missing');
+  const stamps = qa(win, '.orow__checked');
+  assert.strictEqual(stamps.length, 1, 'only the stamped offer may show a checked line');
+  assert.match(stamps[0].textContent, /checked 14 min ago/, 'stamp must render relTime of updated_at');
+  assert.ok(q(win, '.orow.is-best .orow__checked'), 'the stamp must sit on the offer that carries updated_at');
+});
+
 // ---------- per-user hydration + watch persistence (Phase 4b) ----------
 
 test('identity and watchlist hydrate from /api/me, not the baked USER/WATCHED', async () => {
