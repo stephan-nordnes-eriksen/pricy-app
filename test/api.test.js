@@ -383,6 +383,37 @@ test('catalog route seeds D1 on first request and serves the demo shape, no auth
   assert.deepStrictEqual(got.offers.map(o => o.price), [...got.offers.map(o => o.price)].sort((a, b) => a - b), 'offers are price-ordered');
 });
 
+// 4e step 1: seed evolution — a new seed.json refreshes meta for every row
+// but never touches offers/price_points; brand-new rows land in full
+test('seed evolution: changed seed refreshes meta, leaves real offers alone, adds new rows', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/catalog.json'); // seeds + writes the seed_meta marker
+
+  // simulate a pre-4e prod DB: stale meta, a real ingested price, no marker
+  await DB.prepare('UPDATE products SET meta = ? WHERE id = ?')
+    .bind(JSON.stringify({ name: 'iPhone 15 128GB', cat: 'Phones' }), 'airpods').run();
+  const shop = (await DB.prepare("SELECT shop FROM offers WHERE product_id = 'airpods' LIMIT 1").first()).shop;
+  await DB.prepare("UPDATE offers SET price = 1234 WHERE product_id = 'airpods' AND shop = ?").bind(shop).run();
+  await DB.prepare("DELETE FROM products WHERE id = 'xm5'").run(); // a row the DB never had
+  await DB.prepare("DELETE FROM offers WHERE product_id = 'xm5'").run();
+  await DB.prepare("DELETE FROM price_points WHERE product_id = 'xm5'").run();
+  await DB.prepare('DELETE FROM seed_meta').run();
+
+  const { products } = await (await call('/api/catalog.json')).json(); // re-seeds
+  const airpods = products.find(p => p.id === 'airpods');
+  assert.strictEqual(airpods.name, seed.find(p => p.id === 'airpods').name, 'stale meta must be re-upserted from the seed');
+  assert.strictEqual(airpods.offers.find(o => o.shop === shop).price, 1234, 'real offer prices must survive the re-seed');
+  const xm5 = products.find(p => p.id === 'xm5');
+  assert.ok(xm5 && xm5.offers.length && xm5.history.length, 'a row new to the DB must be seeded in full');
+
+  // marker written: the same seed must not re-seed again
+  await DB.prepare('UPDATE products SET meta = ? WHERE id = ?')
+    .bind(JSON.stringify({ name: 'Stale Again', cat: 'Phones' }), 'airpods').run();
+  const again = (await (await call('/api/catalog.json')).json()).products.find(p => p.id === 'airpods');
+  assert.strictEqual(again.name, 'Stale Again', 'matching seed_meta hash must skip the upsert');
+});
+
 test('scheduled with no sources configured is a no-op — prices freeze until real rows arrive', async () => {
   const DB = d1();
   const call = api({ DB });

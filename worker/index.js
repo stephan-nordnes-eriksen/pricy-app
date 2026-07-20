@@ -18,6 +18,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS oauth_codes (code_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, redirect_uri TEXT NOT NULL, code_challenge TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, prev_price INTEGER, target INTEGER NOT NULL, created_at INTEGER NOT NULL, delivered_at INTEGER)',
   'CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT, reason TEXT NOT NULL, text TEXT, created_at INTEGER NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -151,12 +152,21 @@ async function sessionUser(db, token) {
 const dayOf = (t) => new Date(t).toISOString().slice(0, 10);
 
 // products.meta = the static display fields; offers/history live in their
-// tables and best/drop/shops/stock are derived on read (see catalogBody)
-async function seedIfEmpty(db) {
-  if (await db.prepare('SELECT 1 FROM products LIMIT 1').first()) return;
-  const stmts = []; // OR IGNORE: two racing first requests must not fail
+// tables and best/drop/shops/stock are derived on read (see catalogBody).
+// Seed evolution (4e): seed_meta pins the hash of the shipped seed.json — on a
+// new seed, meta is upserted for every row (display-only, always safe) and
+// rows new to the DB (e.g. variant children) get their demo offers/history;
+// existing offers/price_points are never touched, and rows dropped upstream
+// stay (purchases/watches reference them).
+let seedHash;
+async function seedCatalog(db) {
+  seedHash ??= await sha(JSON.stringify(seed));
+  if ((await db.prepare('SELECT hash FROM seed_meta WHERE id = 1').first())?.hash === seedHash) return;
+  const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(r => r.id));
+  const stmts = []; // OR IGNORE / upserts: two racing requests must not fail
   for (const { id, offers, history, best, drop, shops, stock, ...meta } of seed) {
-    stmts.push(db.prepare('INSERT OR IGNORE INTO products (id, meta) VALUES (?, ?)').bind(id, JSON.stringify(meta)));
+    stmts.push(db.prepare('INSERT INTO products (id, meta) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET meta = excluded.meta').bind(id, JSON.stringify(meta)));
+    if (known.has(id)) continue; // meta refresh only — real offers/history stay
     for (const o of offers) {
       stmts.push(db.prepare('INSERT OR IGNORE INTO offers (product_id, shop, price, ship, stock, eta) VALUES (?, ?, ?, ?, ?, ?)')
         .bind(id, o.shop, o.price, o.ship ?? null, o.stock ? 1 : 0, o.eta ?? null));
@@ -165,6 +175,7 @@ async function seedIfEmpty(db) {
       db.prepare('INSERT OR IGNORE INTO price_points (product_id, day, price) VALUES (?, ?, ?)')
         .bind(id, dayOf(Date.now() - (history.length - 1 - i) * 86400e3), price)));
   }
+  stmts.push(db.prepare('INSERT INTO seed_meta (id, hash) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET hash = excluded.hash').bind(seedHash));
   await db.batch(stmts);
 }
 
@@ -251,7 +262,7 @@ async function fireAlerts(db, env, before) {
 }
 
 async function catalogBody(db) {
-  await seedIfEmpty(db);
+  await seedCatalog(db);
   const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
   const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers ORDER BY price').all();
   const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
@@ -338,7 +349,7 @@ async function mcpTool(db, sid, name, a) {
 
   const user = await sessionUser(db, sid);
   if (!user) throw new Error('not logged in — use the login tool (or signup to create an account)');
-  await seedIfEmpty(db);
+  await seedCatalog(db);
 
   const brief = (p) => ({ id: p.id, name: p.name, brand: p.brand, category: p.cat, best_price_nok: p.best, was_nok: p.was, drop_pct: p.drop, shops: p.shops, in_stock: p.stock });
 
@@ -649,7 +660,7 @@ export default {
         || (r.ship != null && typeof r.ship !== 'string') || (r.eta != null && typeof r.eta !== 'string')
         || (r.url != null && typeof r.url !== 'string'));
       if (bad) return json({ error: 'bad rows' }, 400);
-      await seedIfEmpty(db);
+      await seedCatalog(db);
       const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(p => p.id));
       const unknown = [...new Set(rows.filter(r => !known.has(r.product_id)).map(r => r.product_id))];
       if (unknown.length) return json({ error: 'unknown product_id', ids: unknown }, 400);
@@ -851,7 +862,7 @@ export default {
         || (text && text.length > 1000) || (shop && shop.length > 100)) {
         return json({ error: 'bad report' }, 400);
       }
-      await seedIfEmpty(db);
+      await seedCatalog(db);
       const known = await db.prepare('SELECT id FROM products WHERE id = ?').bind(b.productId).first();
       if (!known) return json({ error: 'unknown product' }, 400);
       // ponytail: 20/user/day is the whole rate limit — real abuse tooling when abuse exists
@@ -886,7 +897,7 @@ export default {
   async scheduled(event, env) {
     const db = env.DB;
     await ensureSchema(db);
-    await seedIfEmpty(db);
+    await seedCatalog(db);
     const rows = await collectRows(env);
     if (rows.length) await ingest(db, rows, env);
   },
