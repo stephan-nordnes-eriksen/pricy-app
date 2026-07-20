@@ -278,7 +278,7 @@ function parseUrl(session) {
   else if (p === '/alerts') s = { name: 'alerts', params: { tab: q.get('tab') || undefined } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
   else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
-  else if (['/login', '/browse', '/autobuy', '/onboarding'].includes(p)) s = { name: p.slice(1), params: {} };
+  else if (['/login', '/browse', '/autobuy', '/onboarding', '/compare'].includes(p)) s = { name: p.slice(1), params: {} };
   else s = { name: session ? 'home' : 'landing', params: {} };
   if (!session && !PUBLIC_SCREENS.includes(s.name)) s = { name: 'login', params: {} };
   else if (s.name === 'product') recordRecent(s.params.id);
@@ -412,6 +412,7 @@ function App() {
   else if (name === 'landing') view = <Landing go={go} />;
   else if (name === 'results') view = <Results go={go} query={params.query} cat={params.cat} view={T.resultsView} filterLayout={T.filterLayout} density={T.density} sparklines={T.sparklines} />;
   else if (name === 'product') view = <ProductPage go={go} id={params.id} />;
+  else if (name === 'compare') view = <ComparePage go={go} />;
   else if (name === 'browse') view = <BrowsePage go={go} />;
   else if (name === 'alerts') view = <AlertsPage go={go} tab={params.tab} />;
   else if (name === 'account') view = <AccountPage go={go} tab={params.tab} me={ME} onSaveProfile={saveProfile} onSaveSettings={saveSettings} onChangePassword={changePassword} />;
@@ -426,7 +427,9 @@ function App() {
   // render lives in the harness block build.js discards, so it must be
   // mirrored here by hand — see the sync note in CLAUDE.md. No session check
   // needed: without one, every non-public screen is already gated to login.
-  return <div key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1 })[name] && <Footer go={go} />}</div>;
+  // CompareTray mirrors the harness too: hidden on the same public screens
+  // plus the compare page itself.
+  return <div key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1 })[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({ login: 1, landing: 1, about: 1, onboarding: 1, compare: 1 })[name]} /></div>;
 }
 
 // Catalog is served, not baked: fetch /api/catalog.json and hydrate the

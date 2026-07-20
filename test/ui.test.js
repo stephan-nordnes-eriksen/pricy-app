@@ -133,7 +133,7 @@ test('logged out: search URL is gated to the login screen', async () => {
 });
 
 test('logged out: every app screen is gated, public ones are not', async () => {
-  for (const p of ['/alerts', '/account', '/browse', '/autobuy', '/product/xm5']) {
+  for (const p of ['/alerts', '/account', '/browse', '/autobuy', '/product/xm5', '/compare']) {
     const win = boot('http://pricy.test' + p);
     await tick();
     assert.ok(q(win, '.authcard'), p + ' should be gated');
@@ -788,6 +788,35 @@ test('marketing email toggle in Privacy saves as a settings patch', async () => 
   assert.strictEqual(win.api.find(c => c.call === 'PUT /api/settings').body.marketing, true);
 });
 
+// ---------- compare ----------
+
+test('compare: mark two results, tray appears, Compare opens the side-by-side page', async () => {
+  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow .cmpbtn, .rcard .cmpbtn').length >= 2), 'compare buttons missing on results');
+  assert.ok(!q(win, '.ctray'), 'tray must be hidden with nothing marked');
+  // re-query after each click — marking re-renders the rows, detaching old nodes
+  qa(win, '.rrow .cmpbtn, .rcard .cmpbtn')[0].click();
+  assert.ok(await until(() => q(win, '.ctray')), 'tray did not appear after first mark');
+  assert.ok(q(win, '.ctray .btn--primary').disabled, 'Compare must be disabled with one product');
+  qa(win, '.cmpbtn:not(.is-on)')[0].click();
+  assert.ok(await until(() => !q(win, '.ctray .btn--primary').disabled), 'Compare stayed disabled after second mark');
+  q(win, '.ctray .btn--primary').click();
+  assert.ok(await until(() => q(win, '.cmp__head')), 'compare page did not render');
+  assert.strictEqual(win.location.pathname, '/compare');
+  assert.strictEqual(qa(win, '.cmp__prod').length, 2, 'both products should be columns');
+  assert.ok(!q(win, '.ctray'), 'tray must be hidden on the compare page itself');
+});
+
+test('compare: a product from another category is refused with a notice', async () => {
+  const win = boot('http://pricy.test/search?q=sony', { session: true }); // sony spans Audio/Gaming/TV
+  assert.ok(await until(() => qa(win, '.cmpbtn').length >= 2), 'compare buttons missing on results');
+  qa(win, '.cmpbtn')[0].click();
+  assert.ok(await until(() => q(win, '.ctray')), 'tray did not appear');
+  qa(win, '.cmpbtn:not(.is-on)')[0].click();
+  assert.ok(await until(() => q(win, '.ctray__notice')), 'cross-category add should show the notice');
+  assert.strictEqual(qa(win, '.ctray__item').length, 1, 'the mismatched product must not be added');
+});
+
 // ---------- structural chrome + chaos monkey ----------
 // A sync once shipped without the footer and no test noticed. CHROME lists
 // the load-bearing structure per screen; the test asserts it all renders,
@@ -802,6 +831,7 @@ const CHROME = [
   { url: '/autobuy', sels: ['.app-hdr', '.fm-cer', '.ftr'] },
   { url: '/product/xm5', sels: ['.app-hdr', '.watchbox', '.orow', '.ftr'] },
   { url: '/search?q=sony', sels: ['.app-hdr', '.rrow, .rcard', '.ftr'] },
+  { url: '/compare', sels: ['.app-hdr', '.empty', '.ftr'] }, // empty state — CompareStore starts empty per boot
 ];
 const missingChrome = (win, sels) => sels.filter(sel => !q(win, sel));
 
