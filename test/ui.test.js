@@ -797,6 +797,7 @@ test('compare: mark two results, tray appears, Compare opens the side-by-side pa
   // re-query after each click — marking re-renders the rows, detaching old nodes
   qa(win, '.rrow .cmpbtn, .rcard .cmpbtn')[0].click();
   assert.ok(await until(() => q(win, '.ctray')), 'tray did not appear after first mark');
+  assert.ok(q(win, '.ctray__item .ctray__pop'), 'tray item hover popover missing');
   assert.ok(q(win, '.ctray .btn--primary').disabled, 'Compare must be disabled with one product');
   qa(win, '.cmpbtn:not(.is-on)')[0].click();
   assert.ok(await until(() => !q(win, '.ctray .btn--primary').disabled), 'Compare stayed disabled after second mark');
@@ -805,6 +806,15 @@ test('compare: mark two results, tray appears, Compare opens the side-by-side pa
   assert.strictEqual(win.location.pathname, '/compare');
   assert.strictEqual(qa(win, '.cmp__prod').length, 2, 'both products should be columns');
   assert.ok(!q(win, '.ctray'), 'tray must be hidden on the compare page itself');
+  // add-product menu: search filters the candidates, picking adds a column
+  q(win, '.cmp__addbtn').click();
+  assert.ok(await until(() => q(win, '.cmp__search input')), 'add menu search input missing');
+  type(win, q(win, '.cmp__search input'), 'zzz-no-such-product');
+  assert.ok(await until(() => q(win, '.cmp__none')), 'empty search state missing');
+  type(win, q(win, '.cmp__search input'), '');
+  assert.ok(await until(() => qa(win, '.cmp__cand:not(.cmp__cand--all)').length > 0), 'candidates missing');
+  qa(win, '.cmp__cand:not(.cmp__cand--all)')[0].click();
+  assert.ok(await until(() => qa(win, '.cmp__prod').length === 3), 'picked candidate should become a third column');
 });
 
 test('compare: a product from another category is refused with a notice', async () => {
