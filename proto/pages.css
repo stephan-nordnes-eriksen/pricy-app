@@ -388,3 +388,33 @@ button { color: inherit; }
   .ab-admin { grid-template-columns: 1fr; }
   .ob-ab-how { grid-template-columns: 1fr; }
 }
+
+/* ---- product variants ---- */
+.vpick { display: flex; flex-direction: column; gap: var(--s-4); margin: 0 0 var(--s-5); }
+.vpick__lbl { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-600); margin-bottom: 6px; }
+.vpick__lbl b { color: var(--ink-900); }
+.vpick__d { margin-left: 8px; color: var(--green-700); font-weight: 700; }
+.vpick__opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.vopt { font-family: var(--font-mono); font-weight: 700; font-size: 12px; padding: 7px 12px; background: var(--paper); border: 1px solid var(--ink-300); color: var(--ink-900); cursor: pointer; }
+.vopt:hover { border-color: var(--ink-900); }
+.vopt.is-on { border-color: var(--ink-900); background: var(--ink-900); color: var(--paper); }
+.vopt__d { margin-left: 8px; color: var(--ink-400); font-weight: 500; }
+.vopt.is-on .vopt__d { color: var(--green-500); }
+.vswatch { width: 26px; height: 26px; border: 1px solid var(--ink-300); cursor: pointer; padding: 0; }
+.vswatch:hover { border-color: var(--ink-900); }
+.vswatch.is-on { border: 2px solid var(--ink-900); box-shadow: inset 0 0 0 2px var(--paper); }
+.pdp__gallery { position: relative; }
+.pdp__vtag { position: absolute; left: 10px; bottom: 10px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-900); background: var(--paper); border: 1px solid var(--ink-900); padding: 3px 8px; }
+.vhint { display: inline-flex; align-items: center; gap: 8px; }
+.vhint__sw { display: inline-flex; gap: 3px; }
+.vhint__sw i { width: 11px; height: 11px; border: 1px solid rgba(0,0,0,.25); display: block; }
+.vhint__t { font-family: var(--font-mono); font-size: 11px; color: var(--ink-600); white-space: nowrap; }
+
+/* variants — cheapest shortcuts */
+.vpick__lbl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 24px; }
+.vpick__cheap { margin-left: auto; font-family: var(--font-mono); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--green-700); background: var(--paper); border: 1px solid var(--green-700); padding: 3px 8px; cursor: pointer; }
+.vpick__cheap:hover { background: var(--green-100, #e6f9ef); }
+.vpick__foot { display: flex; align-items: center; min-height: 31px; }
+.vpick__combo { font-family: var(--font-mono); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--paper); background: var(--green-700); border: 1px solid var(--green-700); padding: 7px 12px; cursor: pointer; }
+.vpick__combo:hover { background: var(--ink-900); border-color: var(--ink-900); }
+.vpick__done { font-family: var(--font-mono); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--green-700); }

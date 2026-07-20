@@ -53,10 +53,10 @@ const _NEW = [
   // GAMING
   { id: 'ps5', name: 'PlayStation 5 Slim', brand: 'Sony', cat: 'Gaming', icon: 'gamepad-2', best: 5990, was: 6990, shops: 9, rating: 4.8, reviews: 4100, stock: true, nc: false, kw: 'console gaming ps5' },
   { id: 'xbox', name: 'Xbox Series X', brand: 'Microsoft', cat: 'Gaming', icon: 'gamepad-2', best: 5490, was: 6490, shops: 7, rating: 4.7, reviews: 2300, stock: true, nc: false, kw: 'console gaming xbox' },
-  { id: 'steamdeck', name: 'Steam Deck OLED 512GB', brand: 'Valve', cat: 'Gaming', icon: 'gamepad-2', best: 6490, was: 6990, shops: 4, rating: 4.6, reviews: 880, stock: false, nc: false, kw: 'handheld gaming steam deck' },
+  { id: 'steamdeck', name: 'Steam Deck OLED', brand: 'Valve', cat: 'Gaming', icon: 'gamepad-2', best: 6490, was: 6990, shops: 4, rating: 4.6, reviews: 880, stock: false, nc: false, kw: 'handheld gaming steam deck 512gb 1tb' },
   // PHONES
-  { id: 's24', name: 'Samsung Galaxy S24 256GB', brand: 'Samsung', cat: 'Phones', icon: 'smartphone', best: 8490, was: 10990, shops: 11, rating: 4.6, reviews: 1980, stock: true, nc: false, kw: 'phone android samsung' },
-  { id: 'pixel8', name: 'Google Pixel 8 128GB', brand: 'Google', cat: 'Phones', icon: 'smartphone', best: 6490, was: 7990, shops: 7, rating: 4.5, reviews: 1120, stock: true, nc: false, kw: 'phone android pixel' },
+  { id: 's24', name: 'Samsung Galaxy S24', brand: 'Samsung', cat: 'Phones', icon: 'smartphone', best: 8490, was: 10990, shops: 11, rating: 4.6, reviews: 1980, stock: true, nc: false, kw: 'phone android samsung 128gb 256gb 512gb' },
+  { id: 'pixel8', name: 'Google Pixel 8', brand: 'Google', cat: 'Phones', icon: 'smartphone', best: 6490, was: 7990, shops: 7, rating: 4.5, reviews: 1120, stock: true, nc: false, kw: 'phone android pixel 128gb 256gb' },
   // TV
   { id: 'lgc3', name: 'LG OLED C3 65"', brand: 'LG', cat: 'TV', icon: 'tv', best: 13990, was: 18990, shops: 6, rating: 4.8, reviews: 760, stock: true, nc: false, kw: 'tv oled lg' },
   { id: 'bravia', name: 'Sony Bravia 9 65"', brand: 'Sony', cat: 'TV', icon: 'tv', best: 19990, was: 23990, shops: 5, rating: 4.7, reviews: 230, stock: true, nc: false, kw: 'tv mini-led sony' },
@@ -80,6 +80,8 @@ const CATALOG = [
     return o;
   }),
 ];
+// attach variation axes (same product page, selectable variants)
+if (window.VARIANT_DEFS) CATALOG.forEach(p => { if (VARIANT_DEFS[p.id]) p.variants = VARIANT_DEFS[p.id]; });
 const CAT_OF = {};
 CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
 // real, derived counts — all "N products / M shops" copy reads from this
@@ -127,6 +129,7 @@ function ResultRow({ p, go, spark, saved, onSave }) {
           <Stars rating={p.rating} reviews={p.reviews} />
           {p.nc && <span className="rrow__feat">Noise cancelling</span>}
           <span className={'rrow__stock ' + (p.stock ? 'ok' : 'no')}>{p.stock ? 'In stock' : 'Backorder'}</span>
+          <VariantHint p={p} />
         </div>
       </div>
       {spark && <div className="rrow__spark"><Spark points={p.history} /></div>}
@@ -150,7 +153,7 @@ function ResultCard({ p, go }) {
       {p.drop >= 12 && <span className="pcard__tag"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
       <div className="pcard__img"><Icon name={p.icon} size={42} /></div>
       <div className="pcard__name">{p.name}</div>
-      <div style={{ margin: '6px 0 10px' }}><Stars rating={p.rating} /></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}><Stars rating={p.rating} /><VariantHint p={p} /></div>
       <div className="pcard__foot">
         <div>
           <div className="pcard__from">from</div>
@@ -447,20 +450,24 @@ function ReportProblemModal({ p, onClose, onDone }) {
 // ===========================================================
 function ProductPage({ go, id }) {
   const p = getListing(id) || CATALOG[0];
+  const [sel, setSel] = useState(() => defaultSel(p));
+  useEffect(() => { setSel(defaultSel(p)); }, [p.id]);
+  const v = useMemo(() => variantListing(p, sel), [p, sel]);
   useWatchStore();
   const w = WatchStore.get(p.id);
-  const [target, setTarget] = useState(w ? w.target : Math.round(p.best * 0.92 / 10) * 10);
+  const [target, setTarget] = useState(w ? w.target : Math.round(v.best * 0.92 / 10) * 10);
   const watching = !!w;
+  useEffect(() => { if (!watching) setTarget(Math.round(v.best * 0.92 / 10) * 10); }, [v.best]);
   const dirty = watching && +target !== w.target;
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const flash = (msg) => { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2400); };
   const [weeks, setWeeks] = useState(24);
   const RANGES = [{ w: 6, label: '6W' }, { w: 12, label: '12W' }, { w: 24, label: '24W' }];
-  const histView = p.history.slice(-weeks);
-  const low = Math.min(...p.history);
-  const best = p.offers[0];
-  const shopUrl = best.url || (p.offers.find(o => o.url) || {}).url;
+  const histView = v.history.slice(-weeks);
+  const low = Math.min(...v.history);
+  const best = v.offers[0];
+  const shopUrl = best.url || (v.offers.find(o => o.url) || {}).url;
   const [buyNow, setBuyNow] = useState(false);
   const [report, setReport] = useState(false);
   const more = CAT_OF[p.cat].filter(x => x.id !== p.id).slice(0, 4);
@@ -476,7 +483,7 @@ function ProductPage({ go, id }) {
         </div>
 
         <div className="pdp__top">
-          <div className="pdp__gallery"><Icon name={p.icon} size={120} /></div>
+          <div className="pdp__gallery">{v.vlabel ? <span className="pdp__vtag">{v.vlabel}</span> : null}<Icon name={p.icon} size={120} /></div>
           <div className="pdp__info">
             <div className="pdp__brand">{p.brand}</div>
             <h1>{p.name}</h1>
@@ -485,6 +492,8 @@ function ProductPage({ go, id }) {
               {p.nc && <span className="rrow__feat">Noise cancelling</span>}
               <span className={'rrow__stock ' + (p.stock ? 'ok' : 'no')}>{p.stock ? 'In stock' : 'Backorder'}</span>
             </div>
+
+            <VariantPicker p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))} onSelAll={(s) => setSel(s)} />
 
             <div className="bestbox">
               <div className="bestbox__top">
@@ -498,7 +507,7 @@ function ProductPage({ go, id }) {
                 </div>
               </div>
               <div className="bestbox__bot">
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}><span className="strike">was kr {fmt(p.was)}</span><span className="delta delta--down" style={{ whiteSpace: 'nowrap' }}>▼ −{p.drop}%</span><span className="muted">· {p.shops} shops</span></span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}><span className="strike">was kr {fmt(v.was)}</span><span className="delta delta--down" style={{ whiteSpace: 'nowrap' }}>▼ −{v.drop}%</span><span className="muted">· {v.shops} shops</span></span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green-700)', whiteSpace: 'nowrap' }}>All-time low kr {fmt(low)}</span>
               </div>
             </div>
@@ -534,16 +543,16 @@ function ProductPage({ go, id }) {
             </div>
             {toast && <Toast>{toast}</Toast>}
 
-            <AutobuyBox p={p}></AutobuyBox>
-            {buyNow && <BuyNowModal p={p} onClose={() => setBuyNow(false)}></BuyNowModal>}
-            {report && <ReportProblemModal p={p} onClose={() => setReport(false)} onDone={flash}></ReportProblemModal>}
+            <AutobuyBox p={v}></AutobuyBox>
+            {buyNow && <BuyNowModal p={v} onClose={() => setBuyNow(false)}></BuyNowModal>}
+            {report && <ReportProblemModal p={v} onClose={() => setReport(false)} onDone={flash}></ReportProblemModal>}
           </div>
         </div>
 
         <div className="pdp__grid">
           <div className="offers">
             <div className="offers__h"><span>Shop</span><span>Delivery</span><span>Stock</span><span style={{ textAlign: 'right' }}>Price</span></div>
-            {p.offers.map((o, i) => (
+            {v.offers.map((o, i) => (
               <div key={o.shop} className={'orow' + (i === 0 ? ' is-best' : '')}>
                 <div className="orow__shop">{o.shop}{i === 0 && <Tag kind="best">★ Best</Tag>}</div>
                 <div className="orow__ship">{o.ship}</div>
@@ -587,4 +596,4 @@ function ProductPage({ go, id }) {
   );
 }
 
-Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, Results, ProductPage, ResultRow, ResultCard, Stars });
+Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, Results, ProductPage, ResultRow, ResultCard, Stars });

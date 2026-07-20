@@ -143,7 +143,7 @@ const PRODUCTS = [
   { id: 'xm5', name: 'Sony WH-1000XM5 Wireless', brand: 'Sony', cat: 'Audio', icon: 'headphones', best: 2999, was: 4290, drop: 30, shops: 11 },
   { id: 'switch', name: 'Nintendo Switch OLED', brand: 'Nintendo', cat: 'Gaming', icon: 'gamepad-2', best: 3290, was: 3790, drop: 13, shops: 8 },
   { id: 'dyson', name: 'Dyson V15 Detect Absolute', brand: 'Dyson', cat: 'Home', icon: 'wind', best: 6490, was: 8990, drop: 28, shops: 7 },
-  { id: 'iphone', name: 'iPhone 15 128GB', brand: 'Apple', cat: 'Phones', icon: 'smartphone', best: 9190, was: 9990, drop: 8, shops: 12 },
+  { id: 'iphone', name: 'iPhone 15', brand: 'Apple', cat: 'Phones', icon: 'smartphone', best: 9190, was: 9990, drop: 8, shops: 12 },
   { id: 'tv', name: 'Samsung 55" OLED S90C', brand: 'Samsung', cat: 'TV', icon: 'tv', best: 11990, was: 17990, drop: 33, shops: 6 },
   { id: 'kindle', name: 'Kindle Paperwhite 16GB', brand: 'Amazon', cat: 'E-readers', icon: 'book-open', best: 1690, was: 1990, drop: 15, shops: 5 },
   { id: 'lego', name: 'LEGO Icons Orchid 10311', brand: 'LEGO', cat: 'Toys', icon: 'blocks', best: 449, was: 599, drop: 25, shops: 10 },
