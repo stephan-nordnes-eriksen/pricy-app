@@ -798,9 +798,9 @@ test('compare: mark two results, tray appears, Compare opens the side-by-side pa
   qa(win, '.rrow .cmpbtn, .rcard .cmpbtn')[0].click();
   assert.ok(await until(() => q(win, '.ctray')), 'tray did not appear after first mark');
   assert.ok(q(win, '.ctray__item .ctray__pop'), 'tray item hover popover missing');
-  assert.ok(q(win, '.ctray .btn--primary').disabled, 'Compare must be disabled with one product');
+  assert.ok(!q(win, '.ctray .btn--primary').disabled, 'Compare must be enabled even with one product');
   qa(win, '.cmpbtn:not(.is-on)')[0].click();
-  assert.ok(await until(() => !q(win, '.ctray .btn--primary').disabled), 'Compare stayed disabled after second mark');
+  assert.ok(await until(() => q(win, '.ctray .btn--primary').textContent.includes('(2)')), 'count did not update after second mark');
   q(win, '.ctray .btn--primary').click();
   assert.ok(await until(() => q(win, '.cmp__head')), 'compare page did not render');
   assert.strictEqual(win.location.pathname, '/compare');
