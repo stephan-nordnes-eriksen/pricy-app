@@ -153,7 +153,7 @@ function AuthCard({ onAuthed, go }) {
           ? <React.Fragment><span className="spinner" style={{ width: 16, height: 16, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }}></span> Waiting for BankID…</React.Fragment>
           : <React.Fragment><Icon name="fingerprint" size={18} /> Continue with <BankIDMark light={true}></BankIDMark></React.Fragment>}
       </button>
-      <div className="bankid-hint"><Icon name="zap" size={13} /> BankID unlocks auto-buy — pricy can purchase for you the moment a price drops below your max.</div>
+      <div className="bankid-hint"><Icon name="zap" size={13} /><span>BankID will unlock auto-buy — pricy will be able to purchase for you the moment a price drops below your max. <span className="tag tag--soon">Coming soon</span></span></div>
 
       <div className="or-div"><span>or use email</span></div>
 

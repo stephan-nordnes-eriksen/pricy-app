@@ -252,6 +252,12 @@ button { color: inherit; }
 .bankid-hint { font-family: var(--font-mono); font-size: 11px; color: var(--ink-600); margin: 8px 0 0; line-height: 1.5; display: flex; gap: 6px; align-items: flex-start; }
 .bankid-hint .icon { color: var(--green-700); display: flex; margin-top: 1px; }
 
+/* --- Beta banner ---------------------------------------------- */
+.beta-banner { display: flex; align-items: flex-start; gap: 8px; border: var(--bw) solid var(--ink-900); background: var(--warn-500); padding: 10px var(--s-4); font-size: 12.5px; line-height: 1.5; color: var(--ink-900); margin-bottom: var(--s-4); }
+.beta-banner .icon, .beta-banner svg { flex: 0 0 auto; margin-top: 2px; }
+.beta-banner b { font-family: var(--font-display); font-weight: 700; }
+.tag--soon { background: var(--warn-500); border: 1px solid var(--ink-900); color: var(--ink-900); font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 5px; vertical-align: 1px; }
+
 /* --- Fullmakt document --------------------------------------- */
 .fm-doc { border: var(--bw) solid var(--ink-900); background: var(--paper); padding: var(--s-5); max-height: 260px; overflow-y: auto; font-size: 13px; line-height: 1.6; color: var(--ink-700); }
 .fm-doc__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); border-bottom: var(--bw) solid var(--ink-900); padding-bottom: var(--s-3); margin-bottom: var(--s-3); flex-wrap: wrap; }

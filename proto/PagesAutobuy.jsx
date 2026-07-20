@@ -75,6 +75,13 @@ function BankIDButton({ children, onDone, disabled, style }) {
   );
 }
 
+// --- Beta banner ----------------------------------------------
+function BetaBanner() {
+  return (
+    <div className="beta-banner"><Icon name="flask-conical" size={14} /><span><b>Beta — coming soon.</b> Auto-buy is a preview: this document shows the agreement pricy will offer, not an active contract. No purchases are made in your name yet.</span></div>
+  );
+}
+
 // --- Fullmakt document (Norwegian) ----------------------------
 function FullmaktDoc() {
   return (
@@ -83,7 +90,7 @@ function FullmaktDoc() {
         <b>FULLMAKT TIL KJØP AV VARER</b>
         <span>Utkast · 11.07.2026 · nb-NO</span>
       </div>
-      <p>mellom <b>{USER.name} Hansen</b> (f. 14.03.1991, «Fullmaktsgiver») og <b>Pricy AS</b>, org.nr. 923 456 789 («Fullmektig»).</p>
+      <p>mellom <b>{USER.name}</b> («Fullmaktsgiver») og <b>Pricy AS</b>, org.nr. — («Fullmektig»).</p>
       <h4>§ 1 · Fullmaktens omfang</h4>
       <p>Fullmektigen gis rett til å inngå kjøpsavtaler i Fullmaktsgivers navn og for dennes regning. Fullmakten er begrenset til produkter Fullmaktsgiver selv har opprettet kjøpsordre for på pricy.no, og gjelder kun kjøp hos forhandlere tilknyttet tjenesten.</p>
       <h4>§ 2 · Beløpsgrenser</h4>
@@ -107,7 +114,7 @@ function FullmaktReceipt({ at, onRevoke, onView }) {
       <div className="fm-signed__ic"><Icon name="file-check-2" size={22} /></div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <b>Fullmakt active — signed with <BankIDMark></BankIDMark></b>
-        <p>{USER.name} Hansen · {at}</p>
+        <p>{USER.name} · {at}</p>
       </div>
       <div style={{ display: 'flex', gap: 'var(--s-2)' }}>
         {onView && <Btn size="sm" variant="ghost" icon="file-text" onClick={onView}>View</Btn>}
@@ -124,6 +131,7 @@ function FullmaktCeremony({ onSigned, signedAt }) {
   if (signed) return <FullmaktReceipt at={signedAt || AutobuyStore.signedAt}></FullmaktReceipt>;
   return (
     <div className="fm-cer">
+      <BetaBanner></BetaBanner>
       <FullmaktDoc></FullmaktDoc>
       <label className="fm-agree">
         <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
@@ -170,7 +178,7 @@ function FullmaktModal({ onClose, mode = 'view' }) {
         </div>
         <div className="fm-modal__body">
           {mode === 'view'
-            ? <React.Fragment><FullmaktReceipt at={AutobuyStore.signedAt}></FullmaktReceipt><FullmaktDoc></FullmaktDoc></React.Fragment>
+            ? <React.Fragment><BetaBanner></BetaBanner><FullmaktReceipt at={AutobuyStore.signedAt}></FullmaktReceipt><FullmaktDoc></FullmaktDoc></React.Fragment>
             : <FullmaktCeremony onSigned={onClose}></FullmaktCeremony>}
         </div>
       </div>
@@ -429,6 +437,7 @@ function AutobuyPage({ go }) {
     <div className="screen" data-screen-label="Auto-buy orders">
       <AppHeader go={go} onLogout={() => go('landing')} />
       <div className="page ab">
+        <BetaBanner></BetaBanner>
         <div className="al__head">
           <div>
             <h1><Icon name="zap" size={26} style={{ verticalAlign: '-3px' }} /> Auto-buy</h1>
@@ -509,6 +518,6 @@ function AutobuyPage({ go }) {
 }
 
 Object.assign(window, {
-  AutobuyStore, useAutobuyStore, BankIDMark, BankIDButton, FullmaktDoc, FullmaktCeremony,
+  AutobuyStore, useAutobuyStore, BankIDMark, BankIDButton, BetaBanner, FullmaktDoc, FullmaktCeremony,
   FullmaktReceipt, FullmaktModal, PaymentPicker, PurchaseModal, BuyNowModal, AutobuyBox, AutobuyPage,
 });
