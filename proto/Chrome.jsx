@@ -39,7 +39,7 @@ function Footer({ go, authed = true }) {
       </div>
       <div className="wrap">
         <div className="ftr__bot">
-          <span>© 2026 pricy.no — Oslo, Norway</span>
+          <span>© 2026 SNE Studio AS · org.nr. 925 621 900 — Oslo, Norway</span>
           <span>Prices updated {relTime((metaOf() || {}).freshest)} · {fmt((metaOf() || {}).shops || 0)} shops tracked</span>
         </div>
       </div>

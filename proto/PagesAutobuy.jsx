@@ -90,13 +90,13 @@ function FullmaktDoc() {
         <b>FULLMAKT TIL KJØP AV VARER</b>
         <span>Utkast · 11.07.2026 · nb-NO</span>
       </div>
-      <p>mellom <b>{USER.name}</b> («Fullmaktsgiver») og <b>Pricy AS</b>, org.nr. — («Fullmektig»).</p>
+      <p>mellom <b>{USER.name}</b> («Fullmaktsgiver») og <b>SNE Studio AS</b> («pricy.no»), org.nr. 925 621 900 («Fullmektig»).</p>
       <h4>§ 1 · Fullmaktens omfang</h4>
       <p>Fullmektigen gis rett til å inngå kjøpsavtaler i Fullmaktsgivers navn og for dennes regning. Fullmakten er begrenset til produkter Fullmaktsgiver selv har opprettet kjøpsordre for på pricy.no, og gjelder kun kjøp hos forhandlere tilknyttet tjenesten.</p>
       <h4>§ 2 · Beløpsgrenser</h4>
       <p>Kjøp gjennomføres kun når totalprisen (inkl. frakt) er lik eller lavere enn maksprisen angitt i den enkelte kjøpsordre. Samlet kjøpesum per kalendermåned skal ikke overstige Fullmaktsgivers valgte beløpsgrense.</p>
       <h4>§ 3 · Betaling</h4>
-      <p>Kjøp belastes betalingsmiddelet Fullmaktsgiver har registrert. Pricy AS beregner ingen gebyrer eller påslag på kjøpesummen.</p>
+      <p>Kjøp belastes betalingsmiddelet Fullmaktsgiver har registrert. SNE Studio AS beregner ingen gebyrer eller påslag på kjøpesummen.</p>
       <h4>§ 4 · Angrerett</h4>
       <p>Angrerettloven gjelder fullt ut for alle kjøp gjennomført under denne fullmakten. Angrefristen på 14 dager løper fra levering av varen.</p>
       <h4>§ 5 · Varighet og tilbakekall</h4>
