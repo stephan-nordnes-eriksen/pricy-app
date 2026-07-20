@@ -889,6 +889,56 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(airpods.history.length, baseline.history.length, 'still one point per day');
 });
 
+// product images: downloaded to R2 on ingest, only when the source URL changes
+test('ingest images: one download per source URL, served at /img/:id with etag revalidation', async () => {
+  const store = new Map();
+  const r2 = {
+    put: async (key, body, opts) => store.set(key, { body, type: opts?.httpMetadata?.contentType }),
+    get: async (key, { onlyIf } = {}) => {
+      const o = store.get(key);
+      if (!o) return null;
+      const match = onlyIf?.get?.('if-none-match');
+      return { httpEtag: '"img-v1"', httpMetadata: { contentType: o.type },
+        body: match === '"img-v1"' ? null : o.body };
+    },
+  };
+  const env = { DB: d1(), INGEST_TOKEN: 't', IMAGES: r2 };
+  const fetched = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => { fetched.push(url); return new Response(new Uint8Array([1, 2, 3]), { headers: { 'content-type': 'image/jpeg' } }); };
+  const push = (rows) => worker.fetch(new Request('http://pricy.test/api/ingest', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer t' },
+    body: JSON.stringify(rows),
+  }), env);
+  try {
+    const row = { product_id: 'airpods', shop: 'Elkjøp', price: 1999, image: 'https://cdn.example/a.jpg' };
+    assert.strictEqual((await push([{ ...row, image: 42 }])).status, 400, 'non-string image rejected');
+    assert.strictEqual((await push([row])).status, 200);
+    assert.deepStrictEqual(fetched, ['https://cdn.example/a.jpg'], 'first sight of a URL downloads it');
+    assert.ok(store.has('products/airpods'), 'image landed in the bucket');
+    await push([row]);
+    assert.strictEqual(fetched.length, 1, 'same URL again = no re-download');
+    await push([{ ...row, image: 'https://cdn.example/b.jpg' }]);
+    assert.strictEqual(fetched.length, 2, 'changed URL = fresh download');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+
+  const call = api(env);
+  const img = await call('/img/airpods');
+  assert.strictEqual(img.status, 200);
+  assert.strictEqual(img.headers.get('content-type'), 'image/jpeg');
+  assert.ok(img.headers.get('cache-control').includes('max-age'), 'images must be browser-cacheable');
+  const revalidate = await worker.fetch(new Request('http://pricy.test/img/airpods', { headers: { 'if-none-match': img.headers.get('etag') } }), env);
+  assert.strictEqual(revalidate.status, 304, 'matching etag revalidates without a body');
+  assert.strictEqual((await call('/img/nope')).status, 404);
+
+  const airpods = (await catBody(call)).find(p => p.id === 'airpods');
+  assert.strictEqual(airpods.img, '/img/airpods', 'catalog advertises the stored image');
+  assert.strictEqual((await catBody(call)).find(p => p.id === 'xm5').img, undefined, 'no image row = no img field');
+});
+
 // price-drop alerts: the hook in ingest() fires on target crossings
 const alertEnv = () => {
   const DB = d1();

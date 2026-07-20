@@ -46,6 +46,13 @@ Two Claude Design projects feed this repo:
   `INGEST_TOKEN` secret; token also in untracked `tools/.ingest-token`).
   `eans.json` arrays hold confirmed variants only — extend them as real
   feeds reveal missed colors/SKUs. Rollout checklist: PLAN.md 4d.
+  Product images: source rows may carry `image` (JSON-LD `Product.image` /
+  Adtraction `imageurl`); ingest's `syncImages` downloads to the R2 bucket
+  `pricy-images` (binding `IMAGES`, key `products/<id>`) only when the
+  source URL is new or changed (D1 `images` table pins the last URL),
+  serves at `GET /img/<id>` (etag + max-age, in `run_worker_first`), and
+  `catalogBody` advertises `img: "/img/<id>"` when stored. The UI doesn't
+  render `img` yet — that's an upstream prototype change.
 
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the

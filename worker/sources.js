@@ -83,6 +83,7 @@ export async function adtractionSource(shop, _cfg, env) {
         stock: truthyStock(pick(f, 'instock', 'availability', 'stock')) ? 1 : 0,
         eta: null,
         url: pick(f, 'trackingurl', 'producturl', 'url', 'deeplink') ?? null,
+        image: pick(f, 'imageurl', 'image', 'graphicurl', 'productimage') ?? null,
       });
     }
     // keep the tail (a possibly half-received <product>) bounded
@@ -102,7 +103,7 @@ export async function scrapeSource(shop, cfg) {
     try {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       if (!res.ok) throw new Error(`http ${res.status}`);
-      const offer = productOffer(await res.text());
+      const { offer, image } = productOffer(await res.text()) ?? {};
       // NetOnNet nests price in offer.priceSpecification instead of offer.price
       const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
       const price = parsePrice(offer?.price ?? offer?.lowPrice ?? spec?.price);
@@ -117,6 +118,7 @@ export async function scrapeSource(shop, cfg) {
         stock: /instock|limitedavailability/i.test(String(offer.availability || '')) ? 1 : 0,
         eta: null,
         url,
+        image,
       };
     } catch (e) {
       console.warn(`ingest: ${shop}/${product_id} scrape failed: ${e.message}`);
@@ -126,7 +128,11 @@ export async function scrapeSource(shop, cfg) {
   return rows.filter(Boolean);
 }
 
-// first Offer-ish object inside any JSON-LD block (handles @graph and arrays)
+// schema.org image: string | [string] | ImageObject | [ImageObject]
+const imageUrl = (v) => { const i = [v].flat()[0]; return typeof i === 'string' ? i : i?.url ?? null; };
+
+// first Offer-ish object inside any JSON-LD block (handles @graph and arrays),
+// plus the owning node's product image
 function productOffer(html) {
   for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     let doc;
@@ -134,7 +140,7 @@ function productOffer(html) {
     const nodes = [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])];
     for (const n of nodes) {
       const o = [n?.offers].flat().find(o => o && (o.price != null || o.lowPrice != null || o.priceSpecification));
-      if (o) return o;
+      if (o) return { offer: o, image: imageUrl(n.image) };
     }
   }
   return null;

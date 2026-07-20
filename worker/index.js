@@ -4,7 +4,7 @@
 // Worker route now, no static file shadows it.
 
 import seed from './seed.json' with { type: 'json' };
-import { collectRows } from './sources.js';
+import { collectRows, BROWSER_UA } from './sources.js';
 
 const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, created_at INTEGER)',
@@ -19,6 +19,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, prev_price INTEGER, target INTEGER NOT NULL, created_at INTEGER NOT NULL, delivered_at INTEGER)',
   'CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT, reason TEXT NOT NULL, text TEXT, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS images (product_id TEXT PRIMARY KEY, src TEXT NOT NULL, fetched_at INTEGER NOT NULL)',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -208,6 +209,34 @@ async function ingest(db, rows, env) {
     ).bind(id, today, price)),
   ]);
   await fireAlerts(db, env, before);
+  await syncImages(db, env, rows).catch(e => console.error(`image sync failed: ${e.message}`));
+}
+
+// Product images live in R2 (IMAGES bucket), served at GET /img/:id. The
+// images row pins the source URL last stored — a product's image only
+// downloads when its source URL is new or changed (shop CDNs version image
+// URLs, so same URL = same bytes). A failed fetch keeps the old object and
+// retries naturally on the next ingest.
+async function syncImages(db, env, rows) {
+  if (!env.IMAGES) return; // no bucket bound (tests/local) — prices still land
+  const want = {};
+  for (const r of rows) if (r.image) want[r.product_id] ??= r.image;
+  for (const [pid, src] of Object.entries(want)) {
+    const cur = await db.prepare('SELECT src FROM images WHERE product_id = ?').bind(pid).first();
+    if (cur?.src === src) continue;
+    try {
+      const res = await fetch(src, { headers: { 'user-agent': BROWSER_UA, accept: 'image/*' } });
+      const type = res.headers.get('content-type') || '';
+      if (!res.ok || !type.startsWith('image/')) throw new Error(`http ${res.status} ${type}`);
+      const body = await res.arrayBuffer();
+      if (body.byteLength > 5 << 20) throw new Error(`too big: ${body.byteLength} bytes`);
+      await env.IMAGES.put(`products/${pid}`, body, { httpMetadata: { contentType: type } });
+      await db.prepare('INSERT INTO images (product_id, src, fetched_at) VALUES (?, ?, ?) ON CONFLICT(product_id) DO UPDATE SET src = excluded.src, fetched_at = excluded.fetched_at')
+        .bind(pid, src, Date.now()).run();
+    } catch (e) {
+      console.warn(`image ${pid}: ${e.message}`);
+    }
+  }
 }
 
 // Price-drop alerts, fired from ingest() — the single choke point both the
@@ -266,6 +295,7 @@ async function catalogBody(db) {
   const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
   const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers ORDER BY price').all();
   const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
+  const withImg = new Set((await db.prepare('SELECT product_id FROM images').all()).results.map(r => r.product_id));
   const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
   const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at }));
   const history = group(pts.results, p => p.price);
@@ -275,6 +305,7 @@ async function catalogBody(db) {
     const best = po[0]?.price; // po is price-ordered
     return {
       id, ...m,
+      img: withImg.has(id) ? `/img/${id}` : undefined,
       best,
       drop: m.was && best ? Math.round((1 - best / m.was) * 100) : undefined,
       shops: po.length,
@@ -634,6 +665,14 @@ export default {
       await ensureSchema(env.DB);
       return oauth(request, env.DB, url);
     }
+    if (url.pathname.startsWith('/img/') && request.method === 'GET') {
+      // onlyIf: browser revalidations (If-None-Match) come back body-less → 304
+      const obj = await env.IMAGES?.get(`products/${decodeURIComponent(url.pathname.slice(5))}`, { onlyIf: request.headers });
+      if (!obj) return new Response('not found', { status: 404 });
+      const headers = { etag: obj.httpEtag, 'cache-control': 'public, max-age=86400' };
+      if (!obj.body) return new Response(null, { status: 304, headers });
+      return new Response(obj.body, { headers: { ...headers, 'content-type': obj.httpMetadata?.contentType || 'image/jpeg' } });
+    }
     if (!url.pathname.startsWith('/api/')) {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('not found', { status: 404 });
     }
@@ -666,7 +705,7 @@ export default {
         !r || typeof r.product_id !== 'string' || typeof r.shop !== 'string' || !r.shop.trim()
         || !Number.isInteger(r.price) || r.price <= 0 || r.price > 10_000_000
         || (r.ship != null && typeof r.ship !== 'string') || (r.eta != null && typeof r.eta !== 'string')
-        || (r.url != null && typeof r.url !== 'string'));
+        || (r.url != null && typeof r.url !== 'string') || (r.image != null && typeof r.image !== 'string'));
       if (bad) return json({ error: 'bad rows' }, 400);
       await seedCatalog(db);
       const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(p => p.id));

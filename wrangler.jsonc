@@ -11,8 +11,16 @@
     // claude.ai's connector flow. CAUTION: setting run_worker_first AT ALL
     // makes the asset layer claim every path NOT listed (it answered /api/*
     // POSTs with 405, taking down login) — /api/* must stay in this list.
-    "run_worker_first": ["/api/*", "/.well-known/*", "/authorize", "/token", "/register", "/mcp"]
+    "run_worker_first": ["/api/*", "/img/*", "/.well-known/*", "/authorize", "/token", "/register", "/mcp"]
   },
+  "r2_buckets": [
+    {
+      // product images, keyed products/<id>, written by ingest's syncImages,
+      // served at GET /img/<id>
+      "binding": "IMAGES",
+      "bucket_name": "pricy-images"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
