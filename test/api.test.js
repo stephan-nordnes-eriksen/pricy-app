@@ -877,6 +877,7 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(offer.url, 'https://www.elkjop.no/airpods');
   assert.ok(Number.isFinite(offer.updated_at), 'ingested offers must carry a freshness stamp');
   assert.strictEqual(offer.stock, true, 'stock 1 surfaces as true');
+  assert.strictEqual(offer.eta, baseline.offers.find(o => o.shop === 'Elkjøp').eta, 'a push without eta keeps the stored delivery info');
 
   // tri-state stock: 2 / missing = never checked → catalog omits the key
   // (StockBadge shows "Unknown"); 0 = out of stock

@@ -206,8 +206,10 @@ async function ingest(db, rows, env) {
     };
   }
   await db.batch([
+    // ship/eta/url: COALESCE so a source that doesn't know a field (crawlers
+    // never know delivery time) can't erase a stored value with null
     ...rows.map(r => db.prepare(
-      'INSERT INTO offers (product_id, shop, price, ship, stock, eta, url, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(product_id, shop) DO UPDATE SET price = excluded.price, ship = excluded.ship, stock = excluded.stock, eta = excluded.eta, url = excluded.url, updated_at = excluded.updated_at'
+      'INSERT INTO offers (product_id, shop, price, ship, stock, eta, url, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(product_id, shop) DO UPDATE SET price = excluded.price, ship = COALESCE(excluded.ship, ship), stock = excluded.stock, eta = COALESCE(excluded.eta, eta), url = COALESCE(excluded.url, url), updated_at = excluded.updated_at'
     ).bind(r.product_id, r.shop, r.price, r.ship ?? null, stockVal(r.stock), r.eta ?? null, r.url ?? null, Date.now())),
     ...Object.entries(best).map(([id, price]) => db.prepare(
       'INSERT INTO price_points (product_id, day, price) VALUES (?, ?, ?) ON CONFLICT(product_id, day) DO UPDATE SET price = MIN(price, excluded.price)'
