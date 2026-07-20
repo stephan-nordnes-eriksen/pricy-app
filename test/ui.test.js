@@ -448,6 +448,12 @@ test('new user on /autobuy: nothing signed → the real "Auto-buy is off" ceremo
   assert.ok(/auto-buy is off/i.test(q(win, '.ab-inactive').textContent), 'off-state copy missing');
   assert.strictEqual(q(win, '.ab-cap'), null, 'cap bar must not render before signing');
 
+  // copy honesty (plans/autobuy-copy-honesty.md): beta banner, no invented identity/org.nr
+  assert.ok(q(win, '.beta-banner'), 'ceremony must carry the Beta — coming soon banner');
+  const doc = q(win, '.fm-doc').textContent;
+  assert.ok(!/Hansen|14\.03\.1991|923 456 789/.test(doc), 'fullmakt must not print invented name/birthdate/org.nr');
+  assert.ok(/org\.nr\. —/.test(doc), 'org.nr must render as a placeholder until a real one exists');
+
   // fake BankID sign (parked per plan — must keep working) persists the fullmakt
   q(win, '.fm-agree input').click();
   q(win, '.bankid-btn').click();
