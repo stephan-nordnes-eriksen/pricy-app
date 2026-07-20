@@ -1,5 +1,5 @@
 // Price sources (Phase 4d): every source yields rows in ingest()'s shape —
-// { product_id, shop, price, ship, stock, eta, url } — and collectRows()
+// { product_id, shop, price, ship, stock (0=out 1=in 2=unknown), eta, url } — and collectRows()
 // dispatches per shop from env.SOURCES (a JSON var in wrangler.jsonc:
 // { "Komplett": { "type": "adtraction" },
 //   "Power":    { "type": "scrape", "urls": { "airpods": "https://…" } } }).
@@ -80,7 +80,7 @@ export async function adtractionSource(shop, _cfg, env) {
       rows.push({
         product_id, shop, price,
         ship: pick(f, 'shippingcost', 'shipping', 'shippingprice') ?? null,
-        stock: truthyStock(pick(f, 'instock', 'availability', 'stock')) ? 1 : 0,
+        stock: (v => v == null ? 2 : truthyStock(v) ? 1 : 0)(pick(f, 'instock', 'availability', 'stock')),
         eta: null,
         url: pick(f, 'trackingurl', 'producturl', 'url', 'deeplink') ?? null,
         image: pick(f, 'imageurl', 'image', 'graphicurl', 'productimage') ?? null,
@@ -115,7 +115,7 @@ export async function scrapeSource(shop, cfg) {
       return {
         product_id, shop, price,
         ship: null,
-        stock: /instock|limitedavailability/i.test(String(offer.availability || '')) ? 1 : 0,
+        stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
         eta: null,
         url,
         image,

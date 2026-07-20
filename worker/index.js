@@ -170,7 +170,7 @@ async function seedCatalog(db) {
     if (known.has(id)) continue; // meta refresh only — real offers/history stay
     for (const o of offers) {
       stmts.push(db.prepare('INSERT OR IGNORE INTO offers (product_id, shop, price, ship, stock, eta) VALUES (?, ?, ?, ?, ?, ?)')
-        .bind(id, o.shop, o.price, o.ship ?? null, o.stock ? 1 : 0, o.eta ?? null));
+        .bind(id, o.shop, o.price, o.ship ?? null, stockVal(o.stock), o.eta ?? null));
     }
     history.forEach((price, i) => stmts.push(
       db.prepare('INSERT OR IGNORE INTO price_points (product_id, day, price) VALUES (?, ?, ?)')
@@ -185,6 +185,11 @@ async function seedCatalog(db) {
 async function bestOffer(db, productId) {
   return db.prepare('SELECT shop, price FROM offers WHERE product_id = ? AND stock = 1 ORDER BY price LIMIT 1').bind(productId).first();
 }
+
+// stock column: 0 = out, 1 = in, 2 = never checked (catalogBody omits the
+// key so the UI's StockBadge shows "Unknown"). NOT NULL stays — 2 avoids a
+// prod table rebuild that allowing NULL would need.
+const stockVal = (s) => s == null || s === 2 ? 2 : s ? 1 : 0;
 
 async function ingest(db, rows, env) {
   const today = dayOf(Date.now());
@@ -203,7 +208,7 @@ async function ingest(db, rows, env) {
   await db.batch([
     ...rows.map(r => db.prepare(
       'INSERT INTO offers (product_id, shop, price, ship, stock, eta, url, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(product_id, shop) DO UPDATE SET price = excluded.price, ship = excluded.ship, stock = excluded.stock, eta = excluded.eta, url = excluded.url, updated_at = excluded.updated_at'
-    ).bind(r.product_id, r.shop, r.price, r.ship ?? null, r.stock ? 1 : 0, r.eta ?? null, r.url ?? null, Date.now())),
+    ).bind(r.product_id, r.shop, r.price, r.ship ?? null, stockVal(r.stock), r.eta ?? null, r.url ?? null, Date.now())),
     ...Object.entries(best).map(([id, price]) => db.prepare(
       'INSERT INTO price_points (product_id, day, price) VALUES (?, ?, ?) ON CONFLICT(product_id, day) DO UPDATE SET price = MIN(price, excluded.price)'
     ).bind(id, today, price)),
@@ -297,7 +302,7 @@ async function catalogBody(db) {
   const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
   const withImg = new Set((await db.prepare('SELECT product_id FROM images').all()).results.map(r => r.product_id));
   const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
-  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at }));
+  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: o.stock === 2 ? undefined : !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at }));
   const history = group(pts.results, p => p.price);
   return prods.results.map(({ id, meta }) => {
     const m = JSON.parse(meta);
@@ -417,7 +422,7 @@ async function mcpTool(db, sid, name, a) {
       ? await db.prepare('SELECT shop, price, stock, url FROM offers WHERE product_id = ? AND shop = ?').bind(pid, String(a.shop)).first()
       : await db.prepare('SELECT shop, price, stock, url FROM offers WHERE product_id = ? AND stock = 1 ORDER BY price LIMIT 1').bind(pid).first();
     if (!offer) throw new Error(a.shop ? 'no offer from that shop' : 'no in-stock offer for this product');
-    if (!offer.stock) throw new Error(`${offer.shop} is out of stock`);
+    if (offer.stock !== 1) throw new Error(offer.stock === 2 ? `${offer.shop} stock is unknown` : `${offer.shop} is out of stock`);
     const order = await db.prepare('INSERT INTO purchases (user_id, product_id, shop, price, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id, created_at')
       .bind(user.id, pid, offer.shop, offer.price, Date.now()).first();
     // ponytail: MVP order record only — payment/fulfillment assumed handled

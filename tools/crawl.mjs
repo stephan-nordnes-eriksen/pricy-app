@@ -40,7 +40,7 @@ for (const [shop, { $ua, ...urls }] of Object.entries(urlsByShop)) {
   }
 }
 
-for (const r of rows) console.log(`${r.shop}\t${r.product_id}\tkr ${r.price}${r.stock ? '' : '\t(out of stock)'}`);
+for (const r of rows) console.log(`${r.shop}\t${r.product_id}\tkr ${r.price}${r.stock === 1 ? '' : r.stock === 2 ? '\t(stock unknown)' : '\t(out of stock)'}`);
 console.log(`crawled ${rows.length} row(s)`);
 if (out) writeFileSync(out, JSON.stringify(rows, null, 2) + '\n');
 if (!rows.length) process.exit(1);

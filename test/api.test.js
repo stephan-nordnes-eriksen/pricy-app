@@ -876,6 +876,14 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(offer.price, 1999);
   assert.strictEqual(offer.url, 'https://www.elkjop.no/airpods');
   assert.ok(Number.isFinite(offer.updated_at), 'ingested offers must carry a freshness stamp');
+  assert.strictEqual(offer.stock, true, 'stock 1 surfaces as true');
+
+  // tri-state stock: 2 / missing = never checked → catalog omits the key
+  // (StockBadge shows "Unknown"); 0 = out of stock
+  await push([{ ...row, shop: 'Komplett', stock: 2 }, { ...row, shop: 'Power', stock: 0 }], 'sekrit-token');
+  const offs = (await catBody(call)).find(p => p.id === 'airpods').offers;
+  assert.strictEqual(offs.find(o => o.shop === 'Komplett').stock, undefined, 'stock 2 = unknown, key omitted');
+  assert.strictEqual(offs.find(o => o.shop === 'Power').stock, false, 'stock 0 surfaces as false');
   assert.strictEqual(meta.freshest, offer.updated_at, 'meta.freshest tracks the newest stamp');
   assert.strictEqual(airpods.best, 1999, 'pushed price becomes best');
   assert.strictEqual(airpods.history.length, baseline.history.length, "today's point is upserted, not appended");
