@@ -734,6 +734,39 @@ test('marketing email toggle in Privacy saves as a settings patch', async () => 
   assert.strictEqual(win.api.find(c => c.call === 'PUT /api/settings').body.marketing, true);
 });
 
+// ---------- structural chrome + chaos monkey ----------
+// A sync once shipped without the footer and no test noticed. CHROME lists
+// the load-bearing structure per screen; the test asserts it all renders,
+// then chaos-monkey style removes one randomly picked required element and
+// asserts the same check detects the hole — proving the detector isn't
+// vacuous. Random per run; failures print the seed, rerun with CHAOS_SEED=n.
+const CHROME = [
+  { url: '/', sels: ['.app-hdr', '.app-hdr__search input', '.avatar', '.sec', '.ftr'] },
+  { url: '/browse', sels: ['.app-hdr', '.browse__head', '.ftr'] },
+  { url: '/alerts', opts: { me: { user: mari, watches: [{ id: 'xm5', target: 3100, paused: 0 }] } }, sels: ['.app-hdr', '.alrow', '.ftr'] },
+  { url: '/account', opts: { me: { user: mari, watches: [], settings: {} } }, sels: ['.app-hdr', '.acct', '.ftr'] },
+  { url: '/autobuy', sels: ['.app-hdr', '.fm-cer', '.ftr'] },
+  { url: '/product/xm5', sels: ['.app-hdr', '.watchbox', '.orow', '.ftr'] },
+  { url: '/search?q=sony', sels: ['.app-hdr', '.rrow, .rcard', '.ftr'] },
+];
+const missingChrome = (win, sels) => sels.filter(sel => !q(win, sel));
+
+test('chaos monkey: required chrome renders, and its removal is detected', async () => {
+  const seed = Number(process.env.CHAOS_SEED) || (Date.now() & 0xffff);
+  let s = seed;
+  // ponytail: LCG, plenty for picking indexes
+  const rand = n => (s = (s * 1103515245 + 12345) & 0x7fffffff) % n;
+  for (const { url, sels, opts } of CHROME) {
+    const win = boot('http://pricy.test' + url, { session: true, ...opts });
+    await until(() => missingChrome(win, sels).length === 0);
+    assert.deepStrictEqual(missingChrome(win, sels), [], url + ' is missing required chrome');
+    const victim = sels[rand(sels.length)];
+    qa(win, victim).forEach(el => el.remove());
+    assert.ok(missingChrome(win, sels).includes(victim),
+      `removing "${victim}" from ${url} went undetected (seed ${seed})`);
+  }
+});
+
 test('lucide icons render as inline svg', async () => {
   const win = boot('http://pricy.test/', { session: true });
   const ok = await until(() => qa(win, '#root .icon svg, #root svg.lucide').length > 0 && qa(win, '#root i[data-lucide]').length === 0);
