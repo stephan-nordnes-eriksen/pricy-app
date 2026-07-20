@@ -65,6 +65,25 @@ One approved feed is enough to start; repeat per shop as approvals land.
    unknown EANs are silently skipped — low match count means missing
    variants, not a bug.
 
+## Scrape reachability (probed 2026-07-20, honest UA)
+
+Seed offers exist for all eight network shops; `crawl-urls.json` covers the
+shops that let us scrape. The rest refuse our UA outright — that's what the
+feeds are for, don't work around it:
+
+- **Clas Ohlson, Power, CDON** — scraping works, URLs in `crawl-urls.json`.
+- **Proshop** — sitemap open; 10 EAN-confirmed URLs in `crawl-urls.json`.
+  Discovery's own page fetches worked, but heavy crawling trips a
+  longer-than-8-min 429 ban — keep `crawl.mjs` runs occasional.
+- **Elkjøp** — 429 on first contact, even robots.txt; standing bot block.
+- **NetOnNet** — 403 on everything.
+- **Komplett** — connection killed at the TLS layer regardless of UA.
+- **Dustin** (dustinhome.no) — sitemaps served, product pages 403.
+
+Blocked shops freeze at seed prices until their Adtraction feed lands
+(they're all on the application list above). `POST /api/ingest` still
+accepts hand-entered rows for any shop if a price must move before then.
+
 ## Aftermath (once first feed is stable)
 
 - Shops covered by a feed: remove their entries from

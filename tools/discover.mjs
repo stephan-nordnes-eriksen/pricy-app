@@ -55,7 +55,7 @@ function pageGtin(html) {
 let queue = [];
 try {
   queue = (await fetchText(new URL('/robots.txt', origin).href)).split('\n')
-    .map(l => l.match(/^sitemap:\s*(\S+)/i)?.[1]).filter(Boolean);
+    .map(l => l.match(/^\s*sitemap:\s*(\S+)/i)?.[1]).filter(Boolean);
 } catch {}
 if (!queue.length) queue = [new URL('/sitemap.xml', origin).href];
 

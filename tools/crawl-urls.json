@@ -24,5 +24,17 @@
   "CDON": {
     "lego": "https://cdon.no/produkt/lego-botanicals-10311-orkide-07cd4326f0df4a02/",
     "sonos-ace": "https://cdon.no/produkt/sonos-ace-hodetelefoner-med-mikrofon-full-storrelse-bluetooth-kablet-tradlos-aktiv-stoydemping-svart-d60b874e80064819/"
+  },
+  "Proshop": {
+    "airpods": "https://www.proshop.no/Hodetelefoner/Apple-AirPods-Pro-2nd-generation-with-MagSafe-Case-USBC/3198786",
+    "switch": "https://www.proshop.no/Spillkonsoll/Nintendo-Switch-OLED-White/2977068",
+    "dyson": "https://www.proshop.no/Haandstoevsuger/Dyson-Skaftstoevsuger-V15-Detect-Absolute-Iron-Color/3206468",
+    "iphone": "https://www.proshop.no/Mobiltelefoner/Apple-iPhone-15-128GB-Svart/3198771",
+    "kindle": "https://www.proshop.no/e-bokleser/Amazon-Kindle-Paperwhite-16GB-Black-Ad-supported/3335031",
+    "bose-ultra": "https://www.proshop.no/Hodetelefoner/Bose-QuietComfort-Ultra-Svart/3210395",
+    "sonos-ace": "https://www.proshop.no/Hodetelefoner/Sonos-Ace-Black/3283452",
+    "airpods4": "https://www.proshop.no/Hodetelefoner/Apple-AirPods-4-med-aktiv-stoeyreduksjon-ANC/3298331",
+    "beats-pro": "https://www.proshop.no/Hodetelefoner/Apple-Beats-Studio-Pro-Navy/3201114",
+    "hue": "https://www.proshop.no/Smarthus/Philips-Hue-White-and-Color-Ambiance-Starter-Kit/3396801"
   }
 }
