@@ -38,10 +38,11 @@ Two Claude Design projects feed this repo:
   header suggestions ride a debounced `q=` fetch). Worker helpers:
   `rowsFor`/`searchIds`/`topDropIds`/`catMeta` in `worker/index.js`.
   `/api/catalog.json` remains as a full dump for ops/tools only — the SPA
-  must never call it. Upstream (Claude Design) still pending: category
-  counts from `CATALOG.meta.cats` + SignedHome "Biggest drops" off
-  `window.CATALOG`; until synced, browse prefetches all heads and the
-  drops sidecard shows baked demo rows.
+  must never call it. Upstream is synced (2026-07-21): category counts and
+  presence read `CATALOG.meta.cats`, SignedHome "Biggest drops" ranks
+  `window.CATALOG`, and SearchSuggest refreshes via boot's
+  `window.onSuggestData(q, refresh)` hook; browse prefetches
+  `sort=drop&perCat=1&limit=4`.
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
   feeds, URLs in the `ADTRACTION_FEEDS` secret, rows matched to products
