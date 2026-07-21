@@ -514,6 +514,29 @@ test('signed in: results rows open the product page', async () => {
   assert.ok(await until(() => win.location.pathname.startsWith('/product/')), 'row click should open product');
 });
 
+test('results view switcher: compact rows render and the choice persists', async () => {
+  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow').length > 0), 'details rows missing (default view)');
+  const compact = await until(() => qa(win, '.viewbar button').find(b => /compact/i.test(b.getAttribute('aria-label') || '')));
+  assert.ok(compact, 'view switcher missing');
+  compact.click();
+  assert.ok(await until(() => qa(win, '.crow').length > 0), 'compact rows missing after switch');
+  assert.strictEqual(qa(win, '.rrow').length, 0, 'details rows must be gone in compact view');
+  assert.strictEqual(win.localStorage.getItem('pricy.view'), 'compact', 'view choice must persist');
+});
+
+test('PDP gallery: carousel thumbs switch the view and the lightbox opens', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  assert.ok(await until(() => qa(win, '.pgal__thumb').length > 1), 'gallery thumbs missing');
+  const thumbs = qa(win, '.pgal__thumb');
+  thumbs[1].click();
+  assert.ok(await until(() => thumbs[1].classList.contains('is-on')), 'thumb click should select that view');
+  q(win, '.pgal__stage').click();
+  assert.ok(await until(() => q(win, '.lb')), 'stage click should open the lightbox');
+  win.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.ok(await until(() => !q(win, '.lb')), 'Escape should close the lightbox');
+});
+
 test('signed in: session survives a reload (fresh boot, /api/me still says yes)', async () => {
   const win = boot('http://pricy.test/alerts', { session: true });
   await tick();
