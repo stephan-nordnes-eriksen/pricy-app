@@ -36,8 +36,8 @@ const CAT_ICONS = {
   Audio: 'headphones', Phones: 'smartphone', TV: 'tv', Gaming: 'gamepad-2',
   Home: 'wind', Computers: 'laptop', Toys: 'blocks', Kitchen: 'utensils-crossed',
 };
-const catCount = (c) => fmt(((window.CAT_OF || {})[c] || []).length);
-const realCats = () => CATEGORIES.filter(c => !window.CAT_OF || window.CAT_OF[c]);
+const catCount = (c) => fmt((metaOf()?.cats?.[c]) ?? ((window.CAT_OF || {})[c] || []).length);
+const realCats = () => CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : (!window.CAT_OF || window.CAT_OF[c]));
 
 function searchSuggest(q) {
   const POOL = window.CATALOG || PRODUCTS;

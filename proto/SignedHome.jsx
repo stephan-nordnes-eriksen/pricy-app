@@ -95,7 +95,7 @@ function LayoutDashboard({ go }) {
           <div className="sidecard">
             <div className="sidecard__head"><span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icon name="flame" size={13} className="ic" /> Biggest drops</span></div>
             <div className="sidecard__body" style={{ padding: 0 }}>
-              {PRODUCTS.slice().sort((a, b) => b.drop - a.drop).slice(0, 3).map(p => (
+              {(window.CATALOG || PRODUCTS).slice().sort((a, b) => b.drop - a.drop).slice(0, 3).map(p => (
                 <div key={p.id} className="afeed__item" onClick={() => go('product', { id: p.id })} style={{ alignItems: 'center' }}>
                   <div className="wrow__img" style={{ width: 44, height: 44 }}><ProdImg p={p} fill size={20} /></div>
                   <div style={{ flex: 1 }}>

@@ -208,10 +208,10 @@ function FiltersBody({ f, set, base, go }) {
       <div className="filters__grp">
         <h4>Category</h4>
         <div className="catlist">
-          {CATEGORIES.filter(c => CAT_OF[c]).map(c => (
+          {CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : CAT_OF[c]).map(c => (
             <div key={c} className={'catlink' + (base.cat === c ? ' is-on' : '')} onClick={() => go('results', { cat: c })}>
               <span className="catlink__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={15} /></span>
-              <span>{c}</span><span className="ct">{CAT_OF[c].length}</span>
+              <span>{c}</span><span className="ct">{(metaOf()?.cats?.[c]) ?? CAT_OF[c].length}</span>
             </div>
           ))}
         </div>
@@ -273,9 +273,9 @@ function FilterBar({ f, set, base, go, baseSel }) {
   return (
     <div className="filterbar">
       <Dropdown label={baseSel.cat ? 'Category · ' + baseSel.cat : 'Category'} active={!!baseSel.cat}>
-        {CATEGORIES.filter(c => CAT_OF[c]).map(c => (
+        {CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : CAT_OF[c]).map(c => (
           <div key={c} className={'fmenu__item' + (baseSel.cat === c ? ' is-on' : '')} onClick={() => go('results', { cat: c })}>
-            <Icon name={CAT_ICONS[c] || 'tag'} size={15} /><span>{c}</span><span className="ct">{CAT_OF[c].length}</span>
+            <Icon name={CAT_ICONS[c] || 'tag'} size={15} /><span>{c}</span><span className="ct">{(metaOf()?.cats?.[c]) ?? CAT_OF[c].length}</span>
           </div>
         ))}
       </Dropdown>

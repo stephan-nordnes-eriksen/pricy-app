@@ -3,6 +3,8 @@
 // ===========================================================
 
 function SearchSuggest({ q, onPick, onClose }) {
+  const [, bump] = useState(0);
+  useEffect(() => window.onSuggestData ? window.onSuggestData(q, () => bump(n => n + 1)) : undefined, [q]);
   const { products, cats, props } = searchSuggest(q);
   if (!products.length && !cats.length && !props.length) return null;
   return (
