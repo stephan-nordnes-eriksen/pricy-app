@@ -59,7 +59,13 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         out = heads.filter(r => r.cat === p.get('cat'));
       } else if (p.get('sort') === 'drop') {
         const dr = r => r.was ? 1 - Math.min(...r.offers.map(o => o.price)) / r.was : -1;
-        out = [...heads].sort((a, b) => dr(b) - dr(a)).slice(0, Number(p.get('limit')) || 4);
+        const sorted = [...heads].sort((a, b) => dr(b) - dr(a));
+        const lim = Number(p.get('limit')) || 4;
+        out = sorted.slice(0, lim);
+        if (p.get('perCat') === '1') {
+          const per = {};
+          for (const r of sorted) if ((per[r.cat] = (per[r.cat] || 0) + 1) <= lim && !out.includes(r)) out.push(r);
+        }
       } else {
         out = heads;
       }
@@ -651,6 +657,36 @@ test('lazy catalog: a PDP visit merges into the cache without evicting earlier s
   assert.ok(win.CATALOG.some(p => p.id === 'lego'), 'PDP product must be in the cache');
   assert.ok(win.CATALOG.length > audioCount, 'earlier Audio slice must survive the merge');
   assert.ok(win.CATALOG.filter(p => p.cat === 'Audio').length === audioCount, 'no Audio rows lost');
+});
+
+test('lazy catalog: browse shows FULL category counts (meta.cats) off its small drops slice', async () => {
+  const win = boot('http://pricy.test/browse', { session: true });
+  assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'category tiles did not render');
+  assert.ok(win.api.some(c => /GET \/api\/products\?limit=4&perCat=1&sort=drop/.test(c.call)),
+    'browse must prefetch the per-cat drops slice, got: ' + win.api.map(c => c.call).join(' | '));
+  assert.ok(!win.api.some(c => c.call === 'GET /api/products'), 'browse must not fetch all heads anymore');
+  const heads = CATALOG_JSON.filter(p => !p.family);
+  const audio = qa(win, '.bigcat').find(el => /Audio/.test(el.textContent));
+  const audioTotal = heads.filter(p => p.cat === 'Audio').length;
+  assert.ok(audio.textContent.includes(`${audioTotal} products`),
+    `Audio tile must show the full served count (${audioTotal}), not the cache size — got: ` + audio.textContent);
+  // every served category in the prototype's fixed CATEGORIES list renders,
+  // even though the cache holds only the drops slice (E-readers isn't in
+  // that list — a pre-existing upstream gap, unchanged by the lazy cache)
+  const KNOWN = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'Kitchen'];
+  assert.strictEqual(qa(win, '.bigcat').length, KNOWN.filter(c => heads.some(p => p.cat === c)).length,
+    'every listed category must render even though the cache holds a slice');
+  assert.ok(win.CATALOG.length < heads.length, 'the cache must hold only the drops slice');
+});
+
+test('lazy catalog: home "Biggest drops" ranks the served slice, not the baked demo 8', async () => {
+  const heads = CATALOG_JSON.filter(p => !p.family);
+  const dr = p => p.was ? 1 - Math.min(...p.offers.map(o => o.price)) / p.was : -1;
+  const wantTop = [...heads].sort((a, b) => dr(b) - dr(a))[0];
+  const win = boot('http://pricy.test/', { session: true });
+  assert.ok(await until(() => qa(win, '.sidecard .afeed__item').length === 3), 'drops sidecard did not render');
+  assert.ok(qa(win, '.sidecard .afeed__item')[0].textContent.includes(wantTop.name),
+    `top drop must be the served ${wantTop.id}, got: ` + qa(win, '.sidecard .afeed__item')[0].textContent);
 });
 
 test('offer rows: Visit opens the offer url, url-less offers are disabled', async () => {

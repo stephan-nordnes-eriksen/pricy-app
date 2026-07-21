@@ -313,10 +313,9 @@ function ensureRoute(name, params = {}) {
   if (name === 'home') wants.push({ sort: 'drop', limit: 3 }); // "Biggest drops" sidecard
   else if (name === 'results') wants.push(params.cat ? { cat: params.cat } : params.query ? { q: params.query } : {});
   else if (name === 'product') wants.push({ ids: params.id }); // server adds family + same-cat neighbors
-  // ponytail: browse fetches all heads until the upstream meta.cats change
-  // lands — per-cat counts still read CAT_OF[c].length (PLAN phase 5 flips
-  // this to {sort:'drop', perCat:1, limit:4})
-  else if (name === 'browse') wants.push({});
+  // browse renders per-cat top drops + global top-4 from the cache; counts
+  // and category presence come from the served meta.cats (upstream synced)
+  else if (name === 'browse') wants.push({ sort: 'drop', perCat: 1, limit: 4 });
   else if (name === 'compare') {
     const first = CompareStore.prods()[0];
     if (first) wants.push({ cat: first.cat }); // CmpAdd candidates are same-category
@@ -345,23 +344,16 @@ function hydrateSession(me, alerts) {
     });
 }
 
-// Live header suggestions over the lazy cache: every searchSuggest call
-// (AppData, sync-owned — reassignable, one esbuild scope) also schedules a
-// debounced /api/products?q= fetch; when rows merge, poking the original
-// WatchStore.emit re-renders AppHeader (it subscribes via useWatchStore),
-// which recomputes the dropdown from the now-larger CATALOG.
-// ponytail: rides AppHeader's subscription — if homeLayout ever flips to
-// 'search', do the upstream SearchSuggest hook instead (PLAN phase 5).
-let suggestTimer;
-const _suggest = searchSuggest;
-searchSuggest = (q) => {
-  clearTimeout(suggestTimer);
+// Live header suggestions over the lazy cache: SearchSuggest (upstream)
+// calls window.onSuggestData(q, refresh) per keystroke — debounce a
+// /api/products?q= fetch and refresh the dropdown once rows merge. The
+// return value is the effect's cleanup, so a superseded keystroke cancels
+// its own timer.
+window.onSuggestData = (q, refresh) => {
   const s = String(q || '').trim();
-  if (s.length >= 2) {
-    suggestTimer = setTimeout(() =>
-      fetchProducts({ q: s }).then(() => _emit.call(WatchStore)).catch(() => {}), 200);
-  }
-  return _suggest(q);
+  if (s.length < 2) return undefined;
+  const t = setTimeout(() => fetchProducts({ q: s }).then(refresh).catch(() => {}), 200);
+  return () => clearTimeout(t);
 };
 
 function toUrl(name, params = {}) {
