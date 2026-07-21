@@ -4,3 +4,4 @@ dist/
 worker/seed.json
 test-e2e/__artifacts__/
 tools/.ingest-token
+env
