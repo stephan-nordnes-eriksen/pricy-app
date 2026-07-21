@@ -21,7 +21,7 @@ function AlertRow({ r, go, onRemove }) {
           {r.paused && <span className="tag" style={{ fontSize: 9 }}>Paused</span>}
         </div>
       </div>
-      <div className="alrow__spark"><Sparkline points={p.history.slice(-12)} w={110} h={34} color={active ? 'var(--green-700)' : 'var(--ink-900)'} /></div>
+      <div className="alrow__spark">{p.history && p.history.length ? <Sparkline points={p.history.slice(-12)} w={110} h={34} color={active ? 'var(--green-700)' : 'var(--ink-900)'} /> : null}</div>
       <div>
         <div className="alrow__lbl">Best now</div>
         <Price value={p.best} size={17}></Price>

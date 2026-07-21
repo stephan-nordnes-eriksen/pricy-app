@@ -4,7 +4,7 @@
 const { useState, useEffect, useRef } = React;
 
 // --- NOK formatting: "1 499" with thin spaces ----------------
-function fmt(n) { return n.toLocaleString('en-US').replace(/,/g, '\u00A0'); }
+function fmt(n) { return (n == null || !isFinite(n)) ? '\u2014' : n.toLocaleString('en-US').replace(/,/g, '\u00A0'); }
 
 // --- catalog meta helpers (real counts; CATALOG.meta set where the catalog is built) ---
 function metaOf() { return (window.CATALOG && window.CATALOG.meta) || null; }
@@ -55,6 +55,7 @@ function Icon({ name, size = 18, style }) {
 
 // --- Price (currency + tabular number) -----------------------
 function Price({ value, size = 22, cur = 'kr' }) {
+  if (value == null || !isFinite(value)) return <span className="no-offers">No offers yet</span>;
   return (
     <span className="price">
       <span className="cur" style={{ fontSize: Math.round(size * 0.6) }}>{cur}</span>

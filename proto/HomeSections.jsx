@@ -21,6 +21,7 @@ function DrawSpark({ points, w = 120, h = 36, color = 'var(--ink-900)', draw = t
 }
 
 function PriceTag({ value, size = 22, color }) {
+  if (value == null || !isFinite(value)) return <span className="no-offers">No offers yet</span>;
   return (
     <span className="price" style={{ color }}>
       <span className="cur" style={{ fontSize: Math.round(size * 0.62), color: color || 'var(--ink-600)' }}>kr</span>
@@ -71,7 +72,7 @@ function WatchRow({ w, go, draw }) {
           <span>{w.brand}</span><span>·</span><span>{w.shops} shops</span>
           {w.hit
             ? <Tag kind="best">▼ Target hit</Tag>
-            : <span className="muted">Best at {w.offers[0].shop}</span>}
+            : <span className="muted">{w.offers && w.offers.length ? 'Best at ' + w.offers[0].shop : 'No offers yet'}</span>}
         </div>
       </div>
       <div className="wrow__spark">

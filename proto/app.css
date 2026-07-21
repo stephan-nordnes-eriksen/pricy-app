@@ -444,6 +444,10 @@
 .stars b { font-weight: 700; }
 .stars__n { color: var(--ink-400); }
 
+/* missing-data states */
+.no-offers { font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); white-space: nowrap; }
+.offers__empty { padding: 16px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); }
+
 /* active filter chips */
 .activechips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--s-4); }
 .fchip { display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--green-700); background: var(--green-100); color: var(--green-700); padding: 5px 10px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }

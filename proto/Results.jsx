@@ -102,6 +102,7 @@ function searchCatalog({ query, cat }) {
 
 // ---- small UI bits ----------------------------------------
 function Stars({ rating, reviews }) {
+  if (!rating) return <span className="stars"><span className="stars__n">No reviews yet</span></span>;
   const full = Math.round(rating);
   return (
     <span className="stars" title={rating + ' / 5'}>
@@ -132,12 +133,14 @@ function ResultRow({ p, go, spark, saved, onSave }) {
           <VariantHint p={p} />
         </div>
       </div>
-      {spark && <div className="rrow__spark"><Spark points={p.history} /></div>}
+      {spark && <div className="rrow__spark">{p.history && p.history.length ? <Spark points={p.history} /> : null}</div>}
       <div className="rrow__price">
-        {p.drop >= 12 && <span className="rrow__drop"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
-        <div className="rrow__from">from</div>
-        <Price value={p.best} size={24} />
-        <div className="rrow__shops">{p.shops} shops →</div>
+        {p.best != null ? (<>
+          {p.drop >= 12 && <span className="rrow__drop"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
+          <div className="rrow__from">from</div>
+          <Price value={p.best} size={24} />
+          <div className="rrow__shops">{p.shops} shops →</div>
+        </>) : <div className="no-offers">No offers yet</div>}
       </div>
       <div className="rrow__acts">
         <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}>
@@ -157,7 +160,7 @@ function ResultRowCompact({ p, go, saved, onSave }) {
       <span className="crow__brand">{p.brand}</span>
       <span className="crow__name">{p.name}</span>
       {p.drop >= 12 && <span className="crow__drop">▼ −{p.drop}%</span>}
-      <span className="crow__meta">★ {p.rating.toFixed(1)}</span>
+      <span className="crow__meta">{p.rating ? '★ ' + p.rating.toFixed(1) : 'No reviews yet'}</span>
       <span className="crow__meta">{p.shops} shops</span>
       <span className="crow__price"><Price value={p.best} size={15} /></span>
       <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}><Icon name="bookmark" size={14} /></button>
@@ -177,8 +180,7 @@ function ResultCard({ p, go }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}><Stars rating={p.rating} /><VariantHint p={p} /></div>
       <div className="pcard__foot">
         <div>
-          <div className="pcard__from">from</div>
-          <Price value={p.best} size={20} />
+          {p.best != null ? (<><div className="pcard__from">from</div><Price value={p.best} size={20} /></>) : <div className="no-offers">No offers yet</div>}
         </div>
         <div style={{ textAlign: 'right' }}>
           <div className="pcard__meta">{p.shops} shops</div>
@@ -314,10 +316,10 @@ const VIEWS = [
 ];
 
 const SORTS = [
-  { id: 'best', label: 'Best price', fn: (a, b) => a.best - b.best },
-  { id: 'drop', label: 'Biggest drop', fn: (a, b) => b.drop - a.drop },
+  { id: 'best', label: 'Best price', fn: (a, b) => (a.best || 9e15) - (b.best || 9e15) },
+  { id: 'drop', label: 'Biggest drop', fn: (a, b) => (b.drop || 0) - (a.drop || 0) },
   { id: 'shops', label: 'Most shops', fn: (a, b) => b.shops - a.shops },
-  { id: 'rating', label: 'Top rated', fn: (a, b) => b.rating - a.rating },
+  { id: 'rating', label: 'Top rated', fn: (a, b) => (b.rating || 0) - (a.rating || 0) },
 ];
 
 // ===========================================================
@@ -335,7 +337,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   useEffect(() => { setF({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, nc: false }); }, [query, cat]);
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
 
-  const prices = baseResults.map(p => p.best);
+  const prices = baseResults.map(p => p.best).filter(n => n != null && isFinite(n));
   const base = {
     min: prices.length ? Math.floor(Math.min(...prices) / 100) * 100 : 0,
     max: prices.length ? Math.ceil(Math.max(...prices) / 100) * 100 : 1000,
@@ -346,9 +348,10 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
 
   let list = baseResults.filter(p => {
     if (f.brands.length && !f.brands.includes(p.brand)) return false;
+    if ((f.min || f.max) && p.best == null) return false;
     if (f.min && p.best < +f.min) return false;
     if (f.max && p.best > +f.max) return false;
-    if (f.rating && p.rating < f.rating) return false;
+    if (f.rating && (p.rating || 0) < f.rating) return false;
     if (f.sale && p.drop < 12) return false;
     if (f.instock && !p.stock) return false;
     if (f.nc && !p.nc) return false;
@@ -418,11 +421,11 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
             </div>
           ) : view === 'compact' ? (
             <div className="rlist rlist--compact">
-              {list.map(p => <ResultRowCompact key={p.id} p={p} go={go} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round(p.best * 0.92 / 10) * 10)} />)}
+              {list.map(p => <ResultRowCompact key={p.id} p={p} go={go} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
             </div>
           ) : (
             <div className="rlist">
-              {list.map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round(p.best * 0.92 / 10) * 10)} />)}
+              {list.map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
             </div>
           )}
         </main>
@@ -435,7 +438,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
 const REPORT_REASONS = ['Wrong price', 'Out of stock', 'Wrong product info', 'Other'];
 function ReportProblemModal({ p, onClose, onDone }) {
   const [reason, setReason] = useState(null);
-  const [shop, setShop] = useState(p.offers[0].shop);
+  const [shop, setShop] = useState((((p.offers || [])[0]) || {}).shop || '');
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -495,22 +498,23 @@ function ProductPage({ go, id }) {
   const v = useMemo(() => variantListing(p, sel), [p, sel]);
   useWatchStore();
   const w = WatchStore.get(v.id);
-  const [target, setTarget] = useState(w ? w.target : Math.round(v.best * 0.92 / 10) * 10);
+  const [target, setTarget] = useState(w ? w.target : (v.best ? Math.round(v.best * 0.92 / 10) * 10 : ''));
   const watching = !!w;
-  useEffect(() => { if (!watching) setTarget(Math.round(v.best * 0.92 / 10) * 10); }, [v.best]);
+  useEffect(() => { if (!watching) setTarget(v.best ? Math.round(v.best * 0.92 / 10) * 10 : ''); }, [v.best]);
   const dirty = watching && +target !== w.target;
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
   const flash = (msg) => { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2400); };
   const [weeks, setWeeks] = useState(24);
   const RANGES = [{ w: 6, label: '6W' }, { w: 12, label: '12W' }, { w: 24, label: '24W' }];
-  const histView = v.history.slice(-weeks);
-  const low = Math.min(...v.history);
-  const best = v.offers[0];
-  const shopUrl = best.url || (v.offers.find(o => o.url) || {}).url;
+  const histAll = v.history || [];
+  const histView = histAll.slice(-weeks);
+  const low = histAll.length ? Math.min(...histAll) : null;
+  const best = (v.offers && v.offers.length) ? v.offers[0] : null;
+  const shopUrl = (best && best.url) || ((v.offers || []).find(o => o.url) || {}).url;
   const [buyNow, setBuyNow] = useState(false);
   const [report, setReport] = useState(false);
-  const more = CAT_OF[p.cat].filter(x => x.id !== p.id).slice(0, 4);
+  const more = (CAT_OF[p.cat] || []).filter(x => x.id !== p.id).slice(0, 4);
 
   return (
     <div className="screen">
@@ -540,17 +544,19 @@ function ProductPage({ go, id }) {
             <div className="bestbox">
               <div className="bestbox__top">
                 <div>
-                  <div className="label">Best price · {best.shop}</div>
-                  <div className="bestbox__price"><span className="cur">kr</span><span className="t-price-lg">{fmt(best.price)}</span></div>
+                  <div className="label">{best ? 'Best price · ' + best.shop : 'Best price'}</div>
+                  {best ? <div className="bestbox__price"><span className="cur">kr</span><span className="t-price-lg">{fmt(best.price)}</span></div> : <div className="no-offers" style={{ fontSize: 15, padding: '10px 0' }}>No offers yet</div>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)', alignItems: 'stretch' }}>
-                  <Btn variant="dark" icon="zap" onClick={() => setBuyNow(true)}>Buy now</Btn>
+                  <Btn variant="dark" icon="zap" disabled={!best} title={best ? undefined : 'No offers yet'} onClick={() => setBuyNow(true)}>Buy now</Btn>
                   <Btn variant="ghost" icon="external-link" disabled={!shopUrl} title={shopUrl ? undefined : 'No shop link available for this product'} onClick={() => shopUrl && window.open(shopUrl, '_blank', 'noopener')}>Go to shop</Btn>
                 </div>
               </div>
               <div className="bestbox__bot">
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}><span className="strike">was kr {fmt(v.was)}</span><span className="delta delta--down" style={{ whiteSpace: 'nowrap' }}>▼ −{v.drop}%</span><span className="muted">· {v.shops} shops</span></span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green-700)', whiteSpace: 'nowrap' }}>All-time low kr {fmt(low)}</span>
+                {best ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>{v.was != null && <span className="strike">was kr {fmt(v.was)}</span>}{v.drop > 0 && <span className="delta delta--down" style={{ whiteSpace: 'nowrap' }}>▼ −{v.drop}%</span>}<span className="muted">· {v.shops} shops</span></span>
+                ) : <span className="muted">We’ll show prices as soon as a shop lists it</span>}
+                {low != null && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green-700)', whiteSpace: 'nowrap' }}>All-time low kr {fmt(low)}</span>}
               </div>
             </div>
 
@@ -564,7 +570,7 @@ function ProductPage({ go, id }) {
                   </div>
                 </div>
                 {!watching ? (
-                  <Btn variant="primary" icon="bell" onClick={() => { WatchStore.add(v.id, +target || v.best); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || p.best)); }}>
+                  <Btn variant="primary" icon="bell" onClick={() => { WatchStore.add(v.id, +target || v.best || 0); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || v.best || 0)); }}>
                     Watch price
                   </Btn>
                 ) : (
@@ -594,7 +600,8 @@ function ProductPage({ go, id }) {
         <div className="pdp__grid">
           <div className="offers">
             <div className="offers__h"><span>Shop</span><span>Delivery</span><span>Stock</span><span style={{ textAlign: 'right' }}>Price</span></div>
-            {v.offers.map((o, i) => (
+            {!best && <div className="offers__empty">No offers yet — we’re tracking this product</div>}
+            {(v.offers || []).map((o, i) => (
               <div key={o.shop} className={'orow' + (i === 0 ? ' is-best' : '')}>
                 <div className="orow__shop">{o.shop}{i === 0 && <Tag kind="best">★ Best</Tag>}</div>
                 <div className="orow__ship">{o.ship}</div>
@@ -619,11 +626,11 @@ function ProductPage({ go, id }) {
                 ))}
               </div>
             </div>
-            <HistoryChart points={histView} low={low} />
-            <div className="chart__legend">
+            {histAll.length ? <HistoryChart points={histView} low={low} /> : <div className="offers__empty">No price history yet</div>}
+            {histAll.length > 0 && <div className="chart__legend">
               <span><span className="dot dot--line" /> Lowest across shops</span>
               <span><span className="dot dot--low" /> All-time low kr {fmt(low)}</span>
-            </div>
+            </div>}
           </div>
         </div>
 

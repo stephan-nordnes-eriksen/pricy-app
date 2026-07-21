@@ -227,7 +227,7 @@ function PurchaseModal({ order, onClose }) {
 // --- Buy now (instant purchase at today's best price) ---------
 function BuyNowModal({ p, onClose }) {
   const store = useAutobuyStore();
-  const best = p.offers[0];
+  const best = ((p.offers || [])[0]) || { shop: '—', price: p.best };
   const [phase, setPhase] = useState(store.signed ? 'confirm' : 'sign');
   const [busy, setBusy] = useState(false);
   const [order, setOrder] = useState(null);
@@ -306,7 +306,7 @@ function BuyNowModal({ p, onClose }) {
 // --- PDP auto-buy box -----------------------------------------
 function AutobuyBox({ p }) {
   const store = useAutobuyStore();
-  const [max, setMax] = useState(Math.round(p.best * 0.9 / 10) * 10);
+  const [max, setMax] = useState(p.best ? Math.round(p.best * 0.9 / 10) * 10 : '');
   const [exp, setExp] = useState('60');
   const [shops, setShops] = useState('any');
   const [activate, setActivate] = useState(false);

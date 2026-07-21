@@ -108,14 +108,14 @@ function CmpWatch({ p }) {
   const w = WatchStore.get(p.id);
   return w
     ? <span className="cmp__watchon"><Icon name="bell-ring" size={13} /> below kr {fmt(w.target)}</span>
-    : <button type="button" className="cmp__watchbtn" onClick={() => WatchStore.add(p.id, Math.round(p.best * 0.92 / 10) * 10)}><Icon name="bell" size={13} /> Watch</button>;
+    : <button type="button" className="cmp__watchbtn" onClick={() => WatchStore.add(p.id, Math.round((p.best || 0) * 0.92 / 10) * 10)}><Icon name="bell" size={13} /> Watch</button>;
 }
 
 const CMP_OVERVIEW = [
-  { id: 'price', label: 'Best price', best: 'min', val: p => p.best, render: p => (<span><Price value={p.best} size={21} /><span className="cmp__sub">at {p.offers[0].shop}</span></span>) },
-  { id: 'was', label: 'Before / drop', val: p => p.drop, render: p => (<span className="cmp__was"><span className="strike">kr {fmt(p.was)}</span><Delta pct={-p.drop} /></span>) },
-  { id: 'low', label: 'All-time low', best: 'min', val: p => Math.min(...p.history), render: p => <span className="cmp__mono">kr {fmt(Math.min(...p.history))}</span> },
-  { id: 'hist', label: 'Price history · 24w', val: p => p.history.join(), render: p => <CmpSpark points={p.history} /> },
+  { id: 'price', label: 'Best price', best: 'min', val: p => p.best, render: p => p.best != null ? (<span><Price value={p.best} size={21} /><span className="cmp__sub">at {(((p.offers || [])[0]) || {}).shop}</span></span>) : <span className="cmp__sub">No offers yet</span> },
+  { id: 'was', label: 'Before / drop', val: p => p.drop, render: p => p.was ? (<span className="cmp__was"><span className="strike">kr {fmt(p.was)}</span><Delta pct={-p.drop} /></span>) : <span className="cmp__sub">—</span> },
+  { id: 'low', label: 'All-time low', best: 'min', val: p => (p.history && p.history.length ? Math.min(...p.history) : Infinity), render: p => (p.history && p.history.length ? <span className="cmp__mono">kr {fmt(Math.min(...p.history))}</span> : <span className="cmp__sub">—</span>) },
+  { id: 'hist', label: 'Price history · 24w', val: p => (p.history || []).join(), render: p => (p.history && p.history.length ? <CmpSpark points={p.history} /> : <span className="cmp__sub">—</span>) },
   { id: 'shops', label: 'Shops tracking', best: 'max', val: p => p.shops, render: p => <span className="cmp__mono">{p.shops} shops</span> },
   { id: 'rating', label: 'Rating', best: 'max', val: p => p.rating, render: p => <Stars rating={p.rating} reviews={p.reviews} /> },
   { id: 'stock', label: 'Availability', val: p => String(p.stock), render: p => <StockBadge state={p.stock ? 'in' : 'back'} /> },
@@ -136,7 +136,7 @@ function CmpAdd({ ps, go }) {
   const s = q.toLowerCase().trim();
   const cands = CATALOG.filter(x => !CompareStore.has(x.id) && specKindOf(x) === kind)
     .filter(x => !s || (x.name + ' ' + x.brand + ' ' + (x.kw || '')).toLowerCase().includes(s))
-    .sort((a, b) => b.rating - a.rating).slice(0, 6);
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 6);
   const cat = ps[0].cat;
   const pick = (id) => { CompareStore.add(id); setOpen(false); };
   return (
@@ -191,9 +191,10 @@ function ComparePage({ go }) {
   const overview = CMP_OVERVIEW.map(r => mark({ id: r.id, label: r.label, best: r.best, vals: ps.map(p => r.val(p)), cells: ps.map(p => ({ node: r.render(p), cls: '' })) }));
   overview.forEach(row => {
     if (!row.best || !row.differs) return;
-    const nums = row.vals.map(Number);
+    const nums = row.vals.map(Number).filter(isFinite);
+    if (!nums.length) return;
     const t = row.best === 'min' ? Math.min(...nums) : Math.max(...nums);
-    row.cells.forEach((c, i) => { if (nums[i] === t) c.cls = ' is-best'; });
+    row.cells.forEach((c, i) => { if (Number(row.vals[i]) === t) c.cls = ' is-best'; });
   });
   const sections = [{ id: 'ov', label: 'Overview', rows: overview }];
   if (tables && tables[0]) tables[0].groups.forEach((g, gi) => {
