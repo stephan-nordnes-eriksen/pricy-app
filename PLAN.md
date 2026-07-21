@@ -203,10 +203,12 @@ Per-shop ritual (repeat for each scrapeable shop):
    429/403 → shop is feed-only; park it for Adtraction (task 2), no UA
    games. Elkjøp confirmed blocked 2026-07-15.
 2. **Discover:** `node tools/discover.mjs <Shop> <origin>` (no `--write`).
-   Triage the output: "confirmed by EAN" is done; "unconfirmed candidate"
-   with an EAN that is genuinely the same product (color/regional variant)
-   → append it to `worker/eans.json` (13-digit, zero-padded) and re-run
-   with `--write`; anything else ignore.
+   Triage the output: "confirmed by EAN" is done; "new product ean-…" is
+   auto-discovery — if it's genuinely a variant of the catalog product
+   (color/regional SKU) append the EAN to `worker/eans.json` (13-digit,
+   zero-padded) instead, else leave it and the crawl will create it as a
+   hidden product (enrich later via `node tools/enrich.mjs`). Re-run with
+   `--write` when triage is done; "no JSON-LD EAN" candidates ignore.
 3. **Hand-fill the misses:** the slug heuristic is English-token based and
    misses Norwegian slugs/marketing paths — paste product-page URLs
    straight into `tools/crawl-urls.json` for whatever discovery didn't
@@ -344,3 +346,36 @@ sources shop-by-shop behind the same `ingest()`.
 Not planned here: payments, SSR/SEO — separate decisions once real data
 is live. Real BankID is parked until mostly everything else is done
 (see 4b); the fake button just keeps working.
+
+### 4f — Edge rate limiting, anti-scraping, DoS (planned 2026-07-21, not started)
+
+Decided against a `ratelimit` Worker binding (tried, reverted 2026-07-21) —
+user prefers Cloudflare dashboard/zone products over code, since they run
+at the edge (before the Worker even invokes, cheaper) and don't need a
+deploy to tune. Everything below is dashboard-only, done by hand in
+dash.cloudflare.com against the `pricy.no` zone; nothing here touches the
+repo. Needs the zone's current plan checked first (Free vs Pro+ gates the
+challenge actions and Super Bot Fight Mode).
+
+1. **WAF → Rate limiting rules** — one rule covering both the auth
+   endpoints (`/api/auth/request`, `/api/auth/login`, `/api/auth/signup` —
+   brute force / email-bombing) and the catalog/search surface
+   (`/api/catalog.json`, `/mcp` — scraping). Match path, per-IP threshold,
+   action Block (Free) or Managed Challenge (Pro+). Start high (log-only
+   first, per Cloudflare's own guidance) to learn real traffic shape
+   before tightening — the SPA may re-fetch `/api/catalog.json` per nav,
+   so a too-low threshold could throttle real users.
+2. **Security → Bots → Bot Fight Mode** — free, one toggle, challenges
+   obvious scraper bots account-wide. If the zone is Pro+, use Super Bot
+   Fight Mode instead for bot-score tuning and static-resource protection.
+3. **Caching → Cache Rules** — cache `/api/catalog.json` at the edge
+   (Edge TTL ~5 min; catalog only actually changes hourly via the cron).
+   Turns scraping into cache hits instead of D1-backed origin requests —
+   mitigates load/cost even before any blocking kicks in, zero risk to
+   real users.
+4. DDoS protection is already on (automatic, all plans, zero config) —
+   nothing to do there, just confirming it's not a gap.
+
+Order: do 3 first (free win, no behavior change for anyone), then 2
+(free, low risk), then 1 last since it's the one that can accidentally
+block real traffic — needs the log-only warm-up period.
