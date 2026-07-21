@@ -28,9 +28,20 @@ Two Claude Design projects feed this repo:
 - CDN dev React/Babel/lucide are swapped for vendored production UMDs
   (`vendor/`)
 - the prototype's enriched CATALOG is extracted to `worker/seed.json`
-  (gitignored). `/api/catalog.json` is a Worker route (4c): D1
-  `products`/`offers`/`price_points`, seeded from that file on first use,
-  offers refreshed by the hourly cron `scheduled` handler.
+  (gitignored). D1 `products`/`offers`/`price_points`, seeded from that
+  file on first use, offers refreshed by the hourly cron `scheduled`
+  handler. The catalog is **query-based** (no eager full load): the SPA
+  fetches `GET /api/products?ids=|q=|cat=|sort=drop` slices which boot's
+  `hydrateCatalog` MERGES into the prototype's CATALOG array (a lazy
+  session cache; `ensureRoute` prefetches each route's slice before
+  setScreen, `hydrateSession` batch-fetches every id the login references,
+  header suggestions ride a debounced `q=` fetch). Worker helpers:
+  `rowsFor`/`searchIds`/`topDropIds`/`catMeta` in `worker/index.js`.
+  `/api/catalog.json` remains as a full dump for ops/tools only — the SPA
+  must never call it. Upstream (Claude Design) still pending: category
+  counts from `CATALOG.meta.cats` + SignedHome "Biggest drops" off
+  `window.CATALOG`; until synced, browse prefetches all heads and the
+  drops sidecard shows baked demo rows.
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
   feeds, URLs in the `ADTRACTION_FEEDS` secret, rows matched to products
