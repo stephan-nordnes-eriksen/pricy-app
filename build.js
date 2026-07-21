@@ -77,6 +77,22 @@ if (catalog.some(p => p.variants)) {
   }
 }
 
+// --- extra products (worker/extra.json, hand-written) -----------
+// Heads the prototype doesn't know about — meta only, no demo offers/history;
+// real prices arrive via ingest. Riding seed.json means seedCatalog,
+// discover.mjs and crawl.mjs all see them with no further wiring.
+const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json'), 'utf8'));
+{
+  const ids = new Set([...catalog, ...children].map(p => p.id));
+  for (const p of extra) {
+    if (!p.id || !p.name || !p.cat) throw new Error(`extra.json row needs id/name/cat: ${JSON.stringify(p)}`);
+    if (p.id.includes('~')) throw new Error(`extra.json id "${p.id}" contains "~" (reserved for variant children)`);
+    if (ids.has(p.id)) throw new Error(`extra.json duplicate/colliding id: ${p.id}`);
+    if (!ctx.CATEGORIES.includes(p.cat)) throw new Error(`extra.json "${p.id}": unknown category "${p.cat}" (prototype knows: ${ctx.CATEGORIES.join(', ')})`);
+    ids.add(p.id);
+  }
+}
+
 // --- rewrite the html ------------------------------------------
 html = html
   .replace(BLOCK_RE, '')
@@ -115,6 +131,9 @@ fs.writeFileSync(path.join(DIST, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify([
   ...catalog.map(p => ctx.SPECS[p.id] ? { ...p, specs: ctx.SPECS[p.id] } : p),
   ...children,
+  // uniform row shape; real offers arrive via ingest. rating 0 = "no reviews"
+  // — the prototype's Stars crashes on undefined (upstream fix pending)
+  ...extra.map(p => ({ offers: [], history: [], rating: 0, reviews: 0, ...p })),
 ]));
 for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith('.js'))) {
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));

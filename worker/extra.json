@@ -1,0 +1,9 @@
+[
+  { "id": "moccamaster", "name": "Moccamaster Automatic", "brand": "Moccamaster", "cat": "Kitchen", "icon": "coffee", "kw": "coffee maker kaffetrakter kitchen filter" },
+  { "id": "ninja-af300", "name": "Ninja Foodi Dual Zone AF300", "brand": "Ninja", "cat": "Kitchen", "icon": "chef-hat", "kw": "airfryer air fryer kitchen dual zone frityr" },
+  { "id": "kobo-libra", "name": "Kobo Libra Colour", "brand": "Kobo", "cat": "E-readers", "icon": "book-open", "kw": "ereader e-reader ebook lesebrett colour 7 inch" },
+  { "id": "switch2", "name": "Nintendo Switch 2", "brand": "Nintendo", "cat": "Gaming", "icon": "gamepad-2", "kw": "console gaming nintendo switch handheld" },
+  { "id": "ipad11", "name": "iPad 11\" (A16) 128 GB", "brand": "Apple", "cat": "Computers", "icon": "tablet", "kw": "tablet nettbrett ipad apple 128gb" },
+  { "id": "ps5pro", "name": "PlayStation 5 Pro", "brand": "Sony", "cat": "Gaming", "icon": "gamepad-2", "kw": "console gaming ps5 pro playstation 2tb" },
+  { "id": "lego-roses", "name": "LEGO Bouquet of Roses (10328)", "brand": "LEGO", "cat": "Toys", "icon": "flower-2", "kw": "lego roses bouquet botanicals flowers bukett" }
+]

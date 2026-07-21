@@ -548,7 +548,10 @@ function hydrateCatalog(data) {
     CATALOG.push(r);
     return r;
   };
-  rows.filter(r => !r.family).forEach(r => {
+  // Offer-less heads (extra.json rows awaiting their first crawl, delisted
+  // products) stay out of the client cache: the prototype's Price/fmt crash
+  // on best === undefined. Drop this filter once upstream renders them.
+  rows.filter(r => !r.family && r.offers?.length).forEach(r => {
     const row = upsert(r);
     // the baked demo byId (AppData) overlaps served ids and WatchStore.prod
     // prefers it — re-point overlapping entries at the served row so demo

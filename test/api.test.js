@@ -395,6 +395,36 @@ test('catalog route seeds D1 on first request and serves the demo shape, no auth
   assert.ok(!child.specs, 'variant children must not duplicate head specs');
 });
 
+// extra.json heads (repo-side products the prototype doesn't know) ride the
+// seed with no demo offers — served, searchable, and priced only by ingest
+const extra = require(path.join(__dirname, '..', 'worker', 'extra.json'));
+test('extra.json products are served offer-less, searchable, and priced by ingest', async () => {
+  assert.ok(extra.length, 'extra.json must carry the expansion batch');
+  const env = { DB: d1(), INGEST_TOKEN: 't' };
+  const call = api(env);
+  const cat = await catBody(call);
+  for (const want of extra) {
+    const got = cat.find(p => p.id === want.id);
+    assert.ok(got, `extra product ${want.id} must be served`);
+    assert.strictEqual(got.name, want.name);
+    assert.deepStrictEqual(got.offers, [], `${want.id} must have no demo offers`);
+    assert.strictEqual(got.best, undefined, 'no offers → no best price');
+  }
+  const q = (await (await call('/api/products?q=moccamaster')).json()).products;
+  assert.ok(q.some(p => p.id === 'moccamaster'), 'extra products must be searchable');
+
+  // ingest prices an extra product exactly like a prototype one
+  const push = await worker.fetch(new Request('http://pricy.test/api/ingest', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer t' },
+    body: JSON.stringify([{ product_id: 'moccamaster', shop: 'Power', price: 3499, stock: 1, url: 'https://www.power.no/x' }]),
+  }), env);
+  assert.strictEqual(push.status, 200);
+  const after = (await catBody(call)).find(p => p.id === 'moccamaster');
+  assert.strictEqual(after.best, 3499);
+  assert.deepStrictEqual(after.history, [3499], 'first price point starts the history');
+});
+
 // Query-based catalog: /api/products serves slices in the catalog.json row
 // shape — ids (expanded to family + neighbors), q (broad candidates, the
 // client re-filters), cat, sort=drop; meta carries per-category head counts
