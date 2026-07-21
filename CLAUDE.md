@@ -60,12 +60,11 @@ Two Claude Design projects feed this repo:
   Adtraction feeds emit such rows for every unmatched EAN; discover.mjs
   writes unknown-EAN pages as `ean-*` entries into crawl-urls.json;
   scrapeSource carries JSON-LD name/brand so crawl pushes create too.
-  Enrichment is manual: `node tools/enrich.mjs` lists hidden rows
-  (`GET /api/products?hidden=1`) as paste-ready extra.json skeletons —
-  fill cat/icon/kw, KEEP THE SAME id, deploy; the seed upsert rewrites
-  meta without `hidden` and the product goes live with its collected
-  offers. A hidden row that's really a variant of an existing product:
-  add its EAN to eans.json and skip the extra row instead.
+  Enrichment is manual — full runbook in **ENRICHMENT.md**: `node
+  tools/enrich.mjs` lists hidden rows as paste-ready extra.json skeletons,
+  triage junk/variant/real, KEEP THE SAME id, deploy; the seed upsert
+  rewrites meta without `hidden` and the product goes live with its
+  collected offers.
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
   feeds, URLs in the `ADTRACTION_FEEDS` secret, rows matched to products
