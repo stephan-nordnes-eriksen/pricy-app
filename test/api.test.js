@@ -395,6 +395,77 @@ test('catalog route seeds D1 on first request and serves the demo shape, no auth
   assert.ok(!child.specs, 'variant children must not duplicate head specs');
 });
 
+// Query-based catalog: /api/products serves slices in the catalog.json row
+// shape — ids (expanded to family + neighbors), q (broad candidates, the
+// client re-filters), cat, sort=drop; meta carries per-category head counts
+test('GET /api/products: ids expand to head + siblings + same-cat neighbors', async () => {
+  const call = api({ DB: d1() });
+  const res = await call('/api/products?ids=iphone~256-blue');
+  assert.strictEqual(res.status, 200);
+  const { meta, products } = await res.json();
+
+  const ids = products.map(p => p.id);
+  assert.ok(ids.includes('iphone~256-blue'), 'requested child must be served');
+  assert.ok(ids.includes('iphone'), 'child id must pull its head');
+  assert.ok(ids.includes('iphone~128-blue'), 'head must pull every sibling child');
+  const neighbors = products.filter(p => !p.family && p.id !== 'iphone' && p.cat === 'Phones');
+  assert.ok(neighbors.length >= 1 && neighbors.length <= 4, 'same-cat head neighbors ride along for "More in {cat}"');
+
+  // row shape matches catalog.json (offers price-ordered, derived fields on)
+  const head = products.find(p => p.id === 'iphone');
+  assert.strictEqual(head.best, Math.min(...head.offers.map(o => o.price)));
+  assert.deepStrictEqual(head.history, seed.find(p => p.id === 'iphone').history.slice(-24));
+
+  // meta: global aggregates + per-cat head counts (children never counted)
+  assert.strictEqual(meta.products, seed.filter(p => !p.family).length);
+  const wantCats = seed.filter(p => !p.family).reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), {});
+  assert.deepStrictEqual(meta.cats, wantCats, 'meta.cats counts heads only');
+
+  const many = await call('/api/products?ids=' + Array.from({ length: 101 }, (_, i) => 'x' + i).join(','));
+  assert.strictEqual(many.status, 400, '>100 ids must 400');
+});
+
+test('GET /api/products: q is a broad head-only candidate match with client token semantics', async () => {
+  const call = api({ DB: d1() });
+  const hit = (await (await call('/api/products?q=bose')).json()).products;
+  assert.ok(hit.some(p => p.id === 'bose-ultra'), 'name/brand match must land');
+  assert.ok(hit.every(p => !p.family), 'search serves heads only');
+
+  const kw = (await (await call('/api/products?q=headphones')).json()).products;
+  assert.ok(kw.some(p => p.id === 'bose-ultra'), 'kw-only tokens must match (kw lives in meta)');
+
+  const short = (await (await call('/api/products?q=a')).json()).products;
+  assert.deepStrictEqual(short, [], 'a query with no tokens ≥2 chars matches nothing, like the client');
+});
+
+test('GET /api/products: sort=drop ranks by real drop%, perCat covers every category', async () => {
+  const call = api({ DB: d1() });
+  const { products } = await (await call('/api/products?sort=drop&limit=3')).json();
+  assert.strictEqual(products.length, 3);
+  const drops = products.map(p => p.drop);
+  assert.deepStrictEqual(drops, [...drops].sort((a, b) => b - a), 'ordered by drop desc');
+  const wantTop = seed.filter(p => p.was && !p.family)
+    .map(p => ({ id: p.id, drop: Math.round((1 - Math.min(...p.offers.map(o => o.price)) / p.was) * 100) }))
+    .sort((a, b) => b.drop - a.drop)[0];
+  assert.strictEqual(products[0].id, wantTop.id, 'global top drop matches the seed-derived answer');
+
+  const per = (await (await call('/api/products?sort=drop&perCat=1&limit=2')).json()).products;
+  const cats = new Set(per.map(p => p.cat));
+  const seedCats = new Set(seed.filter(p => !p.family && p.was).map(p => p.cat));
+  assert.deepStrictEqual(cats, seedCats, 'perCat serves top drops for every category that has any');
+  assert.ok(per.every(p => !p.family));
+});
+
+test('GET /api/products: cat filters exactly, no params serves all heads', async () => {
+  const call = api({ DB: d1() });
+  const audio = (await (await call('/api/products?cat=Audio')).json()).products;
+  assert.strictEqual(audio.length, seed.filter(p => !p.family && p.cat === 'Audio').length);
+  assert.ok(audio.every(p => p.cat === 'Audio' && !p.family));
+
+  const all = (await (await call('/api/products')).json()).products;
+  assert.strictEqual(all.length, seed.filter(p => !p.family).length, 'no params = every head');
+});
+
 // 4e step 1: seed evolution — a new seed.json refreshes meta for every row
 // but never touches offers/price_points; brand-new rows land in full
 test('seed evolution: changed seed refreshes meta, leaves real offers alone, adds new rows', async () => {

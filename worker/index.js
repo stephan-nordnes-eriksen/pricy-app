@@ -297,22 +297,17 @@ async function fireAlerts(db, env, before) {
   }
 }
 
-async function catalogBody(db) {
-  await seedCatalog(db);
-  const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
-  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers ORDER BY price').all();
-  const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
-  const withImg = new Set((await db.prepare('SELECT product_id FROM images').all()).results.map(r => r.product_id));
+function shapeRows(prods, offs, pts, imgSet) {
   const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
-  const offers = group(offs.results, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: o.stock === 2 ? undefined : !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at }));
-  const history = group(pts.results, p => p.price);
-  return prods.results.map(({ id, meta }) => {
+  const offers = group(offs, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: o.stock === 2 ? undefined : !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at }));
+  const history = group(pts, p => p.price);
+  return prods.map(({ id, meta }) => {
     const m = JSON.parse(meta);
     const po = offers[id] || [];
     const best = po[0]?.price; // po is price-ordered
     return {
       id, ...m,
-      img: withImg.has(id) ? `/img/${id}` : undefined,
+      img: imgSet.has(id) ? `/img/${id}` : undefined,
       best,
       drop: m.was && best ? Math.round((1 - best / m.was) * 100) : undefined,
       shops: po.length,
@@ -321,6 +316,90 @@ async function catalogBody(db) {
       history: (history[id] || []).slice(-24), // the demo shape's window
     };
   });
+}
+
+async function catalogBody(db) {
+  await seedCatalog(db);
+  const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
+  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers ORDER BY price').all();
+  const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
+  const withImg = new Set((await db.prepare('SELECT product_id FROM images').all()).results.map(r => r.product_id));
+  return shapeRows(prods.results, offs.results, pts.results, withImg);
+}
+
+// ── Query-based catalog (no eager full load) ───────────────────────────────
+// Helpers are pure (no seeding) — route handlers call seedCatalog first.
+const ph = (arr) => arr.map(() => '?').join(',');
+
+// Rows for a set of product ids, in the catalog.json row shape. expand=true
+// (the PDP/watchlist case) resolves child ids (`head~combo`) to their head,
+// includes every child of each head, and adds ≤4 same-category head
+// neighbors so the PDP's "More in {cat}" has rows to show.
+async function rowsFor(db, ids, { expand = true } = {}) {
+  const heads = [...new Set(ids.map(id => id.includes('~') ? id.slice(0, id.indexOf('~')) : id))];
+  if (!heads.length) return [];
+  const prods = expand
+    ? (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(heads)}) OR json_extract(meta, '$.family') IN (${ph(heads)}) ORDER BY rowid`).bind(...heads, ...heads).all()).results
+    : (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(heads)})`).bind(...heads).all()).results
+        .sort((a, b) => heads.indexOf(a.id) - heads.indexOf(b.id)); // caller's order is the ranking (sort=drop)
+  if (expand) {
+    const have = () => prods.map(r => r.id);
+    const cats = [...new Set(prods.filter(r => heads.includes(r.id)).map(r => JSON.parse(r.meta).cat).filter(Boolean))];
+    for (const cat of cats) {
+      const got = have();
+      prods.push(...(await db.prepare(
+        `SELECT id, meta FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND id NOT IN (${ph(got)}) ORDER BY rowid LIMIT 4`
+      ).bind(cat, ...got).all()).results);
+    }
+  }
+  const all = prods.map(r => r.id);
+  const offs = await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(all)}) ORDER BY price`).bind(...all).all();
+  const pts = await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(all)}) ORDER BY day`).bind(...all).all();
+  const withImg = new Set((await db.prepare(`SELECT product_id FROM images WHERE product_id IN (${ph(all)})`).bind(...all).all()).results.map(r => r.product_id));
+  return shapeRows(prods, offs.results, pts.results, withImg);
+}
+
+// Broad candidate match for free-text search: LIKE over the whole meta JSON
+// (name/brand/cat/kw all live there). Deliberately broader than the client's
+// searchCatalog — the SPA re-filters exactly, MCP re-scores; never return
+// these raw. Token semantics mirror the client: ≥2 chars, OR, '' ≠ 'a'
+// (a query with no valid tokens matches nothing, an absent query everything).
+// ponytail: sqlite lower() is ASCII-only, so an æ/ø/å token misses uppercase
+// matches — FTS or a normalized search column when Norwegian queries suffer.
+async function searchIds(db, q) {
+  const toks = String(q).toLowerCase().split(/\s+/)
+    .filter(t => t.length >= 2).slice(0, 8)
+    .map(t => t.replace(/[\\%_]/g, c => '\\' + c));
+  if (!toks.length) return [];
+  const { results } = await db.prepare(
+    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND (${toks.map(() => "lower(meta) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
+  ).bind(...toks.map(t => `%${t}%`)).all();
+  return results.map(r => r.id);
+}
+
+// Heads ranked by drop% (1 - best/was). perCat keeps the top `limit` per
+// category (browse) instead of just the global top (home sidecard).
+// ponytail: full head scan per call, fine to ~2k heads; store a drop column
+// when it isn't.
+async function topDropIds(db, { limit = 4, perCat = false } = {}) {
+  const { results } = await db.prepare(
+    `SELECT p.id, json_extract(p.meta, '$.cat') AS cat FROM products p JOIN offers o ON o.product_id = p.id WHERE json_extract(p.meta, '$.family') IS NULL AND json_extract(p.meta, '$.was') > 0 GROUP BY p.id ORDER BY 1.0 - MIN(o.price) * 1.0 / json_extract(p.meta, '$.was') DESC`
+  ).all();
+  if (!perCat) return results.slice(0, limit).map(r => r.id);
+  const per = {};
+  const ids = results.slice(0, limit).map(r => r.id);
+  for (const r of results) if (r.cat && (per[r.cat] = (per[r.cat] || 0) + 1) <= limit) ids.push(r.id);
+  return [...new Set(ids)];
+}
+
+// Global aggregates + per-category head counts — served as meta on every
+// /api/products response so the UI can show real totals off a partial cache.
+async function catMeta(db) {
+  const products = (await db.prepare(`SELECT COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL`).first()).n;
+  const shops = (await db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers').first()).n;
+  const freshest = (await db.prepare('SELECT MAX(updated_at) AS t FROM offers').first()).t ?? null;
+  const { results } = await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL GROUP BY 1`).all();
+  return { products, shops, freshest, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
 }
 
 async function purchasesBody(db, userId) {
@@ -395,18 +474,20 @@ async function mcpTool(db, sid, name, a) {
     const terms = String(a.query || '').toLowerCase().split(/\s+/).filter(Boolean);
     if (!terms.length) throw new Error('query required');
     // 4e: variant children (meta.family) are configurations — search stays
-    // head-only; get_product on the head lists them
-    const cat = (await catalogBody(db)).filter(p => !p.family);
-    const scored = cat
+    // head-only; get_product on the head lists them. searchIds is a broad
+    // candidate match (LIKE over meta) — the scoring below stays authoritative,
+    // its hay (name/brand/cat/icon) is a strict subset of meta.
+    const cands = await rowsFor(db, await searchIds(db, a.query), { expand: false });
+    const scored = cands
       .map(p => [terms.filter(t => `${p.name} ${p.brand ?? ''} ${p.cat ?? ''} ${p.icon ?? ''}`.toLowerCase().includes(t)).length, p])
       .filter(([s]) => s > 0)
       .sort((x, y) => y[0] - x[0]);
-    if (!scored.length) return { results: [], hint: 'no matches — categories: ' + [...new Set(cat.map(p => p.cat))].join(', ') };
+    if (!scored.length) return { results: [], hint: 'no matches — categories: ' + Object.keys((await catMeta(db)).cats).join(', ') };
     return { results: scored.slice(0, 8).map(([, p]) => brief(p)) };
   }
 
   if (name === 'get_product') {
-    const all = await catalogBody(db);
+    const all = await rowsFor(db, [String(a.product_id || '')]);
     const p = all.find(q => q.id === String(a.product_id || ''));
     if (!p) throw new Error('unknown product_id');
     const out = { ...brief(p), offers: p.offers, price_history_nok: p.history };
@@ -448,8 +529,8 @@ async function mcpTool(db, sid, name, a) {
   }
 
   if (name === 'list_watches') {
-    const byId = Object.fromEntries((await catalogBody(db)).map(p => [p.id, p]));
     const { results } = await db.prepare('SELECT product_id, target, paused FROM watches WHERE user_id = ? ORDER BY rowid').bind(user.id).all();
+    const byId = Object.fromEntries((await rowsFor(db, results.map(w => w.product_id))).map(p => [p.id, p]));
     return { watches: results.map(w => ({ product_id: w.product_id, name: byId[w.product_id]?.name, best_price_nok: byId[w.product_id]?.best, target_price_nok: w.target, paused: !!w.paused })) };
   }
 
@@ -688,17 +769,36 @@ export default {
     const route = request.method + ' ' + url.pathname;
 
     if (route === 'GET /api/catalog.json') {
-      // honest metrics: real aggregates ride along — freshest is null until
-      // an ingest has stamped an offer (seed rows carry no updated_at)
+      // full dump — kept for ops/tools/debugging; the SPA uses /api/products.
+      // ponytail: cap it when the catalog outgrows one response
       const products = await catalogBody(db);
-      const stamps = products.flatMap(p => p.offers.map(o => o.updated_at)).filter(Boolean);
-      const meta = {
-        // 4e: variant children are configurations, not products — count heads
-        products: products.filter(p => !p.family).length,
-        shops: new Set(products.flatMap(p => p.offers.map(o => o.shop))).size,
-        freshest: stamps.length ? Math.max(...stamps) : null,
-      };
-      return json({ meta, products });
+      return json({ meta: await catMeta(db), products });
+    }
+
+    // Query-based catalog: the SPA's lazy cache fetches slices from here.
+    // Precedence ids > q > cat > sort; no params = all heads.
+    // ponytail: the no-param and cat cases are uncapped at current scale —
+    // add limit+paging when the catalog outgrows one response
+    if (route === 'GET /api/products') {
+      await seedCatalog(db);
+      const p = url.searchParams;
+      const limit = Math.min(100, Math.max(1, Number(p.get('limit')) || 4));
+      let products;
+      if (p.get('ids') != null) {
+        const ids = p.get('ids').split(',').map(s => s.trim()).filter(Boolean);
+        if (ids.length > 100) return json({ error: 'too many ids (max 100)' }, 400);
+        products = await rowsFor(db, ids);
+      } else if (p.get('q') != null) {
+        products = await rowsFor(db, await searchIds(db, p.get('q')), { expand: false });
+      } else if (p.get('cat') != null) {
+        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL`).bind(p.get('cat')).all();
+        products = await rowsFor(db, results.map(r => r.id), { expand: false });
+      } else if (p.get('sort') === 'drop') {
+        products = await rowsFor(db, await topDropIds(db, { limit, perCat: p.get('perCat') === '1' }), { expand: false });
+      } else {
+        products = (await catalogBody(db)).filter(x => !x.family); // all heads
+      }
+      return json({ meta: await catMeta(db), products });
     }
 
     // 4d interim: the laptop crawler (tools/crawl.mjs) pushes ingest()-shaped
