@@ -9,7 +9,7 @@ function LandingHeader({ go }) {
       <div className="page app-hdr__row">
         <div className="app-hdr__logo" onClick={() => go('landing')}>
           <Wordmark height={26} />
-          <span className="alpha-badge">Alpha<span className="alpha-badge__tip">pricy.no is in early alpha — not yet fully released. Prices, features and data are for testing and may be incomplete.</span></span>
+          <span className="alpha-badge">Alpha<span className="alpha-badge__tip">pricy.no is in early alpha — not yet fully released. Prices, features and data are for testing and may be incomplete and/or incorrect.</span></span>
         </div>
         <nav className="app-hdr__nav" style={{ marginLeft: 'auto', gap: 'var(--s-2)' }}>
           <span className="navlink" onClick={() => go('login')}>Log in to browse</span>

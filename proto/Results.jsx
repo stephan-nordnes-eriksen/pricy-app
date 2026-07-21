@@ -117,7 +117,7 @@ function Spark({ points, hit }) {
     : <Sparkline points={points} w={132} h={36} color={hit ? 'var(--green-500)' : 'var(--ink-900)'} />;
 }
 
-// ---- result row (list view) -------------------------------
+// ---- result row (details view) ----------------------------
 function ResultRow({ p, go, spark, saved, onSave }) {
   return (
     <div className="rrow" onClick={() => go('product', { id: p.id })}>
@@ -145,6 +145,23 @@ function ResultRow({ p, go, spark, saved, onSave }) {
         </button>
         <CompareBtn p={p} />
       </div>
+    </div>
+  );
+}
+
+// ---- result row (compact view) ----------------------------
+function ResultRowCompact({ p, go, saved, onSave }) {
+  return (
+    <div className="crow" onClick={() => go('product', { id: p.id })}>
+      <div className="crow__img"><ProdImg p={p} fill size={18} /></div>
+      <span className="crow__brand">{p.brand}</span>
+      <span className="crow__name">{p.name}</span>
+      {p.drop >= 12 && <span className="crow__drop">▼ −{p.drop}%</span>}
+      <span className="crow__meta">★ {p.rating.toFixed(1)}</span>
+      <span className="crow__meta">{p.shops} shops</span>
+      <span className="crow__price"><Price value={p.best} size={15} /></span>
+      <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}><Icon name="bookmark" size={14} /></button>
+      <CompareBtn p={p} className="crow__cmp" />
     </div>
   );
 }
@@ -290,6 +307,12 @@ function FilterBar({ f, set, base, go, baseSel }) {
   );
 }
 
+const VIEWS = [
+  { id: 'grid', icon: 'layout-grid', label: 'Grid' },
+  { id: 'details', icon: 'layout-list', label: 'Details' },
+  { id: 'compact', icon: 'align-justify', label: 'Compact' },
+];
+
 const SORTS = [
   { id: 'best', label: 'Best price', fn: (a, b) => a.best - b.best },
   { id: 'drop', label: 'Biggest drop', fn: (a, b) => b.drop - a.drop },
@@ -300,7 +323,9 @@ const SORTS = [
 // ===========================================================
 // RESULTS SCREEN
 // ===========================================================
-function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density = 'comfy', sparklines = true }) {
+function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
+  const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
+  const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} window.scrollTo(0, 0); };
   const baseSel = { query, cat };
   const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat]);
   const [sort, setSort] = useState('best');
@@ -347,8 +372,10 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
       <AppHeader go={go} onLogout={() => go('landing')} query={query || ''} />
       <div className={'page results' + (filterLayout === 'topbar' ? ' results--topbar' : '') + (density === 'compact' ? ' is-compact' : '') + (view === 'grid' ? ' is-grid' : '')}>
         {filterLayout === 'rail' && (
-          <aside className="filters">
-            <FiltersBody f={f} set={set} base={base} go={go} />
+          <aside className="filterscol">
+            <div className="filters">
+              <FiltersBody f={f} set={set} base={base} go={go} />
+            </div>
           </aside>
         )}
         <main className="results__main">
@@ -362,6 +389,10 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
               <span className="results__sortlbl">Sort</span>
               <div className="sortbar">
                 {SORTS.map(s => <button key={s.id} className={sort === s.id ? 'is-on' : ''} onClick={() => setSort(s.id)}>{s.label}</button>)}
+              </div>
+              <span className="results__sortlbl" style={{ marginLeft: 'var(--s-3)' }}>View</span>
+              <div className="sortbar viewbar" role="group" aria-label="View mode">
+                {VIEWS.map(v => <button key={v.id} className={view === v.id ? 'is-on' : ''} title={v.label} aria-label={v.label + ' view'} aria-pressed={view === v.id} onClick={() => setView(v.id)}><Icon name={v.icon} size={15} /></button>)}
               </div>
             </div>
           </div>
@@ -384,6 +415,10 @@ function Results({ go, query, cat, view = 'list', filterLayout = 'rail', density
           ) : view === 'grid' ? (
             <div className="pgrid">
               {list.map(p => <ResultCard key={p.id} p={p} go={go} />)}
+            </div>
+          ) : view === 'compact' ? (
+            <div className="rlist rlist--compact">
+              {list.map(p => <ResultRowCompact key={p.id} p={p} go={go} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round(p.best * 0.92 / 10) * 10)} />)}
             </div>
           ) : (
             <div className="rlist">
@@ -488,7 +523,7 @@ function ProductPage({ go, id }) {
         </div>
 
         <div className="pdp__top">
-          <div className="pdp__gallery">{v.vlabel ? <span className="pdp__vtag">{v.vlabel}</span> : null}<ProdImg p={p} fill size={120} /></div>
+          <ProductGallery p={p} vlabel={v.vlabel} />
           <div className="pdp__info">
             <div className="pdp__brand">{p.brand}</div>
             <h1>{p.name}</h1>
@@ -605,4 +640,4 @@ function ProductPage({ go, id }) {
   );
 }
 
-Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, Results, ProductPage, ResultRow, ResultCard, Stars });
+Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, Results, ProductPage, ResultRow, ResultRowCompact, ResultCard, Stars });

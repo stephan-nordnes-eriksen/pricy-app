@@ -1,7 +1,6 @@
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "homeLayout": "dashboard",
   "loginLayout": "centered",
-  "resultsView": "list",
   "filterLayout": "rail",
   "density": "comfy",
   "sparklines": true,
@@ -28,7 +27,7 @@ function App(){
   let view;
   if(name==="login") view=<Login onAuthed={(email,opts)=>go(opts&&opts.signup?"onboarding":"home")} go={go} layout={t.loginLayout} />;
   else if(name==="landing") view=<Landing go={go} />;
-  else if(name==="results") view=<Results go={go} query={params.query} cat={params.cat} view={t.resultsView} filterLayout={t.filterLayout} density={t.density} sparklines={t.sparklines} />;
+  else if(name==="results") view=<Results go={go} query={params.query} cat={params.cat} filterLayout={t.filterLayout} density={t.density} sparklines={t.sparklines} />;
   else if(name==="product") view=<ProductPage go={go} id={params.id} />;
   else if(name==="compare") view=<ComparePage go={go} />;
   else if(name==="browse") view=<BrowsePage go={go} />;
@@ -39,14 +38,13 @@ function App(){
   else if(name==="about") view=<AboutPage go={go} section={params.section} />;
   else view=<SignedHome go={go} onLogout={()=>go("landing")} layout={t.homeLayout} />;
   return (<React.Fragment>
-    <div key={name+JSON.stringify(params)+t.loginLayout+t.homeLayout+t.resultsView+t.filterLayout+t.density+t.sparklines+t.plan}>{view}{!({login:1,landing:1,about:1,onboarding:1})[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({login:1,landing:1,about:1,onboarding:1,compare:1})[name]} /></div>
+    <div key={name+JSON.stringify(params)+t.loginLayout+t.homeLayout+t.filterLayout+t.density+t.sparklines+t.plan}>{view}{!({login:1,landing:1,about:1,onboarding:1})[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({login:1,landing:1,about:1,onboarding:1,compare:1})[name]} /></div>
     <TweaksPanel>
       <TweakSection label="Preview" />
       <TweakSelect label="Screen" value={name} options={[{value:"results",label:"Search results"},{value:"product",label:"Product page"},{value:"compare",label:"Compare products"},{value:"home",label:"Signed-in home"},{value:"browse",label:"Categories browse"},{value:"alerts",label:"Alerts / watchlist"},{value:"autobuy",label:"Auto-buy orders"},{value:"account",label:"Account & settings"},{value:"onboarding",label:"Onboarding"},{value:"login",label:"Login"},{value:"landing",label:"Public landing"},{value:"about",label:"About (public)"}]} onChange={(v)=>{ if(v==="compare") CompareStore.seed(["xm5","bose-ultra","senn-m4"]); go(v, v==="results"?{cat:"Audio"}:v==="product"?{id:"xm5"}:{}); }} />
       <TweakSection label="Subscription" />
       <TweakRadio label="Plan" value={t.plan} options={[{value:"free",label:"Free"},{value:"plus",label:"Plus"}]} onChange={(v)=>{setTweak("plan",v);}} />
       <TweakSection label="Search results" />
-      <TweakRadio label="View" value={t.resultsView} options={[{value:"list",label:"List"},{value:"grid",label:"Grid"}]} onChange={(v)=>{setTweak("resultsView",v);}} />
       <TweakRadio label="Filters" value={t.filterLayout} options={[{value:"rail",label:"Left rail"},{value:"topbar",label:"Top bar"}]} onChange={(v)=>{setTweak("filterLayout",v);}} />
       <TweakRadio label="Density" value={t.density} options={[{value:"comfy",label:"Comfy"},{value:"compact",label:"Compact"}]} onChange={(v)=>{setTweak("density",v);}} />
       <TweakToggle label="Price sparklines" value={t.sparklines} onChange={(v)=>setTweak("sparklines",v)} />
