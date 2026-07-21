@@ -49,10 +49,9 @@ Two Claude Design projects feed this repo:
   discover.mjs and crawl.mjs pick them up with no other wiring. They ship
   with NO demo offers; add EAN(s) to `worker/eans.json` + page URLs to
   `tools/crawl-urls.json`, deploy (seed must land before ingest accepts
-  the id), then `node tools/crawl.mjs` prices them. boot's hydrateCatalog
-  hides offer-less heads from the client (prototype Price/Stars crash on
-  missing best/rating; build defaults extras to rating 0) — drop both
-  workarounds once upstream renders "no offers/reviews yet".
+  the id), then `node tools/crawl.mjs` prices them. Offer-less/rating-less
+  rows render as "No offers yet" / "No reviews yet" (upstream, synced
+  2026-07-21).
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
   feeds, URLs in the `ADTRACTION_FEEDS` secret, rows matched to products

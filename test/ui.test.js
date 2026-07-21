@@ -619,6 +619,16 @@ test('rendered catalog comes from /api/products slices, not the baked constants'
 
 // ---------- lazy catalog (query-based, no eager full load) ----------
 
+// extra.json heads ship offer-less until their first crawl — the upstream
+// "No offers yet" state (synced 2026-07-21) must render them, not crash
+test('offer-less heads render the "No offers yet" state', async () => {
+  const win = boot('http://pricy.test/search?q=sony', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const row = qa(win, '.rrow, .rcard').find(el => el.textContent.includes('PlayStation 5 Pro'));
+  assert.ok(row, 'the offer-less extra.json head must render in results');
+  assert.ok(row.textContent.includes('No offers yet'), 'offer-less row must show the empty state, got: ' + row.textContent);
+});
+
 test('lazy catalog: a search boot fetches only its q slice — the eager full load is gone', async () => {
   const win = boot('http://pricy.test/search?q=sony', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');

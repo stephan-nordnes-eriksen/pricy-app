@@ -131,9 +131,7 @@ fs.writeFileSync(path.join(DIST, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify([
   ...catalog.map(p => ctx.SPECS[p.id] ? { ...p, specs: ctx.SPECS[p.id] } : p),
   ...children,
-  // uniform row shape; real offers arrive via ingest. rating 0 = "no reviews"
-  // — the prototype's Stars crashes on undefined (upstream fix pending)
-  ...extra.map(p => ({ offers: [], history: [], rating: 0, reviews: 0, ...p })),
+  ...extra.map(p => ({ offers: [], history: [], ...p })), // uniform row shape; real offers arrive via ingest
 ]));
 for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith('.js'))) {
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));
