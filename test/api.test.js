@@ -558,7 +558,7 @@ test('parsePrice handles Norwegian and feed formats', () => {
   assert.strictEqual(parsePrice('0'), null, 'zero is junk, not a price');
 });
 
-test('adtraction source: EAN-matched feed rows update offers with deep link; unknown EANs are dropped', async () => {
+test('adtraction source: EAN-matched feed rows update offers with deep link; unknown EANs become hidden products', async () => {
   const entries = Object.entries(eans);
   assert.ok(entries.length, 'worker/eans.json is empty — 4d ingestion needs the product EAN map');
   const [pid, [ean]] = entries[0];
@@ -578,7 +578,15 @@ test('adtraction source: EAN-matched feed rows update offers with deep link; unk
   }, () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
 
   const after = await catBody(call);
-  assert.strictEqual(after.length, before.length, 'unknown EANs must not create products');
+  assert.strictEqual(after.length, before.length, 'discovered products must stay out of the visible catalog');
+
+  // the unknown EAN was discovered: hidden product with the feed's name + offer
+  const hidden = (await (await call('/api/products?hidden=1')).json()).products;
+  const noob = hidden.find(p => p.id === 'ean-7091234567890');
+  assert.ok(noob, 'an unknown feed EAN must create a hidden product');
+  assert.strictEqual(noob.name, 'Not in catalog');
+  assert.strictEqual(noob.hidden, 1);
+  assert.deepStrictEqual(noob.offers.map(o => [o.shop, o.price, o.stock]), [['Komplett', 999, false]]);
 
   const offer = after.find(p => p.id === pid).offers.find(o => o.shop === 'Komplett');
   assert.strictEqual(offer.price, 2490);
@@ -1010,6 +1018,46 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(airpods.offers.find(o => o.shop === 'Elkjøp').price, 2050);
   assert.strictEqual(airpods.history.at(-1), 1999, "the day's price point keeps the day's minimum");
   assert.strictEqual(airpods.history.length, baseline.history.length, 'still one point per day');
+});
+
+// Discovery: an unknown `ean-<digits>` row carrying a name auto-creates a
+// hidden product — invisible in every user-facing query until enriched
+// (extra.json + deploy), listed for triage via ?hidden=1
+test('POST /api/ingest discovery: unknown ean- rows create hidden products, excluded until enriched', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const push = (rows) => worker.fetch(new Request('http://pricy.test/api/ingest', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer sekrit-token' },
+    body: JSON.stringify(rows),
+  }), env);
+
+  const { meta: before } = await (await call('/api/products')).json();
+
+  // an ean- id without a name has no identity to create from → rejected like any unknown id
+  assert.strictEqual((await push([{ product_id: 'ean-7099999999991', shop: 'Power', price: 500 }])).status, 400, 'ean- row without a name must be rejected');
+
+  const row = { product_id: 'ean-7099999999991', shop: 'Power', price: 500, name: 'Mystery Widget 3000', brand: 'Acme', stock: 1, url: 'https://www.power.no/widget' };
+  assert.strictEqual((await push([row])).status, 200);
+  // second shop, same EAN-derived id → merges onto the same product
+  assert.strictEqual((await push([{ ...row, shop: 'CDON', price: 480 }])).status, 200);
+
+  const { meta, products } = await (await call('/api/products')).json();
+  assert.ok(!products.some(p => p.id === 'ean-7099999999991'), 'hidden products stay out of the all-heads listing');
+  assert.strictEqual(meta.products, before.products, 'catMeta count must not include hidden products');
+  assert.strictEqual((await (await call('/api/products?q=mystery')).json()).products.length, 0, 'hidden products must not be searchable');
+  assert.ok(!(await catBody(call)).some(p => p.id === 'ean-7099999999991'), 'hidden products stay out of the ops dump');
+
+  const widget = (await (await call('/api/products?hidden=1')).json()).products.find(p => p.id === 'ean-7099999999991');
+  assert.ok(widget, 'the hidden listing must surface the discovered product');
+  assert.strictEqual(widget.name, 'Mystery Widget 3000');
+  assert.strictEqual(widget.brand, 'Acme');
+  assert.strictEqual(widget.ean, '7099999999991');
+  assert.strictEqual(widget.hidden, 1);
+  assert.strictEqual(widget.best, 480, 'both shops merged onto one product');
+  assert.strictEqual(widget.offers.length, 2);
+  assert.deepStrictEqual(widget.history, [480], 'price history starts collecting from discovery');
 });
 
 // product images: downloaded to R2 on ingest, only when the source URL changes

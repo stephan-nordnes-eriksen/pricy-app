@@ -1,5 +1,7 @@
 // Price sources (Phase 4d): every source yields rows in ingest()'s shape —
-// { product_id, shop, price, ship, stock (0=out 1=in 2=unknown), eta, url } — and collectRows()
+// { product_id, shop, price, name, brand, ship, stock (0=out 1=in 2=unknown),
+// eta, url } (name/brand feed discovery: unknown-EAN rows get an `ean-<digits>`
+// product_id and ingest auto-creates the product hidden) — and collectRows()
 // dispatches per shop from env.SOURCES (a JSON var in wrangler.jsonc:
 // { "Komplett": { "type": "adtraction" },
 //   "Power":    { "type": "scrape", "urls": { "airpods": "https://…" } } }).
@@ -74,11 +76,17 @@ export async function adtractionSource(shop, _cfg, env) {
     while ((m = buf.match(/<product(?:\s[^>]*)?>([\s\S]*?)<\/product>/i))) {
       buf = buf.slice(m.index + m[0].length);
       const f = xmlFields(m[1]);
-      const product_id = EAN_TO_PRODUCT[eanKey(pick(f, 'ean', 'gtin', 'gtin13', 'barcode'))];
+      const key = eanKey(pick(f, 'ean', 'gtin', 'gtin13', 'barcode'));
+      const name = pick(f, 'name', 'productname', 'title');
+      // discovery: an EAN we don't know is a new product — derived id, ingest
+      // auto-creates it hidden; same EAN from another shop lands on the same row
+      const product_id = EAN_TO_PRODUCT[key] ?? (key && name ? `ean-${key}` : null);
       const price = parsePrice(pick(f, 'price', 'priceinclvat'));
-      if (!product_id || !price) continue; // not ours / junk row
+      if (!product_id || !price) continue; // no EAN+name / junk row
       rows.push({
         product_id, shop, price,
+        name: name ?? null,
+        brand: pick(f, 'brand', 'manufacturer') ?? null,
         ship: pick(f, 'shippingcost', 'shipping', 'shippingprice') ?? null,
         stock: (v => v == null ? 2 : truthyStock(v) ? 1 : 0)(pick(f, 'instock', 'availability', 'stock')),
         eta: null,
@@ -104,7 +112,7 @@ export async function scrapeSource(shop, cfg) {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       if (!res.ok) throw new Error(`http ${res.status}`);
       const html = await res.text();
-      const { offer, image } = productOffer(html) ?? {};
+      const { offer, image, name, brand } = productOffer(html) ?? {};
       const sd = shippingInfo(html);
       // NetOnNet nests price in offer.priceSpecification instead of offer.price
       const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
@@ -116,6 +124,8 @@ export async function scrapeSource(shop, cfg) {
       if (currency && currency !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
       return {
         product_id, shop, price,
+        name: name ?? null,
+        brand: brand ?? null,
         ship: sd?.ship ?? null,
         stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
         eta: sd?.eta ?? null,
@@ -134,7 +144,7 @@ export async function scrapeSource(shop, cfg) {
 const imageUrl = (v) => { const i = [v].flat()[0]; return typeof i === 'string' ? i : i?.url ?? null; };
 
 // first Offer-ish object inside any JSON-LD block (handles @graph and arrays),
-// plus the owning node's product image
+// plus the owning node's product image/name/brand (brand: string | Brand node)
 function productOffer(html) {
   for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     let doc;
@@ -142,7 +152,10 @@ function productOffer(html) {
     const nodes = [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])];
     for (const n of nodes) {
       const o = [n?.offers].flat().find(o => o && (o.price != null || o.lowPrice != null || o.priceSpecification));
-      if (o) return { offer: o, image: imageUrl(n.image) };
+      if (o) {
+        const brand = typeof n.brand === 'string' ? n.brand : n.brand?.name;
+        return { offer: o, image: imageUrl(n.image), name: typeof n.name === 'string' ? n.name : null, brand: brand ?? null };
+      }
     }
   }
   return null;

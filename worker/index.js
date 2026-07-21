@@ -191,21 +191,46 @@ async function bestOffer(db, productId) {
 // prod table rebuild that allowing NULL would need.
 const stockVal = (s) => s == null || s === 2 ? 2 : s ? 1 : 0;
 
+// a row for a product we don't have yet, carrying enough identity to create it
+const autoAdd = (r) => /^ean-\d+$/.test(r.product_id) && typeof r.name === 'string' && !!r.name.trim();
+
 async function ingest(db, rows, env) {
+  // Discovery: any source row whose product we don't have (unknown `ean-<digits>`
+  // id derived from a feed/JSON-LD EAN, plus a name) creates the product on the
+  // spot, hidden until manually enriched (tools/enrich.mjs → worker/extra.json →
+  // deploy re-seeds meta without `hidden`). Unknown rows without identity drop.
+  // ponytail: full id scan per ingest, fine to ~50k products; index a discovery
+  // column when it isn't
+  const prods = (await db.prepare(`SELECT id, json_extract(meta, '$.hidden') AS hidden FROM products`).all()).results;
+  const known = new Set(prods.map(p => p.id));
+  const stillHidden = new Set(prods.filter(p => p.hidden === 1).map(p => p.id));
+  const creates = {};
+  for (const r of rows) {
+    if (known.has(r.product_id) || !autoAdd(r)) continue;
+    creates[r.product_id] ??= { name: r.name.trim(), ...(r.brand ? { brand: String(r.brand) } : {}), ean: r.product_id.slice(4), hidden: 1 };
+    stillHidden.add(r.product_id);
+  }
+  rows = rows.filter(r => known.has(r.product_id) || creates[r.product_id]);
+  if (Object.keys(creates).length) {
+    await db.batch(Object.entries(creates).map(([id, meta]) =>
+      db.prepare('INSERT OR IGNORE INTO products (id, meta) VALUES (?, ?)').bind(id, JSON.stringify(meta))));
+  }
   const today = dayOf(Date.now());
   const best = {};
   for (const r of rows) best[r.product_id] = Math.min(best[r.product_id] ?? Infinity, r.price);
   // snapshot before the upsert: the crossing check and the all-time-low check
-  // both need the "before" state. ponytail: per-product query loop, fine at
-  // catalog scale (≤500 rows/push); batch the reads if the catalog ever isn't
+  // both need the "before" state. Watched products only — alerts can't exist
+  // for the rest, and a full brand feed carries thousands of rows.
+  const watched = new Set((await db.prepare('SELECT DISTINCT product_id FROM watches').all()).results.map(r => r.product_id));
   const before = {};
   for (const pid of Object.keys(best)) {
+    if (!watched.has(pid)) continue;
     before[pid] = {
       best: (await bestOffer(db, pid))?.price ?? null,
       low: (await db.prepare('SELECT MIN(price) AS low FROM price_points WHERE product_id = ?').bind(pid).first())?.low ?? null,
     };
   }
-  await db.batch([
+  const stmts = [
     // ship/eta/url: COALESCE so a source that doesn't know a field (crawlers
     // never know delivery time) can't erase a stored value with null
     ...rows.map(r => db.prepare(
@@ -214,9 +239,14 @@ async function ingest(db, rows, env) {
     ...Object.entries(best).map(([id, price]) => db.prepare(
       'INSERT INTO price_points (product_id, day, price) VALUES (?, ?, ?) ON CONFLICT(product_id, day) DO UPDATE SET price = MIN(price, excluded.price)'
     ).bind(id, today, price)),
-  ]);
+  ];
+  // ponytail: 200-statement chunks — one giant batch trips D1 limits on a
+  // full-feed run; the upserts are idempotent so losing cross-chunk atomicity is fine
+  for (let i = 0; i < stmts.length; i += 200) await db.batch(stmts.slice(i, i + 200));
   await fireAlerts(db, env, before);
-  await syncImages(db, env, rows).catch(e => console.error(`image sync failed: ${e.message}`));
+  // hidden rows skip image sync — no UI shows them; the download happens on
+  // the first ingest after enrichment unhides the product
+  await syncImages(db, env, rows.filter(r => !stillHidden.has(r.product_id))).catch(e => console.error(`image sync failed: ${e.message}`));
 }
 
 // Product images live in R2 (IMAGES bucket), served at GET /img/:id. The
@@ -320,9 +350,9 @@ function shapeRows(prods, offs, pts, imgSet) {
 
 async function catalogBody(db) {
   await seedCatalog(db);
-  const prods = await db.prepare('SELECT id, meta FROM products ORDER BY rowid').all();
-  const offs = await db.prepare('SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers ORDER BY price').all();
-  const pts = await db.prepare('SELECT product_id, price FROM price_points ORDER BY day').all();
+  const prods = await db.prepare(`SELECT id, meta FROM products WHERE ${visible()} ORDER BY rowid`).all();
+  const offs = await db.prepare(`SELECT o.product_id, o.shop, o.price, o.ship, o.stock, o.eta, o.url, o.updated_at FROM offers o JOIN products p ON p.id = o.product_id WHERE ${visible('p.meta')} ORDER BY o.price`).all();
+  const pts = await db.prepare(`SELECT t.product_id, t.price FROM price_points t JOIN products p ON p.id = t.product_id WHERE ${visible('p.meta')} ORDER BY t.day`).all();
   const withImg = new Set((await db.prepare('SELECT product_id FROM images').all()).results.map(r => r.product_id));
   return shapeRows(prods.results, offs.results, pts.results, withImg);
 }
@@ -330,6 +360,11 @@ async function catalogBody(db) {
 // ── Query-based catalog (no eager full load) ───────────────────────────────
 // Helpers are pure (no seeding) — route handlers call seedCatalog first.
 const ph = (arr) => arr.map(() => '?').join(',');
+
+// auto-discovered products carry meta.hidden = 1 until enriched — every
+// user-facing query excludes them; direct id fetches (rowsFor) still work
+// so ops/enrichment can inspect them
+const visible = (col = 'meta') => `json_extract(${col}, '$.hidden') IS NOT 1`;
 
 // Rows for a set of product ids, in the catalog.json row shape. expand=true
 // (the PDP/watchlist case) resolves child ids (`head~combo`) to their head,
@@ -348,7 +383,7 @@ async function rowsFor(db, ids, { expand = true } = {}) {
     for (const cat of cats) {
       const got = have();
       prods.push(...(await db.prepare(
-        `SELECT id, meta FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND id NOT IN (${ph(got)}) ORDER BY rowid LIMIT 4`
+        `SELECT id, meta FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()} AND id NOT IN (${ph(got)}) ORDER BY rowid LIMIT 4`
       ).bind(cat, ...got).all()).results);
     }
   }
@@ -372,7 +407,7 @@ async function searchIds(db, q) {
     .map(t => t.replace(/[\\%_]/g, c => '\\' + c));
   if (!toks.length) return [];
   const { results } = await db.prepare(
-    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND (${toks.map(() => "lower(meta) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
+    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => "lower(meta) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
   ).bind(...toks.map(t => `%${t}%`)).all();
   return results.map(r => r.id);
 }
@@ -383,7 +418,7 @@ async function searchIds(db, q) {
 // when it isn't.
 async function topDropIds(db, { limit = 4, perCat = false } = {}) {
   const { results } = await db.prepare(
-    `SELECT p.id, json_extract(p.meta, '$.cat') AS cat FROM products p JOIN offers o ON o.product_id = p.id WHERE json_extract(p.meta, '$.family') IS NULL AND json_extract(p.meta, '$.was') > 0 GROUP BY p.id ORDER BY 1.0 - MIN(o.price) * 1.0 / json_extract(p.meta, '$.was') DESC`
+    `SELECT p.id, json_extract(p.meta, '$.cat') AS cat FROM products p JOIN offers o ON o.product_id = p.id WHERE json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')} AND json_extract(p.meta, '$.was') > 0 GROUP BY p.id ORDER BY 1.0 - MIN(o.price) * 1.0 / json_extract(p.meta, '$.was') DESC`
   ).all();
   if (!perCat) return results.slice(0, limit).map(r => r.id);
   const per = {};
@@ -395,10 +430,10 @@ async function topDropIds(db, { limit = 4, perCat = false } = {}) {
 // Global aggregates + per-category head counts — served as meta on every
 // /api/products response so the UI can show real totals off a partial cache.
 async function catMeta(db) {
-  const products = (await db.prepare(`SELECT COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL`).first()).n;
+  const products = (await db.prepare(`SELECT COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()}`).first()).n;
   const shops = (await db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers').first()).n;
   const freshest = (await db.prepare('SELECT MAX(updated_at) AS t FROM offers').first()).t ?? null;
-  const { results } = await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL GROUP BY 1`).all();
+  const { results } = await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} GROUP BY 1`).all();
   return { products, shops, freshest, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
 }
 
@@ -784,14 +819,19 @@ export default {
       const p = url.searchParams;
       const limit = Math.min(100, Math.max(1, Number(p.get('limit')) || 4));
       let products;
-      if (p.get('ids') != null) {
+      if (p.get('hidden') === '1') {
+        // enrichment listing (tools/enrich.mjs): auto-discovered rows awaiting
+        // a hand-written worker/extra.json entry. Not used by the SPA.
+        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.hidden') = 1 ORDER BY rowid LIMIT 200`).all();
+        products = await rowsFor(db, results.map(r => r.id), { expand: false });
+      } else if (p.get('ids') != null) {
         const ids = p.get('ids').split(',').map(s => s.trim()).filter(Boolean);
         if (ids.length > 100) return json({ error: 'too many ids (max 100)' }, 400);
         products = await rowsFor(db, ids);
       } else if (p.get('q') != null) {
         products = await rowsFor(db, await searchIds(db, p.get('q')), { expand: false });
       } else if (p.get('cat') != null) {
-        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL`).bind(p.get('cat')).all();
+        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()}`).bind(p.get('cat')).all();
         products = await rowsFor(db, results.map(r => r.id), { expand: false });
       } else if (p.get('sort') === 'drop') {
         products = await rowsFor(db, await topDropIds(db, { limit, perCat: p.get('perCat') === '1' }), { expand: false });
@@ -812,11 +852,13 @@ export default {
         !r || typeof r.product_id !== 'string' || typeof r.shop !== 'string' || !r.shop.trim()
         || !Number.isInteger(r.price) || r.price <= 0 || r.price > 10_000_000
         || (r.ship != null && typeof r.ship !== 'string') || (r.eta != null && typeof r.eta !== 'string')
-        || (r.url != null && typeof r.url !== 'string') || (r.image != null && typeof r.image !== 'string'));
+        || (r.url != null && typeof r.url !== 'string') || (r.image != null && typeof r.image !== 'string')
+        || (r.name != null && typeof r.name !== 'string') || (r.brand != null && typeof r.brand !== 'string'));
       if (bad) return json({ error: 'bad rows' }, 400);
       await seedCatalog(db);
       const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(p => p.id));
-      const unknown = [...new Set(rows.filter(r => !known.has(r.product_id)).map(r => r.product_id))];
+      // discovery rows (ean-derived id + name) pass through — ingest creates them hidden
+      const unknown = [...new Set(rows.filter(r => !known.has(r.product_id) && !autoAdd(r)).map(r => r.product_id))];
       if (unknown.length) return json({ error: 'unknown product_id', ids: unknown }, 400);
       await ingest(db, rows, env);
       return json({ ok: true, ingested: rows.length });

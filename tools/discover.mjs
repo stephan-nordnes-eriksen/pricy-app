@@ -11,8 +11,11 @@
 //   --browser-ua  fetch with BROWSER_UA (shops that 403 every bot UA); with
 //                 --write also records "$ua": "browser" for the shop
 //
-// Pages whose EAN we don't know yet are printed for human review (extend
-// worker/eans.json with the variant), never auto-written.
+// Pages with an EAN we don't know are NEW products: they join the confirmed
+// set under a derived `ean-<digits>` id — the next crawl auto-creates them
+// hidden, and tools/enrich.mjs lists them for manual enrichment. If one is
+// really a variant of a catalog product, add the EAN to worker/eans.json and
+// drop the ean- entry from crawl-urls.json instead.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
@@ -98,8 +101,15 @@ for (const p of seed) {
       console.log(`${pid}: confirmed by EAN ${ean} → ${u}`);
       found[pid] ??= u;
       if (pid === p.id) break; // done with this product's candidates
+    } else if (ean) {
+      // unknown EAN = new product: derived id, ingest auto-creates it hidden
+      // on first crawl. If it's really a variant of ${p.id}, add the EAN to
+      // worker/eans.json instead and drop the ean- entry from crawl-urls.json.
+      const nid = `ean-${eanKey(ean)}`;
+      console.log(`${p.id}? new product ${nid} (JSON-LD EAN ${ean}) → ${u}`);
+      found[nid] ??= u;
     } else {
-      console.log(`${p.id}? unconfirmed candidate (JSON-LD EAN ${ean ?? 'missing'}) → ${u}`);
+      console.log(`${p.id}? unconfirmed candidate (no JSON-LD EAN) → ${u}`);
     }
   }
 }

@@ -52,6 +52,20 @@ Two Claude Design projects feed this repo:
   the id), then `node tools/crawl.mjs` prices them. Offer-less/rating-less
   rows render as "No offers yet" / "No reviews yet" (upstream, synced
   2026-07-21).
+- **Product discovery is automatic** (2026-07-21): any source row with an
+  EAN we don't know becomes a `products` row on the spot — derived id
+  `ean-<digits>` (same EAN from two shops dedupes for free), `meta.hidden: 1`,
+  excluded from every user-facing query (search/cat/all-heads/catMeta/
+  catalog.json) but collecting offers + price history from day one.
+  Adtraction feeds emit such rows for every unmatched EAN; discover.mjs
+  writes unknown-EAN pages as `ean-*` entries into crawl-urls.json;
+  scrapeSource carries JSON-LD name/brand so crawl pushes create too.
+  Enrichment is manual: `node tools/enrich.mjs` lists hidden rows
+  (`GET /api/products?hidden=1`) as paste-ready extra.json skeletons —
+  fill cat/icon/kw, KEEP THE SAME id, deploy; the seed upsert rewrites
+  meta without `hidden` and the product goes live with its collected
+  offers. A hidden row that's really a variant of an existing product:
+  add its EAN to eans.json and skip the extra row instead.
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
   feeds, URLs in the `ADTRACTION_FEEDS` secret, rows matched to products
