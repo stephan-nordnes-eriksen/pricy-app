@@ -191,7 +191,7 @@ PRODUCTS.forEach(p => {
   p.history = hist(p.best, p.best * 0.06);
 });
 
-const CATEGORIES = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'Kitchen'];
+const CATEGORIES = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'E-readers', 'Kitchen'];
 const POPULAR = ['airpods pro', 'rtx 4070', 'robot vacuum', 'espresso machine', 'air fryer'];
 
 Object.assign(window, { ProdImg, fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, StockBadge, SHOPS, PRODUCTS, CATEGORIES, POPULAR });

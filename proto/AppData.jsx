@@ -34,7 +34,7 @@ const PROP_SUGGEST = ['Noise cancelling', 'Wireless', 'Over-ear', 'Under kr 3 00
 
 const CAT_ICONS = {
   Audio: 'headphones', Phones: 'smartphone', TV: 'tv', Gaming: 'gamepad-2',
-  Home: 'wind', Computers: 'laptop', Toys: 'blocks', Kitchen: 'utensils-crossed',
+  Home: 'wind', Computers: 'laptop', Toys: 'blocks', 'E-readers': 'book-open', Kitchen: 'utensils-crossed',
 };
 const catCount = (c) => fmt((metaOf()?.cats?.[c]) ?? ((window.CAT_OF || {})[c] || []).length);
 const realCats = () => CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : (!window.CAT_OF || window.CAT_OF[c]));
