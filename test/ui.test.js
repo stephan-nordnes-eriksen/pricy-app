@@ -28,8 +28,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
   // seed persisted localStorage (each JSDOM starts empty — this is the
   // "same browser, next visit" seam)
   if (storage) Object.entries(storage).forEach(([k, v]) => win.localStorage.setItem(k, v));
-  // /api/catalog.json is a Worker route now (4c) — stub it with the
-  // build-generated seed, the same shape the route serves
+  // the catalog is served via /api/products slices — stub them over the
+  // build-generated seed, the same row shape the route serves
   CATALOG_JSON = CATALOG_JSON || JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
   let ME = me || (session ? { user: mari, watches: [] } : null);
   win.setMe = (v) => { ME = v; }; // "the emailed link was clicked elsewhere" seam
@@ -38,7 +38,6 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
   win.fetch = (u, opts = {}) => {
     const body = opts.body ? JSON.parse(opts.body) : undefined;
     win.api.push({ call: (opts.method || 'GET') + ' ' + u, body });
-    if (u === '/api/catalog.json') return ok(catalog || CATALOG_JSON); // legacy full dump (no boot caller since the lazy cache)
     if (u.startsWith('/api/products')) {
       // emulate the Worker's query route over the seed rows (same shapes);
       // a {meta, products} fixture serves its own meta verbatim
