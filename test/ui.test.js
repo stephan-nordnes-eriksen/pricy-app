@@ -670,12 +670,11 @@ test('lazy catalog: browse shows FULL category counts (meta.cats) off its small 
   const audioTotal = heads.filter(p => p.cat === 'Audio').length;
   assert.ok(audio.textContent.includes(`${audioTotal} products`),
     `Audio tile must show the full served count (${audioTotal}), not the cache size — got: ` + audio.textContent);
-  // every served category in the prototype's fixed CATEGORIES list renders,
-  // even though the cache holds only the drops slice (E-readers isn't in
-  // that list — a pre-existing upstream gap, unchanged by the lazy cache)
-  const KNOWN = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'Kitchen'];
-  assert.strictEqual(qa(win, '.bigcat').length, KNOWN.filter(c => heads.some(p => p.cat === c)).length,
-    'every listed category must render even though the cache holds a slice');
+  // every served category renders, even though the cache holds only the
+  // drops slice (the prototype's CATEGORIES list covers all seed cats now)
+  assert.strictEqual(qa(win, '.bigcat').length, new Set(heads.map(p => p.cat)).size,
+    'every served category must render even though the cache holds a slice');
+  assert.ok(qa(win, '.bigcat').some(el => /E-readers/.test(el.textContent)), 'E-readers tile must render');
   assert.ok(win.CATALOG.length < heads.length, 'the cache must hold only the drops slice');
 });
 
