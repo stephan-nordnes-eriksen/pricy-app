@@ -823,7 +823,11 @@ export default {
         // enrichment listing (tools/enrich.mjs): auto-discovered rows awaiting
         // a hand-written worker/extra.json entry. Not used by the SPA.
         const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.hidden') = 1 ORDER BY rowid LIMIT 200`).all();
-        products = await rowsFor(db, results.map(r => r.id), { expand: false });
+        // 90-id chunks: D1 caps bound parameters at 100 per statement
+        products = [];
+        for (let i = 0; i < results.length; i += 90) {
+          products.push(...await rowsFor(db, results.slice(i, i + 90).map(r => r.id), { expand: false }));
+        }
       } else if (p.get('ids') != null) {
         const ids = p.get('ids').split(',').map(s => s.trim()).filter(Boolean);
         if (ids.length > 100) return json({ error: 'too many ids (max 100)' }, 400);
