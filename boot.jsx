@@ -37,10 +37,11 @@ function serverLogin(email, path = '/api/auth/login', password) {
   }).then(async r => {
     const data = await r.json().catch(() => ({}));
     if (!r.ok) return data; // { error } — AuthCard shows it and stays on the form
-    hydrateMe(data);
-    // swap the demo FEED for this user's real alert history before landing
-    // home (fetch failed → baked demo feed, same fallback as the catalog)
-    return fetchJson('/api/alerts').then(hydrateFeed).then(() => true, () => true);
+    // fetch this user's product rows before hydrating stores — hydrateMe
+    // drops watches/orders it can't resolve against the (lazy) catalog
+    return fetchJson('/api/alerts').catch(() => [])
+      .then(alerts => hydrateSession(data, alerts))
+      .then(() => true, () => true);
   }).catch(e => { console.error('login failed:', e); return false; });
 }
 
@@ -281,9 +282,87 @@ function parseUrl(session) {
   else if (['/login', '/browse', '/autobuy', '/onboarding', '/compare'].includes(p)) s = { name: p.slice(1), params: {} };
   else s = { name: session ? 'home' : 'landing', params: {} };
   if (!session && !PUBLIC_SCREENS.includes(s.name)) s = { name: 'login', params: {} };
-  else if (s.name === 'product') recordRecent(s.params.id);
+  // recents are recorded after ensureRoute resolves (nav/popstate/boot), not
+  // here — a direct /product/:id URL must not hydrate RECENT before the row
+  // is in the cache
   return s;
 }
+
+// ── Lazy catalog cache ─────────────────────────────────────────────────────
+// The catalog is no longer eagerly loaded: /api/products serves slices
+// (ids / q / cat / sort=drop) that hydrateCatalog merges into the
+// prototype's CATALOG array, and every route prefetches what its screen
+// reads before it renders. FETCHED dedupes by query string.
+// ponytail: session-lifetime cache, no TTL — add staleness when prices
+// moving mid-session matters.
+const FETCHED = new Map();
+function fetchProducts(params) {
+  const qs = new URLSearchParams(Object.entries(params).sort()).toString();
+  if (FETCHED.has(qs)) return FETCHED.get(qs);
+  const p = fetchJson('/api/products' + (qs ? '?' + qs : '')).then(hydrateCatalog)
+    .catch(e => { FETCHED.delete(qs); throw e; }); // retry on next nav
+  FETCHED.set(qs, p);
+  return p;
+}
+
+// What each screen reads synchronously at render — fetched (and merged)
+// before setScreen. Never rejects: a failed fetch falls back to whatever
+// the cache (or the baked demo catalog) already has, like today.
+function ensureRoute(name, params = {}) {
+  const wants = [];
+  if (name === 'home') wants.push({ sort: 'drop', limit: 3 }); // "Biggest drops" sidecard
+  else if (name === 'results') wants.push(params.cat ? { cat: params.cat } : params.query ? { q: params.query } : {});
+  else if (name === 'product') wants.push({ ids: params.id }); // server adds family + same-cat neighbors
+  // ponytail: browse fetches all heads until the upstream meta.cats change
+  // lands — per-cat counts still read CAT_OF[c].length (PLAN phase 5 flips
+  // this to {sort:'drop', perCat:1, limit:4})
+  else if (name === 'browse') wants.push({});
+  else if (name === 'compare') {
+    const first = CompareStore.prods()[0];
+    if (first) wants.push({ cat: first.cat }); // CmpAdd candidates are same-category
+  }
+  return Promise.all(wants.map(w => fetchProducts(w).catch(() => {})));
+}
+
+// Login-time hydration: hydrateMe/hydrateFeed/hydrateRecent all resolve ids
+// against the catalog and silently drop what they can't find — so fetch
+// every product the session references in ONE ids= batch first.
+function hydrateSession(me, alerts) {
+  let recents = [];
+  try { recents = JSON.parse(localStorage.getItem('pricy_recent')) || []; } catch {}
+  const ids = [...new Set([
+    ...(me.watches || []).map(w => w.id),
+    ...((me.autobuy || {}).orders || []).map(o => o.id),
+    ...(me.purchases || []).map(pu => pu.product_id),
+    ...(alerts || []).map(a => a.product_id),
+    ...recents,
+  ])].filter(Boolean).slice(0, 100); // ponytail: server cap; page the batch if a session ever tops it
+  return (ids.length ? fetchProducts({ ids: ids.join(',') }).catch(() => {}) : Promise.resolve())
+    .then(() => {
+      hydrateMe(me);
+      hydrateFeed(alerts || []);
+      hydrateRecent();
+    });
+}
+
+// Live header suggestions over the lazy cache: every searchSuggest call
+// (AppData, sync-owned — reassignable, one esbuild scope) also schedules a
+// debounced /api/products?q= fetch; when rows merge, poking the original
+// WatchStore.emit re-renders AppHeader (it subscribes via useWatchStore),
+// which recomputes the dropdown from the now-larger CATALOG.
+// ponytail: rides AppHeader's subscription — if homeLayout ever flips to
+// 'search', do the upstream SearchSuggest hook instead (PLAN phase 5).
+let suggestTimer;
+const _suggest = searchSuggest;
+searchSuggest = (q) => {
+  clearTimeout(suggestTimer);
+  const s = String(q || '').trim();
+  if (s.length >= 2) {
+    suggestTimer = setTimeout(() =>
+      fetchProducts({ q: s }).then(() => _emit.call(WatchStore)).catch(() => {}), 200);
+  }
+  return _suggest(q);
+};
 
 function toUrl(name, params = {}) {
   if (name === 'product') return '/product/' + encodeURIComponent(params.id);
@@ -318,13 +397,21 @@ function App() {
   window.PLAN = plan;
   window.setPlan = setPlan;
 
-  // navigate without the auth gate (used right as auth state flips)
+  // navigate without the auth gate (used right as auth state flips).
+  // Async: the route's catalog slice is fetched (and merged) before the
+  // screen swaps — screens read CATALOG synchronously at render. The
+  // previous screen keeps showing for the fetch window; navSeq drops a
+  // slow fetch's navigation when a newer one won the race.
   const nav = (name, params = {}) => {
-    if (name === 'product') recordRecent(params.id);
-    const url = toUrl(name, params);
-    if (url !== location.pathname + location.search) history.pushState(null, '', url);
-    window.scrollTo(0, 0);
-    setScreen({ name, params });
+    const t = ++navSeq;
+    ensureRoute(name, params).then(() => {
+      if (t !== navSeq) return;
+      if (name === 'product') recordRecent(params.id); // after the fetch: prodOf needs the row
+      const url = toUrl(name, params);
+      if (url !== location.pathname + location.search) history.pushState(null, '', url);
+      window.scrollTo(0, 0);
+      setScreen({ name, params });
+    });
   };
   const go = (name, params = {}) => {
     // "log in" links act as logout; signed-in landing is only reachable via
@@ -373,10 +460,9 @@ function App() {
       fetchJson('/api/me').then(me => {
         if (done || !me || !me.user) return;
         done = true;
-        hydrateMe(me);
-        fetchJson('/api/alerts').then(hydrateFeed).catch(() => {});
-        setSession(true);
-        nav('home');
+        fetchJson('/api/alerts').catch(() => [])
+          .then(alerts => hydrateSession(me, alerts))
+          .then(() => { setSession(true); nav('home'); });
       }).catch(() => {});
     };
     const check = () => {
@@ -400,7 +486,15 @@ function App() {
   }, [screen.name, session]);
 
   useEffect(() => {
-    const onPop = () => setScreen(parseUrl(readSession()));
+    const onPop = () => {
+      const s = parseUrl(readSession());
+      const t = ++navSeq;
+      ensureRoute(s.name, s.params).then(() => {
+        if (t !== navSeq) return;
+        if (s.name === 'product') recordRecent(s.params.id);
+        setScreen(s);
+      });
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
@@ -432,47 +526,78 @@ function App() {
   return <div key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1 })[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({ login: 1, landing: 1, about: 1, onboarding: 1, compare: 1 })[name]} /></div>;
 }
 
-// Catalog is served, not baked: fetch /api/catalog.json and hydrate the
-// prototype's module constants in place before first render. This bundle
-// shares one esbuild scope with the prototype blocks, so CATALOG and CAT_OF
-// (the only load-time derived index) are directly in scope; getListing,
-// searchCatalog and ALL_BRANDS read CATALOG live and follow automatically.
-// window.CATALOG is the same array object, so it stays in sync too.
+// Catalog is served, not baked — and lazy: hydrateCatalog MERGES a
+// /api/products slice into the prototype's module constants in place. This
+// bundle shares one esbuild scope with the prototype blocks, so CATALOG and
+// CAT_OF (the only load-time derived index) are directly in scope;
+// getListing, searchCatalog and ALL_BRANDS read CATALOG live and follow
+// automatically. window.CATALOG is the same array object, so it stays in
+// sync too.
+let navSeq = 0; // async-nav race token (nav + popstate share it)
 function hydrateCatalog(data) {
-  // body is {meta, products} since the honest-metrics pass; a bare array
-  // (older stubs) still works — meta is recomputed from the rows either way
-  // the prototype's demo meta doesn't survive
+  // body is {meta, products}; a bare array (older stubs) still works
   const rows = Array.isArray(data) ? data : data.products;
+  if (!hydrateCatalog.live) {
+    // first served payload: drop the baked demo catalog — merged real rows
+    // must never sit next to fake demo prices in search/facets
+    hydrateCatalog.live = true;
+    CATALOG.length = 0;
+  }
   // 4e: variant children (meta.family) stay out of CATALOG/CAT_OF — search,
   // results and browse are head-only; each head instead gets
   // p.listings = { comboKey: childRow }, which the prototype's
   // variantListing/variantBest prefer over their synth fallback.
-  CATALOG.length = 0;
-  CATALOG.push(...rows.filter(p => !p.family));
-  // served specs win over the client-baked design table — specsFor (sync-owned)
-  // reads SPECS[p.id], so refresh that table in place
-  rows.forEach(r => { if (r.specs) SPECS[r.id] = r.specs; });
-  rows.forEach(r => {
-    const head = r.family && CATALOG.find(p => p.id === r.family);
+  // Heads first, then children: a child's head may ride the same payload.
+  // Existing rows are mutated in place (Object.assign) so references held
+  // by WATCHED/RECENT/listings stay live.
+  const upsert = (r) => {
+    const cur = CATALOG.find(p => p.id === r.id);
+    if (cur) return Object.assign(cur, r);
+    CATALOG.push(r);
+    return r;
+  };
+  rows.filter(r => !r.family).forEach(r => {
+    const row = upsert(r);
+    // the baked demo byId (AppData) overlaps served ids and WatchStore.prod
+    // prefers it — re-point overlapping entries at the served row so demo
+    // prices can never shadow real ones (unserved ids keep the demo row:
+    // the public landing/login art reads byId.tv / byId.xm5)
+    if (byId[row.id]) byId[row.id] = row;
+    if (r.specs) SPECS[r.id] = r.specs; // served specs win — specsFor reads SPECS[p.id]
+  });
+  rows.filter(r => r.family).forEach(r => {
+    if (r.specs) SPECS[r.id] = r.specs;
+    const head = CATALOG.find(p => p.id === r.family);
     if (head) (head.listings = head.listings || {})[r.id.slice(r.id.indexOf('~') + 1)] = r;
   });
-  CATALOG.meta = (!Array.isArray(data) && data.meta) || {
-    products: CATALOG.length,
-    shops: new Set(CATALOG.flatMap(p => (p.offers || []).map(o => o.shop))).size,
-    freshest: CATALOG.flatMap(p => (p.offers || []).map(o => o.updated_at)).filter(Boolean).sort((a, b) => a - b).pop() || null,
-  };
+  // served meta always wins — never recompute totals from the partial
+  // cache; the recompute only backfills legacy bare-array stubs
+  if (!Array.isArray(data) && data.meta) CATALOG.meta = data.meta;
+  else if (!CATALOG.meta) {
+    CATALOG.meta = {
+      products: CATALOG.length,
+      shops: new Set(CATALOG.flatMap(p => (p.offers || []).map(o => o.shop))).size,
+      freshest: CATALOG.flatMap(p => (p.offers || []).map(o => o.updated_at)).filter(Boolean).sort((a, b) => a - b).pop() || null,
+    };
+  }
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
 }
 
+// Boot: who am I + alert history first (cheap), then ONE ids= batch for
+// everything the session references plus the initial route's slice — no
+// full-catalog fetch anywhere. fetch failure at any step falls back to the
+// baked demo catalog (jsdom has no fetch).
 Promise.all([
-  fetchJson('/api/catalog.json').then(hydrateCatalog)
-    .catch(() => {}), // ponytail: fetch missing/failed → baked demo catalog (jsdom has no fetch)
   fetchJson('/api/me').catch(() => null), // 401 / static hosting → logged out
   fetchJson('/api/alerts').catch(() => null), // 401 → keep the baked demo feed
-]).then(([, me, alerts]) => {
-  if (me && me.user) hydrateMe(me); // after catalog: hydrateMe looks up products
-  if (alerts) hydrateFeed(alerts); // after catalog too: prod lookups
-  hydrateRecent(); // after catalog too: ids → product objects
+]).then(async ([me, alerts]) => {
+  const loggedIn = !!(me && me.user);
+  const s = parseUrl(loggedIn);
+  await Promise.all([
+    loggedIn ? hydrateSession(me, alerts || []) : null,
+    ensureRoute(s.name, s.params),
+  ]);
+  if (s.name === 'product') recordRecent(s.params.id);
   ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
 });

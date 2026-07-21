@@ -38,7 +38,40 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
   win.fetch = (u, opts = {}) => {
     const body = opts.body ? JSON.parse(opts.body) : undefined;
     win.api.push({ call: (opts.method || 'GET') + ' ' + u, body });
-    if (u === '/api/catalog.json') return ok(catalog || CATALOG_JSON);
+    if (u === '/api/catalog.json') return ok(catalog || CATALOG_JSON); // legacy full dump (no boot caller since the lazy cache)
+    if (u.startsWith('/api/products')) {
+      // emulate the Worker's query route over the seed rows (same shapes);
+      // a {meta, products} fixture serves its own meta verbatim
+      const raw = catalog || CATALOG_JSON;
+      const rows = Array.isArray(raw) ? raw : raw.products;
+      const heads = rows.filter(r => !r.family);
+      const p = new URLSearchParams(u.split('?')[1] || '');
+      let out;
+      if (p.get('ids') != null) {
+        const want = new Set(p.get('ids').split(',').filter(Boolean).map(id => id.includes('~') ? id.slice(0, id.indexOf('~')) : id));
+        out = rows.filter(r => want.has(r.id) || want.has(r.family));
+        for (const c of new Set(out.filter(r => want.has(r.id)).map(r => r.cat))) {
+          out = out.concat(heads.filter(h => h.cat === c && !out.includes(h)).slice(0, 4)); // same-cat neighbors
+        }
+      } else if (p.get('q') != null) {
+        const toks = p.get('q').toLowerCase().split(/\s+/).filter(t => t.length >= 2);
+        out = toks.length ? heads.filter(r => toks.some(t => `${r.name} ${r.brand} ${r.cat} ${r.kw || ''}`.toLowerCase().includes(t))) : [];
+      } else if (p.get('cat') != null) {
+        out = heads.filter(r => r.cat === p.get('cat'));
+      } else if (p.get('sort') === 'drop') {
+        const dr = r => r.was ? 1 - Math.min(...r.offers.map(o => o.price)) / r.was : -1;
+        out = [...heads].sort((a, b) => dr(b) - dr(a)).slice(0, Number(p.get('limit')) || 4);
+      } else {
+        out = heads;
+      }
+      const meta = (!Array.isArray(raw) && raw.meta) || {
+        products: heads.length,
+        shops: new Set(rows.flatMap(r => r.offers.map(o => o.shop))).size,
+        freshest: null,
+        cats: heads.reduce((m, r) => ((m[r.cat] = (m[r.cat] || 0) + 1), m), {}),
+      };
+      return ok({ meta, products: out });
+    }
     if (u === '/api/me') return ME ? ok(ME) : ok({ error: 'unauthenticated' }, 401);
     if (u === '/api/auth/login' || u === '/api/auth/signup') {
       const name = body.email.split('@')[0].replace(/[._-]+/g, ' ').replace(/(^| )\w/g, c => c.toUpperCase());
@@ -566,7 +599,7 @@ test('honest metrics: {meta, products} body renders the served aggregates', asyn
   assert.ok(sub.includes('5 min ago'), 'freshness must derive from meta.freshest, got: ' + sub);
 });
 
-test('rendered catalog comes from /api/catalog.json, not the baked constants', async () => {
+test('rendered catalog comes from /api/products slices, not the baked constants', async () => {
   const served = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'))
     .filter(p => p.cat !== 'Gaming') // dropped category must vanish from CAT_OF
     .map(p => p.cat === 'Audio' ? { ...p, name: 'Fetched ' + p.name } : p);
@@ -577,6 +610,48 @@ test('rendered catalog comes from /api/catalog.json, not the baked constants', a
   const cats = qa(win, '.catlink').map(el => el.textContent);
   assert.ok(cats.length > 0, 'category filter list did not render');
   assert.ok(!cats.some(t => t.includes('Gaming')), 'CAT_OF still lists the dropped Gaming category');
+});
+
+// ---------- lazy catalog (query-based, no eager full load) ----------
+
+test('lazy catalog: a search boot fetches only its q slice — the eager full load is gone', async () => {
+  const win = boot('http://pricy.test/search?q=sony', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  assert.ok(!win.api.some(c => c.call.includes('/api/catalog.json')), 'boot must not fetch the full catalog');
+  assert.ok(win.api.some(c => c.call === 'GET /api/products?q=sony'), 'boot must fetch the q slice');
+  assert.ok(!win.api.some(c => c.call === 'GET /api/products'), 'no unfiltered all-products fetch on a search boot');
+  const allHeads = CATALOG_JSON.filter(p => !p.family).length;
+  assert.ok(win.CATALOG.length > 0 && win.CATALOG.length < allHeads,
+    `cache must hold only the slice (got ${win.CATALOG.length} of ${allHeads})`);
+});
+
+test('lazy catalog: session ids (watches + recents + purchases) land in ONE ids= batch', async () => {
+  const me = {
+    user: mari,
+    watches: [{ id: 'xm5', target: 3100, paused: 0 }],
+    purchases: [{ order_id: 9, product_id: 'lego', shop: 'Power', price_nok: 500, purchased_at: new Date().toISOString() }],
+  };
+  const win = boot('http://pricy.test/', { session: true, me, storage: { pricy_recent: JSON.stringify(['airpods']) } });
+  assert.ok(await until(() => q(win, '.avatar')), 'home did not render');
+  const idCalls = win.api.filter(c => c.call.startsWith('GET /api/products?ids='));
+  assert.strictEqual(idCalls.length, 1, 'exactly one ids= batch, got: ' + idCalls.map(c => c.call).join(' | '));
+  const ids = decodeURIComponent(idCalls[0].call.split('ids=')[1]).split(',');
+  for (const id of ['xm5', 'lego', 'airpods']) assert.ok(ids.includes(id), `batch must carry ${id}, got: ${ids}`);
+  // and the hydrated stores resolved against the batch
+  assert.ok(await until(() => qa(win, '.wrow, .rcard').length > 0), 'watch/recent rows must render from the batch');
+});
+
+test('lazy catalog: a PDP visit merges into the cache without evicting earlier slices', async () => {
+  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const audioCount = win.CATALOG.length;
+  // navigate to a product outside Audio — its slice must merge, not replace
+  win.history.pushState(null, '', '/product/lego');
+  win.dispatchEvent(new win.PopStateEvent('popstate'));
+  assert.ok(await until(() => qa(win, '.orow').length > 0), 'PDP did not render');
+  assert.ok(win.CATALOG.some(p => p.id === 'lego'), 'PDP product must be in the cache');
+  assert.ok(win.CATALOG.length > audioCount, 'earlier Audio slice must survive the merge');
+  assert.ok(win.CATALOG.filter(p => p.cat === 'Audio').length === audioCount, 'no Audio rows lost');
 });
 
 test('offer rows: Visit opens the offer url, url-less offers are disabled', async () => {
