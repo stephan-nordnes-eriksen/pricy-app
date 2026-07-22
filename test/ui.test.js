@@ -787,6 +787,21 @@ test('PDP specs render from the served catalog, not the baked design table', asy
   assert.ok(rows.some(t => t.includes('Served-fit')), 'specs must show the served value, got: ' + rows[0]);
 });
 
+test('PDP specs: groups-shaped served specs render for a cat with no SPEC_KINDS schema', async () => {
+  const seed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  const served = seed.concat([{
+    id: 'ean-777', name: 'Acme Airfryer', brand: 'Acme', cat: 'Kitchen', icon: 'chef-hat', kw: '',
+    specs: { groups: [{ label: 'Cooking', rows: [['Capacity', '5.5 L'], ['Power', '1700 W'], ['Missing', null]] }] },
+    offers: [], history: [],
+  }]);
+  const win = boot('http://pricy.test/product/ean-777', { session: true, catalog: served });
+  assert.ok(await until(() => q(win, '#pdp-specs')), 'groups-shaped specs section missing on the PDP');
+  assert.match(q(win, '#pdp-specs .specs__note').textContent, /Kitchen/, 'kindLabel must fall back to the cat');
+  const rows = qa(win, '#pdp-specs .srow').map(el => el.textContent);
+  assert.ok(rows.some(t => t.includes('Capacity') && t.includes('5.5 L')), 'group rows must render label + value, got: ' + rows.join(' | '));
+  assert.ok(rows.some(t => t.includes('Missing') && t.includes('—')), 'null values must render as —');
+});
+
 // ---------- product variants (Phase 4e) ----------
 
 test('PDP: variant picker renders from hydrated listings — selecting a combo swaps in the child row', async () => {
