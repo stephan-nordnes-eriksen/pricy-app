@@ -53,10 +53,12 @@ Two Claude Design projects feed this repo:
   that use it. No upstream edit.
 - **Facet filters** (2026-07-22, FILTERS-PLAN.md): `worker/facets.json`
   is the per-cat facet registry, served as `meta.facets` by `catMeta`;
-  admin PATCH accepts a `facets` object per product (falls back to demo
-  SPECS client-side). Server side is live; the generic filter UI is a
-  pending upstream prototype change (Phase A prompt in the plan) — boot's
-  registry swap is guarded until that sync lands.
+  admin PATCH accepts a `facets` object per product. Upstream Results
+  renders a generic group per `window.FACETS[cat]` def (option counts
+  derive from values present, spec strings are the fallback via `fval`,
+  the old hardcoded NC filter is gone); boot's `hydrateCatalog` swaps the
+  served registry in wholesale. New filter = a facets.json entry (+ data
+  via enrich curls). No upstream edit.
 - **Adding products needs no upstream edit**: `worker/extra.json` holds
   hand-written head rows (`id/name/brand/cat/icon/kw`; cat must be in
   `worker/cats.json`) that build.js merges into seed.json — seeding,

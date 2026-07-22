@@ -701,6 +701,43 @@ test('dynamic categories: a server cat the prototype does not know renders with 
   assert.ok(tile.textContent.includes('5'), 'tile must show the served count, got: ' + tile.textContent);
 });
 
+// FILTERS-PLAN: data-driven per-category facet filters on Results
+const facetGrp = (win, title) => qa(win, '.filters__grp').find(g => g.querySelector('h4')?.textContent === title);
+
+test('facet filters: TV renders spec-derived option groups, clicking filters rows, NC gone outside Audio', async () => {
+  const win = boot('http://pricy.test/search?cat=TV', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const size = facetGrp(win, 'Screen size');
+  assert.ok(size, 'Screen size facet group must render for cat=TV');
+  const opts = [...size.querySelectorAll('.check')].map(el => el.textContent);
+  assert.ok(opts[0].startsWith('55 ″') && opts[1].startsWith('65 ″'), 'options must be parsed+unit labels, numeric ascending, got: ' + opts.join(' | '));
+  assert.ok(facetGrp(win, 'Panel'), 'Panel facet group must render');
+  assert.ok(!qa(win, '.check, .fpill').some(el => el.textContent.includes('Noise cancelling')), 'hardcoded NC filter must be gone outside Audio');
+
+  const before = qa(win, '.rrow, .rcard').length;
+  [...size.querySelectorAll('.check')][0].click(); // 55 ″
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === 1), 'selecting 55 ″ must filter to the one 55-inch TV (started with ' + before + ')');
+  const name = win.CATALOG.find(p => p.id === 'tv').name;
+  assert.ok(qa(win, '.rrow, .rcard')[0].textContent.includes(name), 'the surviving row must be the 55″ set');
+  assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Screen size: 55 ″')), 'active facet must chip');
+});
+
+test('facet filters: served meta.facets replaces the baked registry; cats without defs get no groups', async () => {
+  const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8')).filter(p => !p.family);
+  const cats = products.reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), {});
+  const meta = { products: products.length, shops: 3, freshest: Date.now(), cats, facets: { TV: [{ key: 'panel', label: 'Panel tech', type: 'options' }] } };
+  const win = boot('http://pricy.test/search?cat=TV', { session: true, catalog: { meta, products } });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  assert.ok(facetGrp(win, 'Panel tech'), 'served facet def must render');
+  assert.ok(!facetGrp(win, 'Screen size'), 'baked TV defs must be replaced wholesale by the served registry');
+  assert.strictEqual(win.FACETS.Audio, undefined, 'baked cats absent from the served registry must be dropped');
+
+  const gaming = boot('http://pricy.test/search?cat=Gaming', { session: true });
+  assert.ok(await until(() => qa(gaming, '.rrow, .rcard').length > 0), 'gaming results did not render');
+  const titles = qa(gaming, '.filters__grp').map(g => g.querySelector('h4')?.textContent);
+  assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only'], 'no facet groups for a cat without defs, got: ' + titles.join(' | '));
+});
+
 test('lazy catalog: home "Biggest drops" ranks the served slice, not the baked demo 8', async () => {
   const heads = CATALOG_JSON.filter(p => !p.family);
   const dr = p => p.was ? 1 - Math.min(...p.offers.map(o => o.price)) / p.was : -1;
