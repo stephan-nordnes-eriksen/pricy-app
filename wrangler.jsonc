@@ -37,7 +37,14 @@
   ],
   // hourly offer refresh (worker scheduled handler); price_points stay
   // one-per-day via the upsert
-  "triggers": { "crons": ["0 * * * *"] }
+  "triggers": { "crons": ["0 * * * *"] },
+  // Auto-promotion category map (OPEN-CATALOG-PLAN B): per-shop raw source
+  // category → prototype category. A hidden discovered product goes live when
+  // a source supplies name + brand + a category mapped here; unmapped
+  // categories stay hidden (that IS the junk filter — never map accessory
+  // categories). Grow by hand as feeds reveal their vocabularies, e.g.
+  // "CATMAP": { "Komplett": { "Mobiltelefoner": "Phones" } }
+  "vars": { "CATMAP": {} }
   // Feature flag for real magic-link mail: the worker sends via
   // env.SEND_EMAIL when bound, console.logs the link when not. Email
   // Sending needs the Workers paid plan — once upgraded, onboard pricy.no

@@ -4,7 +4,8 @@
 // Worker route now, no static file shadows it.
 
 import seed from './seed.json' with { type: 'json' };
-import { collectRows, BROWSER_UA } from './sources.js';
+import eansFile from './eans.json' with { type: 'json' };
+import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 
 const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, created_at INTEGER)',
@@ -20,6 +21,10 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT, reason TEXT NOT NULL, text TEXT, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS images (product_id TEXT PRIMARY KEY, src TEXT NOT NULL, fetched_at INTEGER NOT NULL)',
+  // EAN → product routing (OPEN-CATALOG-PLAN A1): bootstrapped from
+  // worker/eans.json, extended at runtime via POST /api/admin/alias.
+  // ean is eanKey-normalized (digits, no leading zeros).
+  'CREATE TABLE IF NOT EXISTS eans (ean TEXT PRIMARY KEY, product_id TEXT NOT NULL)',
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -81,6 +86,14 @@ async function verifyPassword(password, stored) {
 }
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', ...headers } });
+}
+// bearer gate shared by /api/ingest and the /api/admin/* surface;
+// returns the error Response, or null when authorized
+function ingestAuth(request, env) {
+  if (!env.INGEST_TOKEN) return json({ error: 'disabled (no INGEST_TOKEN secret)' }, 503);
+  const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!bearer || !timingSafeEqual(bearer, env.INGEST_TOKEN)) return json({ error: 'unauthorized' }, 401);
+  return null;
 }
 async function bodyEmail(request) {
   const email = String(((await request.json().catch(() => ({}))).email || '')).trim().toLowerCase();
@@ -161,10 +174,15 @@ const dayOf = (t) => new Date(t).toISOString().slice(0, 10);
 // stay (purchases/watches reference them).
 let seedHash;
 async function seedCatalog(db) {
-  seedHash ??= await sha(JSON.stringify(seed));
+  // hash covers eans.json too: an eans-only change must re-run seeding so the
+  // new file rows land in the eans table (OR IGNORE — runtime aliases win)
+  seedHash ??= await sha(JSON.stringify(seed) + JSON.stringify(eansFile));
   if ((await db.prepare('SELECT hash FROM seed_meta WHERE id = 1').first())?.hash === seedHash) return;
   const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(r => r.id));
   const stmts = []; // OR IGNORE / upserts: two racing requests must not fail
+  for (const [pid, list] of Object.entries(eansFile)) {
+    for (const e of list) stmts.push(db.prepare('INSERT OR IGNORE INTO eans (ean, product_id) VALUES (?, ?)').bind(eanKey(e), pid));
+  }
   for (const { id, offers, history, best, drop, shops, stock, ...meta } of seed) {
     stmts.push(db.prepare('INSERT INTO products (id, meta) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET meta = excluded.meta').bind(id, JSON.stringify(meta)));
     if (known.has(id)) continue; // meta refresh only — real offers/history stay
@@ -194,26 +212,65 @@ const stockVal = (s) => s == null || s === 2 ? 2 : s ? 1 : 0;
 // a row for a product we don't have yet, carrying enough identity to create it
 const autoAdd = (r) => /^ean-\d+$/.test(r.product_id) && typeof r.name === 'string' && !!r.name.trim();
 
+// Auto-promotion bits (OPEN-CATALOG-PLAN B3): per-cat default icon (lucide
+// names), an accessory blocklist that keeps junk hidden regardless of
+// category mapping, and kw = distinct name/brand/cat tokens.
+const SEED_CATS = new Set(seed.map(p => p.cat).filter(Boolean));
+const CAT_ICONS = { Audio: 'headphones', Computers: 'laptop', 'E-readers': 'book-open', Gaming: 'gamepad-2', Home: 'lamp', Kitchen: 'chef-hat', Phones: 'smartphone', TV: 'tv', Toys: 'toy-brick' };
+const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b/i;
+const kwOf = (...parts) => [...new Set(parts.join(' ').toLowerCase().match(/[\p{L}\d]+/gu) || [])].filter(t => t.length > 1).join(' ');
+
 async function ingest(db, rows, env) {
+  // EAN aliasing (OPEN-CATALOG-PLAN A2): `ean-*` ids re-map through the eans
+  // table, so a variant/duplicate EAN lands on its real product without a
+  // deploy. ponytail: full table read per ingest, same scale note as below.
+  const alias = Object.fromEntries((await db.prepare('SELECT ean, product_id FROM eans').all()).results.map(r => [r.ean, r.product_id]));
+  rows = rows.map(r => {
+    const m = /^ean-(\d+)$/.exec(r.product_id);
+    return m && alias[m[1]] ? { ...r, product_id: alias[m[1]] } : r;
+  });
   // Discovery: any source row whose product we don't have (unknown `ean-<digits>`
   // id derived from a feed/JSON-LD EAN, plus a name) creates the product on the
-  // spot, hidden until manually enriched (tools/enrich.mjs → worker/extra.json →
-  // deploy re-seeds meta without `hidden`). Unknown rows without identity drop.
+  // spot, hidden until enriched — by auto-promotion below, or manually via
+  // PATCH /api/admin/products/:id. Unknown rows without identity drop.
   // ponytail: full id scan per ingest, fine to ~50k products; index a discovery
   // column when it isn't
-  const prods = (await db.prepare(`SELECT id, json_extract(meta, '$.hidden') AS hidden FROM products`).all()).results;
+  const prods = (await db.prepare(`SELECT id, meta, json_extract(meta, '$.hidden') AS hidden FROM products`).all()).results;
   const known = new Set(prods.map(p => p.id));
   const stillHidden = new Set(prods.filter(p => p.hidden === 1).map(p => p.id));
+  const metaOf = Object.fromEntries(prods.filter(p => p.hidden === 1).map(p => [p.id, JSON.parse(p.meta)]));
   const creates = {};
   for (const r of rows) {
     if (known.has(r.product_id) || !autoAdd(r)) continue;
-    creates[r.product_id] ??= { name: r.name.trim(), ...(r.brand ? { brand: String(r.brand) } : {}), ean: r.product_id.slice(4), hidden: 1 };
+    creates[r.product_id] ??= { name: r.name.trim(), ...(r.brand ? { brand: String(r.brand) } : {}), ...(r.srcCat ? { srcCat: String(r.srcCat) } : {}), ean: r.product_id.slice(4), hidden: 1 };
     stillHidden.add(r.product_id);
+    metaOf[r.product_id] = creates[r.product_id];
   }
   rows = rows.filter(r => known.has(r.product_id) || creates[r.product_id]);
   if (Object.keys(creates).length) {
     await db.batch(Object.entries(creates).map(([id, meta]) =>
       db.prepare('INSERT OR IGNORE INTO products (id, meta) VALUES (?, ?)').bind(id, JSON.stringify(meta))));
+  }
+  // Auto-promotion (B3): a hidden row goes live the moment a source supplies
+  // name + brand + a source category that env.CATMAP (JSON var, per-shop
+  // { "<shop>": { "<raw srcCat>": "<cat>" } }) maps to one of ours. meta.auto
+  // marks it machine-promoted; auto + still hidden = a human demoted it,
+  // never re-promote. Unmapped or blocklisted rows just stay hidden.
+  const catmap = typeof env.CATMAP === 'string' ? JSON.parse(env.CATMAP) : (env.CATMAP || {});
+  const promoted = {};
+  for (const r of rows) {
+    const meta = metaOf[r.product_id];
+    if (!meta || !stillHidden.has(r.product_id) || meta.family || meta.auto) continue;
+    const brand = meta.brand ?? (r.brand ? String(r.brand) : null);
+    const cat = catmap[r.shop]?.[r.srcCat ?? meta.srcCat];
+    if (!meta.name || !brand || !SEED_CATS.has(cat) || JUNK_RE.test(meta.name)) continue;
+    const { hidden, ...rest } = meta;
+    promoted[r.product_id] = { ...rest, brand, cat, icon: CAT_ICONS[cat] || 'package', kw: kwOf(meta.name, brand, cat), auto: 1 };
+    stillHidden.delete(r.product_id);
+  }
+  if (Object.keys(promoted).length) {
+    await db.batch(Object.entries(promoted).map(([id, meta]) =>
+      db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id)));
   }
   const today = dayOf(Date.now());
   const best = {};
@@ -848,24 +905,95 @@ export default {
     // 4d interim: the laptop crawler (tools/crawl.mjs) pushes ingest()-shaped
     // rows here, bearer-gated on the INGEST_TOKEN secret
     if (route === 'POST /api/ingest') {
-      if (!env.INGEST_TOKEN) return json({ error: 'ingest disabled (no INGEST_TOKEN secret)' }, 503);
-      const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-      if (!bearer || !timingSafeEqual(bearer, env.INGEST_TOKEN)) return json({ error: 'unauthorized' }, 401);
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
       const rows = await request.json().catch(() => null);
       const bad = !Array.isArray(rows) || !rows.length || rows.length > 500 || rows.some(r =>
         !r || typeof r.product_id !== 'string' || typeof r.shop !== 'string' || !r.shop.trim()
         || !Number.isInteger(r.price) || r.price <= 0 || r.price > 10_000_000
         || (r.ship != null && typeof r.ship !== 'string') || (r.eta != null && typeof r.eta !== 'string')
         || (r.url != null && typeof r.url !== 'string') || (r.image != null && typeof r.image !== 'string')
-        || (r.name != null && typeof r.name !== 'string') || (r.brand != null && typeof r.brand !== 'string'));
+        || (r.name != null && typeof r.name !== 'string') || (r.brand != null && typeof r.brand !== 'string')
+        || (r.srcCat != null && typeof r.srcCat !== 'string'));
       if (bad) return json({ error: 'bad rows' }, 400);
       await seedCatalog(db);
       const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(p => p.id));
+      // aliased EANs resolve inside ingest(); their derived ids are known here
+      for (const r of (await db.prepare('SELECT ean FROM eans').all()).results) known.add('ean-' + r.ean);
       // discovery rows (ean-derived id + name) pass through — ingest creates them hidden
       const unknown = [...new Set(rows.filter(r => !known.has(r.product_id) && !autoAdd(r)).map(r => r.product_id))];
       if (unknown.length) return json({ error: 'unknown product_id', ids: unknown }, 400);
       await ingest(db, rows, env);
       return json({ ok: true, ingested: rows.length });
+    }
+
+    // Admin surface (OPEN-CATALOG-PLAN A3, bearer = INGEST_TOKEN, same trust
+    // as /api/ingest): enrichment/triage writes land in D1 directly — no
+    // extra.json row, no deploy. tools/enrich.mjs and tools/group.mjs print
+    // ready-to-run curls against these.
+    if (request.method === 'PATCH' && url.pathname.startsWith('/api/admin/products/')) {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      await seedCatalog(db);
+      const id = decodeURIComponent(url.pathname.slice('/api/admin/products/'.length));
+      const cur = await db.prepare('SELECT meta FROM products WHERE id = ?').bind(id).first();
+      if (!cur) return json({ error: 'unknown product' }, 404);
+      const patch = await request.json().catch(() => null);
+      const STR = ['name', 'brand', 'cat', 'icon', 'kw', 'family', 'vlabel'];
+      const ok = patch && typeof patch === 'object' && !Array.isArray(patch) && Object.keys(patch).length
+        && Object.entries(patch).every(([k, v]) =>
+          (v === null && k !== 'name') // null deletes a key; a product always keeps a name
+          || (STR.includes(k) && typeof v === 'string' && v.trim())
+          || (k === 'was' && Number.isInteger(v) && v > 0)
+          || ((k === 'hidden' || k === 'auto') && v === 1)
+          || (k === 'variants' && typeof v === 'object' && !Array.isArray(v)));
+      if (!ok) return json({ error: 'bad patch' }, 400);
+      if (typeof patch.cat === 'string' && !SEED_CATS.has(patch.cat)) return json({ error: 'unknown cat', cats: [...SEED_CATS].sort() }, 400);
+      const meta = JSON.parse(cur.meta);
+      for (const [k, v] of Object.entries(patch)) v === null ? delete meta[k] : meta[k] = typeof v === 'string' ? v.trim() : v;
+      await db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id).run();
+      return json({ ok: true, id, meta });
+    }
+
+    // Map an EAN to a product (variant/duplicate triage). Migrates the
+    // orphaned auto-discovered `ean-<key>` row's collected offers/history/
+    // watches/purchases to the target instead of throwing them away, then
+    // deletes the orphan. Pass meta {name, family, vlabel, …} to create the
+    // target on the spot (group.mjs re-homing to a new variant child).
+    if (route === 'POST /api/admin/alias') {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      await seedCatalog(db);
+      const b = await request.json().catch(() => null);
+      const key = eanKey(b?.ean);
+      const target = typeof b?.product_id === 'string' ? b.product_id.trim() : '';
+      if (!key || !target) return json({ error: 'need ean and product_id' }, 400);
+      if (!await db.prepare('SELECT 1 FROM products WHERE id = ?').bind(target).first()) {
+        if (typeof b.meta?.name !== 'string' || !b.meta.name.trim()) return json({ error: 'unknown product_id (pass meta.name to create it)' }, 404);
+        await db.prepare('INSERT INTO products (id, meta) VALUES (?, ?)').bind(target, JSON.stringify({ ...b.meta, ean: key })).run();
+      }
+      await db.prepare('INSERT INTO eans (ean, product_id) VALUES (?, ?) ON CONFLICT(ean) DO UPDATE SET product_id = excluded.product_id').bind(key, target).run();
+      const orphan = `ean-${key}`;
+      let migrated = false;
+      if (orphan !== target && await db.prepare('SELECT 1 FROM products WHERE id = ?').bind(orphan).first()) {
+        migrated = true;
+        await db.batch([
+          // OR IGNORE: where the target already has the shop/day/user row,
+          // the target's wins and the orphan's leftover is deleted below
+          db.prepare('UPDATE OR IGNORE offers SET product_id = ? WHERE product_id = ?').bind(target, orphan),
+          db.prepare('UPDATE OR IGNORE price_points SET product_id = ? WHERE product_id = ?').bind(target, orphan),
+          db.prepare('UPDATE OR IGNORE watches SET product_id = ? WHERE product_id = ?').bind(target, orphan),
+          db.prepare('UPDATE purchases SET product_id = ? WHERE product_id = ?').bind(target, orphan),
+          db.prepare('DELETE FROM offers WHERE product_id = ?').bind(orphan),
+          db.prepare('DELETE FROM price_points WHERE product_id = ?').bind(orphan),
+          db.prepare('DELETE FROM watches WHERE product_id = ?').bind(orphan),
+          db.prepare('DELETE FROM images WHERE product_id = ?').bind(orphan),
+          db.prepare('DELETE FROM products WHERE id = ?').bind(orphan),
+        ]);
+        // the image re-fetches under the target id on the next ingest
+        try { await env.IMAGES?.delete(`products/${orphan}`); } catch {}
+      }
+      return json({ ok: true, ean: key, product_id: target, migrated });
     }
 
     if (route === 'POST /api/auth/request') {

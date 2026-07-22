@@ -1060,6 +1060,148 @@ test('POST /api/ingest discovery: unknown ean- rows create hidden products, excl
   assert.deepStrictEqual(widget.history, [480], 'price history starts collecting from discovery');
 });
 
+// OPEN-CATALOG-PLAN A: EAN routing through the D1 eans table + admin surface
+const admin = (env) => (pathname, method, body, token = 'sekrit-token') =>
+  worker.fetch(new Request('http://pricy.test' + pathname, {
+    method,
+    headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify(body),
+  }), env);
+
+test('eans table routes ingest rows; admin alias re-homes a discovered product and migrates its data', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  const push = (rows) => req('/api/ingest', 'POST', rows);
+
+  // a row keyed by a known EAN (worker/eans.json) lands on the mapped product
+  const [pid, [ean]] = Object.entries(eans)[0];
+  assert.strictEqual((await push([{ product_id: `ean-${ean.replace(/^0+/, '')}`, shop: 'Komplett', price: 2222, name: 'whatever the feed calls it' }])).status, 200);
+  const mapped = (await catBody(call)).find(p => p.id === pid);
+  assert.strictEqual(mapped.offers.find(o => o.shop === 'Komplett').price, 2222, 'seeded eans.json mapping must route the row');
+  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0, 'no hidden product for a mapped EAN');
+
+  // discover a new product with offers + history + a watch (Milrab is not a
+  // seed shop; Power is — the alias below must handle both)
+  const row = { product_id: 'ean-7099999999991', shop: 'Milrab', price: 500, name: 'Mystery Widget 3000', brand: 'Acme', stock: 1 };
+  await push([row, { ...row, shop: 'Power', price: 480 }]);
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'ean-7099999999991', target: 450 }], cookie });
+
+  // auth: admin surface is bearer-gated like ingest
+  assert.strictEqual((await req('/api/admin/alias', 'POST', { ean: '7099999999991', product_id: 'xm5' }, null)).status, 401);
+  assert.strictEqual((await req('/api/admin/alias', 'POST', { ean: '7099999999991', product_id: 'xm5' }, 'wrong')).status, 401);
+  assert.strictEqual((await req('/api/admin/alias', 'POST', { product_id: 'xm5' })).status, 400, 'ean required');
+  assert.strictEqual((await req('/api/admin/alias', 'POST', { ean: '7099999999991', product_id: 'nope' })).status, 404, 'unknown target without meta.name');
+
+  // triage verdict: the widget is really an xm5 variant
+  const res = await req('/api/admin/alias', 'POST', { ean: '7099999999991', product_id: 'xm5' });
+  assert.strictEqual(res.status, 200);
+  assert.deepStrictEqual(await res.json(), { ok: true, ean: '7099999999991', product_id: 'xm5', migrated: true });
+
+  const xm5 = (await catBody(call)).find(p => p.id === 'xm5');
+  assert.strictEqual(xm5.offers.find(o => o.shop === 'Milrab').price, 500, 'collected offers migrate to the target');
+  assert.strictEqual(xm5.offers.find(o => o.shop === 'Power').price, 3169, 'a shop the target already has keeps the target\'s offer');
+  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0, 'the orphan row is gone');
+  assert.deepStrictEqual((await (await call('/api/me', { cookie })).json()).watches.map(w => w.id), ['xm5'], 'watches follow the migration');
+
+  // future rows for that EAN land straight on the target
+  await push([{ product_id: 'ean-7099999999991', shop: 'Elkjøp', price: 470, name: 'Mystery Widget 3000' }]);
+  assert.strictEqual((await catBody(call)).find(p => p.id === 'xm5').offers.find(o => o.shop === 'Elkjøp').price, 470, 'runtime alias routes future ingests');
+  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0);
+});
+
+test('admin PATCH: validated meta merge — manual promote and demote without a deploy', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  await admin(env)('/api/ingest', 'POST', [{ product_id: 'ean-7099999999992', shop: 'Power', price: 900, name: 'Acme Soundbar S1', brand: 'Acme' }]);
+
+  assert.strictEqual((await req('/api/admin/products/nope', 'PATCH', { cat: 'Audio' })).status, 404);
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', {})).status, 400, 'empty patch');
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { cat: 'Lydplanker' })).status, 400, 'cat must be a real category');
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { bogus: 'x' })).status, 400, 'unknown keys rejected');
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { name: null })).status, 400, 'name cannot be deleted');
+
+  // promote: fill display meta, drop hidden
+  const res = await req('/api/admin/products/ean-7099999999992', 'PATCH', { name: 'Acme Soundbar S1', cat: 'Audio', icon: 'speaker', kw: 'soundbar lydplanke acme', hidden: null });
+  assert.strictEqual(res.status, 200);
+  const promoted = (await (await call('/api/products?q=soundbar')).json()).products;
+  assert.strictEqual(promoted.length, 1, 'promoted product is searchable');
+  assert.strictEqual(promoted[0].cat, 'Audio');
+  assert.strictEqual(promoted[0].hidden, undefined);
+  assert.strictEqual(promoted[0].best, 900, 'collected offers ship with the promotion');
+
+  // demote: hidden again
+  await req('/api/admin/products/ean-7099999999992', 'PATCH', { hidden: 1 });
+  assert.strictEqual((await (await call('/api/products?q=soundbar')).json()).products.length, 0, 'demoted product disappears');
+});
+
+// OPEN-CATALOG-PLAN B: auto-promotion — mapped source category = go live
+test('auto-promotion: a hidden row with name+brand+CATMAP-mapped srcCat goes live; junk and unmapped stay hidden; demote sticks', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token', CATMAP: { Power: { Mobiltelefoner: 'Phones' } } };
+  const call = api(env);
+  const req = admin(env);
+  const push = (rows) => req('/api/ingest', 'POST', rows);
+
+  assert.strictEqual((await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Pixel 9', srcCat: 42 }])).status, 400, 'non-string srcCat rejected');
+
+  // mapped category + name + brand → live, with icon/kw/auto stamped
+  await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Google Pixel 9 128 GB', brand: 'Google', srcCat: 'Mobiltelefoner' }]);
+  const live = (await (await call('/api/products?q=pixel 9')).json()).products.find(p => p.id === 'ean-7099999999993');
+  assert.ok(live, 'auto-promoted product must be searchable');
+  assert.strictEqual(live.cat, 'Phones');
+  assert.strictEqual(live.icon, 'smartphone');
+  assert.strictEqual(live.auto, 1);
+  assert.ok(live.kw.includes('google') && live.kw.includes('pixel') && live.kw.includes('phones'), `kw covers name+brand+cat: ${live.kw}`);
+
+  // no brand → stays hidden; unmapped srcCat → stays hidden; accessory name → stays hidden
+  await push([
+    { product_id: 'ean-7099999999994', shop: 'Power', price: 990, name: 'Nameless Phone', srcCat: 'Mobiltelefoner' },
+    { product_id: 'ean-7099999999995', shop: 'Power', price: 990, name: 'Acme Blender', brand: 'Acme', srcCat: 'Kjøkkenmaskiner' },
+    { product_id: 'ean-7099999999996', shop: 'Power', price: 99, name: 'Pixel 9 deksel svart', brand: 'Google', srcCat: 'Mobiltelefoner' },
+  ]);
+  const hiddenIds = (await (await call('/api/products?hidden=1')).json()).products.map(p => p.id);
+  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999994', 'ean-7099999999995', 'ean-7099999999996'], 'brandless, unmapped and blocklisted rows stay hidden');
+
+  // a human demotion out-ranks the machine: auto:1 + hidden:1 never re-promotes
+  await req('/api/admin/products/ean-7099999999993', 'PATCH', { hidden: 1 });
+  await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Google Pixel 9 128 GB', brand: 'Google', srcCat: 'Mobiltelefoner' }]);
+  assert.ok(!(await (await call('/api/products?q=pixel 9')).json()).products.some(p => p.id === 'ean-7099999999993'), 'demoted product must not re-promote');
+});
+
+// OPEN-CATALOG-PLAN C: alias can create a variant child on the fly (group.mjs)
+test('alias with meta creates a variant child: data re-homed, child rides its head', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  await req('/api/ingest', 'POST', [{ product_id: 'ean-7099999999997', shop: 'Power', price: 11990, name: 'iPhone 15 256GB Teal', brand: 'Apple' }]);
+
+  const res = await req('/api/admin/alias', 'POST', {
+    ean: '7099999999997', product_id: 'iphone~256-teal',
+    meta: { name: 'iPhone 15 · 256 GB Teal', family: 'iphone', vlabel: '256 GB Teal' },
+  });
+  assert.strictEqual(res.status, 200);
+  assert.deepStrictEqual(await res.json(), { ok: true, ean: '7099999999997', product_id: 'iphone~256-teal', migrated: true });
+
+  const rows = (await (await call('/api/products?ids=iphone')).json()).products;
+  const child = rows.find(p => p.id === 'iphone~256-teal');
+  assert.ok(child, 'the created child expands with its head');
+  assert.strictEqual(child.family, 'iphone');
+  assert.strictEqual(child.vlabel, '256 GB Teal');
+  assert.strictEqual(child.offers.find(o => o.shop === 'Power').price, 11990, 'collected offers moved onto the child');
+  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0, 'orphan gone');
+
+  // future ingests of that EAN land on the child
+  await req('/api/ingest', 'POST', [{ product_id: 'ean-7099999999997', shop: 'CDON', price: 11790, name: 'iPhone 15 256GB Teal' }]);
+  const again = (await (await call('/api/products?ids=iphone')).json()).products.find(p => p.id === 'iphone~256-teal');
+  assert.strictEqual(again.offers.find(o => o.shop === 'CDON').price, 11790);
+});
+
 // product images: downloaded to R2 on ingest, only when the source URL changes
 test('ingest images: one download per source URL, served at /img/:id with etag revalidation', async () => {
   const store = new Map();

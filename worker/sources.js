@@ -10,8 +10,6 @@
 // Never scrape competing comparison services (Prisjakt etc.) — first-party
 // shop pages and licensed feeds only.
 
-import eans from './eans.json' with { type: 'json' };
-
 export const UA = 'pricy.no price watcher (kontakt@pricy.no)';
 // Some shops (NetOnNet) 403 every non-browser UA, honest or not. Opt in per
 // shop with cfg.ua = 'browser'; the honest UA stays the default everywhere.
@@ -20,10 +18,6 @@ export const BROWSER_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Apple
 // digits only, leading zeros dropped, so a 12-digit UPC and its 13-digit
 // zero-padded EAN form land on the same key
 export const eanKey = (s) => String(s || '').replace(/\D/g, '').replace(/^0+/, '');
-export const EAN_TO_PRODUCT = {};
-for (const [productId, list] of Object.entries(eans)) {
-  for (const e of list) EAN_TO_PRODUCT[eanKey(e)] = productId;
-}
 
 // "2 990,50", "2990.50 NOK", "2990" → øre-less integer NOK; null if unparsable
 export function parsePrice(raw) {
@@ -78,15 +72,17 @@ export async function adtractionSource(shop, _cfg, env) {
       const f = xmlFields(m[1]);
       const key = eanKey(pick(f, 'ean', 'gtin', 'gtin13', 'barcode'));
       const name = pick(f, 'name', 'productname', 'title');
-      // discovery: an EAN we don't know is a new product — derived id, ingest
-      // auto-creates it hidden; same EAN from another shop lands on the same row
-      const product_id = EAN_TO_PRODUCT[key] ?? (key && name ? `ean-${key}` : null);
+      // every EAN row rides its derived id — ingest's eans table re-maps known
+      // EANs to their product and auto-creates the rest hidden; same EAN from
+      // another shop lands on the same row
+      const product_id = key && name ? `ean-${key}` : null;
       const price = parsePrice(pick(f, 'price', 'priceinclvat'));
       if (!product_id || !price) continue; // no EAN+name / junk row
       rows.push({
         product_id, shop, price,
         name: name ?? null,
         brand: pick(f, 'brand', 'manufacturer') ?? null,
+        srcCat: pick(f, 'category', 'categoryname', 'producttype', 'productcategory') ?? null,
         ship: pick(f, 'shippingcost', 'shipping', 'shippingprice') ?? null,
         stock: (v => v == null ? 2 : truthyStock(v) ? 1 : 0)(pick(f, 'instock', 'availability', 'stock')),
         eta: null,
@@ -112,7 +108,7 @@ export async function scrapeSource(shop, cfg) {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       if (!res.ok) throw new Error(`http ${res.status}`);
       const html = await res.text();
-      const { offer, image, name, brand } = productOffer(html) ?? {};
+      const { offer, image, name, brand, category } = productOffer(html) ?? {};
       const sd = shippingInfo(html);
       // NetOnNet nests price in offer.priceSpecification instead of offer.price
       const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
@@ -126,6 +122,7 @@ export async function scrapeSource(shop, cfg) {
         product_id, shop, price,
         name: name ?? null,
         brand: brand ?? null,
+        srcCat: category ?? null,
         ship: sd?.ship ?? null,
         stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
         eta: sd?.eta ?? null,
@@ -154,7 +151,9 @@ function productOffer(html) {
       const o = [n?.offers].flat().find(o => o && (o.price != null || o.lowPrice != null || o.priceSpecification));
       if (o) {
         const brand = typeof n.brand === 'string' ? n.brand : n.brand?.name;
-        return { offer: o, image: imageUrl(n.image), name: typeof n.name === 'string' ? n.name : null, brand: brand ?? null };
+        // category: string | [string] — enough shops send it to feed CATMAP
+        const category = [n.category].flat().find(c => typeof c === 'string');
+        return { offer: o, image: imageUrl(n.image), name: typeof n.name === 'string' ? n.name : null, brand: brand ?? null, category: category ?? null };
       }
     }
   }
