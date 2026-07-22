@@ -48,10 +48,17 @@ if (dry) process.exit(0);
 
 const token = process.env.INGEST_TOKEN
   || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim();
-const res = await fetch(`${base}/api/ingest`, {
-  method: 'POST',
-  headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-  body: JSON.stringify(rows),
-});
-console.log(`POST ${base}/api/ingest → ${res.status} ${await res.text()}`);
-process.exit(res.ok ? 0 : 1);
+// ponytail: 40-row chunks — the Worker gets ~50 external fetches per request
+// (free plan), and syncImages downloads one image per new/changed URL; a
+// bigger POST silently drops every image past the cap
+let ok = true;
+for (let i = 0; i < rows.length; i += 40) {
+  const res = await fetch(`${base}/api/ingest`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify(rows.slice(i, i + 40)),
+  });
+  console.log(`POST ${base}/api/ingest [${i}–${Math.min(i + 40, rows.length)}] → ${res.status} ${await res.text()}`);
+  ok &&= res.ok;
+}
+process.exit(ok ? 0 : 1);
