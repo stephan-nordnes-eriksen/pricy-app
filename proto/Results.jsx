@@ -202,7 +202,7 @@ function Check({ on, label, count, onClick }) {
   );
 }
 
-function FiltersBody({ f, set, base, go }) {
+function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBoolFacet }) {
   const brands = base.brands; // brands present in the active result set
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
   return (
@@ -222,6 +222,12 @@ function FiltersBody({ f, set, base, go }) {
         <h4>Brand</h4>
         {brands.map(b => <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} />)}
       </div>
+      {facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2).map(def => (
+        <div key={def.key} className="filters__grp">
+          <h4>{def.label}</h4>
+          {facetBase[def.key].vals.map(v => <Check key={String(v)} on={(f.facets[def.key] || []).includes(v)} label={fdisp(v, def)} count={facetBase[def.key].counts.get(v)} onClick={() => setFacet(def.key, v)} />)}
+        </div>
+      ))}
       <div className="filters__grp">
         <h4>Price (kr)</h4>
         <div className="pricefields">
@@ -245,7 +251,7 @@ function FiltersBody({ f, set, base, go }) {
         <h4>Show only</h4>
         <Check on={f.sale} label="On sale" onClick={() => set('sale', !f.sale)} />
         <Check on={f.instock} label="In stock" onClick={() => set('instock', !f.instock)} />
-        <Check on={f.nc} label="Noise cancelling" onClick={() => set('nc', !f.nc)} />
+        {facetDefs.filter(d => d.type === 'bool').map(def => <Check key={def.key} on={!!f.facets[def.key]} label={def.label} onClick={() => setBoolFacet(def.key)} />)}
       </div>
     </>
   );
@@ -269,7 +275,7 @@ function Dropdown({ label, active, children }) {
   );
 }
 
-function FilterBar({ f, set, base, go, baseSel }) {
+function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, setBoolFacet }) {
   const brands = base.brands;
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
   return (
@@ -301,10 +307,18 @@ function FilterBar({ f, set, base, go, baseSel }) {
           </div>
         ))}
       </Dropdown>
+      {facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2).map(def => {
+        const sel = f.facets[def.key] || [];
+        return (
+          <Dropdown key={def.key} label={sel.length ? def.label + ' \u00b7 ' + sel.length : def.label} active={!!sel.length}>
+            {facetBase[def.key].vals.map(v => <Check key={String(v)} on={sel.includes(v)} label={fdisp(v, def)} count={facetBase[def.key].counts.get(v)} onClick={() => setFacet(def.key, v)} />)}
+          </Dropdown>
+        );
+      })}
       <span className="filterbar__sep" />
       <button className={'fpill' + (f.sale ? ' is-on' : '')} onClick={() => set('sale', !f.sale)}>On sale</button>
       <button className={'fpill' + (f.instock ? ' is-on' : '')} onClick={() => set('instock', !f.instock)}>In stock</button>
-      <button className={'fpill' + (f.nc ? ' is-on' : '')} onClick={() => set('nc', !f.nc)}>Noise cancelling</button>
+      {facetDefs.filter(d => d.type === 'bool').map(def => <button key={def.key} className={'fpill' + (f.facets[def.key] ? ' is-on' : '')} onClick={() => setBoolFacet(def.key)}>{def.label}</button>)}
     </div>
   );
 }
@@ -325,17 +339,33 @@ const SORTS = [
 // ===========================================================
 // RESULTS SCREEN
 // ===========================================================
+const emptyFilters = () => ({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} });
 function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} window.scrollTo(0, 0); };
   const baseSel = { query, cat };
   const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat]);
   const [sort, setSort] = useState('best');
-  const [f, setF] = useState({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, nc: false });
+  const [f, setF] = useState(emptyFilters);
   useWatchStore();
   // reset filters when the search changes
-  useEffect(() => { setF({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, nc: false }); }, [query, cat]);
+  useEffect(() => { setF(emptyFilters()); }, [query, cat]);
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
+  // data-driven per-category facets (window.FACETS is replaced by the boot layer)
+  const facetDefs = cat ? ((window.FACETS || {})[cat] || []) : [];
+  const facetBase = useMemo(() => {
+    const m = {};
+    facetDefs.forEach(def => {
+      if (def.type !== 'options') return;
+      const counts = new Map();
+      baseResults.forEach(p => { const v = fval(p, def.key); if (v !== undefined) counts.set(v, (counts.get(v) || 0) + 1); });
+      const vals = [...counts.keys()].sort((a, b) => typeof a === 'number' && typeof b === 'number' ? a - b : typeof a === 'number' ? -1 : typeof b === 'number' ? 1 : String(a).localeCompare(String(b)));
+      m[def.key] = { vals, counts };
+    });
+    return m;
+  }, [baseResults, cat]);
+  const setFacet = (key, v) => setF(prev => { const cur = prev.facets[key] || []; const next = cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v]; const fac = { ...prev.facets }; if (next.length) fac[key] = next; else delete fac[key]; return { ...prev, facets: fac }; });
+  const setBoolFacet = (key) => setF(prev => { const fac = { ...prev.facets }; if (fac[key]) delete fac[key]; else fac[key] = true; return { ...prev, facets: fac }; });
 
   const prices = baseResults.map(p => p.best).filter(n => n != null && isFinite(n));
   const base = {
@@ -354,7 +384,13 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     if (f.rating && (p.rating || 0) < f.rating) return false;
     if (f.sale && p.drop < 12) return false;
     if (f.instock && !p.stock) return false;
-    if (f.nc && !p.nc) return false;
+    for (const def of facetDefs) {
+      const sel = f.facets[def.key];
+      if (!sel) continue;
+      const v = fval(p, def.key);
+      if (def.type === 'bool') { if (v !== true) return false; }
+      else if (v === undefined || !sel.includes(v)) return false;
+    }
     return true;
   });
   list = list.slice().sort((SORTS.find(s => s.id === sort) || SORTS[0]).fn);
@@ -367,7 +403,12 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     ...(f.rating ? [{ k: 'rating', label: f.rating + '★ & up', clear: () => set('rating', 0) }] : []),
     ...(f.sale ? [{ k: 'sale', label: 'On sale', clear: () => set('sale', false) }] : []),
     ...(f.instock ? [{ k: 'instock', label: 'In stock', clear: () => set('instock', false) }] : []),
-    ...(f.nc ? [{ k: 'nc', label: 'Noise cancelling', clear: () => set('nc', false) }] : []),
+    ...facetDefs.flatMap(def => {
+      const sel = f.facets[def.key];
+      if (!sel) return [];
+      if (def.type === 'bool') return [{ k: 'facet:' + def.key, label: def.label, clear: () => setBoolFacet(def.key) }];
+      return sel.map(v => ({ k: 'facet:' + def.key + ':' + v, label: def.label + ': ' + fdisp(v, def), clear: () => setFacet(def.key, v) }));
+    }),
   ];
 
   return (
@@ -377,12 +418,12 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
         {filterLayout === 'rail' && (
           <aside className="filterscol">
             <div className="filters">
-              <FiltersBody f={f} set={set} base={base} go={go} />
+              <FiltersBody f={f} set={set} base={base} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />
             </div>
           </aside>
         )}
         <main className="results__main">
-          {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} />}
+          {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />}
           <div className="results__title">
             <h1>{title}</h1>
           </div>
@@ -404,7 +445,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
               {activeChips.map(c => (
                 <button key={c.k} className="fchip" onClick={c.clear}>{c.label}<Icon name="x" size={12} /></button>
               ))}
-              <button className="fchip fchip--clear" onClick={() => setF({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, nc: false })}>Clear all</button>
+              <button className="fchip fchip--clear" onClick={() => setF(emptyFilters())}>Clear all</button>
             </div>
           )}
 
@@ -413,7 +454,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
               <div className="empty__ic"><Icon name="search-x" size={40} /></div>
               <h2>No products match those filters</h2>
               <p>Try widening your price range or clearing a filter.</p>
-              <Btn variant="primary" onClick={() => setF({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, nc: false })}>Clear filters</Btn>
+              <Btn variant="primary" onClick={() => setF(emptyFilters())}>Clear filters</Btn>
             </div>
           ) : view === 'grid' ? (
             <div className="pgrid">

@@ -29,6 +29,22 @@ const FEED = [
   { id: 'iphone', kind: 'up',    title: 'iPhone 15 128GB', text: 'went up kr 200 at Elkjøp', from: 8990, to: 9190, time: 'Yesterday', tag: 'Price up' },
 ].map(f => ({ ...f, prod: byId[f.id] }));
 
+// FACETS — per-category attribute filters for the Results screen.
+// Read as window.FACETS at render time: the production boot layer
+// replaces its contents from the server (same pattern as CATALOG/CATEGORIES).
+const FACETS = {
+  TV:     [ { key: 'size', label: 'Screen size', type: 'options', unit: '\u2033' },
+            { key: 'panel', label: 'Panel', type: 'options' },
+            { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' } ],
+  Audio:  [ { key: 'anc', label: 'Noise cancelling', type: 'bool' },
+            { key: 'fit', label: 'Fit', type: 'options' } ],
+  Phones: [ { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' } ],
+};
+const facetNorm = (v) => v == null ? undefined : typeof v === 'boolean' ? v : isFinite(parseFloat(v)) ? parseFloat(v) : String(v).trim();
+// facet value of product p for key k — explicit p.facets wins, else the spec sheet
+const fval = (p, k) => facetNorm((p.facets || {})[k] ?? ((window.SPECS || {})[p.id] || {})[k]);
+const fdisp = (v, def) => String(v) + (def && def.unit ? ' ' + def.unit : '');
+
 // SEARCH SUGGESTIONS — products + categories + properties
 const PROP_SUGGEST = ['Noise cancelling', 'Wireless', 'Over-ear', 'Under kr 3 000', 'In stock'];
 
@@ -62,6 +78,7 @@ function searchScrollTop(e) {
 
 Object.assign(window, {
   USER, WATCHED, RECENT, FEED,
+  FACETS, fval, fdisp,
   PROP_SUGGEST, CAT_ICONS, catCount, realCats, searchSuggest, byId, searchScrollTop,
   Wordmark, Mark,
 });
