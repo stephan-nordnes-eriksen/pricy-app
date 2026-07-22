@@ -99,9 +99,16 @@ const SPECS = {
 // resolver — one row shape for the spec sheet and (later) comparison.
 // { id, label, type, axis, selectable, value, display }
 function specsFor(p, sel) {
+  const entry = SPECS[p.id];
+  // self-describing entry: { groups: [{ label, rows: [[label, display], …] }] }
+  // wins over the category schema; lets products outside SPEC_KIND_BY_CAT render
+  if (entry && Array.isArray(entry.groups)) {
+    const groups = entry.groups.map((g, gi) => ({ id: g.id || 'g' + gi, label: g.label, rows: g.rows.map(([label, display], ri) => ({ id: 'g' + gi + 'r' + ri, label, display: display == null ? '—' : String(display), selectable: false })) }));
+    return { kind: specKindOf(p), kindLabel: p.cat, groups };
+  }
   const kind = specKindOf(p);
-  if (!kind || !SPECS[p.id]) return null;
-  const vals = SPECS[p.id];
+  if (!kind || !entry) return null;
+  const vals = entry;
   const groups = SPEC_KINDS[kind].groups.map(g => ({ id: g.id, label: g.label, rows: g.rows.map(r => {
     const ax = r.axis && p.variants && p.variants.axes.find(a => a.id === r.axis);
     if (ax) {
