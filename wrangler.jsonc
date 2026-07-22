@@ -44,7 +44,87 @@
   // categories stay hidden (that IS the junk filter — never map accessory
   // categories). Grow by hand as feeds reveal their vocabularies, e.g.
   // "CATMAP": { "Komplett": { "Mobiltelefoner": "Phones" } }
-  "vars": { "CATMAP": {} }
+  // Vocabulary observed 2026-07-22 from breadcrumb srcCats (Power, NetOnNet
+  // scrapes). Deliberately unmapped: accessories, smartwatches (no category
+  // for them), refurbished/outlet, generic parents ("Mobil og Smartklokker"),
+  // PC components — unmapped stays hidden, that IS the junk filter.
+  "vars": { "CATMAP": {
+    "Power": {
+      "Mobiltelefon": "Phones",
+      "TV": "TV",
+      "True wireless hodetelefoner": "Audio",
+      "Trådløse hodetelefoner": "Audio",
+      "Hodetelefoner med ledning": "Audio",
+      "Open-ear hodetelefoner": "Audio",
+      "Benledende hodetelefoner": "Audio",
+      "Ørepropper": "Audio",
+      "Lydplanker": "Audio",
+      "Smarthøyttaler": "Audio",
+      "Trådløs støvsuger": "Home",
+      "Robotstøvsuger": "Home",
+      "Smarte lightstrips": "Home",
+      "Kaffetrakter": "Kitchen",
+      "Airfryers": "Kitchen",
+      "Frityrkoker": "Kitchen",
+      "Playstation-konsoll": "Gaming",
+      "Xbox-konsoll": "Gaming",
+      "Nintendo-konsoll": "Gaming",
+      "Playstation-kontrollere": "Gaming",
+      "Nintendo-kontrollere": "Gaming",
+      "Xbox-spill": "Gaming",
+      "Nettbrett": "Computers",
+      "Lesebrett": "E-readers"
+    },
+    "NetOnNet": {
+      "iPhone": "Phones",
+      "Samsung mobiltelefon": "Phones",
+      "Xiaomi mobiltelefon": "Phones",
+      "Google Pixel": "Phones",
+      "Nothing mobiltelefon": "Phones",
+      "Motorola mobiltelefon": "Phones",
+      "Doro mobiltelefon": "Phones",
+      "Mobiltelefoner": "Phones",
+      "In-ear-hodetelefoner": "Audio",
+      "Over-ear-hodetelefoner": "Audio",
+      "Hodetelefoner": "Audio",
+      "Trådløse hodetelefoner": "Audio",
+      "Hodetelefoner til trening": "Audio",
+      "Bluetooth-høyttalere": "Audio",
+      "Partyhøyttalere": "Audio",
+      "Smarthøyttalere": "Audio",
+      "Soundbarer": "Audio",
+      "22–45 tommer": "TV",
+      "56–70 tommer": "TV",
+      "75 tommer og større": "TV",
+      "Projektorer": "TV",
+      "Mediaspillere": "TV",
+      "Google Chromecast": "TV",
+      "Nettbrett": "Computers",
+      "iPad": "Computers",
+      "MacBook": "Computers",
+      "Laptoper": "Computers",
+      "Laptoper 12 - 14 tommer": "Computers",
+      "Laptoper 15 - 16 tommer": "Computers",
+      "Chromebooks": "Computers",
+      "Gamingskjermer 31–57 tommer": "Computers",
+      "Espressomaskiner": "Kitchen",
+      "Kaffetraktere": "Kitchen",
+      "Kaffemaskiner og kaffe": "Kitchen",
+      "Nintendo-konsoller": "Gaming",
+      "PlayStation-konsoll": "Gaming",
+      "PlayStation": "Gaming",
+      "Xbox": "Gaming",
+      "Trådløs støvsuger": "Home",
+      "Grovstøvsuger": "Home",
+      "Selvtømmende robotstøvsugere": "Home",
+      "Dampvasker": "Home",
+      "Smartlåser": "Home",
+      "Philips Hue": "Home",
+      "Lego Icons": "Toys",
+      "LEGO for voksne 18 år": "Toys",
+      "Lesebrett": "E-readers"
+    }
+  } }
   // Feature flag for real magic-link mail: the worker sends via
   // env.SEND_EMAIL when bound, console.logs the link when not. Email
   // Sending needs the Workers paid plan — once upgraded, onboard pricy.no

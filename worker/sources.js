@@ -109,6 +109,10 @@ export async function scrapeSource(shop, cfg) {
       if (!res.ok) throw new Error(`http ${res.status}`);
       const html = await res.text();
       const { offer, image, name, brand, category } = productOffer(html) ?? {};
+      // no Product.category (Power, NetOnNet): the page's BreadcrumbList leaf
+      // is the shop's own category label — unless it's the product itself
+      // (Power ends crumbs with the product name), then the crumb before it
+      const srcCat = category ?? breadcrumbCat(html, name);
       const sd = shippingInfo(html);
       // NetOnNet nests price in offer.priceSpecification instead of offer.price
       const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
@@ -122,7 +126,7 @@ export async function scrapeSource(shop, cfg) {
         product_id, shop, price,
         name: name ?? null,
         brand: brand ?? null,
-        srcCat: category ?? null,
+        srcCat: srcCat ?? null,
         ship: sd?.ship ?? null,
         stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
         eta: sd?.eta ?? null,
@@ -135,6 +139,22 @@ export async function scrapeSource(shop, cfg) {
     }
   }));
   return rows.filter(Boolean);
+}
+
+// BreadcrumbList → the shop's category label for the page: the last crumb,
+// or the one before it when the last is the product itself
+function breadcrumbCat(html, productName) {
+  for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    let doc;
+    try { doc = JSON.parse(body.trim()); } catch { continue; }
+    for (const n of [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])]) {
+      if (n?.['@type'] !== 'BreadcrumbList' || !Array.isArray(n.itemListElement)) continue;
+      const names = n.itemListElement.map(i => i?.name ?? i?.item?.name).filter(n => typeof n === 'string');
+      const cat = names.at(-1) === productName ? names.at(-2) : names.at(-1);
+      if (cat) return cat;
+    }
+  }
+  return null;
 }
 
 // schema.org image: string | [string] | ImageObject | [ImageObject]
