@@ -454,7 +454,12 @@ async function rowsFor(db, ids, { expand = true } = {}) {
   const offs = await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(all)}) ORDER BY price`).bind(...all).all();
   const pts = await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(all)}) ORDER BY day`).bind(...all).all();
   const withImg = new Set((await db.prepare(`SELECT product_id FROM images WHERE product_id IN (${ph(all)})`).bind(...all).all()).results.map(r => r.product_id));
-  return shapeRows(prods, offs.results, pts.results, withImg);
+  const rows = shapeRows(prods, offs.results, pts.results, withImg);
+  // full spec sheets (Icecat-sized, ~100 rows) only ride detail fetches —
+  // list queries stay lean; boot's Object.assign merge never wipes a
+  // previously hydrated sheet with a lean row
+  if (!expand) rows.forEach(r => delete r.specs);
+  return rows;
 }
 
 // Broad candidate match for free-text search: LIKE over the whole meta JSON
@@ -470,7 +475,7 @@ async function searchIds(db, q) {
     .map(t => t.replace(/[\\%_]/g, c => '\\' + c));
   if (!toks.length) return [];
   const { results } = await db.prepare(
-    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => "lower(meta) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
+    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => "lower(json_remove(meta, '$.specs')) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
   ).bind(...toks.map(t => `%${t}%`)).all();
   return results.map(r => r.id);
 }
@@ -904,6 +909,7 @@ export default {
         products = await rowsFor(db, await topDropIds(db, { limit, perCat: p.get('perCat') === '1' }), { expand: false });
       } else {
         products = (await catalogBody(db)).filter(x => !x.family); // all heads
+        products.forEach(x => delete x.specs); // lean like every list query
       }
       return json({ meta: await catMeta(db), products });
     }

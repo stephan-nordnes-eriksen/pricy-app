@@ -1164,6 +1164,33 @@ test('admin PATCH: validated meta merge — manual promote and demote without a 
   assert.strictEqual((await (await call('/api/products?q=soundbar')).json()).products.length, 0, 'demoted product disappears');
 });
 
+test('full spec sheets: detail fetches only, spec text never matches search', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  await req('/api/ingest', 'POST', [{ product_id: 'ean-7099999999993', shop: 'Power', price: 5999, name: 'Acme Frame 32', brand: 'Acme' }]);
+  await req('/api/admin/products/ean-7099999999993', 'PATCH', { name: 'Acme Frame 32', cat: 'TV', icon: 'tv', kw: 'frame acme', hidden: null });
+  // self-describing groups form (what tools/fetch-specs.mjs emits) — 'zebrafisk'
+  // appears nowhere else in the catalog
+  const sheet = { groups: [{ label: 'Generelt', rows: [['Produsent', 'Acme'], ['Fisk', 'zebrafisk']] }] };
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999993', 'PATCH', { specs: sheet })).status, 200);
+
+  const detail = (await (await call('/api/products?ids=ean-7099999999993')).json()).products[0];
+  assert.deepStrictEqual(detail.specs, sheet, 'groups-form specs ride the ids= detail fetch');
+
+  const byName = (await (await call('/api/products?q=frame')).json()).products;
+  assert.strictEqual(byName.length, 1);
+  assert.strictEqual(byName[0].specs, undefined, 'search rows are lean — no spec sheet');
+  const byCat = (await (await call('/api/products?cat=TV')).json()).products;
+  assert.ok(byCat.length && byCat.every(p => p.specs === undefined), 'cat rows are lean — no spec sheet');
+  const allHeads = (await (await call('/api/products')).json()).products;
+  assert.ok(allHeads.length && allHeads.every(p => p.specs === undefined), 'all-heads rows are lean — no spec sheet');
+
+  const bySpec = (await (await call('/api/products?q=zebrafisk')).json()).products;
+  assert.strictEqual(bySpec.length, 0, 'spec sheet text must not pollute search matching');
+});
+
 test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed keys still win', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };

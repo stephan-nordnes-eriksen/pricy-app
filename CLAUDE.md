@@ -62,8 +62,16 @@ Two Claude Design projects feed this repo:
   meta-merge PATCH (bulk: `node tools/apply-specs.mjs specs.json`) — boot
   feeds `r.specs` into the prototype's SPECS, so the PDP Specifications
   section renders for any product whose cat has a SPEC_KINDS schema
-  (proto/Specs.jsx); keys must match that schema. Cats without a schema
-  (Kitchen/Home/Projectors) need an upstream Specs.jsx change first.
+  (proto/Specs.jsx); keys must match that schema — OR ship the
+  self-describing `{ groups: [{ label, rows: [[label, value], …] }] }`
+  form, which renders for ANY category, schema or not.
+  `node tools/fetch-specs.mjs` emits that form from Icecat Open
+  (Norwegian datasheets by EAN, free tier) for every visible head that
+  has no specs yet — curated prototype sheets keep their variant-bound
+  rows — then `node tools/apply-specs.mjs specs.json` lands them. Full
+  sheets ride `ids=` detail fetches only (list queries are lean, and
+  `searchIds` matches over `json_remove(meta,'$.specs')` so sheet text
+  can't pollute search).
 - **Adding products needs no upstream edit**: `worker/extra.json` holds
   hand-written head rows (`id/name/brand/cat/icon/kw`; cat must be in
   `worker/cats.json`) that build.js merges into seed.json — seeding,
