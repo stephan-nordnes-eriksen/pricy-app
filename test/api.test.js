@@ -450,6 +450,7 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   assert.strictEqual(meta.products, seed.filter(p => !p.family).length);
   const wantCats = seed.filter(p => !p.family).reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), {});
   assert.deepStrictEqual(meta.cats, wantCats, 'meta.cats counts heads only');
+  assert.ok(Object.keys(wantCats).every(c => meta.icons?.[c]), 'meta.icons (cats.json registry) must cover every seed cat');
 
   const many = await call('/api/products?ids=' + Array.from({ length: 101 }, (_, i) => 'x' + i).join(','));
   assert.strictEqual(many.status, 400, '>100 ids must 400');

@@ -83,12 +83,16 @@ if (catalog.some(p => p.variants)) {
 // discover.mjs and crawl.mjs all see them with no further wiring.
 const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json'), 'utf8'));
 {
+  // worker/cats.json is the category registry — new cats go there, not
+  // upstream; boot appends server-known cats into the prototype's list
+  const CATS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'cats.json'), 'utf8'));
+  for (const c of ctx.CATEGORIES) if (!CATS[c]) throw new Error(`worker/cats.json is missing prototype category "${c}" — registry must be a superset`);
   const ids = new Set([...catalog, ...children].map(p => p.id));
   for (const p of extra) {
     if (!p.id || !p.name || !p.cat) throw new Error(`extra.json row needs id/name/cat: ${JSON.stringify(p)}`);
     if (p.id.includes('~')) throw new Error(`extra.json id "${p.id}" contains "~" (reserved for variant children)`);
     if (ids.has(p.id)) throw new Error(`extra.json duplicate/colliding id: ${p.id}`);
-    if (!ctx.CATEGORIES.includes(p.cat)) throw new Error(`extra.json "${p.id}": unknown category "${p.cat}" (prototype knows: ${ctx.CATEGORIES.join(', ')})`);
+    if (!CATS[p.cat]) throw new Error(`extra.json "${p.id}": unknown category "${p.cat}" (worker/cats.json knows: ${Object.keys(CATS).join(', ')})`);
     ids.add(p.id);
   }
 }

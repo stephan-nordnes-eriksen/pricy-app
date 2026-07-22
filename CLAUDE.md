@@ -43,9 +43,17 @@ Two Claude Design projects feed this repo:
   `window.CATALOG`, and SearchSuggest refreshes via boot's
   `window.onSuggestData(q, refresh)` hook; browse prefetches
   `sort=drop&perCat=1&limit=4`.
+- **Categories are dynamic** (2026-07-22): `worker/cats.json` is the
+  registry (`{cat: default icon}`, must be a superset of the prototype's
+  CATEGORIES — build.js enforces both directions). It gates CATMAP
+  promotion and admin PATCH cat, and `catMeta` serves it as `meta.icons`;
+  boot's `hydrateCatalog` appends server cats the prototype doesn't know
+  into `CATEGORIES`/`CAT_ICONS` in place, so browse/header/suggest/
+  onboarding all render them. New category = one line in cats.json + rows
+  that use it. No upstream edit.
 - **Adding products needs no upstream edit**: `worker/extra.json` holds
-  hand-written head rows (`id/name/brand/cat/icon/kw`; cat must be in the
-  prototype's CATEGORIES) that build.js merges into seed.json — seeding,
+  hand-written head rows (`id/name/brand/cat/icon/kw`; cat must be in
+  `worker/cats.json`) that build.js merges into seed.json — seeding,
   discover.mjs and crawl.mjs pick them up with no other wiring. They ship
   with NO demo offers; add EAN(s) to `worker/eans.json` + page URLs to
   `tools/crawl-urls.json`, deploy (seed must land before ingest accepts
@@ -64,7 +72,8 @@ Two Claude Design projects feed this repo:
   routing lives in the D1 `eans` table (bootstrapped from `worker/eans.json`,
   `OR IGNORE` — runtime rows win); hidden rows **auto-promote** at ingest
   when a source supplies name + brand + a category the `CATMAP` var
-  (wrangler.jsonc, per-shop `{raw srcCat → our cat}`) maps — `meta.auto: 1`,
+  (wrangler.jsonc, per-shop `{raw srcCat → our cat}`) maps to a
+  `worker/cats.json` cat — `meta.auto: 1`,
   accessory-name blocklist, unmapped stays hidden (that IS the junk filter);
   manual triage is deploy-free via the admin API (bearer = INGEST_TOKEN):
   `PATCH /api/admin/products/:id` (meta merge, `hidden: null` promotes,

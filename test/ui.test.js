@@ -688,6 +688,19 @@ test('lazy catalog: browse shows FULL category counts (meta.cats) off its small 
   assert.ok(win.CATALOG.length < heads.length, 'the cache must hold only the drops slice');
 });
 
+test('dynamic categories: a server cat the prototype does not know renders with its served icon', async () => {
+  const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8')).filter(p => !p.family);
+  const cats = products.reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), { Wearables: 5 });
+  const meta = { products: products.length + 5, shops: 3, freshest: Date.now(), cats, icons: { Wearables: 'watch' } };
+  const win = boot('http://pricy.test/browse', { session: true, catalog: { meta, products } });
+  assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'category tiles did not render');
+  assert.ok(win.CATEGORIES.includes('Wearables'), 'served cat must join CATEGORIES in place');
+  assert.strictEqual(win.CAT_ICONS.Wearables, 'watch', 'served icon must land in CAT_ICONS');
+  const tile = qa(win, '.bigcat').find(el => /Wearables/.test(el.textContent));
+  assert.ok(tile, 'Wearables tile must render on browse');
+  assert.ok(tile.textContent.includes('5'), 'tile must show the served count, got: ' + tile.textContent);
+});
+
 test('lazy catalog: home "Biggest drops" ranks the served slice, not the baked demo 8', async () => {
   const heads = CATALOG_JSON.filter(p => !p.family);
   const dr = p => p.was ? 1 - Math.min(...p.offers.map(o => o.price)) / p.was : -1;

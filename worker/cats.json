@@ -1,0 +1,11 @@
+{
+  "Audio": "headphones",
+  "Phones": "smartphone",
+  "TV": "tv",
+  "Gaming": "gamepad-2",
+  "Home": "lamp",
+  "Computers": "laptop",
+  "Toys": "toy-brick",
+  "E-readers": "book-open",
+  "Kitchen": "chef-hat"
+}

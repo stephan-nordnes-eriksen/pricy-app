@@ -5,6 +5,7 @@
 
 import seed from './seed.json' with { type: 'json' };
 import eansFile from './eans.json' with { type: 'json' };
+import CATS from './cats.json' with { type: 'json' }; // category registry: { cat: default icon } — THE list of valid cats, served to the UI via catMeta
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 
 const SCHEMA = [
@@ -217,11 +218,9 @@ const stockVal = (s) => s == null || s === 2 ? 2 : s ? 1 : 0;
 // a row for a product we don't have yet, carrying enough identity to create it
 const autoAdd = (r) => /^ean-\d+$/.test(r.product_id) && typeof r.name === 'string' && !!r.name.trim();
 
-// Auto-promotion bits (OPEN-CATALOG-PLAN B3): per-cat default icon (lucide
-// names), an accessory blocklist that keeps junk hidden regardless of
-// category mapping, and kw = distinct name/brand/cat tokens.
-const SEED_CATS = new Set(seed.map(p => p.cat).filter(Boolean));
-const CAT_ICONS = { Audio: 'headphones', Computers: 'laptop', 'E-readers': 'book-open', Gaming: 'gamepad-2', Home: 'lamp', Kitchen: 'chef-hat', Phones: 'smartphone', TV: 'tv', Toys: 'toy-brick' };
+// Auto-promotion bits (OPEN-CATALOG-PLAN B3): CATS (cats.json) gates valid
+// categories + default icons, an accessory blocklist keeps junk hidden
+// regardless of category mapping, and kw = distinct name/brand/cat tokens.
 const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b/i;
 const kwOf = (...parts) => [...new Set(parts.join(' ').toLowerCase().match(/[\p{L}\d]+/gu) || [])].filter(t => t.length > 1).join(' ');
 
@@ -268,9 +267,9 @@ async function ingest(db, rows, env) {
     if (!meta || !stillHidden.has(r.product_id) || meta.family || meta.auto) continue;
     const brand = meta.brand ?? (r.brand ? String(r.brand) : null);
     const cat = catmap[r.shop]?.[r.srcCat ?? meta.srcCat];
-    if (!meta.name || !brand || !SEED_CATS.has(cat) || JUNK_RE.test(meta.name)) continue;
+    if (!meta.name || !brand || !CATS[cat] || JUNK_RE.test(meta.name)) continue;
     const { hidden, ...rest } = meta;
-    promoted[r.product_id] = { ...rest, brand, cat, icon: CAT_ICONS[cat] || 'package', kw: kwOf(meta.name, brand, cat), auto: 1 };
+    promoted[r.product_id] = { ...rest, brand, cat, icon: CATS[cat], kw: kwOf(meta.name, brand, cat), auto: 1 };
     stillHidden.delete(r.product_id);
   }
   if (Object.keys(promoted).length) {
@@ -496,7 +495,7 @@ async function catMeta(db) {
   const shops = (await db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers').first()).n;
   const freshest = (await db.prepare('SELECT MAX(updated_at) AS t FROM offers').first()).t ?? null;
   const { results } = await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} GROUP BY 1`).all();
-  return { products, shops, freshest, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  return { products, shops, freshest, icons: CATS, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
 }
 
 async function purchasesBody(db, userId) {
@@ -953,7 +952,7 @@ export default {
           || ((k === 'hidden' || k === 'auto') && v === 1)
           || (k === 'variants' && typeof v === 'object' && !Array.isArray(v)));
       if (!ok) return json({ error: 'bad patch' }, 400);
-      if (typeof patch.cat === 'string' && !SEED_CATS.has(patch.cat)) return json({ error: 'unknown cat', cats: [...SEED_CATS].sort() }, 400);
+      if (typeof patch.cat === 'string' && !CATS[patch.cat]) return json({ error: 'unknown cat', cats: Object.keys(CATS).sort() }, 400);
       const meta = JSON.parse(cur.meta);
       for (const [k, v] of Object.entries(patch)) v === null ? delete meta[k] : meta[k] = typeof v === 'string' ? v.trim() : v;
       await db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id).run();

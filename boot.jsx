@@ -572,6 +572,13 @@ function hydrateCatalog(data) {
       freshest: CATALOG.flatMap(p => (p.offers || []).map(o => o.updated_at)).filter(Boolean).sort((a, b) => a - b).pop() || null,
     };
   }
+  // Dynamic categories: server cats the prototype doesn't know join
+  // CATEGORIES in place (same array object as window.CATEGORIES, so every
+  // lexical reader — browse tiles, header menu, suggest, onboarding — sees
+  // them); tile icons ride meta.icons, upstream's own entries win.
+  Object.keys(CATALOG.meta?.cats || {}).forEach(c => {
+    if (!CATEGORIES.includes(c)) { CATEGORIES.push(c); CAT_ICONS[c] = CATALOG.meta.icons?.[c] || 'tag'; }
+  });
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
 }
