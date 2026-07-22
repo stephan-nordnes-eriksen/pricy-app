@@ -19,7 +19,15 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
-import { UA, BROWSER_UA, eanKey, EAN_TO_PRODUCT, scrapeSource } from '../worker/sources.js';
+import { UA, BROWSER_UA, eanKey, scrapeSource } from '../worker/sources.js';
+
+// tool-side EAN map from the checked-in file — runtime aliases (admin
+// /api/admin/alias) are absent, but a stray ean-* entry is harmless: ingest
+// re-maps it through the eans table anyway
+const EAN_TO_PRODUCT = {};
+for (const [pid, list] of Object.entries(JSON.parse(readFileSync(new URL('../worker/eans.json', import.meta.url), 'utf8')))) {
+  for (const e of list) EAN_TO_PRODUCT[eanKey(e)] = pid;
+}
 
 const [shop, origin] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const write = process.argv.includes('--write');

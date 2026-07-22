@@ -59,16 +59,26 @@ Two Claude Design projects feed this repo:
   catalog.json) but collecting offers + price history from day one.
   Adtraction feeds emit such rows for every unmatched EAN; discover.mjs
   writes unknown-EAN pages as `ean-*` entries into crawl-urls.json;
-  scrapeSource carries JSON-LD name/brand so crawl pushes create too.
-  Enrichment is manual — full runbook in **ENRICHMENT.md**: `node
-  tools/enrich.mjs` lists hidden rows as paste-ready extra.json skeletons,
-  triage junk/variant/real, KEEP THE SAME id, deploy; the seed upsert
-  rewrites meta without `hidden` and the product goes live with its
-  collected offers.
+  scrapeSource carries JSON-LD name/brand/category so crawl pushes create
+  too. **Open catalog (2026-07-22, OPEN-CATALOG-PLAN.md):** EAN→product
+  routing lives in the D1 `eans` table (bootstrapped from `worker/eans.json`,
+  `OR IGNORE` — runtime rows win); hidden rows **auto-promote** at ingest
+  when a source supplies name + brand + a category the `CATMAP` var
+  (wrangler.jsonc, per-shop `{raw srcCat → our cat}`) maps — `meta.auto: 1`,
+  accessory-name blocklist, unmapped stays hidden (that IS the junk filter);
+  manual triage is deploy-free via the admin API (bearer = INGEST_TOKEN):
+  `PATCH /api/admin/products/:id` (meta merge, `hidden: null` promotes,
+  `hidden: 1` demotes — demoted auto rows never re-promote) and
+  `POST /api/admin/alias` `{ean, product_id[, meta]}` (maps the EAN and
+  migrates the orphan `ean-*` row's offers/history/watches to the target;
+  with `meta` it creates the target, e.g. a new `head~combo` variant child).
+  Runbook: **ENRICHMENT.md**; `tools/enrich.mjs` prints ready-to-run curls,
+  `tools/group.mjs` clusters discovered rows into variant families and
+  prints grouping curls (print-only, human-confirmed).
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
-  feeds, URLs in the `ADTRACTION_FEEDS` secret, rows matched to products
-  by EAN via hand-written `worker/eans.json`) and `scrape` (first-party
+  feeds, URLs in the `ADTRACTION_FEEDS` secret, rows emitted as `ean-*`
+  ids that ingest routes through the D1 `eans` table) and `scrape` (first-party
   JSON-LD off the shop's own product pages). **Never scrape competing
   comparison services (Prisjakt etc.).** A shop with no/failing source
   freezes at its last stored price; empty `SOURCES` (current prod state)
@@ -159,9 +169,10 @@ Known upstream gaps (fix in Claude Design, then extend tests):
   price_points untouched), boot's `hydrateCatalog` keeps children out of
   CATALOG and hangs them on `head.listings[combo]`, MCP search hides
   them / `get_product` lists them. Axis option ids must never contain
-  `-` (combo-key separator). Still data-only pending: re-homing
-  `eans.json`/`crawl-urls.json` keys to child ids as Adtraction feeds
-  confirm SKUs (PLAN.md 4e step 4).
+  `-` (combo-key separator). Re-homing an EAN to a child id is a
+  deploy-free `POST /api/admin/alias` call now (2026-07-22) —
+  `tools/group.mjs` proposes them; `crawl-urls.json` keys still re-home
+  by hand as Adtraction feeds confirm SKUs.
 - AuthCard's `onAuthed(email, {signup})` contract is real now (email
   passed out, awaitable verdict, server errors shown in the form), and
   password login/signup/change are real (PBKDF2-hashed, verified
