@@ -159,7 +159,7 @@ function ResultRowCompact({ p, go, saved, onSave }) {
       <div className="crow__img"><ProdImg p={p} fill size={18} /></div>
       <span className="crow__brand">{p.brand}</span>
       <span className="crow__name">{p.name}</span>
-      {p.drop >= 12 && <span className="crow__drop">▼ −{p.drop}%</span>}
+      <span className="crow__drop">{p.drop >= 12 ? <>▼ −{p.drop}%</> : null}</span>
       <span className="crow__meta">{p.rating ? '★ ' + p.rating.toFixed(1) : 'No reviews yet'}</span>
       <span className="crow__meta">{p.shops} shops</span>
       <span className="crow__price"><Price value={p.best} size={15} /></span>
