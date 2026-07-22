@@ -734,8 +734,25 @@ test('facet filters: served meta.facets replaces the baked registry; cats withou
 
   const gaming = boot('http://pricy.test/search?cat=Gaming', { session: true });
   assert.ok(await until(() => qa(gaming, '.rrow, .rcard').length > 0), 'gaming results did not render');
-  const titles = qa(gaming, '.filters__grp').map(g => g.querySelector('h4')?.textContent);
+  const titles = qa(gaming, '.filters__grp').map(g => g.querySelector('h4')?.textContent).filter(Boolean);
   assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only'], 'no facet groups for a cat without defs, got: ' + titles.join(' | '));
+});
+
+test('filter search: narrows groups, no-match message clears back', async () => {
+  const win = boot('http://pricy.test/search?cat=Gaming', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const grpTitles = () => qa(win, '.filters__grp h4').map(h => h.textContent);
+  const search = q(win, '.filters__search input');
+  assert.ok(search, 'filter search box must render');
+
+  type(win, search, 'rating');
+  assert.ok(await until(() => grpTitles().length === 1), 'groups did not narrow');
+  assert.deepStrictEqual(grpTitles(), ['Rating']);
+
+  type(win, search, 'zzzz-no-such-filter');
+  assert.ok(await until(() => q(win, '.filters__nomatch')), 'no-match message must show');
+  q(win, '.filters__nomatch button').click();
+  assert.ok(await until(() => grpTitles().length === 5), 'clear must restore all groups');
 });
 
 test('lazy catalog: home "Biggest drops" ranks the served slice, not the baked demo 8', async () => {
