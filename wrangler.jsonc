@@ -106,7 +106,7 @@
       "22–45 tommer": "TV",
       "56–70 tommer": "TV",
       "75 tommer og større": "TV",
-      "Projektorer": "TV",
+      "Projektorer": "Projectors",
       // media players/TV sticks are not TVs; Home = smart-home gadgets
       "Mediaspillere": "Home",
       "Google Chromecast": "Home",
