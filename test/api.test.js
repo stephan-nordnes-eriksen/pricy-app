@@ -525,6 +525,17 @@ test('seed evolution: changed seed refreshes meta, leaves real offers alone, add
     .bind(JSON.stringify({ name: 'Stale Again', cat: 'Phones' }), 'airpods').run();
   const again = (await (await call('/api/catalog.json')).json()).products.find(p => p.id === 'airpods');
   assert.strictEqual(again.name, 'Stale Again', 'matching seed_meta hash must skip the upsert');
+
+  // once ANY offer is source-stamped (updated_at), the DB is no longer
+  // virgin: a re-seed adds new rows WITHOUT demo offers/history
+  await DB.prepare("UPDATE offers SET updated_at = 1 WHERE product_id = 'airpods' AND shop = ?").bind(shop).run();
+  await DB.prepare("DELETE FROM products WHERE id = 'xm5'").run();
+  await DB.prepare("DELETE FROM offers WHERE product_id = 'xm5'").run();
+  await DB.prepare("DELETE FROM price_points WHERE product_id = 'xm5'").run();
+  await DB.prepare('DELETE FROM seed_meta').run();
+  const honest = (await (await call('/api/catalog.json')).json()).products.find(p => p.id === 'xm5');
+  assert.ok(honest, 'new row still lands on re-seed');
+  assert.deepStrictEqual([honest.offers, honest.history], [[], []], 'non-virgin DB must not get demo offers/history');
 });
 
 test('scheduled with no sources configured is a no-op — prices freeze until real rows arrive', async () => {

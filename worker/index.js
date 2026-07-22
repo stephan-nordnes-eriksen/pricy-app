@@ -179,13 +179,18 @@ async function seedCatalog(db) {
   seedHash ??= await sha(JSON.stringify(seed) + JSON.stringify(eansFile));
   if ((await db.prepare('SELECT hash FROM seed_meta WHERE id = 1').first())?.hash === seedHash) return;
   const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(r => r.id));
+  // Demo offers/history are for virgin DBs only (local dev, tests): once a
+  // real source has ever stamped an offer (updated_at set — seeding never
+  // sets it), new rows start honest with "No offers yet" instead of fake
+  // prices/links. Prod's original demo data was purged 2026-07-22.
+  const virgin = !(await db.prepare('SELECT 1 FROM offers WHERE updated_at IS NOT NULL LIMIT 1').first());
   const stmts = []; // OR IGNORE / upserts: two racing requests must not fail
   for (const [pid, list] of Object.entries(eansFile)) {
     for (const e of list) stmts.push(db.prepare('INSERT OR IGNORE INTO eans (ean, product_id) VALUES (?, ?)').bind(eanKey(e), pid));
   }
   for (const { id, offers, history, best, drop, shops, stock, ...meta } of seed) {
     stmts.push(db.prepare('INSERT INTO products (id, meta) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET meta = excluded.meta').bind(id, JSON.stringify(meta)));
-    if (known.has(id)) continue; // meta refresh only — real offers/history stay
+    if (known.has(id) || !virgin) continue; // meta refresh only — real offers/history stay
     for (const o of offers) {
       stmts.push(db.prepare('INSERT OR IGNORE INTO offers (product_id, shop, price, ship, stock, eta) VALUES (?, ?, ?, ?, ?, ?)')
         .bind(id, o.shop, o.price, o.ship ?? null, stockVal(o.stock), o.eta ?? null));
