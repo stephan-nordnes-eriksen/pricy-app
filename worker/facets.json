@@ -1,0 +1,8 @@
+{
+  "TV":     [ { "key": "size",    "label": "Screen size",  "type": "options", "unit": "″" },
+              { "key": "panel",   "label": "Panel",        "type": "options" },
+              { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" } ],
+  "Audio":  [ { "key": "anc", "label": "Noise cancelling", "type": "bool" },
+              { "key": "fit", "label": "Fit",              "type": "options" } ],
+  "Phones": [ { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" } ]
+}

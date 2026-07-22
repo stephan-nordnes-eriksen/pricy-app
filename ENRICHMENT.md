@@ -81,6 +81,23 @@ curl -sX PATCH "$BASE/api/admin/products/ean-4548736167902" \
 - Optional `was`: original price in NOK if known — enables the drop-%
   badge. Omit when unsure.
 
+### Facets (optional, any live product)
+
+Facets feed the per-category filters on Results (FILTERS-PLAN.md). Keys
+per category live in `worker/facets.json` (TV: `size`/`panel`/`refresh`,
+Audio: `anc`/`fit`, Phones: `refresh`). Numbers as numbers, bools as
+bools:
+
+```
+curl -sX PATCH "$BASE/api/admin/products/<id>" \
+  -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"facets":{"size":65,"panel":"OLED","refresh":120}}'
+```
+
+Products without facets still filter via their demo spec strings where
+those exist; `facets` wins when both are present. `"facets": null`
+deletes the whole object.
+
 ### 3. Verify
 
 ```

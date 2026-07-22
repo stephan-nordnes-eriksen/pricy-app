@@ -6,6 +6,7 @@
 import seed from './seed.json' with { type: 'json' };
 import eansFile from './eans.json' with { type: 'json' };
 import CATS from './cats.json' with { type: 'json' }; // category registry: { cat: default icon } — THE list of valid cats, served to the UI via catMeta
+import FACETS from './facets.json' with { type: 'json' }; // facet registry: { cat: [facet defs] } — served via catMeta, drives the Results filter UI (FILTERS-PLAN.md)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 
 const SCHEMA = [
@@ -495,7 +496,7 @@ async function catMeta(db) {
   const shops = (await db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers').first()).n;
   const freshest = (await db.prepare('SELECT MAX(updated_at) AS t FROM offers').first()).t ?? null;
   const { results } = await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} GROUP BY 1`).all();
-  return { products, shops, freshest, icons: CATS, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  return { products, shops, freshest, icons: CATS, facets: FACETS, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
 }
 
 async function purchasesBody(db, userId) {
@@ -950,7 +951,7 @@ export default {
           || (STR.includes(k) && typeof v === 'string' && v.trim())
           || (k === 'was' && Number.isInteger(v) && v > 0)
           || ((k === 'hidden' || k === 'auto') && v === 1)
-          || (k === 'variants' && typeof v === 'object' && !Array.isArray(v)));
+          || ((k === 'variants' || k === 'facets') && typeof v === 'object' && !Array.isArray(v)));
       if (!ok) return json({ error: 'bad patch' }, 400);
       if (typeof patch.cat === 'string' && !CATS[patch.cat]) return json({ error: 'unknown cat', cats: Object.keys(CATS).sort() }, 400);
       const meta = JSON.parse(cur.meta);

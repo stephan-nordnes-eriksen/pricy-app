@@ -14,6 +14,8 @@ for (const p of products) {
   console.log(`curl -sX PATCH "$BASE/api/admin/products/${p.id}" ${H} -d '${JSON.stringify({ name: p.name, cat: 'FILL_ME', icon: 'package', kw: '', hidden: null })}'`);
   console.log(`# …or variant of an existing product (migrates collected offers/history):`);
   console.log(`curl -sX POST "$BASE/api/admin/alias" ${H} -d '${JSON.stringify({ ean: p.ean, product_id: 'TARGET_ID' })}'`);
+  console.log(`# …then facets (filter values — keys per worker/facets.json for the cat, e.g. TV: size/panel/refresh):`);
+  console.log(`curl -sX PATCH "$BASE/api/admin/products/${p.id}" ${H} -d '${JSON.stringify({ facets: { KEY: 'VALUE' } })}'`);
   console.log('');
 }
 console.log(`${products.length} hidden product(s) — triage per ENRICHMENT.md (icon = lucide name, cat = prototype category; junk = do nothing)`);

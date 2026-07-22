@@ -579,6 +579,12 @@ function hydrateCatalog(data) {
   Object.keys(CATALOG.meta?.cats || {}).forEach(c => {
     if (!CATEGORIES.includes(c)) { CATEGORIES.push(c); CAT_ICONS[c] = CATALOG.meta.icons?.[c] || 'tag'; }
   });
+  // Facet registry: served worker/facets.json replaces the baked upstream
+  // demo FACETS in place (guarded — no-op until the prototype defines it).
+  if (window.FACETS && CATALOG.meta?.facets) {
+    Object.keys(window.FACETS).forEach(k => delete window.FACETS[k]);
+    Object.assign(window.FACETS, CATALOG.meta.facets);
+  }
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
 }

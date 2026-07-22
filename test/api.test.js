@@ -451,6 +451,7 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   const wantCats = seed.filter(p => !p.family).reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), {});
   assert.deepStrictEqual(meta.cats, wantCats, 'meta.cats counts heads only');
   assert.ok(Object.keys(wantCats).every(c => meta.icons?.[c]), 'meta.icons (cats.json registry) must cover every seed cat');
+  assert.deepStrictEqual(meta.facets?.TV?.map(f => f.key), ['size', 'panel', 'refresh'], 'meta.facets serves the facets.json registry');
 
   const many = await call('/api/products?ids=' + Array.from({ length: 101 }, (_, i) => 'x' + i).join(','));
   assert.strictEqual(many.status, 400, '>100 ids must 400');
@@ -1145,6 +1146,12 @@ test('admin PATCH: validated meta merge — manual promote and demote without a 
   assert.strictEqual(promoted[0].cat, 'Audio');
   assert.strictEqual(promoted[0].hidden, undefined);
   assert.strictEqual(promoted[0].best, 900, 'collected offers ship with the promotion');
+
+  // facets: object-only meta merge that rides api rows (FILTERS-PLAN Phase B)
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { facets: ['x'] })).status, 400, 'facets must be an object');
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { facets: { anc: true, fit: 'over-ear' } })).status, 200);
+  const withFacets = (await (await call('/api/products?ids=ean-7099999999992')).json()).products;
+  assert.deepStrictEqual(withFacets[0].facets, { anc: true, fit: 'over-ear' }, 'meta.facets rides /api/products rows');
 
   // demote: hidden again
   await req('/api/admin/products/ean-7099999999992', 'PATCH', { hidden: 1 });
