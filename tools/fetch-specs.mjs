@@ -15,12 +15,17 @@ const out = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[
 const force = process.argv.includes('--force');
 
 const eans = JSON.parse(readFileSync(new URL('../worker/eans.json', import.meta.url), 'utf8'));
+// curated = prototype sheets baked into the seed (variant-bound axis rows,
+// hand-written) — never overwrite those; thin runtime-PATCHed sheets are
+// fair game, Icecat depth replaces them
+const curated = new Set(JSON.parse(readFileSync(new URL('../worker/seed.json', import.meta.url), 'utf8')).filter(p => p.specs).map(p => p.id));
 const { products } = await (await fetch(`${base}/api/catalog.json`)).json();
 const sheets = {};
 const miss = [];
 for (const p of products) {
   if (p.family) continue; // heads only — the PDP renders the head's sheet
-  if (p.specs && !force) continue;
+  if (curated.has(p.id) && !force) continue;
+  if (p.specs?.groups && !force) continue; // already Icecat-depth
   const cands = eans[p.id] || (/^ean-\d+$/.test(p.id) ? [p.id.slice(4)] : []);
   if (!cands.length) { miss.push(`${p.id}: no EAN`); continue; }
   let hit = null;

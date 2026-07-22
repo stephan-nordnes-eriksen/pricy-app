@@ -122,3 +122,9 @@ promotion (image sync deliberately skips hidden rows).
   the collected offers. Live with `ean-*` ids for promoted products.
 - The crawler keeps pricing hidden rows between enrichment runs — that's
   by design (history accrues while they wait).
+- After promoting, run `node tools/fetch-specs.mjs specs.json && node
+  tools/apply-specs.mjs specs.json` — pulls the full Icecat Open datasheet
+  (Norwegian, ~100 rows) by EAN for every visible head that lacks an
+  Icecat-depth sheet and lands it as the PDP Specifications section. Only
+  Open-Icecat (sponsoring) brands resolve; misses are listed and stay on
+  whatever thin sheet they had.
