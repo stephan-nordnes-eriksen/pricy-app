@@ -205,30 +205,58 @@ function Check({ on, label, count, onClick }) {
 function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBoolFacet }) {
   const brands = base.brands; // brands present in the active result set
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
+  // filter search: every token must hit the group title or an entry label;
+  // tokens not covered by the title narrow which entries stay visible
+  const [q, setQ] = useState('');
+  const tokens = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const grpPred = (title, labels) => {
+    if (!tokens.length) return () => true;
+    const t = title.toLowerCase();
+    const rest = tokens.filter(tok => !t.includes(tok));
+    if (!rest.length) return () => true;
+    const pred = (l) => { const s = String(l).toLowerCase(); return rest.every(tok => s.includes(tok)); };
+    return labels.some(pred) ? pred : null;
+  };
+  const cats = CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : CAT_OF[c]);
+  const optionDefs = facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2);
+  const boolDefs = facetDefs.filter(d => d.type === 'bool');
+  const ratingLbl = (r) => r.toFixed(1) + ' & up';
+  const pCat = grpPred('Category', cats);
+  const pBrand = grpPred('Brand', brands);
+  const pPrice = grpPred('Price (kr)', []);
+  const pRating = grpPred('Rating', [4.5, 4, 3.5].map(ratingLbl));
+  const pShow = grpPred('Show only', ['On sale', 'In stock', ...boolDefs.map(d => d.label)]);
+  const optPreds = optionDefs.map(def => grpPred(def.label, facetBase[def.key].vals.map(v => fdisp(v, def))));
+  const anyVisible = pCat || pBrand || pPrice || pRating || pShow || optPreds.some(Boolean);
   return (
     <>
-      <div className="filters__grp">
+      <div className="filters__grp filters__search">
+        <Icon name="search" size={14} />
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Find a filter" aria-label="Find a filter" />
+        {!!q && <button className="filters__sclear" onClick={() => setQ('')} aria-label="Clear filter search"><Icon name="x" size={13} /></button>}
+      </div>
+      {pCat && <div className="filters__grp">
         <h4>Category</h4>
         <div className="catlist">
-          {CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : CAT_OF[c]).map(c => (
+          {cats.filter(pCat).map(c => (
             <div key={c} className={'catlink' + (base.cat === c ? ' is-on' : '')} onClick={() => go('results', { cat: c })}>
               <span className="catlink__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={15} /></span>
               <span>{c}</span><span className="ct">{(metaOf()?.cats?.[c]) ?? CAT_OF[c].length}</span>
             </div>
           ))}
         </div>
-      </div>
-      <div className="filters__grp">
+      </div>}
+      {pBrand && <div className="filters__grp">
         <h4>Brand</h4>
-        {brands.map(b => <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} />)}
-      </div>
-      {facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2).map(def => (
+        {brands.filter(pBrand).map(b => <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} />)}
+      </div>}
+      {optionDefs.map((def, i) => optPreds[i] && (
         <div key={def.key} className="filters__grp">
           <h4>{def.label}</h4>
-          {facetBase[def.key].vals.map(v => <Check key={String(v)} on={(f.facets[def.key] || []).includes(v)} label={fdisp(v, def)} count={facetBase[def.key].counts.get(v)} onClick={() => setFacet(def.key, v)} />)}
+          {facetBase[def.key].vals.filter(v => optPreds[i](fdisp(v, def))).map(v => <Check key={String(v)} on={(f.facets[def.key] || []).includes(v)} label={fdisp(v, def)} count={facetBase[def.key].counts.get(v)} onClick={() => setFacet(def.key, v)} />)}
         </div>
       ))}
-      <div className="filters__grp">
+      {pPrice && <div className="filters__grp">
         <h4>Price (kr)</h4>
         <div className="pricefields">
           <input type="number" placeholder={String(base.min)} value={f.min} onChange={e => set('min', e.target.value)} />
@@ -237,22 +265,23 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
         </div>
         <input className="range" type="range" min={base.min} max={base.max} value={f.max || base.max} onChange={e => set('max', e.target.value)} />
         <div className="pricefields__lbl"><span>kr {fmt(base.min)}</span><span>kr {fmt(base.max)}</span></div>
-      </div>
-      <div className="filters__grp">
+      </div>}
+      {pRating && <div className="filters__grp">
         <h4>Rating</h4>
-        {[4.5, 4, 3.5].map(r => (
+        {[4.5, 4, 3.5].filter(r => pRating(ratingLbl(r))).map(r => (
           <div key={r} className={'ropt' + (f.rating === r ? ' is-on' : '')} onClick={() => set('rating', f.rating === r ? 0 : r)}>
             <span className="ropt__stars">{'★★★★★'.slice(0, Math.round(r))}<span className="stars__off">{'★★★★★'.slice(Math.round(r))}</span></span>
-            <span>{r.toFixed(1)} & up</span>
+            <span>{ratingLbl(r)}</span>
           </div>
         ))}
-      </div>
-      <div className="filters__grp">
+      </div>}
+      {pShow && <div className="filters__grp">
         <h4>Show only</h4>
-        <Check on={f.sale} label="On sale" onClick={() => set('sale', !f.sale)} />
-        <Check on={f.instock} label="In stock" onClick={() => set('instock', !f.instock)} />
-        {facetDefs.filter(d => d.type === 'bool').map(def => <Check key={def.key} on={!!f.facets[def.key]} label={def.label} onClick={() => setBoolFacet(def.key)} />)}
-      </div>
+        {pShow('On sale') && <Check on={f.sale} label="On sale" onClick={() => set('sale', !f.sale)} />}
+        {pShow('In stock') && <Check on={f.instock} label="In stock" onClick={() => set('instock', !f.instock)} />}
+        {boolDefs.filter(d => pShow(d.label)).map(def => <Check key={def.key} on={!!f.facets[def.key]} label={def.label} onClick={() => setBoolFacet(def.key)} />)}
+      </div>}
+      {!anyVisible && <div className="filters__grp filters__nomatch">No filters match “{q}”<button onClick={() => setQ('')}>Clear search</button></div>}
     </>
   );
 }

@@ -400,6 +400,13 @@
 .filterscol { min-width: 0; }
 .filterscol::after { content: ''; display: block; height: 340px; }
 .filterscol .filters { top: 98px; }
+.filters__search { display: flex; align-items: center; gap: 8px; color: var(--ink-600); }
+.filters__search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 14px; color: var(--ink-900); }
+.filters__search input::placeholder { color: var(--ink-600); opacity: 0.75; }
+.filters__sclear { border: 0; background: none; padding: 2px; cursor: pointer; color: var(--ink-600); display: inline-flex; }
+.filters__sclear:hover { color: var(--ink-900); }
+.filters__nomatch { font-size: 13px; color: var(--ink-600); }
+.filters__nomatch button { border: 0; background: none; padding: 0; margin-left: 6px; font: inherit; color: var(--ink-900); text-decoration: underline; cursor: pointer; }
 @media (max-width: 900px) { .filterscol::after { display: none; } }
 .results__title { margin-bottom: var(--s-3); }
 .results__title h1 { font-size: 30px; }
