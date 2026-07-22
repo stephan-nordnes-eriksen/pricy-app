@@ -170,7 +170,8 @@ const dayOf = (t) => new Date(t).toISOString().slice(0, 10);
 // products.meta = the static display fields; offers/history live in their
 // tables and best/drop/shops/stock are derived on read (see catalogBody).
 // Seed evolution (4e): seed_meta pins the hash of the shipped seed.json — on a
-// new seed, meta is upserted for every row (display-only, always safe) and
+// new seed, meta is json_patch-merged for every row (seed keys win, runtime
+// enrichment like admin-PATCHed specs/facets/hidden survives the deploy) and
 // rows new to the DB (e.g. variant children) get their demo offers/history;
 // existing offers/price_points are never touched, and rows dropped upstream
 // stay (purchases/watches reference them).
@@ -191,7 +192,7 @@ async function seedCatalog(db) {
     for (const e of list) stmts.push(db.prepare('INSERT OR IGNORE INTO eans (ean, product_id) VALUES (?, ?)').bind(eanKey(e), pid));
   }
   for (const { id, offers, history, best, drop, shops, stock, ...meta } of seed) {
-    stmts.push(db.prepare('INSERT INTO products (id, meta) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET meta = excluded.meta').bind(id, JSON.stringify(meta)));
+    stmts.push(db.prepare('INSERT INTO products (id, meta) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET meta = json_patch(meta, excluded.meta)').bind(id, JSON.stringify(meta)));
     if (known.has(id) || !virgin) continue; // meta refresh only — real offers/history stay
     for (const o of offers) {
       stmts.push(db.prepare('INSERT OR IGNORE INTO offers (product_id, shop, price, ship, stock, eta) VALUES (?, ?, ?, ?, ?, ?)')

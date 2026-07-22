@@ -1164,6 +1164,21 @@ test('admin PATCH: validated meta merge — manual promote and demote without a 
   assert.strictEqual((await (await call('/api/products?q=soundbar')).json()).products.length, 0, 'demoted product disappears');
 });
 
+test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed keys still win', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  // kobo-libra is a seed row (extra.json head) that ships without specs
+  await req('/api/admin/products/kobo-libra', 'PATCH', { specs: { screen: '7.0″ E Ink' }, facets: { color: 'Yes' }, name: 'Renamed By Admin' });
+  // stale the pinned hash so the next request re-runs the seed upsert
+  await DB.prepare("UPDATE seed_meta SET hash = 'stale'").run();
+  const row = (await (await call('/api/products?ids=kobo-libra')).json()).products[0];
+  assert.deepStrictEqual(row.specs, { screen: '7.0″ E Ink' }, 'runtime specs must survive the seed re-upsert');
+  assert.deepStrictEqual(row.facets, { color: 'Yes' }, 'runtime facets must survive the seed re-upsert');
+  assert.strictEqual(row.name, 'Kobo Libra Colour', 'seed-owned keys still win on re-upsert');
+});
+
 // OPEN-CATALOG-PLAN B: auto-promotion — mapped source category = go live
 test('auto-promotion: a hidden row with name+brand+CATMAP-mapped srcCat goes live; junk and unmapped stay hidden; demote sticks', async () => {
   const DB = d1();
