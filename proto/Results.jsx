@@ -202,6 +202,38 @@ function Check({ on, label, count, onClick }) {
   );
 }
 
+// collapse state persists per group (localStorage); filter search temporarily expands
+const FGRP_LS = 'pricy.filters.open';
+const fgrpAll = () => { try { return JSON.parse(localStorage.getItem(FGRP_LS)) || {}; } catch (e) { return {}; } };
+const fgrpSave = (id, open) => { try { const m = fgrpAll(); m[id] = open ? 1 : 0; localStorage.setItem(FGRP_LS, JSON.stringify(m)); } catch (e) {} };
+function FGroup({ id, title, nSel = 0, defOpen = true, forceOpen = false, children }) {
+  const [open, setOpen] = useState(() => { const s = fgrpAll()[id]; return s == null ? defOpen : !!s; });
+  const shown = forceOpen || open;
+  return (
+    <section className={'filters__grp fgrp' + (shown ? ' is-open' : '')}>
+      <h4 className="fgrp__h"><button type="button" aria-expanded={shown} onClick={() => setOpen(o => { fgrpSave(id, !o); return !o; })}>
+        <span>{title}</span>
+        {nSel > 0 && <span className="fgrp__n">{nSel}</span>}
+        <span className="fgrp__chev"><Icon name="chevron-down" size={13} /></span>
+      </button></h4>
+      {shown && children}
+    </section>
+  );
+}
+// long option lists: top slice + any selected values, expand on demand, inner scroll past scrollAt
+function FList({ entries, cap = 6, scrollAt = 12, searching = false, listClass = 'flist' }) {
+  const [all, setAll] = useState(false);
+  const truncatable = !searching && entries.length > cap + 1;
+  const showAll = !truncatable || all;
+  const shown = showAll ? entries : entries.filter((e, i) => i < cap || e.on);
+  return (
+    <>
+      <div className={listClass + (showAll && entries.length > scrollAt ? ' flist--scroll' : '')}>{shown.map(e => e.node)}</div>
+      {truncatable && <button type="button" className="fmore" onClick={() => setAll(a => !a)}>{(all ? 'Show fewer' : 'Show all ' + entries.length)}<Icon name={all ? 'chevron-up' : 'chevron-down'} size={12} /></button>}
+    </>
+  );
+}
+
 function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBoolFacet }) {
   const brands = base.brands; // brands present in the active result set
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
@@ -228,6 +260,9 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
   const pShow = grpPred('Show only', ['On sale', 'In stock', ...boolDefs.map(d => d.label)]);
   const optPreds = optionDefs.map(def => grpPred(def.label, facetBase[def.key].vals.map(v => fdisp(v, def))));
   const anyVisible = pCat || pBrand || pPrice || pRating || pShow || optPreds.some(Boolean);
+  const searching = tokens.length > 0;
+  const nShow = (f.sale ? 1 : 0) + (f.instock ? 1 : 0) + boolDefs.filter(d => f.facets[d.key]).length;
+  const specVisible = optionDefs.some((d, i) => optPreds[i]);
   return (
     <>
       <div className="filters__grp filters__search">
@@ -235,29 +270,21 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Find a filter" aria-label="Find a filter" />
         {!!q && <button className="filters__sclear" onClick={() => setQ('')} aria-label="Clear filter search"><Icon name="x" size={13} /></button>}
       </div>
-      {pCat && <div className="filters__grp">
-        <h4>Category</h4>
-        <div className="catlist">
-          {cats.filter(pCat).map(c => (
+      {pCat && <FGroup id="cat" title="Category" nSel={base.cat ? 1 : 0} forceOpen={searching}>
+        <FList listClass="catlist" cap={8} searching={searching} entries={cats.filter(pCat).map(c => ({
+          on: base.cat === c,
+          node: (
             <div key={c} className={'catlink' + (base.cat === c ? ' is-on' : '')} onClick={() => go('results', { cat: c })}>
               <span className="catlink__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={15} /></span>
               <span>{c}</span><span className="ct">{(metaOf()?.cats?.[c]) ?? CAT_OF[c].length}</span>
             </div>
-          ))}
-        </div>
-      </div>}
-      {pBrand && <div className="filters__grp">
-        <h4>Brand</h4>
-        {brands.filter(pBrand).map(b => <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} />)}
-      </div>}
-      {optionDefs.map((def, i) => optPreds[i] && (
-        <div key={def.key} className="filters__grp">
-          <h4>{def.label}</h4>
-          {facetBase[def.key].vals.filter(v => optPreds[i](fdisp(v, def))).map(v => <Check key={String(v)} on={(f.facets[def.key] || []).includes(v)} label={fdisp(v, def)} count={facetBase[def.key].counts.get(v)} onClick={() => setFacet(def.key, v)} />)}
-        </div>
-      ))}
-      {pPrice && <div className="filters__grp">
-        <h4>Price (kr)</h4>
+          ),
+        }))} />
+      </FGroup>}
+      {pBrand && <FGroup id="brand" title="Brand" nSel={f.brands.length} forceOpen={searching}>
+        <FList searching={searching} entries={brands.filter(pBrand).map(b => ({ on: f.brands.includes(b), node: <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} /> }))} />
+      </FGroup>}
+      {pPrice && <FGroup id="price" title="Price (kr)" nSel={(f.min !== '' ? 1 : 0) + (f.max !== '' ? 1 : 0)} forceOpen={searching}>
         <div className="pricefields">
           <input type="number" placeholder={String(base.min)} value={f.min} onChange={e => set('min', e.target.value)} />
           <span className="pricefields__d">–</span>
@@ -265,22 +292,26 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
         </div>
         <input className="range" type="range" min={base.min} max={base.max} value={f.max || base.max} onChange={e => set('max', e.target.value)} />
         <div className="pricefields__lbl"><span>kr {fmt(base.min)}</span><span>kr {fmt(base.max)}</span></div>
-      </div>}
-      {pRating && <div className="filters__grp">
-        <h4>Rating</h4>
+      </FGroup>}
+      {pRating && <FGroup id="rating" title="Rating" nSel={f.rating ? 1 : 0} forceOpen={searching}>
         {[4.5, 4, 3.5].filter(r => pRating(ratingLbl(r))).map(r => (
           <div key={r} className={'ropt' + (f.rating === r ? ' is-on' : '')} onClick={() => set('rating', f.rating === r ? 0 : r)}>
             <span className="ropt__stars">{'★★★★★'.slice(0, Math.round(r))}<span className="stars__off">{'★★★★★'.slice(Math.round(r))}</span></span>
             <span>{ratingLbl(r)}</span>
           </div>
         ))}
-      </div>}
-      {pShow && <div className="filters__grp">
-        <h4>Show only</h4>
+      </FGroup>}
+      {pShow && <FGroup id="show" title="Show only" nSel={nShow} forceOpen={searching}>
         {pShow('On sale') && <Check on={f.sale} label="On sale" onClick={() => set('sale', !f.sale)} />}
         {pShow('In stock') && <Check on={f.instock} label="In stock" onClick={() => set('instock', !f.instock)} />}
         {boolDefs.filter(d => pShow(d.label)).map(def => <Check key={def.key} on={!!f.facets[def.key]} label={def.label} onClick={() => setBoolFacet(def.key)} />)}
-      </div>}
+      </FGroup>}
+      {specVisible && <div className="filters__cluster">{(base.cat || 'Product') + ' specs'}</div>}
+      {optionDefs.map((def, i) => optPreds[i] && (
+        <FGroup key={def.key} id={'facet.' + def.key} title={def.label} nSel={(f.facets[def.key] || []).length} defOpen={i < 2} forceOpen={searching}>
+          <FList searching={searching} entries={facetBase[def.key].vals.filter(v => optPreds[i](fdisp(v, def))).map(v => ({ on: (f.facets[def.key] || []).includes(v), node: <Check key={String(v)} on={(f.facets[def.key] || []).includes(v)} label={fdisp(v, def)} count={facetBase[def.key].counts.get(v)} onClick={() => setFacet(def.key, v)} /> }))} />
+        </FGroup>
+      ))}
       {!anyVisible && <div className="filters__grp filters__nomatch">No filters match “{q}”<button onClick={() => setQ('')}>Clear search</button></div>}
     </>
   );
@@ -374,11 +405,14 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} window.scrollTo(0, 0); };
   const baseSel = { query, cat };
   const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat]);
-  const [sort, setSort] = useState('best');
-  const [f, setF] = useState(emptyFilters);
+  const [sort, setSort] = useState(() => (window.history.state || {}).rsort || 'best');
+  const [f, setF] = useState(() => { const s = (window.history.state || {}).rfilters; return s ? { ...emptyFilters(), ...s } : emptyFilters(); });
   useWatchStore();
-  // reset filters when the search changes
-  useEffect(() => { setF(emptyFilters()); }, [query, cat]);
+  // filters live in the history entry so browser Back restores them
+  useEffect(() => { try { window.history.replaceState({ ...window.history.state, rfilters: f, rsort: sort }, ''); } catch (e) {} }, [f, sort]);
+  // reset filters when the search changes (skip the mount that restored them)
+  const _fInit = useRef(true);
+  useEffect(() => { if (_fInit.current) { _fInit.current = false; return; } setF(emptyFilters()); }, [query, cat]);
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
   // data-driven per-category facets (window.FACETS is replaced by the boot layer)
   const facetDefs = cat ? ((window.FACETS || {})[cat] || []) : [];
@@ -404,6 +438,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     byBrand: baseResults.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
   };
   base.brands = Object.keys(base.byBrand).sort();
+  base.cat = baseSel.cat;
 
   let list = baseResults.filter(p => {
     if (f.brands.length && !f.brands.includes(p.brand)) return false;

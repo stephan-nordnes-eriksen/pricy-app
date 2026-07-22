@@ -16,8 +16,16 @@ class ErrorBoundary extends React.Component {
 
 function App(){
   const [t,setTweak]=useTweaks(TWEAK_DEFAULTS);
-  const [screen,setScreen]=useState({name:"results",params:{cat:"Audio"}});
-  const go=(name,params={})=>{ setScreen({name,params}); if(typeof window!=='undefined') window.scrollTo(0,0); };
+  const [screen,setScreen]=useState(()=>{ const s=window.history.state; return (s&&s.name)?{name:s.name,params:s.params||{}}:{name:"results",params:{cat:"Audio"}}; });
+  // browser back/forward: each go() pushes a history entry; popstate restores screen + scroll
+  useEffect(()=>{
+    const h=window.history;
+    try{ if(!(h.state&&h.state.name)) h.replaceState({name:screen.name,params:screen.params},""); }catch(e){}
+    const onPop=(e)=>{ const s=e.state; if(s&&s.name){ setScreen({name:s.name,params:s.params||{}}); requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,s.scrollY||0))); } };
+    window.addEventListener("popstate",onPop);
+    return ()=>window.removeEventListener("popstate",onPop);
+  },[]);
+  const go=(name,params={})=>{ const h=window.history; try{ h.replaceState({...h.state,scrollY:window.scrollY},""); h.pushState({name,params},""); }catch(e){} setScreen({name,params}); if(typeof window!=='undefined') window.scrollTo(0,0); };
   const {name,params}=screen;
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   useEffect(()=>{ document.getElementById("root").classList.toggle("no-anim", !t.animations); },[t.animations]);

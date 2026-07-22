@@ -407,6 +407,31 @@
 .filters__sclear:hover { color: var(--ink-900); }
 .filters__nomatch { font-size: 13px; color: var(--ink-600); }
 .filters__nomatch button { border: 0; background: none; padding: 0; margin-left: 6px; font: inherit; color: var(--ink-900); text-decoration: underline; cursor: pointer; }
+/* collapsible groups + spec cluster + truncated lists (long-rail handling) */
+.filters__grp .fgrp__h { margin: 0; }
+.fgrp.is-open .fgrp__h { margin: 0 0 var(--s-3); }
+.fgrp__h button { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; text-align: left; }
+.fgrp__h button:hover { color: var(--ink-900); }
+.fgrp__n { font-family: var(--font-mono); font-size: 10px; font-weight: 700; line-height: 1; min-width: 17px; padding: 3px 4px; text-align: center; background: var(--green-500); border: 2px solid var(--ink-900); color: var(--ink-900); }
+.fgrp__chev { margin-left: auto; display: inline-flex; color: var(--ink-400); transition: transform 0.15s ease; }
+.fgrp.is-open .fgrp__chev { transform: rotate(180deg); }
+.fgrp__h button:hover .fgrp__chev { color: var(--ink-900); }
+.fgrp:not(.is-open) { padding-top: 12px; padding-bottom: 12px; }
+.filters__cluster { padding: 8px var(--s-4); background: var(--canvas-2); border-bottom: var(--bw) solid var(--ink-900); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-600); }
+.flist { display: flex; flex-direction: column; }
+.flist--scroll { max-height: 272px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--ink-900) var(--canvas-2); }
+.flist--scroll::-webkit-scrollbar { width: 8px; }
+.flist--scroll::-webkit-scrollbar-track { background: var(--canvas-2); }
+.flist--scroll::-webkit-scrollbar-thumb { background: var(--ink-900); }
+.fmore { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 2px 0; border: 0; background: none; cursor: pointer; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-600); }
+.fmore:hover { color: var(--ink-900); text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--green-500); text-underline-offset: 3px; }
+/* the rail never outgrows the viewport: past the cap it scrolls internally while sticky */
+@media (min-width: 901px) {
+  .filterscol .filters { max-height: calc(100dvh - 98px - 18px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--ink-900) var(--paper); }
+  .filterscol .filters::-webkit-scrollbar { width: 8px; }
+  .filterscol .filters::-webkit-scrollbar-track { background: var(--paper); }
+  .filterscol .filters::-webkit-scrollbar-thumb { background: var(--ink-900); }
+}
 @media (max-width: 900px) { .filterscol::after { display: none; } }
 .results__title { margin-bottom: var(--s-3); }
 .results__title h1 { font-size: 30px; }
