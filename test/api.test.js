@@ -1153,6 +1153,12 @@ test('admin PATCH: validated meta merge — manual promote and demote without a 
   const withFacets = (await (await call('/api/products?ids=ean-7099999999992')).json()).products;
   assert.deepStrictEqual(withFacets[0].facets, { anc: true, fit: 'over-ear' }, 'meta.facets rides /api/products rows');
 
+  // specs: same object-only merge — boot feeds it to the PDP Specifications section
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { specs: 'nope' })).status, 400, 'specs must be an object');
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { specs: { fit: 'Soundbar', anc: false } })).status, 200);
+  const withSpecs = (await (await call('/api/products?ids=ean-7099999999992')).json()).products;
+  assert.deepStrictEqual(withSpecs[0].specs, { fit: 'Soundbar', anc: false }, 'meta.specs rides /api/products rows');
+
   // demote: hidden again
   await req('/api/admin/products/ean-7099999999992', 'PATCH', { hidden: 1 });
   assert.strictEqual((await (await call('/api/products?q=soundbar')).json()).products.length, 0, 'demoted product disappears');

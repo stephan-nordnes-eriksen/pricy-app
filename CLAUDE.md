@@ -58,7 +58,12 @@ Two Claude Design projects feed this repo:
   derive from values present, spec strings are the fallback via `fval`,
   the old hardcoded NC filter is gone); boot's `hydrateCatalog` swaps the
   served registry in wholesale. New filter = a facets.json entry (+ data
-  via enrich curls). No upstream edit.
+  via enrich curls). No upstream edit. Per-product `specs` ride the same
+  meta-merge PATCH (bulk: `node tools/apply-specs.mjs specs.json`) — boot
+  feeds `r.specs` into the prototype's SPECS, so the PDP Specifications
+  section renders for any product whose cat has a SPEC_KINDS schema
+  (proto/Specs.jsx); keys must match that schema. Cats without a schema
+  (Kitchen/Home/Projectors) need an upstream Specs.jsx change first.
 - **Adding products needs no upstream edit**: `worker/extra.json` holds
   hand-written head rows (`id/name/brand/cat/icon/kw`; cat must be in
   `worker/cats.json`) that build.js merges into seed.json — seeding,

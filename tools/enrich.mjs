@@ -16,6 +16,8 @@ for (const p of products) {
   console.log(`curl -sX POST "$BASE/api/admin/alias" ${H} -d '${JSON.stringify({ ean: p.ean, product_id: 'TARGET_ID' })}'`);
   console.log(`# …then facets (filter values — keys per worker/facets.json for the cat, e.g. TV: size/panel/refresh):`);
   console.log(`curl -sX PATCH "$BASE/api/admin/products/${p.id}" ${H} -d '${JSON.stringify({ facets: { KEY: 'VALUE' } })}'`);
+  console.log(`# …then specs (PDP Specifications — keys per the cat's SPEC_KINDS schema in proto/Specs.jsx, or bulk via tools/apply-specs.mjs):`);
+  console.log(`curl -sX PATCH "$BASE/api/admin/products/${p.id}" ${H} -d '${JSON.stringify({ specs: { KEY: 'VALUE' } })}'`);
   console.log('');
 }
 console.log(`${products.length} hidden product(s) — triage per ENRICHMENT.md (icon = lucide name, cat = prototype category; junk = do nothing)`);

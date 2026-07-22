@@ -951,7 +951,7 @@ export default {
           || (STR.includes(k) && typeof v === 'string' && v.trim())
           || (k === 'was' && Number.isInteger(v) && v > 0)
           || ((k === 'hidden' || k === 'auto') && v === 1)
-          || ((k === 'variants' || k === 'facets') && typeof v === 'object' && !Array.isArray(v)));
+          || ((k === 'variants' || k === 'facets' || k === 'specs') && typeof v === 'object' && !Array.isArray(v)));
       if (!ok) return json({ error: 'bad patch' }, 400);
       if (typeof patch.cat === 'string' && !CATS[patch.cat]) return json({ error: 'unknown cat', cats: Object.keys(CATS).sort() }, 400);
       const meta = JSON.parse(cur.meta);
