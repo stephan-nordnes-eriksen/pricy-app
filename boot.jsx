@@ -400,7 +400,11 @@ function App() {
       if (t !== navSeq) return;
       if (name === 'product') recordRecent(params.id); // after the fetch: prodOf needs the row
       const url = toUrl(name, params);
-      if (url !== location.pathname + location.search) history.pushState(null, '', url);
+      // mirror upstream AppRouter: park scrollY on the outgoing entry so Back restores it
+      if (url !== location.pathname + location.search) {
+        try { history.replaceState({ ...history.state, scrollY: window.scrollY }, ''); } catch (e) {}
+        history.pushState(null, '', url);
+      }
       window.scrollTo(0, 0);
       setScreen({ name, params });
     });
@@ -481,10 +485,13 @@ function App() {
     const onPop = () => {
       const s = parseUrl(readSession());
       const t = ++navSeq;
+      const scrollY = (history.state && history.state.scrollY) || 0;
       ensureRoute(s.name, s.params).then(() => {
         if (t !== navSeq) return;
         if (s.name === 'product') recordRecent(s.params.id);
         setScreen(s);
+        // after the async swap renders (upstream AppRouter does the same double-rAF)
+        requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, scrollY)));
       });
     };
     window.addEventListener('popstate', onPop);

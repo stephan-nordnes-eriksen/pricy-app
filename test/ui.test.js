@@ -702,7 +702,9 @@ test('dynamic categories: a server cat the prototype does not know renders with 
 });
 
 // FILTERS-PLAN: data-driven per-category facet filters on Results
-const facetGrp = (win, title) => qa(win, '.filters__grp').find(g => g.querySelector('h4')?.textContent === title);
+// h4 may carry a selected-count badge + chevron; the title is the first span
+const h4Title = h => h.querySelector('span')?.textContent ?? h.textContent;
+const facetGrp = (win, title) => qa(win, '.filters__grp').find(g => { const h = g.querySelector('h4'); return h && h4Title(h) === title; });
 
 test('facet filters: TV renders spec-derived option groups, clicking filters rows, NC gone outside Audio', async () => {
   const win = boot('http://pricy.test/search?cat=TV', { session: true });
@@ -734,14 +736,14 @@ test('facet filters: served meta.facets replaces the baked registry; cats withou
 
   const gaming = boot('http://pricy.test/search?cat=Gaming', { session: true });
   assert.ok(await until(() => qa(gaming, '.rrow, .rcard').length > 0), 'gaming results did not render');
-  const titles = qa(gaming, '.filters__grp').map(g => g.querySelector('h4')?.textContent).filter(Boolean);
+  const titles = qa(gaming, '.filters__grp').map(g => { const h = g.querySelector('h4'); return h && h4Title(h); }).filter(Boolean);
   assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only'], 'no facet groups for a cat without defs, got: ' + titles.join(' | '));
 });
 
 test('filter search: narrows groups, no-match message clears back', async () => {
   const win = boot('http://pricy.test/search?cat=Gaming', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
-  const grpTitles = () => qa(win, '.filters__grp h4').map(h => h.textContent);
+  const grpTitles = () => qa(win, '.filters__grp h4').map(h4Title);
   const search = q(win, '.filters__search input');
   assert.ok(search, 'filter search box must render');
 
