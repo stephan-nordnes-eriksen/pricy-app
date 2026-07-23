@@ -156,6 +156,94 @@ Then run the sync ritual (get_file pulls → `npm test` → commit).
   facet values at ingest from source names/JSON-LD ('65"' in a TV name →
   size: 65), same spirit as auto-promotion.
 
+## Phase D — per-category coverage (researched 2026-07-23)
+
+Current `worker/facets.json` only covers TV/Audio/Phones(refresh). Went
+category by category (product counts as of today, `worker/extra.json` +
+prototype demo rows) to decide what's worth adding.
+
+**RESOLVED 2026-07-23:** the variant-aware `fval` landed upstream (synced;
+returns the axis option ids as an array when no facet/spec value exists,
+Results counts/matches arrays as "any option"). `storage` is live in
+facets.json for Phones and Computers. Gaming storage stays OFF: its values
+parse badly (`'1 TB SSD'` spec string and `'1tb'` axis id both parseFloat
+to 1 → a wrong "1 GB" option); needs TB-aware normalization upstream if
+ever wanted. Original analysis kept below.
+
+**Blocker found: facets are scalar, storage is per-variant.** `fval`
+(AppData.jsx) returns ONE value per product; a phone/tablet/laptop's
+storage lives in `p.variants.axes` (multiple options, e.g. S26 = 256GB
+*or* 512GB), not a flat spec. Faking a single value (pick the base tier)
+would silently exclude products from a "512 GB" filter that legitimately
+sell a 512GB config. This blocks storage on Phones (the requested
+example), Computers, and Gaming (console storage) alike — one fix
+unblocks all three, so it's worth doing once rather than faking per-cat.
+Proposed fix (upstream, small): let `fval` return an array when the key
+matches a variant axis id, and teach the two consumers (facetBase
+counting, the filter predicate) to treat an array as "any option
+matches" instead of exact-equals. Paste-ready prompt below when ready to
+do this.
+
+Recommendations:
+
+- **TV** (2 products) — already covers size/panel/refresh. Leave as is.
+- **Audio** (5 products) — anc/fit already there, but the category mixes
+  earbuds/headphones with a smart speaker (Google Home), which has
+  neither. Add `type: options` (Headphones / Earbuds / Speaker) so the
+  irrelevant groups don't show for speaker rows (they already won't
+  match, but a type filter lets shoppers separate the two kinds).
+- **Phones** (10 products) — add `storage` (blocked, see above), `size`
+  (screen size — already a SPECS key, parses fine via facetNorm), `g5`
+  (bool). refresh stays.
+- **Computers** (3 products) — mixes laptops (MacBook Air) and tablets
+  (iPad, Tab S10). Add `type: options` (Laptop / Tablet) first — without
+  it a "Screen size" or "Storage" filter mixes two very different
+  products. `storage` blocked (same variant gap); `ram` is not
+  variant-selectable in this catalog so it's safe as a scalar facet
+  today.
+- **Gaming** (5 products) — mixes consoles (PS5, Xbox, Switch) with
+  controllers (Joy-Con, Pro Controller). Add `type: options` (Console /
+  Handheld / Controller) first. `disc` (bool) is meaningful for consoles
+  only — fine, `fval` returns `undefined` for controllers and the facet
+  UI already skips products with no value. `storage` blocked.
+- **Home** (2 products, growing) — mixes vacuums (Dyson/Roborock demo)
+  and smart lighting (Hue). Add `type: options` (Vacuum / Lighting)
+  first, then `mop` (bool, vacuum-only) and `protocol` (options,
+  lighting-only — Zigbee/Bluetooth/Wi-Fi).
+- **Toys** (2 products), **E-readers** (2 products) — too few products
+  for a filter to do anything (`FGroup` already hides itself under 2
+  distinct values). Defer. Candidates once the catalog grows: Toys →
+  `pieces` (options, LEGO piece count), `age`; E-readers → `storage`,
+  `ip` (waterproofing, bool).
+- **Kitchen** (3 products) — no `SPEC_KINDS` schema at all, and the 3
+  products (coffee maker, air fryer, microwave) share no attributes — a
+  `type` facet here is just re-showing the category as three 1-item
+  groups, not filtering. Skip; revisit only if Kitchen grows enough
+  sub-categories to actually cluster (e.g. 3+ coffee makers).
+- **Projectors** — zero products in the catalog. Nothing to do until
+  products exist.
+
+---8<--- PROMPT FOR CLAUDE DESIGN (prototype project) — variant-aware facets ---8<---
+
+In AppData.jsx, `fval(p, k)` currently returns a single scalar (explicit
+`p.facets[k]`, else `SPECS[p.id][k]`, normalized). Extend it: if neither
+source has a value AND `p` has `p.variants.axes` with an axis whose `id
+=== k`, return that axis's option ids mapped to numbers where they parse
+(e.g. `['128','256','512']` → `[128,256,512]`), else the string ids
+array. Keep the existing scalar behavior when a real facets/spec value is
+present (variants are the last fallback, not an override).
+
+In Results.jsx, the two places that read `fval` for an 'options' facet
+need to handle an array result as "this product has ALL these values,
+not one": `facetBase` counting should increment every value in the array
+(not just the first) when building `vals`/`counts`, and the filter
+predicate should change `!sel.includes(v)` to `Array.isArray(v) ?
+!v.some(x => sel.includes(x)) : !sel.includes(v)`. Everything else
+(bool facets, display, chips) is unchanged since only 'options'-type
+facets hit this path.
+
+---8<--- END PROMPT ---8<---
+
 ## Non-goals (deliberate)
 
 - Server-side facet filtering / facet params on `/api/products` — cat

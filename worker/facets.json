@@ -1,8 +1,20 @@
 {
-  "TV":     [ { "key": "size",    "label": "Screen size",  "type": "options", "unit": "″" },
-              { "key": "panel",   "label": "Panel",        "type": "options" },
-              { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" } ],
-  "Audio":  [ { "key": "anc", "label": "Noise cancelling", "type": "bool" },
-              { "key": "fit", "label": "Fit",              "type": "options" } ],
-  "Phones": [ { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" } ]
+  "TV":        [ { "key": "size",    "label": "Screen size",  "type": "options", "unit": "″" },
+                 { "key": "panel",   "label": "Panel",        "type": "options" },
+                 { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" } ],
+  "Audio":     [ { "key": "type", "label": "Type",             "type": "options" },
+                 { "key": "anc",  "label": "Noise cancelling", "type": "bool" },
+                 { "key": "fit",  "label": "Fit",              "type": "options" } ],
+  "Phones":    [ { "key": "size",    "label": "Screen size",  "type": "options", "unit": "″" },
+                 { "key": "storage", "label": "Storage",      "type": "options", "unit": "GB" },
+                 { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" },
+                 { "key": "g5",      "label": "5G",            "type": "bool" } ],
+  "Computers": [ { "key": "type",    "label": "Type",    "type": "options" },
+                 { "key": "storage", "label": "Storage", "type": "options", "unit": "GB" },
+                 { "key": "ram",     "label": "Memory",  "type": "options", "unit": "GB" } ],
+  "Gaming":    [ { "key": "type", "label": "Type",   "type": "options" },
+                 { "key": "disc", "label": "Disc drive", "type": "bool" } ],
+  "Home":      [ { "key": "type",     "label": "Type",              "type": "options" },
+                 { "key": "mop",      "label": "Mopping",           "type": "bool" },
+                 { "key": "protocol", "label": "Smart home protocol", "type": "options" } ]
 }
