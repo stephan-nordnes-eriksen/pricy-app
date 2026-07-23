@@ -100,11 +100,14 @@ deletes the whole object.
 
 The `type` facet is the sub-category (SUBCATS-PLAN.md) — use the
 canonical values, never invent near-duplicates (each new spelling becomes
-its own filter option): Audio `Headphones`/`Earbuds`/`Speakers`; Gaming
-`Consoles`/`Handhelds`/`Controllers`; Computers `Laptops`/`Tablets`;
-Home `Vacuums`/`Smart lighting`; Kitchen `Coffee makers`/`Air fryers`/
-`Microwaves`. Seed rows already carry theirs (extra.json / build.js
-`DEMO_TYPE`) — only discovered `ean-*` rows need the curl.
+its own filter option): Audio `Headphones`/`Earbuds`/`Speakers`/
+`Soundbars`; Gaming `Consoles`/`Handhelds`/`Controllers`/`Games`;
+Computers `Laptops`/`Tablets`/`Monitors`; Home `Vacuums`/`Smart lighting`/
+`Media streamers`/`Security`/`Small appliances`; Kitchen `Coffee makers`/
+`Air fryers`/`Microwaves`/`Multicookers`. Seed rows already carry theirs
+(extra.json / build.js `DEMO_TYPE`) — only discovered `ean-*` rows need
+the curl. Product kind unclear from the name? Leave it untyped (it just
+won't match type selections) — a wrong sub-category is worse than none.
 
 ### 3. Verify
 
