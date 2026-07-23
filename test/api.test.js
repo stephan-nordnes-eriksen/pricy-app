@@ -481,6 +481,12 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   assert.deepStrictEqual(meta.cats, wantCats, 'meta.cats counts heads only');
   assert.ok(Object.keys(wantCats).every(c => meta.icons?.[c]), 'meta.icons (cats.json registry) must cover every seed cat');
   assert.deepStrictEqual(meta.facets?.TV?.map(f => f.key), ['size', 'panel', 'refresh'], 'meta.facets serves the facets.json registry');
+  assert.deepStrictEqual(meta.facets?.Kitchen?.map(f => f.key), ['type'], 'Kitchen serves its sub-category type facet');
+  // SUBCATS-PLAN: every Gaming head carries a curated facets.type (build.js
+  // stamps demo rows, extra.json rows bring their own) — one vocabulary, no
+  // 'Home console' spec strings leaking in beside 'Consoles'
+  const gtypes = new Set(seed.filter(p => !p.family && p.cat === 'Gaming').map(p => p.facets?.type));
+  assert.deepStrictEqual([...gtypes].sort(), ['Consoles', 'Controllers', 'Handhelds'], 'Gaming heads: curated sub-category vocabulary');
 
   const many = await call('/api/products?ids=' + Array.from({ length: 101 }, (_, i) => 'x' + i).join(','));
   assert.strictEqual(many.status, 400, '>100 ids must 400');

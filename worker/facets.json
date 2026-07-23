@@ -12,6 +12,7 @@
   "Computers": [ { "key": "type",    "label": "Type",    "type": "options" },
                  { "key": "storage", "label": "Storage", "type": "options", "unit": "GB" },
                  { "key": "ram",     "label": "Memory",  "type": "options", "unit": "GB" } ],
+  "Kitchen":   [ { "key": "type", "label": "Type", "type": "options" } ],
   "Gaming":    [ { "key": "type", "label": "Type",   "type": "options" },
                  { "key": "disc", "label": "Disc drive", "type": "bool" } ],
   "Home":      [ { "key": "type",     "label": "Type",              "type": "options" },

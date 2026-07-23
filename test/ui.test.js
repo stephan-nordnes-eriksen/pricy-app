@@ -78,6 +78,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         shops: new Set(rows.flatMap(r => r.offers.map(o => o.shop))).size,
         freshest: null,
         cats: heads.reduce((m, r) => ((m[r.cat] = (m[r.cat] || 0) + 1), m), {}),
+        // the real worker always serves the facet registry (catMeta)
+        facets: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'facets.json'), 'utf8')),
       };
       return ok({ meta, products: out });
     }
@@ -759,6 +761,20 @@ test('facet filters: TV renders spec-derived option groups, clicking filters row
   assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Screen size: 55 ″')), 'active facet must chip');
 });
 
+test('sub-categories: the Type facet groups a category under one curated vocabulary', async () => {
+  const win = boot('http://pricy.test/search?cat=Gaming', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const grp = facetGrp(win, 'Type');
+  assert.ok(grp, 'Type facet group must render for cat=Gaming');
+  const opts = [...grp.querySelectorAll('.check')].map(el => el.textContent);
+  assert.ok(opts.some(o => o.startsWith('Consoles')) && opts.some(o => o.startsWith('Controllers')), 'curated sub-cats must surface, got: ' + opts.join(' | '));
+  assert.ok(!opts.some(o => o.includes('console')), 'demo spec strings (Home console…) must not leak in beside the curated values: ' + opts.join(' | '));
+  const want = win.CATALOG.filter(p => p.cat === 'Gaming' && p.facets?.type === 'Controllers').length;
+  assert.ok(want >= 2, 'seed sanity: at least two controller rows');
+  [...grp.querySelectorAll('.check')].find(el => el.textContent.startsWith('Controllers')).click();
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want), 'Controllers must filter to exactly the controller rows');
+});
+
 test('facet filters: a variant-axis key (storage) derives options from the axes and matches any option', async () => {
   // served registry (worker/facets.json shape): Phones get a storage facet —
   // no product carries a storage spec/facet value, the variant axes supply it
@@ -786,9 +802,9 @@ test('facet filters: served meta.facets replaces the baked registry; cats withou
   assert.ok(!facetGrp(win, 'Screen size'), 'baked TV defs must be replaced wholesale by the served registry');
   assert.strictEqual(win.FACETS.Audio, undefined, 'baked cats absent from the served registry must be dropped');
 
-  const gaming = boot('http://pricy.test/search?cat=Gaming', { session: true });
-  assert.ok(await until(() => qa(gaming, '.rrow, .rcard').length > 0), 'gaming results did not render');
-  const titles = qa(gaming, '.filters__grp').map(g => { const h = g.querySelector('h4'); return h && h4Title(h); }).filter(Boolean);
+  const toys = boot('http://pricy.test/search?cat=Toys', { session: true }); // Toys has no facets.json entry
+  assert.ok(await until(() => qa(toys, '.rrow, .rcard').length > 0), 'toys results did not render');
+  const titles = qa(toys, '.filters__grp').map(g => { const h = g.querySelector('h4'); return h && h4Title(h); }).filter(Boolean);
   assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only'], 'no facet groups for a cat without defs, got: ' + titles.join(' | '));
 });
 
@@ -806,7 +822,7 @@ test('filter search: narrows groups, no-match message clears back', async () => 
   type(win, search, 'zzzz-no-such-filter');
   assert.ok(await until(() => q(win, '.filters__nomatch')), 'no-match message must show');
   q(win, '.filters__nomatch button').click();
-  assert.ok(await until(() => grpTitles().length === 5), 'clear must restore all groups');
+  assert.ok(await until(() => grpTitles().length === 6), 'clear must restore all groups (incl. the Gaming Type facet)');
 });
 
 test('lazy catalog: home "Biggest drops" ranks the served slice, not the baked demo 8', async () => {

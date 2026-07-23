@@ -105,6 +105,26 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
   }
 }
 
+// --- sub-category `type` facet for prototype-owned rows (SUBCATS-PLAN) ----
+// extra.json rows carry their own facets; demo rows can't (CATALOG is
+// sync-owned) so they're stamped here. Explicit facets also outrank the demo
+// spec strings ('Home console', 'Cordless stick', …) that would otherwise
+// leak into the Type filter as a second vocabulary next to these values.
+{
+  const DEMO_TYPE = {
+    airpods: 'Earbuds', airpods4: 'Earbuds',
+    xm5: 'Headphones', 'bose-ultra': 'Headphones', 'senn-m4': 'Headphones',
+    'sonos-ace': 'Headphones', 'jbl-tour2': 'Headphones', 'beats-pro': 'Headphones',
+    switch: 'Consoles', ps5: 'Consoles', xbox: 'Consoles', steamdeck: 'Handhelds',
+    mba: 'Laptops', dyson: 'Vacuums', roborock: 'Vacuums', hue: 'Smart lighting',
+  };
+  for (const [id, type] of Object.entries(DEMO_TYPE)) {
+    const p = catalog.find(p => p.id === id);
+    if (!p) throw new Error(`DEMO_TYPE id "${id}" is gone from the prototype CATALOG`);
+    p.facets = { type, ...p.facets };
+  }
+}
+
 // --- rewrite the html ------------------------------------------
 html = html
   .replace(BLOCK_RE, '')
