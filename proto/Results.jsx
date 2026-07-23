@@ -421,7 +421,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     facetDefs.forEach(def => {
       if (def.type !== 'options') return;
       const counts = new Map();
-      baseResults.forEach(p => { const v = fval(p, def.key); if (v !== undefined) counts.set(v, (counts.get(v) || 0) + 1); });
+      baseResults.forEach(p => { const v = fval(p, def.key); if (v === undefined) return; if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1)); else counts.set(v, (counts.get(v) || 0) + 1); });
       const vals = [...counts.keys()].sort((a, b) => typeof a === 'number' && typeof b === 'number' ? a - b : typeof a === 'number' ? -1 : typeof b === 'number' ? 1 : String(a).localeCompare(String(b)));
       m[def.key] = { vals, counts };
     });
@@ -453,7 +453,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
       if (!sel) continue;
       const v = fval(p, def.key);
       if (def.type === 'bool') { if (v !== true) return false; }
-      else if (v === undefined || !sel.includes(v)) return false;
+      else if (v === undefined || (Array.isArray(v) ? !v.some(x => sel.includes(x)) : !sel.includes(v))) return false;
     }
     return true;
   });
@@ -653,8 +653,8 @@ function ProductPage({ go, id }) {
                   {best ? <div className="bestbox__price"><span className="cur">kr</span><span className="t-price-lg">{fmt(best.price)}</span></div> : <div className="no-offers" style={{ fontSize: 15, padding: '10px 0' }}>No offers yet</div>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)', alignItems: 'stretch' }}>
-                  <Btn variant="dark" icon="zap" disabled={!best} title={best ? undefined : 'No offers yet'} onClick={() => setBuyNow(true)}>Buy now</Btn>
-                  <Btn variant="ghost" icon="external-link" disabled={!shopUrl} title={shopUrl ? undefined : 'No shop link available for this product'} onClick={() => shopUrl && window.open(shopUrl, '_blank', 'noopener')}>Go to shop</Btn>
+                  {!window.HIDE_AUTOBUY && <Btn variant="dark" icon="zap" disabled={!best} title={best ? undefined : 'No offers yet'} onClick={() => setBuyNow(true)}>Buy now</Btn>}
+                  <Btn variant={window.HIDE_AUTOBUY ? 'dark' : 'ghost'} icon="external-link" disabled={!shopUrl} title={shopUrl ? undefined : 'No shop link available for this product'} onClick={() => shopUrl && window.open(shopUrl, '_blank', 'noopener')}>Go to shop</Btn>
                 </div>
               </div>
               <div className="bestbox__bot">
@@ -696,7 +696,7 @@ function ProductPage({ go, id }) {
             </div>
             {toast && <Toast>{toast}</Toast>}
 
-            <AutobuyBox p={v}></AutobuyBox>
+            {!window.HIDE_AUTOBUY && <AutobuyBox p={v}></AutobuyBox>}
             {buyNow && <BuyNowModal p={v} onClose={() => setBuyNow(false)}></BuyNowModal>}
             {report && <ReportProblemModal p={v} onClose={() => setReport(false)} onDone={flash}></ReportProblemModal>}
           </div>

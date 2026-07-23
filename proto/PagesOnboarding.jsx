@@ -4,7 +4,9 @@
 // ===========================================================
 
 function Onboarding({ go, onFinish }) {
+  const steps = window.HIDE_AUTOBUY ? ['cats', 'watch', 'notif'] : ['cats', 'watch', 'autobuy', 'notif'];
   const [step, setStep] = useState(0);
+  const cur = steps[step];
   const [cats, setCats] = useState(['Audio', 'TV']);
   const [picks, setPicks] = useState({}); // id -> target
   const [notif, setNotif] = useState({ email: true, push: false });
@@ -39,13 +41,13 @@ function Onboarding({ go, onFinish }) {
         <span className="ob__skip" onClick={() => go('home')}>Skip for now</span>
       </div>
       <div className="ob__bar">
-        {[0, 1, 2, 3].map(i => <i key={i} className={i <= step ? 'done' : ''}></i>)}
+        {steps.map((_, i) => <i key={i} className={i <= step ? 'done' : ''}></i>)}
       </div>
 
       <div className="ob__body">
-        {step === 0 && (
+        {cur === 'cats' && (
           <div className="pop-in">
-            <div className="ob__step-n">Step 1 of 4</div>
+            <div className="ob__step-n">Step {step + 1} of {steps.length}</div>
             <h1>Welcome, {USER.name}. What do you <span className="hl">shop for</span>?</h1>
             <p className="ob__sub">Pick a few categories — we'll surface the right deals. You can change this anytime.</p>
             <div className="ob-cats">
@@ -61,9 +63,9 @@ function Onboarding({ go, onFinish }) {
           </div>
         )}
 
-        {step === 1 && (
+        {cur === 'watch' && (
           <div className="pop-in">
-            <div className="ob__step-n">Step 2 of 4</div>
+            <div className="ob__step-n">Step {step + 1} of {steps.length}</div>
             <h1>Watch your <span className="hl">first products</span></h1>
             <p className="ob__sub">We suggest a target 5% under today's best price. We'll alert you the moment any shop goes below it.</p>
             <div className="ob-prods">
@@ -96,9 +98,9 @@ function Onboarding({ go, onFinish }) {
           </div>
         )}
 
-        {step === 2 && (
+        {cur === 'autobuy' && (
           <div className="pop-in">
-            <div className="ob__step-n">Step 3 of 4 · optional</div>
+            <div className="ob__step-n">Step {step + 1} of {steps.length} · optional</div>
             <h1>Let pricy <span className="hl">buy it</span> for you</h1>
             <p className="ob__sub">Give pricy a limited power of attorney (fullmakt), and when a shop drops below your max price we place the order in your name — at that exact second, even at 3 am. You can skip this and turn it on later.</p>
             <div className="ob-ab-how">
@@ -116,9 +118,9 @@ function Onboarding({ go, onFinish }) {
           </div>
         )}
 
-        {step === 3 && (
+        {cur === 'notif' && (
           <div className="pop-in">
-            <div className="ob__step-n">Step 4 of 4</div>
+            <div className="ob__step-n">Step {step + 1} of {steps.length}</div>
             <h1>How should we <span className="hl">reach you</span>?</h1>
             <p className="ob__sub">Only when something actually happens. No newsletters, no shop spam.</p>
             <div className="asec" style={{ background: 'var(--paper)' }}>
@@ -149,10 +151,10 @@ function Onboarding({ go, onFinish }) {
           {step > 0
             ? <Btn variant="ghost" icon="arrow-left" onClick={() => setStep(s => s - 1)}>Back</Btn>
             : <span className="ob__count">{cats.length} categories selected</span>}
-          {step === 1 && <span className="ob__count"><b>{nPicks}</b> product{nPicks === 1 ? '' : 's'} watched</span>}
-          {step === 2 && <span className="ob__count">{fmSigned ? 'Fullmakt signed ✓' : 'Optional — skip if unsure'}</span>}
-          {step < 3
-            ? <Btn variant="primary" icon="arrow-right" onClick={() => setStep(s => s + 1)}>{step === 2 && !fmSigned ? 'Skip for now' : 'Continue'}</Btn>
+          {cur === 'watch' && <span className="ob__count"><b>{nPicks}</b> product{nPicks === 1 ? '' : 's'} watched</span>}
+          {cur === 'autobuy' && <span className="ob__count">{fmSigned ? 'Fullmakt signed ✓' : 'Optional — skip if unsure'}</span>}
+          {step < steps.length - 1
+            ? <Btn variant="primary" icon="arrow-right" onClick={() => setStep(s => s + 1)}>{cur === 'autobuy' && !fmSigned ? 'Skip for now' : 'Continue'}</Btn>
             : <Btn variant="primary" icon="check" onClick={finish}>Start saving</Btn>}
         </div>
       </div>

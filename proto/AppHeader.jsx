@@ -83,7 +83,7 @@ function AppHeader({ go, onLogout }) {
           <div className="app-hdr__icon" title="Watching" onClick={() => go('alerts', { tab: 'watching' })}>
             <Icon name="bookmark" size={19} />
           </div>
-          <div className="app-hdr__icon" title="Auto-buy" onClick={() => go('autobuy')}><Icon name="zap" size={19} /></div>
+          {!window.HIDE_AUTOBUY && <div className="app-hdr__icon" title="Auto-buy" onClick={() => go('autobuy')}><Icon name="zap" size={19} /></div>}
           <div className="app-hdr__icon" title="Alerts" onClick={() => go('alerts')}>
             <Icon name="bell" size={19} />
             {hits > 0 && <span className="badge">{hits}</span>}

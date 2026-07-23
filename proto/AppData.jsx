@@ -41,8 +41,17 @@ const FACETS = {
   Phones: [ { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' } ],
 };
 const facetNorm = (v) => v == null ? undefined : typeof v === 'boolean' ? v : isFinite(parseFloat(v)) ? parseFloat(v) : String(v).trim();
-// facet value of product p for key k — explicit p.facets wins, else the spec sheet
-const fval = (p, k) => facetNorm((p.facets || {})[k] ?? ((window.SPECS || {})[p.id] || {})[k]);
+// facet value of product p for key k — explicit p.facets wins, else the spec sheet,
+// else (last resort) the product's own variant axis of that key: all option ids,
+// numbers where every one parses (e.g. storage ['128','256','512'] → [128,256,512])
+const fval = (p, k) => {
+  const v = facetNorm((p.facets || {})[k] ?? ((window.SPECS || {})[p.id] || {})[k]);
+  if (v !== undefined) return v;
+  const axis = p.variants && p.variants.axes && p.variants.axes.find(a => a.id === k);
+  if (!axis) return undefined;
+  const ids = axis.options.map(o => o.id);
+  return ids.every(id => isFinite(parseFloat(id))) ? ids.map(id => parseFloat(id)) : ids;
+};
 const fdisp = (v, def) => String(v) + (def && def.unit ? ' ' + def.unit : '');
 
 // SEARCH SUGGESTIONS — products + categories + properties
