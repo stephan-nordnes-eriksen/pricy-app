@@ -768,11 +768,11 @@ test('sub-categories: Browse tiles show type chips, clicking one lands on pre-fi
   assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'browse tiles did not render');
   const gaming = qa(win, '.bigcat').find(t => t.querySelector('h3')?.textContent === 'Gaming');
   assert.ok(gaming, 'Gaming tile must render');
-  // chips derive from the hydrated slice today (browse prefetches top drops
-  // only, so offer-less types like Controllers may be missing until upstream
-  // reads CATALOG.meta.types); assert what both worlds guarantee
+  // chips count the served meta.types aggregate, not the hydrated slice —
+  // offer-less types (Controllers) must chip even though browse only
+  // prefetches top-drop rows
   const chips = [...gaming.querySelectorAll('.typechip')].map(el => el.textContent);
-  assert.ok(chips.includes('Consoles'), 'Gaming tile must chip its dominant sub-category, got: ' + chips.join(' | '));
+  assert.deepStrictEqual(chips, ['Consoles', 'Controllers', 'Handhelds'], 'chips are the served type counts, most-populous first');
   const toys = qa(win, '.bigcat').find(t => t.querySelector('h3')?.textContent === 'Toys');
   assert.strictEqual(toys.querySelectorAll('.typechip').length, 0, 'no chips for a cat without a type facet');
 
