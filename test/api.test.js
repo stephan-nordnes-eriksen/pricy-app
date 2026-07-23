@@ -253,6 +253,35 @@ test('account name and notification settings persist per user and require auth',
   assert.strictEqual((await call('/api/settings', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
 });
 
+test('HIDE_AUTOBUY hides every buy surface: MCP tools, /api/buy, /api/autobuy, the me blob', async () => {
+  const env = { DB: d1(), HIDE_AUTOBUY: true };
+  const call = api(env);
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+
+  const me = await (await call('/api/me', { cookie: ola })).json();
+  assert.ok(!('autobuy' in me) && !('purchases' in me), 'me blob must not carry autobuy/purchases');
+  assert.strictEqual((await call('/api/autobuy', { method: 'PUT', body: { signed: true, orders: [] }, cookie: ola })).status, 404, 'PUT /api/autobuy must 404');
+  assert.strictEqual((await call('/api/buy', { method: 'POST', body: { id: 'airpods' }, cookie: ola })).status, 404, 'POST /api/buy must 404');
+
+  // GDPR export stays complete — the user's own data is not feature-flagged
+  const exported = await (await call('/api/account/export', { cookie: ola })).json();
+  assert.ok('autobuy' in exported && 'purchases' in exported, 'the data export must keep autobuy/purchases');
+
+  const { rpc, tool } = mcpClient(env);
+  const init = await rpc('initialize', { protocolVersion: '2025-06-18' });
+  assert.ok(!/buy_now/.test(init.result.instructions), 'instructions must not mention buy_now');
+  const { result } = await rpc('tools/list');
+  const names = result.tools.map(t => t.name);
+  assert.ok(!names.includes('buy_now') && !names.includes('list_purchases'), 'buy tools must not list');
+  assert.ok(names.includes('search_products'), 'the rest still list');
+  assert.ok(!result.tools.some(t => /buy_now/.test(t.description)), 'no tool description may mention buy_now');
+  await tool('login', { email: 'ola@nordmann.no', password: 'correcthorse1' });
+  const buy = await tool('buy_now', { product_id: 'airpods' });
+  assert.ok(buy.error && /unknown tool/.test(buy.message), 'calling buy_now must fail as unknown');
+  const purchases = await tool('list_purchases');
+  assert.ok(purchases.error && /unknown tool/.test(purchases.message), 'calling list_purchases must fail as unknown');
+});
+
 test('fullmakt + active auto-buy orders persist per user via PUT /api/autobuy', async () => {
   const call = api({ DB: d1() });
   const blob = {

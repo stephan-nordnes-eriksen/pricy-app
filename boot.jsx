@@ -13,6 +13,12 @@
 const T = window.TWEAK_DEFAULTS;
 const PUBLIC_SCREENS = ['landing', 'login', 'about'];
 
+// Global auto-buy visibility: the designer's hideAutobuy tweak default is the
+// operator setting (flip it upstream, re-sync, deploy — build.js enforces
+// wrangler.jsonc's HIDE_AUTOBUY var agrees so the Worker hides the same
+// surfaces). Tests may preset window.HIDE_AUTOBUY before boot.
+if (window.HIDE_AUTOBUY === undefined) window.HIDE_AUTOBUY = !!T.hideAutobuy;
+
 // Session is real now (Phase 4b): an HttpOnly cookie the Worker owns. ME
 // caches the /api/me result fetched before first render; the gating logic
 // reading these two functions is unchanged from the localStorage days.
@@ -509,7 +515,7 @@ function App() {
   else if (name === 'browse') view = <BrowsePage go={go} />;
   else if (name === 'alerts') view = <AlertsPage go={go} tab={params.tab} />;
   else if (name === 'account') view = <AccountPage go={go} tab={params.tab} me={ME} onSaveProfile={saveProfile} onSaveSettings={saveSettings} onChangePassword={changePassword} />;
-  else if (name === 'autobuy') view = <AutobuyPage go={go} />;
+  else if (name === 'autobuy' && !window.HIDE_AUTOBUY) view = <AutobuyPage go={go} />;
   else if (name === 'onboarding') view = <Onboarding go={go} onFinish={({ notif }) => saveSettings(notif).catch(() => {})} />;
   else if (name === 'about') view = <AboutPage go={go} section={params.section} />;
   else view = <SignedHome go={go} onLogout={() => go('landing')} layout={T.homeLayout} />;

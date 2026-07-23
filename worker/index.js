@@ -522,13 +522,16 @@ async function alertsBody(db, userId, limit = 50) {
   return results.map(r => ({ product_id: r.product_id, product: r.meta ? JSON.parse(r.meta).name : null, shop: r.shop, price: r.price, prev_price: r.prev_price, target: r.target, created_at: r.created_at }));
 }
 
-async function meBody(db, user) {
+async function meBody(db, user, hideAutobuy) {
   // hit = an alert fired for this watch and the price is still at/below the
   // target (rising back above re-arms the watch and clears the flag)
   const { results } = await db.prepare(
     'SELECT product_id AS id, target, paused, COALESCE(EXISTS(SELECT 1 FROM alerts a WHERE a.user_id = watches.user_id AND a.product_id = watches.product_id) AND target >= (SELECT MIN(price) FROM offers o WHERE o.product_id = watches.product_id AND o.stock = 1), 0) AS hit FROM watches WHERE user_id = ? ORDER BY rowid'
   ).bind(user.id).all(); // rowid = the order the client PUT them in
-  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) };
+  // hideAutobuy (env.HIDE_AUTOBUY): the feature is invisible — no autobuy blob,
+  // no purchase history in the me payload. The data export passes false: a
+  // user's own data stays complete regardless of what the UI shows.
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, ...(hideAutobuy ? {} : { autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) }) };
 }
 
 // ── MCP (experiment) ───────────────────────────────────────────────────────
@@ -794,7 +797,14 @@ async function oauth(request, db, url) {
   return json({ error: 'not found' }, 404);
 }
 
-async function mcp(request, db) {
+// env.HIDE_AUTOBUY: buy_now/list_purchases don't list, don't call, and no
+// tool description or instruction text mentions buying
+const HIDDEN_MCP_TOOLS = ['buy_now', 'list_purchases'];
+const mcpToolList = (hide) => hide
+  ? MCP_TOOLS.filter(t => !HIDDEN_MCP_TOOLS.includes(t.name)).map(t => ({ ...t, description: t.description.replace(', buy_now', '') }))
+  : MCP_TOOLS;
+
+async function mcp(request, db, hideAutobuy) {
   if (request.method === 'DELETE') return new Response(null, { status: 204 }); // session end — nothing to tear down
   if (request.method !== 'POST') return new Response(null, { status: 405, headers: { allow: 'POST, DELETE' } });
   const msg = await request.json().catch(() => null);
@@ -811,13 +821,15 @@ async function mcp(request, db) {
   if (msg.method === 'initialize') {
     const v = msg.params?.protocolVersion;
     const authed = await sessionUser(db, sid); // OAuth clients are logged in before they ever initialize
+    let instructions = authed
+      ? `pricy.no — Norwegian price comparison. The user is already logged in as ${authed.email}; never ask for credentials. Use search_products, get_product, watch_product, and buy_now. All prices are NOK.`
+      : 'pricy.no — Norwegian price comparison. Log in with the login tool (or signup to create an account) first; then search_products, get_product, watch_product, and buy_now. All prices are NOK.';
+    if (hideAutobuy) instructions = instructions.replace(', and buy_now', '');
     return reply({ result: {
       protocolVersion: MCP_VERSIONS.includes(v) ? v : MCP_VERSIONS[0],
       capabilities: { tools: {} },
       serverInfo: { name: 'pricy.no', version: '0.1.0' },
-      instructions: authed
-        ? `pricy.no — Norwegian price comparison. The user is already logged in as ${authed.email}; never ask for credentials. Use search_products, get_product, watch_product, and buy_now. All prices are NOK.`
-        : 'pricy.no — Norwegian price comparison. Log in with the login tool (or signup to create an account) first; then search_products, get_product, watch_product, and buy_now. All prices are NOK.',
+      instructions,
     } }, { 'mcp-session-id': newToken() });
   }
   if (msg.method === 'ping') return reply({ result: {} });
@@ -825,11 +837,14 @@ async function mcp(request, db) {
     // an authenticated client must not see login/signup at all — a listed
     // login tool reads as "ask the user for their password in chat"
     const authed = await sessionUser(db, sid);
-    return reply({ result: { tools: authed ? MCP_TOOLS.filter(t => t.name !== 'login' && t.name !== 'signup') : MCP_TOOLS } });
+    const tools = mcpToolList(hideAutobuy);
+    return reply({ result: { tools: authed ? tools.filter(t => t.name !== 'login' && t.name !== 'signup') : tools } });
   }
   if (msg.method === 'tools/call') {
     try {
-      const out = await mcpTool(db, sid, msg.params?.name, msg.params?.arguments || {});
+      const name = msg.params?.name;
+      if (hideAutobuy && HIDDEN_MCP_TOOLS.includes(name)) throw new Error(`unknown tool: ${name}`);
+      const out = await mcpTool(db, sid, name, msg.params?.arguments || {});
       return reply({ result: { content: [{ type: 'text', text: JSON.stringify(out) }] } });
     } catch (e) {
       return reply({ result: { content: [{ type: 'text', text: e.message }], isError: true } });
@@ -847,7 +862,7 @@ export default {
     }
     if (url.pathname === '/mcp') {
       await ensureSchema(env.DB);
-      return mcp(request, env.DB);
+      return mcp(request, env.DB, !!env.HIDE_AUTOBUY);
     }
     if (url.pathname.startsWith('/.well-known/')) {
       return oauthWellKnown(url);
@@ -1068,7 +1083,7 @@ export default {
           if (!user.password_hash) return json({ error: 'this account uses the magic link — log in that way, then set a password under Account' }, 401);
           if (!(await verifyPassword(password, user.password_hash))) return json({ error: 'an account with this email already exists — log in with its password' }, 401);
         }
-        return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
+        return json(await meBody(db, user, !!env.HIDE_AUTOBUY), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 
       const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, created_at FROM users WHERE email = ?').bind(email).first();
@@ -1076,14 +1091,14 @@ export default {
       if (!password) return json({ error: 'enter your password' }, 400);
       if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);
       if (!(await verifyPassword(password, user.password_hash))) return json({ error: 'incorrect password' }, 401);
-      return json(await meBody(db, user), 200, { 'set-cookie': await startSession(db, user.id) });
+      return json(await meBody(db, user, !!env.HIDE_AUTOBUY), 200, { 'set-cookie': await startSession(db, user.id) });
     }
 
     const token = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`))?.[1];
     const user = await sessionUser(db, token);
 
     if (route === 'GET /api/me') {
-      return user ? json(await meBody(db, user)) : json({ error: 'unauthenticated' }, 401);
+      return user ? json(await meBody(db, user, !!env.HIDE_AUTOBUY)) : json({ error: 'unauthenticated' }, 401);
     }
 
     if (route === 'GET /api/alerts') {
@@ -1163,6 +1178,7 @@ export default {
     // the fullmakt + active-orders shape and round-trips it verbatim.
     // Executed orders are NOT in here; they live in the purchases table.
     if (route === 'PUT /api/autobuy') {
+      if (env.HIDE_AUTOBUY) return json({ error: 'not found' }, 404);
       if (!user) return json({ error: 'unauthenticated' }, 401);
       const ab = await request.json().catch(() => null);
       const bad = !ab || typeof ab !== 'object' || Array.isArray(ab) || !Array.isArray(ab.orders)
@@ -1218,6 +1234,7 @@ export default {
     // lives in the same sessions table as Mcp-Session-Id, so mcpTool's
     // own auth lookup just works)
     if (route === 'POST /api/buy') {
+      if (env.HIDE_AUTOBUY) return json({ error: 'not found' }, 404);
       if (!user) return json({ error: 'unauthenticated' }, 401);
       const body = await request.json().catch(() => ({}));
       try {

@@ -28,7 +28,15 @@ const harness = blocks.pop(); // AppRouter.jsx — the designer's preview router
 // designer's frozen layout choices live in the harness between EDITMODE markers
 const defaults = harness.match(/\/\*EDITMODE-BEGIN\*\/([\s\S]*?)\/\*EDITMODE-END\*\//);
 if (!defaults) throw new Error('TWEAK_DEFAULTS EDITMODE markers not found in harness block');
-JSON.parse(defaults[1].replace(/(\w+):/g, '"$1":')); // sanity: must be a plain object literal
+const tweaks = JSON.parse(defaults[1].replace(/(\w+):/g, '"$1":')); // sanity: must be a plain object literal
+
+// the Worker's HIDE_AUTOBUY var (MCP tools, /api/buy, /api/autobuy, me blob)
+// must agree with the designer's hideAutobuy tweak (every UI surface) — a
+// split brain hides the buttons but keeps selling
+const hideVar = fs.readFileSync(path.join(REPO, 'wrangler.jsonc'), 'utf8').match(/"HIDE_AUTOBUY"\s*:\s*(true|false)/);
+if (!hideVar || (hideVar[1] === 'true') !== !!tweaks.hideAutobuy) {
+  throw new Error(`wrangler.jsonc HIDE_AUTOBUY (${hideVar ? hideVar[1] : 'missing'}) must match the prototype's TWEAK_DEFAULTS.hideAutobuy (${!!tweaks.hideAutobuy})`);
+}
 
 const jsx = [
   `window.TWEAK_DEFAULTS = ${defaults[1]};`,

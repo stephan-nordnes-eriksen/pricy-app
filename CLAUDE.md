@@ -145,6 +145,17 @@ Two Claude Design projects feed this repo:
   paths are in `run_worker_first` (wrangler.jsonc) or the SPA fallback
   swallows them.
 
+- **Auto-buy/buy-now is behind a global kill switch** (2026-07-23): the
+  prototype's `TWEAK_DEFAULTS.hideAutobuy` (currently `true` = hidden),
+  frozen by boot.jsx like the layouts, must match the `HIDE_AUTOBUY` var in
+  wrangler.jsonc — build.js fails on disagreement. Hidden means: no UI
+  surface (header zap, PDP Buy now + Auto-buy box, /autobuy route,
+  onboarding step, login hint — all gated upstream on `window.HIDE_AUTOBUY`),
+  MCP drops buy_now/list_purchases (list, calls, descriptions,
+  instructions), `POST /api/buy` + `PUT /api/autobuy` 404, and `/api/me`
+  omits autobuy/purchases (the GDPR export stays complete). Flip = change
+  the tweak default upstream, re-sync, flip the wrangler var, deploy.
+
 ## Rules
 
 - `proto/index.html` and the repo-root design files are **sync-owned —

@@ -16,7 +16,7 @@ const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 2000
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
-function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage } = {}) {
+function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -25,6 +25,10 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
   });
   const win = dom.window;
   win.scrollTo = () => {};
+  // most tests exercise the full app, so the harness presets auto-buy visible
+  // regardless of the frozen production default; hideAutobuy: true tests the
+  // hidden mode, null leaves boot.jsx to read TWEAK_DEFAULTS (the prod path)
+  if (hideAutobuy != null) win.HIDE_AUTOBUY = hideAutobuy;
   // seed persisted localStorage (each JSDOM starts empty — this is the
   // "same browser, next visit" seam)
   if (storage) Object.entries(storage).forEach(([k, v]) => win.localStorage.setItem(k, v));
@@ -502,6 +506,37 @@ test('new user on /autobuy: nothing signed → the real "Auto-buy is off" ceremo
   assert.ok(put.body.signedAt.startsWith(today + ','), `signedAt must be the real signing date, got: ${put.body.signedAt}`);
 });
 
+// HIDE_AUTOBUY: the operator's global buy-now kill switch (TWEAK_DEFAULTS.
+// hideAutobuy frozen by boot.jsx; the harness presets it visible for the
+// tests above, hideAutobuy: true boots the hidden mode)
+test('HIDE_AUTOBUY: no Buy now, no Auto-buy box, no header zap — even for a signed fullmakt', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true, hideAutobuy: true, me: { user: mari, watches: [], autobuy: signedFullmakt } });
+  assert.ok(await until(() => q(win, '.watchbox')), 'PDP must render');
+  assert.ok(qa(win, '.btn').find(b => /go to shop/i.test(b.textContent)), 'Go to shop must stay');
+  assert.ok(!qa(win, '.btn').find(b => /buy now/i.test(b.textContent)), 'Buy now button must not render');
+  assert.strictEqual(q(win, '.abox'), null, 'Auto-buy box must not render');
+  assert.strictEqual(q(win, '.app-hdr__icon[title="Auto-buy"]'), null, 'header Auto-buy icon must not render');
+});
+
+test('HIDE_AUTOBUY: /autobuy falls through to home, login hint and onboarding are scrubbed', async () => {
+  const win = boot('http://pricy.test/autobuy', { session: true, hideAutobuy: true });
+  assert.ok(await until(() => q(win, '.sec')), '/autobuy must land on the signed-in home');
+  assert.strictEqual(q(win, '.fm-cer'), null, 'the fullmakt ceremony must not render');
+
+  const login = boot('http://pricy.test/login', { hideAutobuy: true });
+  const hint = await until(() => q(login, '.bankid-hint'));
+  assert.ok(/verified instantly with bankid/i.test(hint.textContent), 'login must show the neutral BankID hint');
+  assert.ok(!/auto-buy/i.test(hint.textContent), 'login hint must not mention auto-buy');
+
+  const ob = boot('http://pricy.test/onboarding', { session: true, hideAutobuy: true });
+  assert.ok(await until(() => qa(ob, '.ob__bar i').length === 3), 'onboarding must have 3 steps (auto-buy step gone)');
+});
+
+test('HIDE_AUTOBUY: without the test preset, boot freezes the designer\'s TWEAK_DEFAULTS.hideAutobuy', async () => {
+  const win = boot('http://pricy.test/', { session: true, hideAutobuy: null });
+  assert.strictEqual(win.HIDE_AUTOBUY, !!win.TWEAK_DEFAULTS.hideAutobuy, 'boot must mirror the frozen tweak default');
+});
+
 test('signed in with no watches: no alerts badge (demo values gone)', async () => {
   const win = boot('http://pricy.test/', { session: true });
   assert.ok(await until(() => q(win, '.avatar')), 'signed-in header missing');
@@ -722,6 +757,23 @@ test('facet filters: TV renders spec-derived option groups, clicking filters row
   const name = win.CATALOG.find(p => p.id === 'tv').name;
   assert.ok(qa(win, '.rrow, .rcard')[0].textContent.includes(name), 'the surviving row must be the 55″ set');
   assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Screen size: 55 ″')), 'active facet must chip');
+});
+
+test('facet filters: a variant-axis key (storage) derives options from the axes and matches any option', async () => {
+  // served registry (worker/facets.json shape): Phones get a storage facet —
+  // no product carries a storage spec/facet value, the variant axes supply it
+  const products = CATALOG_JSON.filter(p => !p.family && p.cat === 'Phones');
+  const meta = { products: products.length, shops: 3, freshest: Date.now(), cats: { Phones: products.length }, facets: { Phones: [{ key: 'storage', label: 'Storage', type: 'options', unit: 'GB' }] } };
+  const win = boot('http://pricy.test/search?cat=Phones', { session: true, catalog: { meta, products } });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const grp = facetGrp(win, 'Storage');
+  assert.ok(grp, 'Storage facet group must render for cat=Phones');
+  const opts = [...grp.querySelectorAll('.check')].map(el => el.textContent);
+  assert.ok(opts.some(o => o.startsWith('128 GB')) && opts.some(o => o.startsWith('256 GB')), 'axis option ids must surface as numeric GB options, got: ' + opts.join(' | '));
+  const kept = products.filter(p => (p.variants?.axes || []).some(a => a.id === 'storage' && a.options.some(o => o.id === '128')));
+  assert.ok(kept.length > 0 && kept.length < products.length, 'seed sanity: 128 GB must split the cat');
+  [...grp.querySelectorAll('.check')].find(el => el.textContent.startsWith('128 GB')).click();
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === kept.length), '128 GB must keep every phone whose storage axis offers 128, got ' + qa(win, '.rrow, .rcard').length + ' want ' + kept.length);
 });
 
 test('facet filters: served meta.facets replaces the baked registry; cats without defs get no groups', async () => {

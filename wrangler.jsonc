@@ -48,7 +48,11 @@
   // scrapes). Deliberately unmapped: accessories, smartwatches (no category
   // for them), refurbished/outlet, generic parents ("Mobil og Smartklokker"),
   // PC components — unmapped stays hidden, that IS the junk filter.
-  "vars": { "CATMAP": {
+  // HIDE_AUTOBUY: global auto-buy/buy-now kill switch, must match the
+  // prototype's TWEAK_DEFAULTS.hideAutobuy (build.js enforces). Hides the MCP
+  // buy tools, 404s /api/buy + PUT /api/autobuy, drops autobuy/purchases
+  // from /api/me while the SPA hides every buy surface.
+  "vars": { "HIDE_AUTOBUY": true, "CATMAP": {
     "Power": {
       "Mobiltelefon": "Phones",
       "TV": "TV",
