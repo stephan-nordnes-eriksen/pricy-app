@@ -10,7 +10,14 @@ const { DatabaseSync } = require('node:sqlite');
 // minimal D1 shape: prepare().bind() → first/all/run, plus exec and batch
 function d1() {
   const db = new DatabaseSync(':memory:');
-  const stmt = (sql, args) => ({
+  const stmt = (sql, args) => {
+    // real D1 rejects >100 bound parameters — node:sqlite allows ~32k, so
+    // without this cap an unchunked IN (...) over a grown category passes
+    // here and 1101s in prod (Audio at 124 heads, 2026-07-23)
+    if (args.length > 100) throw new Error(`D1 caps bound parameters at 100, got ${args.length}: ${sql.slice(0, 80)}`);
+    return stmtOps(sql, args);
+  };
+  const stmtOps = (sql, args) => ({
     first: async () => db.prepare(sql).get(...args) ?? null,
     all: async () => ({ results: db.prepare(sql).all(...args) }),
     run: async () => { db.prepare(sql).run(...args); return { success: true }; },
@@ -531,6 +538,27 @@ test('GET /api/products: cat filters exactly, no params serves all heads', async
 
   const all = (await (await call('/api/products')).json()).products;
   assert.strictEqual(all.length, seed.filter(p => !p.family).length, 'no params = every head');
+});
+
+test('GET /api/products: a category beyond 100 heads survives the D1 param cap', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/products?cat=Audio'); // trigger seeding first
+  for (let i = 0; i < 120; i++) {
+    await DB.prepare('INSERT INTO products (id, meta) VALUES (?, ?)')
+      .bind(`ean-cap${i}`, JSON.stringify({ name: `Cap Bud ${i}`, brand: 'Cap', cat: 'Audio' })).run();
+  }
+  const res = await call('/api/products?cat=Audio');
+  assert.strictEqual(res.status, 200, 'big cat slice must not throw (prod 1101, Audio at 124 heads)');
+  const { products } = await res.json();
+  assert.strictEqual(products.length, seed.filter(p => !p.family && p.cat === 'Audio').length + 120);
+
+  // the expand path (ids=) pages its double-bound query + neighbor top-up too
+  const one = await call('/api/products?ids=ean-cap5');
+  assert.strictEqual(one.status, 200);
+  const rows = (await one.json()).products;
+  assert.ok(rows.some(p => p.id === 'ean-cap5'));
+  assert.ok(rows.length > 1, 'same-cat neighbors still ride along');
 });
 
 // 4e step 1: seed evolution — a new seed.json refreshes meta for every row

@@ -424,6 +424,17 @@ async function catalogBody(db) {
 // Helpers are pure (no seeding) — route handlers call seedCatalog first.
 const ph = (arr) => arr.map(() => '?').join(',');
 
+// D1 caps bound parameters at 100 per statement — every query over an
+// unbounded id list must be paged or it 1101s once a category outgrows the
+// cap (Audio crossed 124 heads on 2026-07-23 and killed its cat slice).
+// size 45: the expand query binds the list twice. Per-product result order
+// survives concatenation (a product's offers/points land in one chunk).
+const chunked = async (ids, run, size = 45) => {
+  const out = [];
+  for (let i = 0; i < ids.length; i += size) out.push(...await run(ids.slice(i, i + size)));
+  return out;
+};
+
 // auto-discovered products carry meta.hidden = 1 until enriched — every
 // user-facing query excludes them; direct id fetches (rowsFor) still work
 // so ops/enrichment can inspect them
@@ -437,24 +448,26 @@ async function rowsFor(db, ids, { expand = true } = {}) {
   const heads = [...new Set(ids.map(id => id.includes('~') ? id.slice(0, id.indexOf('~')) : id))];
   if (!heads.length) return [];
   const prods = expand
-    ? (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(heads)}) OR json_extract(meta, '$.family') IN (${ph(heads)}) ORDER BY rowid`).bind(...heads, ...heads).all()).results
-    : (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(heads)})`).bind(...heads).all()).results
+    ? await chunked(heads, async c => (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(c)}) OR json_extract(meta, '$.family') IN (${ph(c)}) ORDER BY rowid`).bind(...c, ...c).all()).results)
+    : (await chunked(heads, async c => (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(c)})`).bind(...c).all()).results))
         .sort((a, b) => heads.indexOf(a.id) - heads.indexOf(b.id)); // caller's order is the ranking (sort=drop)
   if (expand) {
-    const have = () => prods.map(r => r.id);
     const cats = [...new Set(prods.filter(r => heads.includes(r.id)).map(r => JSON.parse(r.meta).cat).filter(Boolean))];
     for (const cat of cats) {
-      const got = have();
-      prods.push(...(await db.prepare(
-        `SELECT id, meta FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()} AND id NOT IN (${ph(got)}) ORDER BY rowid LIMIT 4`
-      ).bind(cat, ...got).all()).results);
+      const got = new Set(prods.map(r => r.id));
+      // NOT IN can't be paged under the param cap — over-fetch by rowid
+      // (≤ got.size rows can collide) and drop the ones already present
+      const cand = (await db.prepare(
+        `SELECT id, meta FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()} ORDER BY rowid LIMIT ?`
+      ).bind(cat, got.size + 4).all()).results;
+      prods.push(...cand.filter(r => !got.has(r.id)).slice(0, 4));
     }
   }
   const all = prods.map(r => r.id);
-  const offs = await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(all)}) ORDER BY price`).bind(...all).all();
-  const pts = await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(all)}) ORDER BY day`).bind(...all).all();
-  const withImg = new Set((await db.prepare(`SELECT product_id FROM images WHERE product_id IN (${ph(all)})`).bind(...all).all()).results.map(r => r.product_id));
-  const rows = shapeRows(prods, offs.results, pts.results, withImg);
+  const offs = await chunked(all, async c => (await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(c)}) ORDER BY price`).bind(...c).all()).results);
+  const pts = await chunked(all, async c => (await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(c)}) ORDER BY day`).bind(...c).all()).results);
+  const withImg = new Set((await chunked(all, async c => (await db.prepare(`SELECT product_id FROM images WHERE product_id IN (${ph(c)})`).bind(...c).all()).results)).map(r => r.product_id));
+  const rows = shapeRows(prods, offs, pts, withImg);
   // full spec sheets (Icecat-sized, ~100 rows) only ride detail fetches —
   // list queries stay lean; boot's Object.assign merge never wipes a
   // previously hydrated sheet with a lean row
