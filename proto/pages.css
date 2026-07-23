@@ -159,6 +159,9 @@ button { color: inherit; }
 .bigcat h3 { margin: 0; font-size: 18px; letter-spacing: -0.01em; }
 .bigcat__count { font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); margin-top: 3px; }
 .bigcat__drop { margin-top: auto; padding-top: var(--s-3); font-family: var(--font-mono); font-size: 11px; color: var(--ink-600); display: flex; align-items: center; gap: 7px; }
+.bigcat__types { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s-3); }
+.typechip { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 3px 8px; border: var(--bw-hair) solid var(--ink-300); background: var(--canvas-2); color: var(--ink-600); cursor: pointer; text-decoration: none; }
+.typechip:hover { background: var(--ink-900); border-color: var(--ink-900); color: var(--paper); }
 
 /* ============================================================
    ONBOARDING

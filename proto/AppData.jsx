@@ -39,6 +39,8 @@ const FACETS = {
   Audio:  [ { key: 'anc', label: 'Noise cancelling', type: 'bool' },
             { key: 'fit', label: 'Fit', type: 'options' } ],
   Phones: [ { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' } ],
+  Gaming: [ { key: 'type', label: 'Type', type: 'options' } ],
+  Home:   [ { key: 'type', label: 'Type', type: 'options' } ],
 };
 const facetNorm = (v) => v == null ? undefined : typeof v === 'boolean' ? v : isFinite(parseFloat(v)) ? parseFloat(v) : String(v).trim();
 // facet value of product p for key k — explicit p.facets wins, else the spec sheet,

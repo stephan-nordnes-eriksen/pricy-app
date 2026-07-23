@@ -406,7 +406,12 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const baseSel = { query, cat };
   const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat]);
   const [sort, setSort] = useState(() => (window.history.state || {}).rsort || 'best');
-  const [f, setF] = useState(() => { const s = (window.history.state || {}).rfilters; return s ? { ...emptyFilters(), ...s } : emptyFilters(); });
+  const [f, setF] = useState(() => {
+    const st = window.history.state || {};
+    if (st.rfilters) return { ...emptyFilters(), ...st.rfilters };
+    const navFacets = (st.params || {}).facets;
+    return navFacets ? { ...emptyFilters(), facets: navFacets } : emptyFilters();
+  });
   useWatchStore();
   // filters live in the history entry so browser Back restores them
   useEffect(() => { try { window.history.replaceState({ ...window.history.state, rfilters: f, rsort: sort }, ''); } catch (e) {} }, [f, sort]);
