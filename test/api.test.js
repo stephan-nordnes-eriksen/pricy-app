@@ -494,6 +494,7 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   // 'Home console' spec strings leaking in beside 'Consoles'
   const gtypes = new Set(seed.filter(p => !p.family && p.cat === 'Gaming').map(p => p.facets?.type));
   assert.deepStrictEqual([...gtypes].sort(), ['Consoles', 'Controllers', 'Handhelds'], 'Gaming heads: curated sub-category vocabulary');
+  assert.deepStrictEqual(meta.types?.Gaming, { Consoles: 6, Controllers: 2, Handhelds: 1 }, 'meta.types aggregates facets.type per cat for the Browse chips');
 
   const many = await call('/api/products?ids=' + Array.from({ length: 101 }, (_, i) => 'x' + i).join(','));
   assert.strictEqual(many.status, 400, '>100 ids must 400');

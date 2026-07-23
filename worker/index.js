@@ -515,7 +515,12 @@ async function catMeta(db) {
   const shops = (await db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers').first()).n;
   const freshest = (await db.prepare('SELECT MAX(updated_at) AS t FROM offers').first()).t ?? null;
   const { results } = await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} GROUP BY 1`).all();
-  return { products, shops, freshest, icons: CATS, facets: FACETS, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  // per-cat sub-category counts (facets.type) — Browse's type chips read
+  // these off CATALOG.meta so they don't depend on which rows are hydrated
+  const tr = (await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, json_extract(meta, '$.facets.type') AS t, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND json_extract(meta, '$.facets.type') IS NOT NULL GROUP BY 1, 2`).all()).results;
+  const types = {};
+  for (const r of tr) if (r.cat) (types[r.cat] ??= {})[r.t] = r.n;
+  return { products, shops, freshest, icons: CATS, facets: FACETS, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
 }
 
 async function purchasesBody(db, userId) {

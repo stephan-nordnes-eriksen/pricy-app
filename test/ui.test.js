@@ -80,6 +80,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         cats: heads.reduce((m, r) => ((m[r.cat] = (m[r.cat] || 0) + 1), m), {}),
         // the real worker always serves the facet registry (catMeta)
         facets: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'facets.json'), 'utf8')),
+        // ...and the per-cat sub-category counts (Browse type chips)
+        types: heads.reduce((m, r) => { const t = r.facets?.type; if (t) ((m[r.cat] ??= {})[t] = (m[r.cat][t] || 0) + 1); return m; }, {}),
       };
       return ok({ meta, products: out });
     }
@@ -759,6 +761,25 @@ test('facet filters: TV renders spec-derived option groups, clicking filters row
   const name = win.CATALOG.find(p => p.id === 'tv').name;
   assert.ok(qa(win, '.rrow, .rcard')[0].textContent.includes(name), 'the surviving row must be the 55″ set');
   assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Screen size: 55 ″')), 'active facet must chip');
+});
+
+test('sub-categories: Browse tiles show type chips, clicking one lands on pre-filtered Results', async () => {
+  const win = boot('http://pricy.test/browse', { session: true });
+  assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'browse tiles did not render');
+  const gaming = qa(win, '.bigcat').find(t => t.querySelector('h3')?.textContent === 'Gaming');
+  assert.ok(gaming, 'Gaming tile must render');
+  // chips derive from the hydrated slice today (browse prefetches top drops
+  // only, so offer-less types like Controllers may be missing until upstream
+  // reads CATALOG.meta.types); assert what both worlds guarantee
+  const chips = [...gaming.querySelectorAll('.typechip')].map(el => el.textContent);
+  assert.ok(chips.includes('Consoles'), 'Gaming tile must chip its dominant sub-category, got: ' + chips.join(' | '));
+  const toys = qa(win, '.bigcat').find(t => t.querySelector('h3')?.textContent === 'Toys');
+  assert.strictEqual(toys.querySelectorAll('.typechip').length, 0, 'no chips for a cat without a type facet');
+
+  const want = CATALOG_JSON.filter(p => !p.family && p.cat === 'Gaming' && p.facets?.type === 'Consoles').length;
+  [...gaming.querySelectorAll('.typechip')].find(el => el.textContent === 'Consoles').click();
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want), 'chip must land on Results pre-filtered to consoles');
+  assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Type: Consoles')), 'the facet selection must chip');
 });
 
 test('sub-categories: the Type facet groups a category under one curated vocabulary', async () => {

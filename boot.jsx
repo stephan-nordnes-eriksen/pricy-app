@@ -406,10 +406,12 @@ function App() {
       if (t !== navSeq) return;
       if (name === 'product') recordRecent(params.id); // after the fetch: prodOf needs the row
       const url = toUrl(name, params);
-      // mirror upstream AppRouter: park scrollY on the outgoing entry so Back restores it
+      // mirror upstream AppRouter: park scrollY on the outgoing entry so Back
+      // restores it, and carry {name, params} on the new entry — Results seeds
+      // its facet filters from history.state.params (Browse sub-chips)
       if (url !== location.pathname + location.search) {
         try { history.replaceState({ ...history.state, scrollY: window.scrollY }, ''); } catch (e) {}
-        history.pushState(null, '', url);
+        history.pushState({ name, params }, '', url);
       }
       window.scrollTo(0, 0);
       setScreen({ name, params });
