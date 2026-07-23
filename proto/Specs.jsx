@@ -141,31 +141,46 @@ function SpecRow({ r, onSel }) {
   );
 }
 
+// collapse state is shared across every product (one key, not per-id)
+const SPECS_LS = 'pricy.specs.open';
+const specsOpenGet = () => { try { const v = localStorage.getItem(SPECS_LS); return v == null ? true : v === '1'; } catch (e) { return true; } };
+const specsOpenSave = (open) => { try { localStorage.setItem(SPECS_LS, open ? '1' : '0'); } catch (e) {} };
+
 function SpecsSection({ p, sel, onSel }) {
   const s = specsFor(p, sel);
+  const [open, setOpen] = useState(specsOpenGet);
+  useEffect(() => {
+    const onForce = () => setOpen(true);
+    window.addEventListener('pricy:specs-open', onForce);
+    return () => window.removeEventListener('pricy:specs-open', onForce);
+  }, []);
   if (!s) return null;
   const n = s.groups.reduce((k, g) => k + g.rows.length, 0);
   return (
-    <section className="specs" id="pdp-specs">
-      <div className="specs__head">
-        <h2>Specifications</h2>
-        <span className="specs__note">{n} properties · {s.kindLabel}{p.variants ? ' · selectable options affect price' : ''}</span>
-      </div>
-      <div className="specs__grid">
+    <section className={'specs' + (open ? ' is-open' : '')} id="pdp-specs">
+      <button type="button" className="specs__head" aria-expanded={open} onClick={() => setOpen(o => { specsOpenSave(!o); return !o; })}>
+        <span className="specs__title"><h2>Specifications</h2><span className="specs__note">{n} properties · {s.kindLabel}{p.variants ? ' · selectable options affect price' : ''}</span></span>
+        <span className="specs__chev"><Icon name="chevron-down" size={16} /></span>
+      </button>
+      {open && <div className="specs__grid">
         {s.groups.map(g => (
           <div key={g.id} className="sgrp">
             <div className="sgrp__h">{g.label}</div>
             {g.rows.map(r => <SpecRow key={r.id} r={r} onSel={onSel} />)}
           </div>
         ))}
-      </div>
+      </div>}
     </section>
   );
 }
 
 function scrollToSpecs() {
-  const el = document.getElementById('pdp-specs');
-  if (el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 72);
+  specsOpenSave(true);
+  window.dispatchEvent(new Event('pricy:specs-open'));
+  requestAnimationFrame(() => {
+    const el = document.getElementById('pdp-specs');
+    if (el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 72);
+  });
 }
 
 Object.assign(window, { SPEC_KINDS, SPECS, specKindOf, specsFor, SpecsSection, scrollToSpecs });
