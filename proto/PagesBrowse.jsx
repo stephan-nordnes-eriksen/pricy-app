@@ -7,16 +7,23 @@
 function typesForCat(all, c) {
   const defs = (window.FACETS || {})[c] || [];
   if (!defs.some(d => d.key === 'type')) return [];
-  const counts = new Map();
-  all.forEach(p => {
-    if (p.cat !== c) return;
-    const v = fval(p, 'type');
-    if (v === undefined) return;
-    if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1));
-    else counts.set(v, (counts.get(v) || 0) + 1);
-  });
-  if (counts.size < 2) return [];
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => e[0]);
+  const served = metaOf()?.types?.[c];
+  let entries;
+  if (served) {
+    entries = Object.entries(served);
+  } else {
+    const counts = new Map();
+    all.forEach(p => {
+      if (p.cat !== c) return;
+      const v = fval(p, 'type');
+      if (v === undefined) return;
+      if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1));
+      else counts.set(v, (counts.get(v) || 0) + 1);
+    });
+    entries = [...counts.entries()];
+  }
+  if (entries.length < 2) return [];
+  return entries.sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => e[0]);
 }
 
 function BrowsePage({ go }) {
