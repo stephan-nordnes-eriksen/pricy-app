@@ -105,8 +105,10 @@ export async function adtractionSource(shop, _cfg, env) {
 export async function scrapeSource(shop, cfg) {
   const rows = await Promise.all(Object.entries(cfg.urls || {}).map(async ([product_id, url]) => {
     try {
+      // some shops (Kicks) serve a real Product page with a non-2xx status —
+      // don't gate on res.ok, the "no JSON-LD offer price" check below already
+      // rejects genuinely empty/error pages
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
-      if (!res.ok) throw new Error(`http ${res.status}`);
       const html = await res.text();
       const { offer, image, name, brand, category } = productOffer(html) ?? {};
       // no Product.category (Power, NetOnNet): the page's BreadcrumbList leaf
@@ -114,14 +116,17 @@ export async function scrapeSource(shop, cfg) {
       // (Power ends crumbs with the product name), then the crumb before it
       const srcCat = category ?? breadcrumbCat(html, name);
       const sd = shippingInfo(html);
-      // NetOnNet nests price in offer.priceSpecification instead of offer.price
+      // NetOnNet nests price in offer.priceSpecification instead of offer.price;
+      // some shops (Christiania Belysning) nest it one level deeper as {amount}
       const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
-      const price = parsePrice(offer?.price ?? offer?.lowPrice ?? spec?.price);
+      const unwrapPrice = (v) => v && typeof v === 'object' ? (v.amount ?? v.value) : v;
+      const price = parsePrice(unwrapPrice(offer?.price ?? offer?.lowPrice ?? spec?.price));
       if (!price) throw new Error('no JSON-LD offer price');
       // money path: multi-country shops (clasohlson.com/se, cdon SE mirrors)
-      // serve the same JSON-LD shape in SEK — never ingest those as NOK
+      // serve the same JSON-LD shape in SEK — never ingest those as NOK.
+      // Skoringen sends a lowercase "nok" — compare case-insensitively
       const currency = offer.priceCurrency ?? spec?.priceCurrency;
-      if (currency && currency !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
+      if (currency && currency.toUpperCase() !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
       return {
         product_id, shop, price,
         name: name ?? null,
@@ -166,7 +171,13 @@ function productOffer(html) {
   for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     let doc;
     try { doc = JSON.parse(body.trim()); } catch { continue; }
-    const nodes = [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])];
+    const top = [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])];
+    // ProductGroup shops (KappAhl, Skomani, Maanesten) carry no offer of their
+    // own — the price lives on a hasVariant entry, which inherits name/brand/
+    // image/category from the group when it doesn't repeat them itself
+    const nodes = top.flatMap(n => Array.isArray(n?.hasVariant)
+      ? n.hasVariant.map(v => ({ ...v, name: v.name ?? n.name, brand: v.brand ?? n.brand, image: v.image ?? n.image, category: v.category ?? n.category }))
+      : [n]);
     for (const n of nodes) {
       const o = [n?.offers].flat().find(o => o && (o.price != null || o.lowPrice != null || o.priceSpecification));
       if (o) {
