@@ -33,10 +33,10 @@ function d1() {
   };
 }
 
-let worker, parsePrice;
+let worker, parsePrice, parseSitemapXml;
 before(async () => {
   worker = (await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')))).default;
-  ({ parsePrice } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
+  ({ parsePrice, parseSitemapXml } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
 });
 
 const api = (env) => (pathname, { method = 'GET', body, cookie } = {}) =>
@@ -633,6 +633,22 @@ test('parsePrice handles Norwegian and feed formats', () => {
   assert.strictEqual(parsePrice(''), null);
   assert.strictEqual(parsePrice('N/A'), null);
   assert.strictEqual(parsePrice('0'), null, 'zero is junk, not a price');
+});
+
+test('parseSitemapXml finds an index vs. a leaf sitemap and extracts every <loc>', () => {
+  const index = parseSitemapXml(`<?xml version="1.0"?><sitemapindex>
+    <sitemap><loc>https://shop.no/product-sitemap.xml</loc></sitemap>
+    <sitemap><loc>https://shop.no/page-sitemap.xml</loc></sitemap>
+  </sitemapindex>`);
+  assert.strictEqual(index.isIndex, true);
+  assert.deepStrictEqual(index.locs, ['https://shop.no/product-sitemap.xml', 'https://shop.no/page-sitemap.xml']);
+
+  const leaf = parseSitemapXml(`<?xml version="1.0"?><urlset>
+    <url><loc>https://shop.no/produkt/a-og-b</loc></url>
+    <url><loc><![CDATA[https://shop.no/produkt/c?x=1&y=2]]></loc></url>
+  </urlset>`);
+  assert.strictEqual(leaf.isIndex, false);
+  assert.deepStrictEqual(leaf.locs, ['https://shop.no/produkt/a-og-b', 'https://shop.no/produkt/c?x=1&y=2']);
 });
 
 test('adtraction source: EAN-matched feed rows update offers with deep link; unknown EANs become hidden products', async () => {

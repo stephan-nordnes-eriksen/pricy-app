@@ -100,50 +100,116 @@ export async function adtractionSource(shop, _cfg, env) {
   return rows;
 }
 
+// Shared page → row extraction (schema.org Product/Offer JSON-LD), used by
+// both the curated-URL scrapeSource() and the sitemap-driven discoverSource()
+// below. Throws on anything that isn't a usable, NOK-priced offer.
+function scrapeRow(html) {
+  const { offer, image, name, brand, category, ean } = productOffer(html) ?? {};
+  // no Product.category (Power, NetOnNet): the page's BreadcrumbList leaf is
+  // the shop's own category label — unless it's the product itself (Power
+  // ends crumbs with the product name), then the crumb before it
+  const srcCat = category ?? breadcrumbCat(html, name);
+  const sd = shippingInfo(html);
+  // NetOnNet nests price in offer.priceSpecification instead of offer.price;
+  // some shops (Christiania Belysning) nest it one level deeper as {amount}
+  const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
+  const unwrapPrice = (v) => v && typeof v === 'object' ? (v.amount ?? v.value) : v;
+  const price = parsePrice(unwrapPrice(offer?.price ?? offer?.lowPrice ?? spec?.price));
+  if (!price) throw new Error('no JSON-LD offer price');
+  // money path: multi-country shops (clasohlson.com/se, cdon SE mirrors)
+  // serve the same JSON-LD shape in SEK — never ingest those as NOK.
+  // Skoringen sends a lowercase "nok" — compare case-insensitively
+  const currency = offer.priceCurrency ?? spec?.priceCurrency;
+  if (currency && currency.toUpperCase() !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
+  return {
+    price,
+    name: name ?? null,
+    brand: brand ?? null,
+    ean: ean ?? null,
+    srcCat: srcCat ?? null,
+    ship: sd?.ship ?? null,
+    stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
+    eta: sd?.eta ?? null,
+    image,
+  };
+}
+
 // First-party scrape of a shop's own product pages via their schema.org
 // JSON-LD (Product → Offer/AggregateOffer). cfg.urls maps product id → page.
 export async function scrapeSource(shop, cfg) {
   const rows = await Promise.all(Object.entries(cfg.urls || {}).map(async ([product_id, url]) => {
     try {
       // some shops (Kicks) serve a real Product page with a non-2xx status —
-      // don't gate on res.ok, the "no JSON-LD offer price" check below already
-      // rejects genuinely empty/error pages
+      // don't gate on res.ok, scrapeRow()'s "no JSON-LD offer price" check
+      // already rejects genuinely empty/error pages
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       const html = await res.text();
-      const { offer, image, name, brand, category } = productOffer(html) ?? {};
-      // no Product.category (Power, NetOnNet): the page's BreadcrumbList leaf
-      // is the shop's own category label — unless it's the product itself
-      // (Power ends crumbs with the product name), then the crumb before it
-      const srcCat = category ?? breadcrumbCat(html, name);
-      const sd = shippingInfo(html);
-      // NetOnNet nests price in offer.priceSpecification instead of offer.price;
-      // some shops (Christiania Belysning) nest it one level deeper as {amount}
-      const spec = [offer?.priceSpecification].flat().find(s => s?.price != null);
-      const unwrapPrice = (v) => v && typeof v === 'object' ? (v.amount ?? v.value) : v;
-      const price = parsePrice(unwrapPrice(offer?.price ?? offer?.lowPrice ?? spec?.price));
-      if (!price) throw new Error('no JSON-LD offer price');
-      // money path: multi-country shops (clasohlson.com/se, cdon SE mirrors)
-      // serve the same JSON-LD shape in SEK — never ingest those as NOK.
-      // Skoringen sends a lowercase "nok" — compare case-insensitively
-      const currency = offer.priceCurrency ?? spec?.priceCurrency;
-      if (currency && currency.toUpperCase() !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
-      return {
-        product_id, shop, price,
-        name: name ?? null,
-        brand: brand ?? null,
-        srcCat: srcCat ?? null,
-        ship: sd?.ship ?? null,
-        stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
-        eta: sd?.eta ?? null,
-        url,
-        image,
-      };
+      const { ean: _ean, ...row } = scrapeRow(html);
+      return { product_id, shop, url, ...row };
     } catch (e) {
       console.warn(`ingest: ${shop}/${product_id} scrape failed: ${e.message}`);
       return null; // this product freezes; the rest of the shop still updates
     }
   }));
   return rows.filter(Boolean);
+}
+
+// Pure: <loc> URLs out of a sitemap/sitemap-index XML document, plus whether
+// it's an index (needs one more hop into the listed sitemaps) or a leaf
+// (the URLs are real pages). Exported for unit testing without a network hop.
+export function parseSitemapXml(xml) {
+  return {
+    isIndex: /<sitemapindex[\s>]/i.test(xml),
+    // [\s\S]*? (not [^<]+) since a CDATA-wrapped <loc> starts with its own `<`
+    locs: [...xml.matchAll(/<loc>([\s\S]*?)<\/loc>/g)].map(m => decodeXml(m[1]).trim()),
+  };
+}
+
+// Walks a shop's sitemap index one level deep — most Norwegian shops run
+// WooCommerce/Yoast or Shopify, both of which split product/page/blog/
+// category URLs into separate named sub-sitemaps, so filtering the INDEX
+// entries by name (sitemapFilter) already isolates the product sub-sitemap(s)
+// without needing a per-shop URL-path pattern.
+async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|vare|artikkel/i } = {}) {
+  const res = await fetch(sitemapUrl, { headers: { 'user-agent': UA } });
+  if (!res.ok) throw new Error(`sitemap fetch ${res.status}`);
+  const { isIndex, locs } = parseSitemapXml(await res.text());
+  if (isIndex) {
+    const subs = locs.filter(u => sitemapFilter.test(u));
+    const nested = await Promise.all(subs.map(u => sitemapUrls(u, { pathFilter, sitemapFilter })));
+    return [...new Set(nested.flat())];
+  }
+  return [...new Set(pathFilter ? locs.filter(u => pathFilter.test(u)) : locs)];
+}
+
+// Sitemap-driven discovery: no pre-known product_id per URL (unlike
+// scrapeSource()) — the page's own JSON-LD gtin becomes the id, same
+// convention adtractionSource() uses. ingest() already auto-creates/
+// auto-promotes ean-* rows regardless of which source emitted them, so this
+// needs no Worker-side change. cfg: { sitemap, pathFilter?, sitemapFilter?,
+// limit?, ua?, delayMs? } — pathFilter/sitemapFilter are regex source
+// strings (JSON can't hold a RegExp literal).
+export async function discoverSource(shop, cfg) {
+  const pathFilter = cfg.pathFilter ? new RegExp(cfg.pathFilter, 'i') : undefined;
+  const sitemapFilter = cfg.sitemapFilter ? new RegExp(cfg.sitemapFilter, 'i') : undefined;
+  const urls = (await sitemapUrls(cfg.sitemap, { pathFilter, sitemapFilter })).slice(0, cfg.limit ?? Infinity);
+  const rows = [];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
+      const html = await res.text();
+      const { ean, ...row } = scrapeRow(html);
+      if (!ean) throw new Error('no gtin in JSON-LD, no stable id to key a discovered row on');
+      rows.push({ product_id: `ean-${ean}`, shop, url, ...row });
+    } catch (e) {
+      console.warn(`ingest: ${shop} discover ${url} failed: ${e.message}`);
+    }
+    // sequential with a pause, not Promise.all — this can be thousands of
+    // pages, and hammering a shop's server in parallel is how Proshop's
+    // rate-limit block happens
+    await new Promise(r => setTimeout(r, cfg.delayMs ?? 500));
+  }
+  return rows;
 }
 
 // BreadcrumbList → the shop's category label for the page: the last crumb,
@@ -184,7 +250,11 @@ function productOffer(html) {
         const brand = typeof n.brand === 'string' ? n.brand : n.brand?.name;
         // category: string | [string] — enough shops send it to feed CATMAP
         const category = [n.category].flat().find(c => typeof c === 'string');
-        return { offer: o, image: imageUrl(n.image), name: typeof n.name === 'string' ? n.name : null, brand: brand ?? null, category: category ?? null };
+        // gtin13/gtin/gtin12/gtin8 are the schema.org-fixed field names (no
+        // per-shop naming variance like the Adtraction feeds have) — this is
+        // the only stable cross-shop product identity a scrape ever gets
+        const gtin = n.gtin13 ?? n.gtin ?? n.gtin12 ?? n.gtin8 ?? null;
+        return { offer: o, image: imageUrl(n.image), name: typeof n.name === 'string' ? n.name : null, brand: brand ?? null, category: category ?? null, ean: gtin ? eanKey(gtin) : null };
       }
     }
   }
@@ -220,7 +290,7 @@ function shippingInfo(html) {
   return null;
 }
 
-const SOURCES = { adtraction: adtractionSource, scrape: scrapeSource };
+const SOURCES = { adtraction: adtractionSource, scrape: scrapeSource, discover: discoverSource };
 
 // One failed source = that shop's offers freeze at their last stored price
 // (ingest only upserts rows it receives); it never aborts the other shops.

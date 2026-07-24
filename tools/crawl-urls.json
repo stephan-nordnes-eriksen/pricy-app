@@ -1,9 +1,19 @@
 {
   "Ringo": {
-    "lego-roses": "https://www.ringo.no/produkt/lego-10328-rosebukett/"
+    "lego-roses": "https://www.ringo.no/produkt/lego-10328-rosebukett/",
+    "$discover": { "sitemap": "https://www.ringo.no/sitemap_index.xml" }
   },
   "Hi-Fi Klubben": {
     "xm5": "https://www.hifiklubben.no/sony-wh-1000xm5-traadloes-hodetelefon/sonywh1000xm5b/"
+  },
+  "Lekeverden": {
+    "$discover": { "sitemap": "https://lekeverden.no/sitemap_index.xml" }
+  },
+  "Kidsdreamstore": {
+    "$discover": { "sitemap": "https://kidsdreamstore.no/sitemap.xml" }
+  },
+  "Lekekassen": {
+    "$discover": { "sitemap": "https://lekekassen.no/media/sitemap/lekekassen.xml" }
   },
   "Clas Ohlson": {
     "airpods": "https://www.clasohlson.com/no/p/39-2739",

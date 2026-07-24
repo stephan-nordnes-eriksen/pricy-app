@@ -17,9 +17,14 @@
 // A "$ua": "browser" key in a shop's map makes its fetches use BROWSER_UA
 // (for shops that 403 every bot UA, honest or not — e.g. NetOnNet).
 // Shop names must match the catalog's; product ids come from worker/seed.json.
+//
+// A shop entry can instead be `{ "$discover": { "sitemap": "https://…/sitemap.xml" } }`
+// to walk the shop's own sitemap for every product page instead of a
+// hand-picked URL list — see discoverSource() in worker/sources.js for the
+// full cfg shape (pathFilter/sitemapFilter/limit/ua/delayMs).
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { scrapeSource } from '../worker/sources.js';
+import { scrapeSource, discoverSource } from '../worker/sources.js';
 
 const arg = (name) => { const i = process.argv.indexOf(name); return i >= 0 ? process.argv[i + 1] : null; };
 const dry = process.argv.includes('--dry');
@@ -30,8 +35,10 @@ const base = process.env.PRICY_URL || 'https://pricy.no';
 const urlsByShop = JSON.parse(readFileSync(new URL('./crawl-urls.json', import.meta.url), 'utf8'));
 
 const rows = [];
-for (const [shop, { $ua, ...urls }] of Object.entries(urlsByShop)) {
+for (const [shop, cfg] of Object.entries(urlsByShop)) {
   if (shopFilter && shop !== shopFilter) continue;
+  const { $discover, $ua, ...urls } = cfg;
+  if ($discover) rows.push(...await discoverSource(shop, { ...$discover, limit }));
   for (const [pid, url] of Object.entries(urls).slice(0, limit)) {
     // ponytail: one page at a time with a pause — polite to the shops,
     // and a manual run is in no hurry
