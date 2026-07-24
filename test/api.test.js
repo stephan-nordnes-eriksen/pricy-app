@@ -1287,7 +1287,7 @@ test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed ke
 });
 
 // OPEN-CATALOG-PLAN B: auto-promotion — mapped source category = go live
-test('auto-promotion: a hidden row with name+brand+CATMAP-mapped srcCat goes live; junk and unmapped stay hidden; demote sticks', async () => {
+test('auto-promotion: a hidden row with name+CATMAP-mapped srcCat goes live (brand is best-effort, "Unspecified" if the source sends none); junk and unmapped stay hidden; demote sticks', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token', CATMAP: { Power: { Mobiltelefoner: 'Phones' } } };
   const call = api(env);
@@ -1305,14 +1305,18 @@ test('auto-promotion: a hidden row with name+brand+CATMAP-mapped srcCat goes liv
   assert.strictEqual(live.auto, 1);
   assert.ok(live.kw.includes('google') && live.kw.includes('pixel') && live.kw.includes('phones'), `kw covers name+brand+cat: ${live.kw}`);
 
-  // no brand → stays hidden; unmapped srcCat → stays hidden; accessory name → stays hidden
+  // no brand but mapped category → still goes live, brand falls back to
+  // "Unspecified"; unmapped srcCat → stays hidden; accessory name → stays hidden
   await push([
     { product_id: 'ean-7099999999994', shop: 'Power', price: 990, name: 'Nameless Phone', srcCat: 'Mobiltelefoner' },
     { product_id: 'ean-7099999999995', shop: 'Power', price: 990, name: 'Acme Blender', brand: 'Acme', srcCat: 'Kjøkkenmaskiner' },
     { product_id: 'ean-7099999999996', shop: 'Power', price: 99, name: 'Pixel 9 deksel svart', brand: 'Google', srcCat: 'Mobiltelefoner' },
   ]);
+  const brandless = (await (await call('/api/products?q=nameless phone')).json()).products.find(p => p.id === 'ean-7099999999994');
+  assert.ok(brandless, 'brandless-but-mapped product still auto-promotes');
+  assert.strictEqual(brandless.brand, 'Unspecified');
   const hiddenIds = (await (await call('/api/products?hidden=1')).json()).products.map(p => p.id);
-  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999994', 'ean-7099999999995', 'ean-7099999999996'], 'brandless, unmapped and blocklisted rows stay hidden');
+  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999996'], 'unmapped and blocklisted rows stay hidden');
 
   // a human demotion out-ranks the machine: auto:1 + hidden:1 never re-promotes
   await req('/api/admin/products/ean-7099999999993', 'PATCH', { hidden: 1 });

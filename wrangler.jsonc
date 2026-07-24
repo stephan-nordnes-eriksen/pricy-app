@@ -138,6 +138,19 @@
       "Lego Icons": "Toys",
       "LEGO for voksne 18 år": "Toys",
       "Lesebrett": "E-readers"
+    },
+    // Vocabulary observed 2026-07-24 from a full sitemap-discovery crawl
+    // (worker/sources.js discoverSource()) — a pure toy shop, every category
+    // it sent (including the "new arrivals" merchandising label) is Toys
+    "Lekeverden": {
+      "LEGO": "Toys",
+      "Nyankomne": "Toys",
+      "LEGO &gt; LEGO Duplo": "Toys",
+      "Pedagogiske leker": "Toys",
+      "Puslespill": "Toys",
+      "Kunstleker": "Toys",
+      "Brettspill": "Toys",
+      "Squishmallows": "Toys"
     }
   } }
   // Feature flag for real magic-link mail: the worker sends via

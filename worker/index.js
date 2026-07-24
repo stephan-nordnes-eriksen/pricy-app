@@ -258,18 +258,21 @@ async function ingest(db, rows, env) {
       db.prepare('INSERT OR IGNORE INTO products (id, meta) VALUES (?, ?)').bind(id, JSON.stringify(meta))));
   }
   // Auto-promotion (B3): a hidden row goes live the moment a source supplies
-  // name + brand + a source category that env.CATMAP (JSON var, per-shop
+  // name + a source category that env.CATMAP (JSON var, per-shop
   // { "<shop>": { "<raw srcCat>": "<cat>" } }) maps to one of ours. meta.auto
   // marks it machine-promoted; auto + still hidden = a human demoted it,
   // never re-promote. Unmapped or blocklisted rows just stay hidden.
+  // Brand is best-effort, not a gate: plenty of real shops (Lekeverden) never
+  // send one in their JSON-LD at all — promote anyway with a placeholder
+  // rather than leave a real, correctly-categorized product hidden forever.
   const catmap = typeof env.CATMAP === 'string' ? JSON.parse(env.CATMAP) : (env.CATMAP || {});
   const promoted = {};
   for (const r of rows) {
     const meta = metaOf[r.product_id];
     if (!meta || !stillHidden.has(r.product_id) || meta.family || meta.auto) continue;
-    const brand = meta.brand ?? (r.brand ? String(r.brand) : null);
+    const brand = meta.brand ?? (r.brand ? String(r.brand) : null) ?? 'Unspecified';
     const cat = catmap[r.shop]?.[r.srcCat ?? meta.srcCat];
-    if (!meta.name || !brand || !CATS[cat] || JUNK_RE.test(meta.name)) continue;
+    if (!meta.name || !CATS[cat] || JUNK_RE.test(meta.name)) continue;
     const { hidden, ...rest } = meta;
     promoted[r.product_id] = { ...rest, brand, cat, icon: CATS[cat], kw: kwOf(meta.name, brand, cat), auto: 1 };
     stillHidden.delete(r.product_id);
