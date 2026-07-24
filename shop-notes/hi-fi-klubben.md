@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: First-party scrape via scrapeSource() — reclassified up from SHOP-CANDIDATES.md's "Unknown (ToS unreachable)": a real check found clean Product/Offer JSON-LD, a wide-open robots.txt, and a reachable ToS with no scraping restriction. Cheaper than the already-Confirmed Adtraction (NO, 8%) route since it needs no advertiser-program approval.
 - Alternatives: Confirmed Adtraction NO program (8% commission) — not yet on ADTRACTION-COOKBOOK.md's applied-for list (Elkjøp, Komplett, NetOnNet, Dustin, Clas Ohlson, CDON, Power, Proshop), so a fresh application would be needed if scrape coverage turns out insufficient (e.g. for products this shop doesn't show full JSON-LD detail on).
-- Status: pilot wired — tools/crawl-urls.json has `xm5` (Sony WH-1000XM5, matches the existing catalog product_id used by Power/Clas Ohlson) → the confirmed product URL; `node tools/crawl.mjs --dry --shop "Hi-Fi Klubben"` returns kr 3790, npm test green
+- Status: working — ingested for real 2026-07-24 (`node tools/crawl.mjs --shop "Hi-Fi Klubben"` → POST /api/ingest 200 `{"ok":true,"ingested":1}`, kr 3790 live on pricy.no)
 - Notes:
   - Recheck done: `curl -sL https://www.hifiklubben.no/robots.txt` → `Disallow:` (empty, i.e. wide open, only a sitemap listed). WebFetch on https://www.hifiklubben.no/kundeservice/salgs-og-leveringsvillkar/ found no automated-access/bot/scraping restriction (only delivery/returns/warranty terms).
   - Category fit: **Audio** — direct match, hi-fi/headphones/speakers/amps.
