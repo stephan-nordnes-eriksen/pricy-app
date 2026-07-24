@@ -1,0 +1,9 @@
+# Lekekassen.no
+
+- URL: lekekassen.no
+- Category: Baby, kids & toys / groceries & pet supplies
+- Tier: phase1-scrape
+- Chosen method: scrape (scrapeSource(), no code changes needed) — real check confirms clean JSON-LD. robots.txt (checked live) only disallows narrow Magento paths (checkout/customer login/review/campaign query params) — Silent, matches SHOP-CANDIDATES.md. Fetched the `/betingelser` terms page and grepped for scrap/crawl/robot/automat — no hits (only unrelated hits on "automatisk" in a 3-for-2 discount and return-shipping explanation, not an automation ban). Fetched a real product page (lego-city-60368-polarutforskere-med-skip) and confirmed a full `application/ld+json` block: `Product`, `Offer`, `Brand`, `BreadcrumbList`, `OfferShippingDetails`, `MonetaryAmount`, `UnitPriceSpecification` — exactly what `productOffer()`/`shippingInfo()` in worker/sources.js already parse. Ready to build in Phase B with zero parser changes.
+- Alternatives: none needed.
+- Status: not started
+- Notes: Toys (LEGO, Pokémon, sporting toys) — maps directly to the existing "Toys" pricy.no category (icon toy-brick). worker/extra.json already has one Toys entry (lego-roses, LEGO Bouquet of Roses 10328, EAN 5702017583488) and worker/eans.json has a separate "lego" key (EAN 5702017224336) — check for overlap with this shop's actual LEGO SKUs in Phase B rather than assuming a match. Candidate product URLs: lekekassen.no/lego-city-60368-polarutforskere-med-skip, /aquaplay-mountain-lake-vannleke-8700001542, /pokemon-tcg-lumiose-city-mini-tin-pok10392-101, /zuru-x-shot-water-warfare-fast-fill-vanngevaer-56138.

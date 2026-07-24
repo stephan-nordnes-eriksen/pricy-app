@@ -1,0 +1,21 @@
+# Dyrego
+
+- URL: dyrego.no (real webshop is at a separate domain, dyregonett.no — see Notes)
+- Category: Baby, kids & toys / groceries & pet supplies
+- Tier: phase1-scrape
+- Chosen method: `scrapeSource()` first-party fetch against **dyregonett.no** (not dyrego.no — see Notes) — real WooCommerce Product/Offer JSON-LD confirmed, no affiliate program found, least-manual viable option.
+- Alternatives: none confirmed on any affiliate network (no Adtraction/Awin/Partner-ads/Tradedoubler signal on homepage or product page).
+- Status: not started
+- Notes:
+  - dyrego.no itself is a brick-and-mortar store-locator/brochure site — its own `sitemap.xml` lists only store addresses, careers, brochures, contact, privacy (`curl -sL https://dyrego.no/sitemap.xml`, 15 URLs, zero products). Its "BESØK VÅR NETTBUTIKK HER" nav text links out to **dyregonett.no**, a separate domain, which is the actual WooCommerce e-commerce site — treat dyregonett.no as the real ingest target, not dyrego.no.
+  - dyregonett.no robots.txt (`curl -sL https://dyregonett.no/robots.txt`): WordPress-standard blocks (`/wp-admin/`, feeds, comments, trackback) plus a joke `Disallow: /` aimed at fictional bot names (`t-800`, `hal9000`, `roberto`, `ultron`, `teslabot`) — not a real scraper ban. `Googlebot` explicitly `Allow: /*`. No product/category path block.
+  - ToS (`https://dyregonett.no/kjopsbetingelser/`): no "robot"/"crawl"/"scrape"/"automatisert" language — the only "robots" hit in the raw HTML is an unrelated `<meta name="robots" content="index, follow, ...">` SEO tag. Verdict: **Silent**.
+  - dyregonett.no's sitemap index (`/sitemap_index.xml`) is genuine Yoast/WooCommerce output: 13 `product-sitemap{N}.xml` shards plus `product_cat-sitemap.xml` — a real, sizeable catalog, easy full discovery.
+  - Spot-checked `https://dyregonett.no/produkt/hunter-melamine-bowl-aarhus-160-ml-blue-white/`: two `<script type="application/ld+json">` blocks — one `BreadcrumbList` (`Hund > Matplass > Melamin/Keramikk`, feeds `breadcrumbCat()`'s fallback since the `Product` node itself has no `category` field) and one `Product` (`sku`, `offers: [{priceSpecification: [{price: "209.00", priceCurrency: "NOK", ...}], availability: "https://schema.org/OutOfStock"}]`) — price rides in `priceSpecification`, not `offer.price` directly, which `productOffer()`'s existing `spec.price` fallback already handles (same shape as NetOnNet). No `gtin`/EAN visible on this particular product — worth checking a few more before assuming EAN coverage across the catalog.
+  - Category-fit: worker/cats.json currently has no pet-supplies category (Audio/Phones/TV/Projectors/Gaming/Home/Computers/Toys/E-readers/Kitchen) — a new "Pets" category would be required regardless of tier.
+  - Candidate product URLs (real, fetched from `product-sitemap.xml`):
+    - https://dyregonett.no/produkt/hunter-melamine-bowl-aarhus-160-ml-blue-white/
+    - https://dyregonett.no/produkt/hunter-melamine-bowl-aarhus-700-ml-blue-white/
+    - https://dyregonett.no/produkt/hunter-melamine-bowl-list-700-ml-tan-blue/
+    - https://dyregonett.no/produkt/hunter-carrier-bag-los-angeles-60x30-cm-taupe-grey/
+  - Proposed product_id naming: `brand-product-slug` — the shop's own URL slugs are already brand+product+variant hyphenated (e.g. `hunter-melamine-bowl-aarhus-160-ml-blue-white`) and directly reusable as a product_id with the domain stripped.

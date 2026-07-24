@@ -1,0 +1,9 @@
+# Platekompaniet
+
+- URL: platekompaniet.no
+- Category: Beauty, health & pharmacy / books, media & hobby
+- Tier: needs-recheck
+- Chosen method: none viable yet — same problem as Norli: product pages are a pure client-rendered SPA shell. Fetched HTML is 62 KB with zero `application/ld+json` and zero `schema.org` occurrences; `<title>` is just the generic "Platekompaniet". scrapeSource()'s plain-fetch regex parser has nothing to read.
+- Alternatives: none confirmed — no affiliate-network signal in the original sweep either.
+- Status: not started
+- Notes: robots.txt is open (only disallows /cart, /my-account, /checkout, /search, filter/sort query params — no bot names, no product-path block). https://www.platekompaniet.no/salgsvilkar exists but the fetch tool only returned the bare word "Platekompaniet" (confirms the earlier "JS-rendered ToS" verdict — couldn't actually read the clause text this pass either; genuinely unread, not confirmed clean). Spot-checked https://www.platekompaniet.no/musikk/vinyl/rock/the-beatles-revolver-vinyl-258536 — no ld+json, no Next/Nuxt data blob in the raw response. Sitemap naming (`pdp-sitemap_index.xml`) suggests an Adobe Commerce/Magento-family PWA storefront, which usually exposes a GraphQL API (`/graphql`) that a headless-render alternative could hit instead — worth a follow-up probe, but that's a new adapter (like adtractionSource(), not scrapeSource()) and needs its own Phase B design, not a quick wire-up. No category-mapping/candidate-URL work done since there's no confirmed pull mechanism yet; would sell under a new "Books"/"Media" category (music/film/games/books) if a mechanism is found — Platekompaniet's game SKUs are the one slice that could otherwise fit existing "Gaming".

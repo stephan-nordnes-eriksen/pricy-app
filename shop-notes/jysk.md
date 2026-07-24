@@ -1,0 +1,19 @@
+# JYSK
+
+- URL: jysk.no
+- Category: Home, interior, furniture, garden & DIY
+- Tier: phase1-scrape
+- Chosen method: scrapeSource() — real per-product page URLs (not the category/filter URLs Google indexes) carry usable schema.org JSON-LD with an `offers.price`/`priceCurrency` block. Cheapest option, no approval needed.
+- Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
+- Status: not started
+- Notes:
+  - **Real check performed** (SHOP-CANDIDATES.md flagged "Inconclusive JSON-LD" — confirmed why): JYSK uses `@type: "ProductGroup"` (schema.org ProductGroup), not `@type: "Product"`. That's non-standard enough that a naive Product-type scraper would skip it entirely — but `worker/sources.js`'s `productOffer()` doesn't gate on `@type` at all, it just looks for any node with an `offers` field containing a price. So it works: `offers: {"@type":"Offer","priceCurrency":"NOK","price":"100",...}` parses fine, `name`/`category` (array, e.g. `["Stue","Puffer"]` → first string "Stue") resolve too. `brand` is present but often an empty string (`{"@type":"Brand","name":""}`) — expect `brand: null` in practice for most JYSK rows.
+  - **Gotcha for real product URLs**: some URLs that look like single-product pages (e.g. a bed variant URL surfaced by web search) actually 301-redirect to their parent category/filter listing page, which embeds hundreds of `@type: Product` ItemList entries (478 seen on one page) instead of one ProductGroup — `productOffer()` would grab the *first* one, which is NOT the requested SKU. Always verify `canonical` matches the requested URL and there's exactly one `offers`-bearing top-level node before trusting a JYSK URL. Sitemap-sourced URLs (`jysk.no/sitemap.xml` → paginated) were reliable; ad-hoc web-search results were not.
+  - robots.txt (`jysk.no/robots.txt`): no disallow on product/category paths, just standard Drupal admin/core paths blocked. Silent.
+  - ToS (`jysk.no/vilkar-og-betingelser`): read in full, grepped for scrap/crawl/robot/automat/bot — no hits (one false-positive "antibot" CSS class from a spam-protected form, not a scraping clause). Silent, confirms SHOP-CANDIDATES.md verdict.
+  - **Category gap**: JYSK sells furniture (beds, sofas, storage), bedding/textiles, and garden furniture — none of it fits existing `worker/cats.json` categories (Audio, Phones, TV, Projectors, Gaming, Home, Computers, Toys, E-readers, Kitchen) well. A new **"Furniture"** category + `worker/extra.json` rows would be needed before wiring any JYSK product in — not done here, Phase B decision.
+  - **Candidate product URLs** (real, sitemap-verified, JSON-LD spot-checked):
+    1. `https://jysk.no/stue/puffer/puff-auning-38x38-m-magasin-mork-sand-floyel` — Puff AUNING 38x38 (pouffe/footstool), sku 3650075, price 100 NOK. Proposed `product_id: jysk-puff-auning-3838`, cat: Furniture, icon: `armchair` (or similar), kw: puff, ottoman, stue.
+    2. `https://jysk.no/oppbevaring/bokhyller-og-reoler/reol-lindved-6-hyller-2-dorer-natur-eikefarget` — Reol LINDVED bookshelf. Proposed `product_id: jysk-reol-lindved-6hyller`, cat: Furniture, icon: `bookshelf`/`library`, kw: reol, hylle, oppbevaring.
+    3. `https://jysk.no/stue/sofaer/sofamodul-skejby-hjorne-ende-beige-stoff` — Sofamodul SKEJBY corner/end module. Proposed `product_id: jysk-sofamodul-skejby`, cat: Furniture, icon: `sofa`, kw: sofa, sofamodul, stue.
+    4. Any bed/mattress under `jysk.no/soverom/senger/` or `/madrasser/` would round out the set once picked directly from the sitemap (not from search results) and canonical-verified the same way.

@@ -1,0 +1,9 @@
+# Lekeverden.no
+
+- URL: lekeverden.no
+- Category: Baby, kids & toys / groceries & pet supplies
+- Tier: phase1-scrape
+- Chosen method: scrape (scrapeSource(), no code changes needed) — real check confirms clean JSON-LD. robots.txt (checked live) is standard WooCommerce boilerplate (wp-admin, log export files, add-to-cart query params) — Silent, matches SHOP-CANDIDATES.md. Fetched the `/kjopsbetingelser/` terms page and grepped for scrap/crawl/robot/automat — no hits, no automation ban. Fetched a real product page (product/lego-30709-ferrari-499p-hypercar-lego-speed-champions-30709) and confirmed a full `application/ld+json` block: `Product`, `Offer`, `Organization`, `BreadcrumbList`, `WebSite`, `ImageObject`, `Place`/`PostalAddress` — exactly what `productOffer()` in worker/sources.js already parses. Ready to build in Phase B with zero parser changes.
+- Alternatives: none needed.
+- Status: not started
+- Notes: LEGO, puzzles, board games — maps directly to the existing "Toys" pricy.no category. Site currently shows a "shop closed until August 1, 2026, orders can't be sent" banner (WebFetch of the homepage), but the catalog/product pages themselves are still reachable and still carry live JSON-LD — that's a fulfillment pause, not a scrape blocker; worth re-confirming price freshness once they reopen. Candidate product URLs: lekeverden.no/product/lego-30709-ferrari-499p-hypercar-lego-speed-champions-30709/, /product/dantoy-bio-sandsett-4-deler/, /product/play-doh-lekeleire-4-pakning-klassiske-farger-kunstleker-kunstleker-gave-til-barn-og-tenaringer-jenter-og-gutter/.

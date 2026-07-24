@@ -1,0 +1,9 @@
+# Kidsdreamstore
+
+- URL: kidsdreamstore.no
+- Category: Baby, kids & toys / groceries & pet supplies
+- Tier: phase1-scrape
+- Chosen method: scrape (scrapeSource() already shipped) — real check confirms this is the cheapest path: robots.txt is a Shopify storefront template that explicitly says "Public product, collection, page, blog, policy, cart, and localized HTML is crawlable" and even documents an agents.md/UCP-MCP endpoint inviting agentic catalog reads (it only restricts autonomous *checkout*, not browsing/scraping). Product pages carry clean standard Product/Offer JSON-LD.
+- Alternatives: none found — no affiliate network signal in SHOP-CANDIDATES.md.
+- Status: not started
+- Notes: Curled `https://kidsdreamstore.no/robots.txt` (open, Shopify boilerplate, no scraper ban) and a real product page (`https://kidsdreamstore.no/products/dinosaurie-pop-up-lektalt`) — clean `@type: Product` JSON-LD with `offers: [{Offer, price 329.0 NOK, InStock}]`, a textbook match for productOffer(). Disney-licensed toys & kids clothing — the toy SKUs map to the existing "Toys" category; kids clothing does not fit any existing category. Candidate toy URLs (Phase B): `https://kidsdreamstore.no/products/dinosaurie-pop-up-lektalt`, `https://kidsdreamstore.no/products/campinglekset-med-tillbehor-15-delar`, `https://kidsdreamstore.no/products/100-delar-traklossar-i-praktisk-behallare` (found via `/collections/fisher-price`) — none match worker/extra.json's existing lego-roses entry; would be new extra.json rows.
