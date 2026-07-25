@@ -498,6 +498,9 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat, n]);
   const [shown, setShown] = useState(60);
   const [loadingMore, setLoadingMore] = useState(false);
+  // what the host served for the current query: real category-wide total + facet counts
+  const [served, setServed] = useState({ total: null, fcounts: null });
+  const [page, setPage] = useState(0);
   const [sort, setSort] = useState(() => (window.history.state || {}).rsort || 'best');
   const [dir, setDir] = useState(() => (window.history.state || {}).rdir || (SORT_FIELDS.find(s => s.id === (window.history.state || {}).rsort) || SORT_FIELDS[0]).dir);
   const [f, setF] = useState(() => {
@@ -515,19 +518,40 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
   // data-driven per-category facets (window.FACETS is replaced by the boot layer)
   const facetDefs = cat ? ((window.FACETS || {})[cat] || []) : [];
+  // counts come from the host when it served this key (every value in the category,
+  // including ones no loaded row has); otherwise from the rows we hold
   const facetBase = useMemo(() => {
     const m = {};
     facetDefs.forEach(def => {
       if (def.type !== 'options') return;
       const counts = new Map();
-      baseResults.forEach(p => { const v = fval(p, def.key); if (v === undefined) return; if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1)); else counts.set(v, (counts.get(v) || 0) + 1); });
+      const srv = served.fcounts && served.fcounts[def.key];
+      if (srv) srv.forEach(pair => counts.set(pair[0], pair[1]));
+      else baseResults.forEach(p => { const v = fval(p, def.key); if (v === undefined) return; if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1)); else counts.set(v, (counts.get(v) || 0) + 1); });
       const vals = [...counts.keys()].sort((a, b) => typeof a === 'number' && typeof b === 'number' ? a - b : typeof a === 'number' ? -1 : typeof b === 'number' ? 1 : String(a).localeCompare(String(b)));
       m[def.key] = { vals, counts };
     });
     return m;
-  }, [baseResults, cat]);
+  }, [baseResults, cat, served]);
   const setFacet = (key, v) => setF(prev => { const cur = prev.facets[key] || []; const next = cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v]; const fac = { ...prev.facets }; if (next.length) fac[key] = next; else delete fac[key]; return { ...prev, facets: fac }; });
   const setBoolFacet = (key) => setF(prev => { const fac = { ...prev.facets }; if (fac[key]) delete fac[key]; else fac[key] = true; return { ...prev, facets: fac }; });
+
+  // the host serves the query: it merges the matching page into CATALOG and answers
+  // with the category-wide total + facet counts. Debounced, page 0, mount included.
+  // A search (q=) is capped at 100 rows the client already holds \u2014 never ask.
+  const fKey = JSON.stringify(f);
+  useEffect(() => {
+    if (!window.onQuery || query) { setServed({ total: null, fcounts: null }); return; }
+    let dead = false;
+    const t = setTimeout(() => {
+      Promise.resolve(window.onQuery({ cat, sort, dir, filters: f, page: 0 })).then(r => {
+        if (dead || !r) return;
+        setServed({ total: r.total != null ? r.total : null, fcounts: r.fcounts || null });
+        setPage(0); setShown(60); bump(x => x + 1);
+      }).catch(() => {});
+    }, 250);
+    return () => { dead = true; clearTimeout(t); };
+  }, [query, cat, sort, dir, fKey]);
 
   // sortable fields = universal ones + this category's spec axes (+ relevance on a search)
   const sortFields = useMemo(() => [
@@ -571,17 +595,23 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   });
   list = sortList(list, sortField, sortDir);
 
-  // paging: reveal 60 at a time; when the host serves a category, the true size
-  // lives in CATALOG.meta.cats and the rest of the rows are fetched on demand
-  const catTotal = (cat && !query) ? (metaOf()?.cats?.[cat]) : undefined;
-  const serverMore = !!window.onLoadMore && catTotal != null && catTotal > baseResults.length;
+  // paging: reveal 60 at a time; when the host serves a category it owns which rows
+  // are in the cache and how many exist — we still sort/filter the cache locally
+  const total = served.total;
+  const catTotal = query ? undefined : (total != null ? total : (cat ? metaOf()?.cats?.[cat] : undefined));
+  const serverMore = total != null && total > list.length;
   const localMore = list.length > shown;
   const loadMore = async () => {
     if (localMore) { setShown(s => s + 60); return; }
-    if (!serverMore || loadingMore) return;
+    if (!serverMore || loadingMore || !window.onQuery) return;
     setLoadingMore(true);
-    try { await window.onLoadMore({ cat, offset: baseResults.length }); bump(x => x + 1); setShown(s => s + 60); }
-    catch (e) {}
+    try {
+      const r = await window.onQuery({ cat, sort, dir, filters: f, page: page + 1 });
+      setPage(page + 1);
+      if (r) setServed(s => ({ total: r.total != null ? r.total : s.total, fcounts: r.fcounts || s.fcounts }));
+      bump(x => x + 1);
+      setShown(s => s + 60);
+    } catch (e) {}
     setLoadingMore(false);
   };
 
