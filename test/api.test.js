@@ -461,6 +461,28 @@ test('extra.json products are served offer-less, searchable, and priced by inges
   assert.deepStrictEqual(after.history, [3499], 'first price point starts the history');
 });
 
+// Name-derived facet values (worker/facetrules.js): the 13.7k auto-promoted
+// rows carry a name and nothing else, so the filters they render have to be
+// read off it. Registry coverage (every rule key is declared) is build.js's
+// job — this is the extraction itself.
+test('facet values derive from the product name, per category', async () => {
+  const { deriveFacets } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'facetrules.js')));
+  const cases = [
+    [{ cat: 'Furniture', name: 'Kontinentalseng 180x200 HOLMELVA grå stoff' }, { type: 'Beds', dim: '180x200', material: 'Fabric', color: 'Grey' }],
+    [{ cat: 'Jewelry', name: 'Halssmykke med smiley i 925 forgylt sølv' }, { type: 'Necklaces', material: 'Gold plated' }],
+    [{ cat: 'Pets', name: 'Royal Canin Dog Starter Mousse Våtfôr 0,195kg' }, { animal: 'Dog', type: 'Food', weight: 0.2 }],
+    [{ cat: 'Beauty', name: "Kiehl's Ultra Facial Cream SPF30 125ml" }, { type: 'Moisturisers', volume: 125, spf: 30 }],
+    [{ cat: 'Fashion', name: 'Wheat - Shorts Baby Vic Navy - 62' }, { type: 'Shorts', audience: 'Kids', size: '62', color: 'Blue' }],
+    [{ cat: 'Computers', name: 'MacBook Air 13" M3 · 1 TB · Silver' }, { type: 'Laptops', size: 13, storage: 1024, color: 'Silver' }],
+    [{ cat: 'TV', name: 'Samsung 55" OLED S90C' }, { type: 'TVs', size: 55, panel: 'OLED' }],
+    // a TV stand is not a TV — the type facet is what separates them
+    [{ cat: 'TV', name: 'Casø Birk TV-bord' }, { type: 'TV furniture' }],
+  ];
+  for (const [row, want] of cases) assert.deepStrictEqual(deriveFacets(row), want, row.name);
+  assert.strictEqual(deriveFacets({ cat: 'Books', name: 'Around the Moon' }), undefined, 'no match = no facets, never an empty object');
+  assert.strictEqual(deriveFacets({ cat: 'Nonesuch', name: 'Sofa' }), undefined, 'a category with no rules derives nothing');
+});
+
 // Query-based catalog: /api/products serves slices in the catalog.json row
 // shape — ids (expanded to family + neighbors), q (broad candidates, the
 // client re-filters), cat, sort=drop; meta carries per-category head counts
@@ -487,8 +509,9 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   const wantCats = seed.filter(p => !p.family).reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), {});
   assert.deepStrictEqual(meta.cats, wantCats, 'meta.cats counts heads only');
   assert.ok(Object.keys(wantCats).every(c => meta.icons?.[c]), 'meta.icons (cats.json registry) must cover every seed cat');
-  assert.deepStrictEqual(meta.facets?.TV?.map(f => f.key), ['size', 'panel', 'refresh'], 'meta.facets serves the facets.json registry');
-  assert.deepStrictEqual(meta.facets?.Kitchen?.map(f => f.key), ['type'], 'Kitchen serves its sub-category type facet');
+  assert.deepStrictEqual(meta.facets?.TV?.map(f => f.key), ['type', 'size', 'panel', 'res', 'refresh', 'platform'], 'meta.facets serves the facets.json registry');
+  assert.ok(meta.facets?.Kitchen?.some(f => f.key === 'type'), 'Kitchen serves its sub-category type facet');
+  assert.ok(Object.keys(meta.icons).every(c => meta.facets?.[c]?.length), 'every registered category declares at least one facet');
   // SUBCATS-PLAN: every Gaming head carries a curated facets.type (build.js
   // stamps demo rows, extra.json rows bring their own) — one vocabulary, no
   // 'Home console' spec strings leaking in beside 'Consoles'
@@ -1279,7 +1302,7 @@ test('admin PATCH: validated meta merge — manual promote and demote without a 
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { facets: ['x'] })).status, 400, 'facets must be an object');
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { facets: { anc: true, fit: 'over-ear' } })).status, 200);
   const withFacets = (await (await call('/api/products?ids=ean-7099999999992')).json()).products;
-  assert.deepStrictEqual(withFacets[0].facets, { anc: true, fit: 'over-ear' }, 'meta.facets rides /api/products rows');
+  assert.deepStrictEqual(withFacets[0].facets, { type: 'Soundbars', anc: true, fit: 'over-ear' }, 'meta.facets rides /api/products rows, over the name-derived values');
 
   // specs: same object-only merge — boot feeds it to the PDP Specifications section
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { specs: 'nope' })).status, 400, 'specs must be an object');
@@ -1330,7 +1353,7 @@ test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed ke
   await DB.prepare("UPDATE seed_meta SET hash = 'stale'").run();
   const row = (await (await call('/api/products?ids=kobo-libra')).json()).products[0];
   assert.deepStrictEqual(row.specs, { screen: '7.0″ E Ink' }, 'runtime specs must survive the seed re-upsert');
-  assert.deepStrictEqual(row.facets, { color: 'Yes' }, 'runtime facets must survive the seed re-upsert');
+  assert.deepStrictEqual(row.facets, { type: 'E-readers', color: 'Yes' }, 'runtime facets must survive the seed re-upsert');
   assert.strictEqual(row.name, 'Kobo Libra Colour', 'seed-owned keys still win on re-upsert');
 });
 

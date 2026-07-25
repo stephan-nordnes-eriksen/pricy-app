@@ -7,6 +7,7 @@ import seed from './seed.json' with { type: 'json' };
 import eansFile from './eans.json' with { type: 'json' };
 import CATS from './cats.json' with { type: 'json' }; // category registry: { cat: default icon } — THE list of valid cats, served to the UI via catMeta
 import FACETS from './facets.json' with { type: 'json' }; // facet registry: { cat: [facet defs] } — served via catMeta, drives the Results filter UI (FILTERS-PLAN.md)
+import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 
 const SCHEMA = [
@@ -473,8 +474,12 @@ function shapeRows(prods, offs, pts, imgSet) {
     const m = JSON.parse(meta);
     const po = offers[id] || [];
     const best = po[0]?.price; // po is price-ordered
+    // name-derived facet values (worker/facetrules.js) under whatever
+    // enrichment actually stored — an explicit meta.facets value always wins
+    const derived = deriveFacets(m);
     return {
       id, ...m,
+      facets: derived ? { ...derived, ...m.facets } : m.facets,
       img: imgSet.has(id) ? `/img/${id}` : undefined,
       best,
       drop: m.was && best ? Math.round((1 - best / m.was) * 100) : undefined,

@@ -10,6 +10,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const esbuild = require('esbuild');
+const { RULE_KEYS } = require('./worker/facetrules.js');
 
 const REPO = __dirname;
 const DIST = path.join(REPO, 'dist');
@@ -95,6 +96,14 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
   // upstream; boot appends server-known cats into the prototype's list
   const CATS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'cats.json'), 'utf8'));
   for (const c of ctx.CATEGORIES) if (!CATS[c]) throw new Error(`worker/cats.json is missing prototype category "${c}" — registry must be a superset`);
+  // a derived facet nobody declared is invisible (Results renders one group
+  // per facets.json def), and a def for an unknown cat never renders at all
+  const FACETS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'facets.json'), 'utf8'));
+  for (const c of Object.keys(FACETS)) if (!CATS[c]) throw new Error(`worker/facets.json has facets for unknown category "${c}"`);
+  for (const [c, keys] of Object.entries(RULE_KEYS)) {
+    const declared = new Set((FACETS[c] || []).map(d => d.key));
+    for (const k of keys) if (!declared.has(k)) throw new Error(`worker/facetrules.js derives "${k}" for ${c}, but worker/facets.json declares no such facet`);
+  }
   const ids = new Set([...catalog, ...children].map(p => p.id));
   for (const p of extra) {
     if (!p.id || !p.name || !p.cat) throw new Error(`extra.json row needs id/name/cat: ${JSON.stringify(p)}`);

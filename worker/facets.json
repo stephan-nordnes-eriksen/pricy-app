@@ -1,21 +1,150 @@
 {
-  "TV":        [ { "key": "size",    "label": "Screen size",  "type": "options", "unit": "″" },
-                 { "key": "panel",   "label": "Panel",        "type": "options" },
-                 { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" } ],
-  "Audio":     [ { "key": "type", "label": "Type",             "type": "options" },
-                 { "key": "anc",  "label": "Noise cancelling", "type": "bool" },
-                 { "key": "fit",  "label": "Fit",              "type": "options" } ],
-  "Phones":    [ { "key": "size",    "label": "Screen size",  "type": "options", "unit": "″" },
-                 { "key": "storage", "label": "Storage",      "type": "options", "unit": "GB" },
-                 { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" },
-                 { "key": "g5",      "label": "5G",            "type": "bool" } ],
-  "Computers": [ { "key": "type",    "label": "Type",    "type": "options" },
-                 { "key": "storage", "label": "Storage", "type": "options", "unit": "GB" },
-                 { "key": "ram",     "label": "Memory",  "type": "options", "unit": "GB" } ],
-  "Kitchen":   [ { "key": "type", "label": "Type", "type": "options" } ],
-  "Gaming":    [ { "key": "type", "label": "Type",   "type": "options" },
-                 { "key": "disc", "label": "Disc drive", "type": "bool" } ],
-  "Home":      [ { "key": "type",     "label": "Type",              "type": "options" },
-                 { "key": "mop",      "label": "Mopping",           "type": "bool" },
-                 { "key": "protocol", "label": "Smart home protocol", "type": "options" } ]
+  "TV":         [ { "key": "type",     "label": "Type",           "type": "options" },
+                  { "key": "size",     "label": "Screen size",    "type": "options", "unit": "″" },
+                  { "key": "panel",    "label": "Panel",          "type": "options" },
+                  { "key": "res",      "label": "Resolution",     "type": "options" },
+                  { "key": "refresh",  "label": "Refresh rate",   "type": "options", "unit": "Hz" },
+                  { "key": "platform", "label": "Smart platform", "type": "options" } ],
+
+  "Audio":      [ { "key": "type",     "label": "Type",             "type": "options" },
+                  { "key": "anc",      "label": "Noise cancelling", "type": "bool" },
+                  { "key": "wireless", "label": "Wireless",         "type": "bool" },
+                  { "key": "fit",      "label": "Fit",              "type": "options" },
+                  { "key": "color",    "label": "Colour",           "type": "options" } ],
+
+  "Phones":     [ { "key": "type",    "label": "Type",         "type": "options" },
+                  { "key": "size",    "label": "Screen size",  "type": "options", "unit": "″" },
+                  { "key": "storage", "label": "Storage",      "type": "options", "unit": "GB" },
+                  { "key": "refresh", "label": "Refresh rate", "type": "options", "unit": "Hz" },
+                  { "key": "g5",      "label": "5G",           "type": "bool" },
+                  { "key": "used",    "label": "Refurbished",  "type": "bool" },
+                  { "key": "color",   "label": "Colour",       "type": "options" } ],
+
+  "Computers":  [ { "key": "type",    "label": "Type",        "type": "options" },
+                  { "key": "size",    "label": "Screen size", "type": "options", "unit": "″" },
+                  { "key": "storage", "label": "Storage",     "type": "options", "unit": "GB" },
+                  { "key": "ram",     "label": "Memory",      "type": "options", "unit": "GB" },
+                  { "key": "color",   "label": "Colour",      "type": "options" } ],
+
+  "E-readers":  [ { "key": "type",    "label": "Type",        "type": "options" },
+                  { "key": "storage", "label": "Storage",     "type": "options", "unit": "GB" },
+                  { "key": "size",    "label": "Screen size", "type": "options", "unit": "″" } ],
+
+  "Projectors": [ { "key": "type",   "label": "Type",       "type": "options" },
+                  { "key": "res",    "label": "Resolution", "type": "options" },
+                  { "key": "lumens", "label": "Brightness", "type": "options", "unit": "lm" } ],
+
+  "Gaming":     [ { "key": "type",  "label": "Type",       "type": "options" },
+                  { "key": "disc",  "label": "Disc drive", "type": "bool" },
+                  { "key": "color", "label": "Colour",     "type": "options" } ],
+
+  "Toys":       [ { "key": "type",   "label": "Type",   "type": "options" },
+                  { "key": "age",    "label": "Age",    "type": "options", "unit": "yrs" },
+                  { "key": "pieces", "label": "Pieces", "type": "options" },
+                  { "key": "color",  "label": "Colour", "type": "options" } ],
+
+  "Home":       [ { "key": "type",     "label": "Type",                "type": "options" },
+                  { "key": "material", "label": "Material",            "type": "options" },
+                  { "key": "color",    "label": "Colour",              "type": "options" },
+                  { "key": "mop",      "label": "Mopping",             "type": "bool" },
+                  { "key": "protocol", "label": "Smart home protocol", "type": "options" } ],
+
+  "Kitchen":    [ { "key": "type",     "label": "Type",     "type": "options" },
+                  { "key": "material", "label": "Material", "type": "options" },
+                  { "key": "color",    "label": "Colour",   "type": "options" } ],
+
+  "Appliances": [ { "key": "type",  "label": "Type",  "type": "options" },
+                  { "key": "width", "label": "Width", "type": "options", "unit": "cm" } ],
+
+  "Furniture":  [ { "key": "type",     "label": "Type",     "type": "options" },
+                  { "key": "material", "label": "Material", "type": "options" },
+                  { "key": "dim",      "label": "Size",     "type": "options", "unit": "cm" },
+                  { "key": "seats",    "label": "Seats",    "type": "options" },
+                  { "key": "color",    "label": "Colour",   "type": "options" } ],
+
+  "Lighting":   [ { "key": "type",     "label": "Type",     "type": "options" },
+                  { "key": "socket",   "label": "Socket",   "type": "options" },
+                  { "key": "led",      "label": "LED",      "type": "bool" },
+                  { "key": "smart",    "label": "Smart",    "type": "bool" },
+                  { "key": "dimmable", "label": "Dimmable", "type": "bool" },
+                  { "key": "color",    "label": "Colour",   "type": "options" } ],
+
+  "Garden":     [ { "key": "type",  "label": "Type",   "type": "options" },
+                  { "key": "power", "label": "Power",  "type": "options" },
+                  { "key": "color", "label": "Colour", "type": "options" } ],
+
+  "Tools":      [ { "key": "type",  "label": "Type",      "type": "options" },
+                  { "key": "power", "label": "Power",     "type": "options" },
+                  { "key": "volt",  "label": "Voltage",   "type": "options", "unit": "V" },
+                  { "key": "pack",  "label": "Pack size", "type": "options" } ],
+
+  "Auto":       [ { "key": "type",   "label": "Type",     "type": "options" },
+                  { "key": "size",   "label": "Rim size", "type": "options", "unit": "″" },
+                  { "key": "season", "label": "Season",   "type": "options" } ],
+
+  "Bikes":      [ { "key": "type",       "label": "Type",       "type": "options" },
+                  { "key": "wheel",      "label": "Wheel size", "type": "options", "unit": "″" },
+                  { "key": "discipline", "label": "Discipline", "type": "options" } ],
+
+  "Sport":      [ { "key": "type",     "label": "Type",   "type": "options" },
+                  { "key": "audience", "label": "For",    "type": "options" },
+                  { "key": "color",    "label": "Colour", "type": "options" } ],
+
+  "Outdoor":    [ { "key": "type",       "label": "Type",       "type": "options" },
+                  { "key": "audience",   "label": "For",        "type": "options" },
+                  { "key": "material",   "label": "Material",   "type": "options" },
+                  { "key": "waterproof", "label": "Waterproof", "type": "bool" },
+                  { "key": "color",      "label": "Colour",     "type": "options" } ],
+
+  "Fashion":    [ { "key": "type",     "label": "Type",     "type": "options" },
+                  { "key": "audience", "label": "For",      "type": "options" },
+                  { "key": "size",     "label": "Size",     "type": "options" },
+                  { "key": "material", "label": "Material", "type": "options" },
+                  { "key": "color",    "label": "Colour",   "type": "options" } ],
+
+  "Shoes":      [ { "key": "type",       "label": "Type",       "type": "options" },
+                  { "key": "audience",   "label": "For",        "type": "options" },
+                  { "key": "waterproof", "label": "Waterproof", "type": "bool" },
+                  { "key": "color",      "label": "Colour",     "type": "options" } ],
+
+  "Watches":    [ { "key": "type",     "label": "Type",      "type": "options" },
+                  { "key": "audience", "label": "For",       "type": "options" },
+                  { "key": "material", "label": "Material",  "type": "options" },
+                  { "key": "movement", "label": "Movement",  "type": "options" },
+                  { "key": "case",     "label": "Case size", "type": "options", "unit": "mm" },
+                  { "key": "color",    "label": "Colour",    "type": "options" } ],
+
+  "Jewelry":    [ { "key": "type",     "label": "Type",     "type": "options" },
+                  { "key": "material", "label": "Material", "type": "options" },
+                  { "key": "stone",    "label": "Stone",    "type": "options" } ],
+
+  "Beauty":     [ { "key": "type",   "label": "Type", "type": "options" },
+                  { "key": "volume", "label": "Size", "type": "options", "unit": "ml" },
+                  { "key": "spf",    "label": "SPF",  "type": "options" } ],
+
+  "Health":     [ { "key": "type",   "label": "Type",      "type": "options" },
+                  { "key": "volume", "label": "Size",      "type": "options", "unit": "ml" },
+                  { "key": "pack",   "label": "Pack size", "type": "options" } ],
+
+  "Pets":       [ { "key": "animal", "label": "Pet",    "type": "options" },
+                  { "key": "type",   "label": "Type",   "type": "options" },
+                  { "key": "weight", "label": "Weight", "type": "options", "unit": "kg" } ],
+
+  "Baby":       [ { "key": "type",  "label": "Type",   "type": "options" },
+                  { "key": "age",   "label": "Age",    "type": "options", "unit": "mnd" },
+                  { "key": "size",  "label": "Size",   "type": "options" },
+                  { "key": "color", "label": "Colour", "type": "options" } ],
+
+  "Books":      [ { "key": "format", "label": "Format", "type": "options" },
+                  { "key": "genre",  "label": "Genre",  "type": "options" } ],
+
+  "Office":     [ { "key": "type",  "label": "Type",      "type": "options" },
+                  { "key": "color", "label": "Colour",    "type": "options" },
+                  { "key": "pack",  "label": "Pack size", "type": "options" } ],
+
+  "Hobby":      [ { "key": "type",  "label": "Type",   "type": "options" },
+                  { "key": "color", "label": "Colour", "type": "options" } ],
+
+  "Photo":      [ { "key": "type",  "label": "Type",   "type": "options" },
+                  { "key": "color", "label": "Colour", "type": "options" } ]
 }
