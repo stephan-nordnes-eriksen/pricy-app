@@ -37,6 +37,13 @@ Two Claude Design projects feed this repo:
   setScreen, `hydrateSession` batch-fetches every id the login references,
   header suggestions ride a debounced `q=` fetch). Worker helpers:
   `rowsFor`/`searchIds`/`topDropIds`/`catMeta` in `worker/index.js`.
+  `searchIds` is a substring LIKE over the meta blob minus `$.specs` and
+  `$.icon` (both are non-text: the icon is a lucide NAME, so leaving it in
+  made every Furniture row match "sofa"), LIMIT 100, unranked. **Known gap:
+  no diacritic folding** — "hundefor" finds nothing, "hundefôr" does. Fixing
+  it means an ASCII-folded copy in `kw` plus a backfill of every already
+  promoted row, so it's a migration, not a one-liner.
+  List queries are capped at `PAGE_MAX` (400) rows with no paging.
   `/api/catalog.json` remains as a full dump for ops/tools only — the SPA
   must never call it. Upstream is synced (2026-07-21): category counts and
   presence read `CATALOG.meta.cats`, SignedHome "Biggest drops" ranks
