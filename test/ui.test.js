@@ -16,7 +16,7 @@ const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 2000
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
-function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false } = {}) {
+function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false, fcounts } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -84,7 +84,12 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         types: heads.reduce((m, r) => { const t = r.facets?.type; if (t) ((m[r.cat] ??= {})[t] = (m[r.cat][t] || 0) + 1); return m; }, {}),
       };
       // list branches carry the query's own total (worker: meta.total)
-      return ok({ meta: p.get('ids') || p.get('q') || p.get('top') ? meta : { ...meta, total: out.length }, products: out });
+      // list branches carry the query's own total and, with a cat, the
+      // category-wide facet histogram as [value, count] pairs (worker: catMeta
+      // + listIds). `fcounts` is injectable so a test can serve a value no
+      // loaded row has — the whole point of counting server-side.
+      if (p.get('ids') || p.get('q') || p.get('top')) return ok({ meta, products: out });
+      return ok({ meta: { ...meta, total: out.length, ...(p.get('cat') && fcounts ? { fcounts } : {}) }, products: out });
     }
     if (u === '/api/me') return ME ? ok(ME) : ok({ error: 'unauthenticated' }, 401);
     if (u === '/api/auth/login' || u === '/api/auth/signup') {
@@ -790,6 +795,24 @@ test('facet filters: TV renders spec-derived option groups, clicking filters row
   const name = win.CATALOG.find(p => p.id === 'tv').name;
   assert.ok(qa(win, '.rrow, .rcard')[0].textContent.includes(name), 'the surviving row must be the 55″ set');
   assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Screen size: 55 ″')), 'active facet must chip');
+});
+
+// The rail used to count the rows it happened to hold, so a value that only
+// existed on row 700 of a 1,387-row category was invisible and unselectable.
+// It now prefers the served histogram — the seam where the worker's
+// [value, count] pairs meet the screen.
+test('facet filters: the rail offers category-wide values the loaded rows do not have', async () => {
+  const win = boot('http://pricy.test/search?cat=TV', {
+    session: true,
+    fcounts: { size: [[55, 3], [65, 9], [98, 42]] }, // 98″ is in no loaded row
+  });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const opts = () => [...(facetGrp(win, 'Screen size')?.querySelectorAll('.check') || [])].map(el => el.textContent);
+  assert.ok(await until(() => opts().some(t => t.startsWith('98 ″'))),
+    'a value only the server knows must become selectable, got: ' + opts().join(' | '));
+  assert.ok(opts().some(t => t.startsWith('98 ″') && t.includes('42')), 'its count is the served one, got: ' + opts().join(' | '));
+  assert.ok(opts().some(t => t.startsWith('55 ″') && t.includes('3')),
+    'a value the rows DO have still shows the category count, not the loaded count, got: ' + opts().join(' | '));
 });
 
 test('sub-categories: Browse tiles show type chips, clicking one lands on pre-filtered Results', async () => {
