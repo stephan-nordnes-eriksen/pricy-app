@@ -553,26 +553,54 @@ async function rowsFor(db, ids, { expand = true } = {}) {
   return rows;
 }
 
+// Diacritic folding. Norwegian shoppers type "hundefor", the catalog says
+// "hundefôr" — measured on the live 14k catalog, 25% of rows carry æ/ø/å/é in
+// name or brand, and an ASCII-typed query found none of them ("kjokken" 0 hits
+// vs "kjøkken" 100, "tradlos" 0 vs "trådløs" 34). SQLite has no unaccent and
+// D1 has no ICU, so both sides of the LIKE get the same replace() chain — done
+// in the QUERY, not in a stored column: no migration, and it covers hidden and
+// future rows for free (the alternative was folding `kw` at promotion time plus
+// a backfill of 13,705 rows that promotion guards refuse to re-touch).
+// Uppercase forms are listed because sqlite's lower() is ASCII-only, so
+// "Øretelefoner" never lowercases; JS's toLowerCase makes those pairs no-ops
+// on the query side, which is fine.
+// ponytail: folds the whole meta blob per row per token — 15 → 55 ms over 14k
+// rows locally. FTS5 over a folded column when that stops being cheap.
+const FOLD = [['æ', 'ae'], ['Æ', 'ae'], ['ø', 'o'], ['Ø', 'o'], ['å', 'a'], ['Å', 'a'], ['ä', 'a'], ['Ä', 'a'], ['ö', 'o'], ['Ö', 'o'], ['ü', 'u'], ['Ü', 'u'], ['é', 'e'], ['É', 'e'], ['è', 'e'], ['ê', 'e'], ['ô', 'o'], ['ç', 'c']];
+const foldSql = (expr) => FOLD.reduce((s, [a, b]) => `replace(${s}, '${a}', '${b}')`, `lower(${expr})`);
+const foldJs = (s) => FOLD.reduce((s2, [a, b]) => s2.split(a).join(b), String(s).toLowerCase());
+
 // Broad candidate match for free-text search: LIKE over the whole meta JSON
 // (name/brand/cat/kw all live there). Deliberately broader than the client's
 // searchCatalog — the SPA re-filters exactly, MCP re-scores; never return
 // these raw. Token semantics mirror the client: ≥2 chars, OR, '' ≠ 'a'
 // (a query with no valid tokens matches nothing, an absent query everything).
-// ponytail: sqlite lower() is ASCII-only, so an æ/ø/å token misses uppercase
-// matches — FTS or a normalized search column when Norwegian queries suffer.
 async function searchIds(db, q) {
-  const toks = String(q).toLowerCase().split(/\s+/)
+  const toks = String(q).split(/\s+/)
     .filter(t => t.length >= 2).slice(0, 8)
-    .map(t => t.replace(/[\\%_]/g, c => '\\' + c));
+    .map(t => foldJs(t).replace(/[\\%_]/g, c => '\\' + c));
   if (!toks.length) return [];
+  // $.icon is dropped for the same reason as $.specs: it is not search text.
+  // It holds the category's lucide icon NAME, so leaving it in makes every
+  // Furniture row match "sofa", every Bikes row "bike", every Books row
+  // "book" — harmless when 10 categories were all electronics, badly wrong
+  // once the icon set is sofa/bike/book/car/shirt/camera/pill/gem/tent.
+  const blob = foldSql("json_remove(meta, '$.specs', '$.icon')");
+  // leading space + '% tok%' = the token starts a word in the name
+  const name = `' ' || ${foldSql("json_extract(meta, '$.name')")}`;
+  const brand = foldSql("coalesce(json_extract(meta, '$.brand'), '')");
+  // Rank before truncating, or LIMIT 100 over rowid order returns "whichever
+  // shop we crawled first": q=ring matched 409 names and served 100 of them
+  // with 25 non-jewellery rows in the way. Word-start-in-name beats
+  // substring-in-name beats brand beats "mentioned somewhere in the blob"
+  // (srcCat/kw). Measured: q=ring 75 → 96 of 100 rows in Jewelry, q=kjokken
+  // 20 → 95 in Kitchen. Ties keep rowid order, so curated rows stay first.
+  const score = toks.map(() =>
+    `(CASE WHEN ${name} LIKE ? ESCAPE '\\' THEN 4 ELSE 0 END) + (CASE WHEN ${name} LIKE ? ESCAPE '\\' THEN 2 ELSE 0 END) + (CASE WHEN ${brand} LIKE ? ESCAPE '\\' THEN 1 ELSE 0 END)`
+  ).join(' + ');
   const { results } = await db.prepare(
-    // $.icon is dropped for the same reason as $.specs: it is not search text.
-    // It holds the category's lucide icon NAME, so leaving it in makes every
-    // Furniture row match "sofa", every Bikes row "bike", every Books row
-    // "book" — harmless when 10 categories were all electronics, badly wrong
-    // once the icon set is sofa/bike/book/car/shirt/camera/pill/gem/tent.
-    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => "lower(json_remove(meta, '$.specs', '$.icon')) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
-  ).bind(...toks.map(t => `%${t}%`)).all();
+    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => `${blob} LIKE ? ESCAPE '\\'`).join(' OR ')}) ORDER BY ${score} DESC, rowid LIMIT 100`
+  ).bind(...toks.map(t => `%${t}%`), ...toks.flatMap(t => [`% ${t}%`, `%${t}%`, `%${t}%`])).all();
   return results.map(r => r.id);
 }
 

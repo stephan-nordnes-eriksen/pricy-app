@@ -513,6 +513,54 @@ test('GET /api/products: q is a broad head-only candidate match with client toke
   assert.deepStrictEqual(short, [], 'a query with no tokens ≥2 chars matches nothing, like the client');
 });
 
+// Norwegian shoppers type ASCII; the catalog doesn't. Measured on the live 14k
+// catalog before the fix: q=kjokken 0 hits vs q=kjøkken 100, q=hundefor 0 vs
+// q=hundefôr 2 — 25% of rows carry æ/ø/å/é in name or brand.
+test('GET /api/products: search folds diacritics on both sides of the match', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  const add = async (ean, meta) => {
+    await req('/api/ingest', 'POST', [{ product_id: 'ean-' + ean, shop: 'Power', price: 199, name: meta.name, brand: meta.brand }]);
+    await req('/api/admin/products/ean-' + ean, 'PATCH', { ...meta, hidden: null });
+  };
+  await add('7099900000001', { name: 'Xtra Hundefôr for Voksne Hunder', brand: 'Xtra', cat: 'Pets', kw: 'hundefôr' });
+  await add('7099900000002', { name: 'Øretelefoner Pro', brand: 'Acme', cat: 'Audio', kw: 'øretelefoner' });
+
+  const ids = async (q) => (await (await call('/api/products?q=' + encodeURIComponent(q))).json()).products.map(p => p.id);
+  assert.deepStrictEqual(await ids('hundefor'), ['ean-7099900000001'], 'an ASCII-typed query must find the ô row');
+  assert.deepStrictEqual(await ids('hundefôr'), ['ean-7099900000001'], 'the accented query still works');
+  // sqlite's lower() is ASCII-only, so a leading Ø never lowercases — the fold
+  // list carries the uppercase forms for exactly this row
+  assert.deepStrictEqual(await ids('oretelefoner'), ['ean-7099900000002'], 'uppercase Ø folds too');
+  assert.deepStrictEqual(await ids('øretelefoner'), ['ean-7099900000002']);
+});
+
+// LIMIT 100 over rowid order = "whichever shop we crawled first". Measured on
+// the live catalog: q=ring matched 409 product NAMES and served 100 rows, 25 of
+// which weren't jewellery at all, while 314 real name matches never came back.
+test('GET /api/products: search ranks name matches above blob matches before truncating', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  // inserted worst-first, so rowid order is the exact opposite of the ranking
+  const rows = [
+    ['7099910000001', { name: 'Sokkelist eik', brand: 'Acme', cat: 'Home', kw: 'ringmåler pynt' }], // blob only
+    ['7099910000002', { name: 'Skrujern 4 mm', brand: 'Ringo', cat: 'Tools', kw: 'skrujern' }],     // brand
+    ['7099910000003', { name: 'Armring i sølv', brand: 'Acme', cat: 'Jewelry', kw: 'armring' }],    // mid-word in name
+    ['7099910000004', { name: 'Ring i gull', brand: 'Acme', cat: 'Jewelry', kw: 'ring' }],          // word-start in name
+  ];
+  for (const [ean, meta] of rows) {
+    await req('/api/ingest', 'POST', [{ product_id: 'ean-' + ean, shop: 'Power', price: 500, name: meta.name, brand: meta.brand }]);
+    await req('/api/admin/products/ean-' + ean, 'PATCH', { ...meta, hidden: null });
+  }
+  const got = (await (await call('/api/products?q=ring')).json()).products.map(p => p.id).filter(id => id.startsWith('ean-70999100'));
+  assert.deepStrictEqual(got, ['ean-7099910000004', 'ean-7099910000003', 'ean-7099910000002', 'ean-7099910000001'],
+    'word-start-in-name > substring-in-name > brand > mentioned anywhere in the blob');
+});
+
 test('GET /api/products: sort=drop ranks by real drop%, perCat covers every category', async () => {
   const call = api({ DB: d1() });
   const { products } = await (await call('/api/products?sort=drop&limit=3')).json();
