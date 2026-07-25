@@ -217,14 +217,68 @@ async function bestOffer(db, productId) {
 // prod table rebuild that allowing NULL would need.
 const stockVal = (s) => s == null || s === 2 ? 2 : s ? 1 : 0;
 
-// a row for a product we don't have yet, carrying enough identity to create it
-const autoAdd = (r) => /^ean-\d+$/.test(r.product_id) && typeof r.name === 'string' && !!r.name.trim();
+// a row for a product we don't have yet, carrying enough identity to create it:
+// an EAN-derived id, or (shops that publish no gtin) the brand+name slug
+// sources.js slugId() derives — see the note there on why both exist
+const autoAdd = (r) => /^(ean-\d+|p-[a-z0-9-]+)$/.test(r.product_id) && typeof r.name === 'string' && !!r.name.trim();
 
 // Auto-promotion bits (OPEN-CATALOG-PLAN B3): CATS (cats.json) gates valid
 // categories + default icons, an accessory blocklist keeps junk hidden
 // regardless of category mapping, and kw = distinct name/brand/cat tokens.
 const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b/i;
+// …except where those words ARE the product (a jewellery bracelet, a watch strap
+// shop) — the category the shop itself assigned already proves it isn't an accessory
+const JUNK_OK = new Set(['Jewelry', 'Watches']);
 const kwOf = (...parts) => [...new Set(parts.join(' ').toLowerCase().match(/[\p{L}\d]+/gu) || [])].filter(t => t.length > 1).join(' ');
+
+// Category classification (OPEN-CATALOG B3, widened 2026-07-25). env.CATMAP
+// (exact per-shop raw string → cat) still wins where it's set, but hand-mapping
+// every breadcrumb label of every shop is precisely why 200+ researched shops
+// never went live: one new shop = dozens of unknown labels = nothing promotes.
+// These rules read the Norwegian retail vocabulary itself, so ANY shop — today's
+// and tomorrow's — promotes with zero config. First match wins, so the order is
+// specific → generic. Only cats.json cats may appear here (asserted below).
+const CAT_SKIP = /tilbehør|deksel|etui|reservedel|reservedeler|\bdeler\b|gavekort|frakt|tjeneste|outlet|kampanje/i;
+const CAT_RULES = [
+  [/projektor|prosjektor|lerret/i, 'Projectors'],
+  [/lesebrett|e-?bok|kindle|kobo/i, 'E-readers'],
+  [/playstation|xbox|nintendo|konsoll|gamepad|tv-?spill|dataspill|videospill|pc-?spill|gaming/i, 'Gaming'],
+  [/\btv\b|fjernsyn|television/i, 'TV'],
+  [/hodetelefon|høyttaler|ørepropp|øretelefon|headset|soundbar|lydplanke|hi-?fi|forsterker|platespiller|lydanlegg|høretelefon/i, 'Audio'],
+  [/kamera|objektiv|fotoapparat|systemkamera|speilrefleks|\bdrone|blits|stativ.*foto|foto/i, 'Photo'],
+  [/laptop|bærbar|datamaskin|nettbrett|\bipad\b|macbook|chromebook|tastatur|harddisk|\bssd\b|grafikkort|prosessor|stasjonær|dataskjerm|\bpc\b|data\b/i, 'Computers'],
+  [/mobiltelefon|smarttelefon|\biphone\b|mobil\b/i, 'Phones'],
+  [/vaskemaskin|tørketrommel|oppvaskmaskin|kjøleskap|fryser|komfyr|stekeovn|platetopp|ventilator|hvitevare/i, 'Appliances'],
+  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp\b|servering/i, 'Kitchen'],
+  [/lampe|belysning|lyspære|lyskilde|pendel|lysestake|utelys|\blys\b/i, 'Lighting'],
+  [/møbler|møbel|\bsofa|\bstol\b|\bbord\b|\bseng\b|madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|vitrine|nattbord|romdeler/i, 'Furniture'],
+  [/\bhage|utemøbl|plante|gressklipper|\bgrill\b|terrasse|blomst|\bfrø\b|uterom/i, 'Garden'],
+  // hobby paint/craft before Tools, or Panduro's craft paints read as housepaint
+  [/hobby|\bgarn\b|strikk|hekle|håndarbeid|scrapbook|\bperler\b|modellbygg|\bsying|stoff\b|oljemaling|akrylmaling|spraymaling|fargeblyant|broderi|klistremerk|kunstner/i, 'Hobby'],
+  [/verktøy|\bdrill\b|bormaskin|skrutrekker|\bsag\b|maling|byggevare|jernvare|festemid|skruer|elektriker|rørlegger|\bstige\b|gardintrapp|vinkelsliper|\bspiker\b/i, 'Tools'],
+  [/bildel|\bdekk\b|\bfelg|bilpleie|bilbatteri|motorolje|bilrekvisita|\bbil\b/i, 'Auto'],
+  [/sykkel|sykling|elsykkel|landevei|terrengsykkel/i, 'Bikes'],
+  [/\bbaby|spedbarn|barnevogn|bleie|smokk|barnestol|graviditet|amming|smekke/i, 'Baby'],
+  [/\bsko\b|\bskor\b|støvler|sandaler|joggesko|sneakers|\bboots\b|tøfler|fottøy|\bsko[a-zæøå]*\b/i, 'Shoes'],
+  [/klokke|armbåndsur|smartklokke|lommeur|\bur\b/i, 'Watches'],
+  [/smykk|øredobb|halskjede|anheng|\bcharm|gullsmed|diamant|\bperle|\bring(er)?\b|sølv|\bgull|sølje|bunadsølv|ørepynt|\bkjede\b|forlovelse/i, 'Jewelry'],
+  [/sminke|make-?up|hudpleie|parfyme|\bdufter\b|hårpleie|shampo|neglelakk|kosmetikk|skjønnhet|barbering|solkrem|\bpleie\b|leppe|øyenskygge|øyenbryn|maskara|mascara|gellack|\bnegle|bodylotion|kroppspleie|hår(skum|farge|produkt)|foundation|concealer|highlighter|\bserum\b|ansikt|deodorant|selvbruning|\bprimer\b/i, 'Beauty'],
+  [/apotek|\bhelse|kosttilskudd|vitamin|protein|medisin|førstehjelp|munnpleie|tannbørste|\bkosthold|legemid|reseptfri|\bplaster\b|tannkrem|munnskyll/i, 'Health'],
+  [/\bhund|\bkatt|kjæledyr|dyrefôr|fôr|akvari|smådyr|\bhest\b|kanin|dyrebutikk|valp\b|kattesand|dyremat/i, 'Pets'],
+  [/\bbok\b|bøker|roman|skjønnlitteratur|lydbok|tegneserie|litteratur|pocket/i, 'Books'],
+  [/kontor|\bpapir|skriver|blekk|\btoner\b|\bpenn|notatbok|skolesaker|emballasje|kalkulator|konvolutt/i, 'Office'],
+  [/\bleke|\bleker\b|lego|brettspill|puslespill|kosedyr|\bbamse|\bdukke|actionfigur|byggesett|\bspill\b|squishmallow|plysj|samlekort|løskort|\bbrio\b|barbie|playmobil/i, 'Toys'],
+  [/sport|trening|fitness|løping|\bski\b|langrenn|slalåm|fotball|\bgolf\b|svømming|\byoga\b|styrke|vekter|boksing/i, 'Sport'],
+  [/friluft|\btur\b|\btelt\b|sovepose|ryggsekk|\bjakt\b|\bfiske|camping|klatring|villmark|\bagn\b|\bsluk\b|anorakk|hengekøye/i, 'Outdoor'],
+  [/klær|jakke|bukse|genser|skjorte|kjole|t-skjorte|undertøy|sokker|\blue\b|hansker|\bbelte\b|\bdress\b|shorts|strømpe|badetøy|badedrakt|\bcaps\b|mote\b|dame\b|herre\b|barneklær|pyjamas|\bvest\b|skjørt|\bjeans\b|\bkåpe|frakk/i, 'Fashion'],
+  [/støvsuger|smarthus|smart hjem|luftrenser|\bvifte|varmepumpe|strykejern|interiør|\bpynt|tekstil|gardin|\bpute\b|\bteppe|oppbevaring|baderom|håndkl|rengjøring|vaskemiddel|sengetøy|\bdyne\b|oppvask/i, 'Home'],
+];
+for (const [, c] of CAT_RULES) if (!CATS[c]) throw new Error(`CAT_RULES references unknown category "${c}" — add it to worker/cats.json`);
+export const classify = (label) => {
+  const s = String(label || '');
+  if (!s || CAT_SKIP.test(s)) return undefined;
+  return CAT_RULES.find(([re]) => re.test(s))?.[1];
+};
 
 async function ingest(db, rows, env) {
   // EAN aliasing (OPEN-CATALOG-PLAN A2): `ean-*` ids re-map through the eans
@@ -248,7 +302,7 @@ async function ingest(db, rows, env) {
   const creates = {};
   for (const r of rows) {
     if (known.has(r.product_id) || !autoAdd(r)) continue;
-    creates[r.product_id] ??= { name: r.name.trim(), ...(r.brand ? { brand: String(r.brand) } : {}), ...(r.srcCat ? { srcCat: String(r.srcCat) } : {}), ean: r.product_id.slice(4), hidden: 1 };
+    creates[r.product_id] ??= { name: r.name.trim(), ...(r.brand ? { brand: String(r.brand) } : {}), ...(r.srcCat ? { srcCat: String(r.srcCat) } : {}), ...(r.product_id.startsWith('ean-') ? { ean: r.product_id.slice(4) } : {}), hidden: 1 };
     stillHidden.add(r.product_id);
     metaOf[r.product_id] = creates[r.product_id];
   }
@@ -271,8 +325,14 @@ async function ingest(db, rows, env) {
     const meta = metaOf[r.product_id];
     if (!meta || !stillHidden.has(r.product_id) || meta.family || meta.auto) continue;
     const brand = meta.brand ?? (r.brand ? String(r.brand) : null) ?? 'Unspecified';
-    const cat = catmap[r.shop]?.[r.srcCat ?? meta.srcCat];
-    if (!meta.name || !CATS[cat] || JUNK_RE.test(meta.name)) continue;
+    const srcCat = r.srcCat ?? meta.srcCat;
+    // CATMAP's exact per-shop mapping wins; the shared vocabulary rules cover
+    // every label nobody hand-mapped; the product name is the next resort for
+    // shops whose pages carry no category/breadcrumb at all; and CATMAP's
+    // reserved "*" key is a single-category shop's floor (a pure bike shop
+    // whose pages send SKU codes instead of categories is still selling bikes)
+    const cat = catmap[r.shop]?.[srcCat] ?? classify(srcCat) ?? classify(meta.name) ?? catmap[r.shop]?.['*'];
+    if (!meta.name || !CATS[cat] || (JUNK_RE.test(meta.name) && !JUNK_OK.has(cat))) continue;
     const { hidden, ...rest } = meta;
     promoted[r.product_id] = { ...rest, brand, cat, icon: CATS[cat], kw: kwOf(meta.name, brand, cat), auto: 1 };
     stillHidden.delete(r.product_id);

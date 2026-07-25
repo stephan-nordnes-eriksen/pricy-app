@@ -34,10 +34,15 @@ export function parsePrice(raw) {
   return n > 0 ? Math.round(n) : null;
 }
 
-const XML_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
-const decodeXml = (s) => s
+const XML_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', ndash: '–', mdash: '—', hellip: '…', deg: '°', trade: '™', reg: '®', copy: '©' };
+// Also used on scraped JSON-LD text: plenty of shops emit HTML-escaped names
+// ("Schwalbe 26&quot;", "Eikenø&#248;kkel") straight into their JSON-LD, which
+// otherwise reaches the UI verbatim and mangles every derived slug id.
+export const decodeXml = (s) => String(s)
   .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-  .replace(/&(amp|lt|gt|quot|apos|#\d+);/g, (_, e) => XML_ENTITIES[e] ?? String.fromCodePoint(e.slice(1)));
+  .replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e) => e[0] === '#'
+    ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : Number(e.slice(1)))
+    : XML_ENTITIES[e.toLowerCase()] ?? m);
 
 // flat <product> element → lowercased tag→text map
 function xmlFields(el) {
@@ -123,10 +128,10 @@ function scrapeRow(html) {
   if (currency && currency.toUpperCase() !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
   return {
     price,
-    name: name ?? null,
-    brand: brand ?? null,
+    name: name ? decodeXml(name).trim() : null,
+    brand: brand ? decodeXml(brand).trim() : null,
     ean: ean ?? null,
-    srcCat: srcCat ?? null,
+    srcCat: srcCat ? decodeXml(srcCat).trim() : null,
     ship: sd?.ship ?? null,
     stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
     eta: sd?.eta ?? null,
@@ -153,6 +158,23 @@ export async function scrapeSource(shop, cfg) {
   }));
   return rows.filter(Boolean);
 }
+
+// Fallback product identity for the many shops (most Shopify and small
+// WooCommerce stores) that publish no gtin at all — Ringo and Kidsdreamstore
+// both sampled 0/30, which is why discovery yielded nothing there. brand+name,
+// normalised: it still merges offers across shops when two shops name a product
+// the same way, and when they don't we get a real, live, single-shop product
+// instead of nothing. EAN stays preferred — this is only reached without one.
+// ponytail: name-keyed, so a shop renaming a product strands the old row; the
+// upgrade path is POST /api/admin/alias, same as any other mis-keyed row.
+const NO_CHARS = { æ: 'ae', ø: 'o', å: 'a', ä: 'a', ö: 'o', ü: 'u', é: 'e' };
+export const slugId = (brand, name) => {
+  const slug = [brand, name].filter(Boolean).join(' ').toLowerCase()
+    .replace(/[æøåäöüé]/g, c => NO_CHARS[c])
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70).replace(/-+$/, '');
+  return slug ? `p-${slug}` : null;
+};
 
 // Pure: <loc> URLs out of a sitemap/sitemap-index XML document, plus whether
 // it's an index (needs one more hop into the listed sitemaps) or a leaf
@@ -192,15 +214,21 @@ async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|va
 export async function discoverSource(shop, cfg) {
   const pathFilter = cfg.pathFilter ? new RegExp(cfg.pathFilter, 'i') : undefined;
   const sitemapFilter = cfg.sitemapFilter ? new RegExp(cfg.sitemapFilter, 'i') : undefined;
-  const urls = (await sitemapUrls(cfg.sitemap, { pathFilter, sitemapFilter })).slice(0, cfg.limit ?? Infinity);
+  const all = await sitemapUrls(cfg.sitemap, { pathFilter, sitemapFilter });
+  // when capped, spread the pick evenly over the whole sitemap instead of
+  // taking the head — sitemaps are usually sorted, so the first N URLs are one
+  // alphabetical corner of one category, which is the worst possible sample
+  const stride = Math.max(1, Math.ceil(all.length / (cfg.limit ?? Infinity)));
+  const urls = stride > 1 ? all.filter((_, i) => i % stride === 0) : all;
   const rows = [];
   for (const url of urls) {
     try {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       const html = await res.text();
       const { ean, ...row } = scrapeRow(html);
-      if (!ean) throw new Error('no gtin in JSON-LD, no stable id to key a discovered row on');
-      rows.push({ product_id: `ean-${ean}`, shop, url, ...row });
+      const product_id = ean ? `ean-${ean}` : slugId(row.brand, row.name);
+      if (!product_id) throw new Error('no gtin and no name — nothing to key a discovered row on');
+      rows.push({ product_id, shop, url, ...row });
     } catch (e) {
       console.warn(`ingest: ${shop} discover ${url} failed: ${e.message}`);
     }

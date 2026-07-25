@@ -1309,19 +1309,59 @@ test('auto-promotion: a hidden row with name+CATMAP-mapped srcCat goes live (bra
   // "Unspecified"; unmapped srcCat → stays hidden; accessory name → stays hidden
   await push([
     { product_id: 'ean-7099999999994', shop: 'Power', price: 990, name: 'Nameless Phone', srcCat: 'Mobiltelefoner' },
-    { product_id: 'ean-7099999999995', shop: 'Power', price: 990, name: 'Acme Blender', brand: 'Acme', srcCat: 'Kjøkkenmaskiner' },
+    { product_id: 'ean-7099999999995', shop: 'Power', price: 990, name: 'Acme Grunk', brand: 'Acme', srcCat: 'Diverse' },
     { product_id: 'ean-7099999999996', shop: 'Power', price: 99, name: 'Pixel 9 deksel svart', brand: 'Google', srcCat: 'Mobiltelefoner' },
   ]);
   const brandless = (await (await call('/api/products?q=nameless phone')).json()).products.find(p => p.id === 'ean-7099999999994');
   assert.ok(brandless, 'brandless-but-mapped product still auto-promotes');
   assert.strictEqual(brandless.brand, 'Unspecified');
   const hiddenIds = (await (await call('/api/products?hidden=1')).json()).products.map(p => p.id);
-  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999996'], 'unmapped and blocklisted rows stay hidden');
+  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999996'], 'unclassifiable and blocklisted rows stay hidden');
 
   // a human demotion out-ranks the machine: auto:1 + hidden:1 never re-promotes
   await req('/api/admin/products/ean-7099999999993', 'PATCH', { hidden: 1 });
   await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Google Pixel 9 128 GB', brand: 'Google', srcCat: 'Mobiltelefoner' }]);
   assert.ok(!(await (await call('/api/products?q=pixel 9')).json()).products.some(p => p.id === 'ean-7099999999993'), 'demoted product must not re-promote');
+});
+
+// The scale fix (2026-07-25): a brand-new shop with NO CATMAP entry at all must
+// still promote off its own Norwegian category labels, and a shop that publishes
+// no gtin must still produce products (slug-keyed) instead of nothing.
+test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free rows included', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' }; // note: no CATMAP whatsoever
+  const call = api(env);
+  const push = (rows) => admin(env)('/api/ingest', 'POST', rows);
+
+  await push([
+    { product_id: 'p-bergans-slingsby-vindjakke', shop: 'Bergans', price: 1799, name: 'Bergans Slingsby Vindjakke', brand: 'Bergans', srcCat: 'Jakker og bukser' },
+    { product_id: 'ean-7099999999901', shop: 'Musti', price: 349, name: 'Royal Canin Adult 4 kg', brand: 'Royal Canin', srcCat: 'Hundefôr' },
+    { product_id: 'p-ukjent-dings', shop: 'Bergans', price: 99, name: 'Ukjent dings', brand: 'Acme', srcCat: 'Diverse' },
+    // no srcCat at all — the product name is the last resort
+    { product_id: 'ean-7099999999902', shop: 'Musti', price: 599, name: 'Trixie kattetre 120 cm', brand: 'Trixie' },
+  ]);
+
+  const of = async (id) => (await (await call(`/api/products?ids=${id}`)).json()).products[0];
+  assert.strictEqual((await of('p-bergans-slingsby-vindjakke'))?.cat, 'Fashion', 'gtin-free slug row goes live off its category label');
+  assert.strictEqual((await of('ean-7099999999901'))?.cat, 'Pets');
+  assert.strictEqual((await of('ean-7099999999902'))?.cat, 'Pets', 'no srcCat → classify from the name');
+  assert.strictEqual((await of('p-ukjent-dings'))?.hidden, 1, 'nothing recognisable still stays hidden');
+
+  // CATMAP's "*" floor catches what neither the label nor the name recognises,
+  // but only for shops that declare it — and never ahead of a real match
+  const floor = { DB, INGEST_TOKEN: 'sekrit-token', CATMAP: { Bikeshop: { '*': 'Bikes' } } };
+  await admin(floor)('/api/ingest', 'POST', [
+    { product_id: 'p-pilo-dropout-d757', shop: 'Bikeshop', price: 249, name: 'Pilo Dropout D757', brand: 'Pilo' },
+    { product_id: 'p-agu-dwr-benvarmere', shop: 'Bikeshop', price: 399, name: 'AGU DWR Benvarmere', brand: 'AGU', srcCat: 'Hansker og votter' },
+  ]);
+  const floorOf = async (id) => (await (await api(floor)(`/api/products?ids=${id}`)).json()).products[0];
+  assert.strictEqual((await floorOf('p-pilo-dropout-d757'))?.cat, 'Bikes', 'unrecognisable row falls to the shop floor');
+  assert.strictEqual((await floorOf('p-agu-dwr-benvarmere'))?.cat, 'Fashion', 'a real category match still outranks the floor');
+
+  // slug ids merge offers across shops the same way an EAN does
+  await push([{ product_id: 'p-bergans-slingsby-vindjakke', shop: 'Milrab', price: 1599, name: 'Bergans Slingsby Vindjakke', brand: 'Bergans', srcCat: 'Jakker og bukser' }]);
+  const merged = await of('p-bergans-slingsby-vindjakke');
+  assert.deepStrictEqual(merged.offers.map(o => o.shop).sort(), ['Bergans', 'Milrab']);
 });
 
 // OPEN-CATALOG-PLAN C: alias can create a variant child on the fly (group.mjs)
