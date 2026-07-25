@@ -119,7 +119,7 @@ function Spark({ points, hit }) {
 }
 
 // ---- result row (details view) ----------------------------
-function ResultRow({ p, go, spark, saved, onSave }) {
+function ResultRow({ p, go, spark, saved, onSave, badge }) {
   return (
     <div className="rrow" onClick={() => go('product', { id: p.id })}>
       <div className="rrow__img"><ProdImg p={p} fill size={34} /></div>
@@ -127,6 +127,7 @@ function ResultRow({ p, go, spark, saved, onSave }) {
         <div className="rrow__brand">{p.brand}</div>
         <div className="rrow__name">{p.name}</div>
         <div className="rrow__metarow">
+          {badge && <span className="sortval">{badge}</span>}
           <Stars rating={p.rating} reviews={p.reviews} />
           {p.nc && <span className="rrow__feat">Noise cancelling</span>}
           <StockBadge state={p.stock ? 'in' : 'back'} />
@@ -153,7 +154,7 @@ function ResultRow({ p, go, spark, saved, onSave }) {
 }
 
 // ---- result row (compact view) ----------------------------
-function ResultRowCompact({ p, go, saved, onSave }) {
+function ResultRowCompact({ p, go, saved, onSave, badge, showBadge }) {
   return (
     <div className="crow" onClick={() => go('product', { id: p.id })}>
       <div className="crow__img"><ProdImg p={p} fill size={18} /></div>
@@ -162,6 +163,7 @@ function ResultRowCompact({ p, go, saved, onSave }) {
       <span className="crow__drop">{p.drop >= 12 ? <>▼ −{p.drop}%</> : null}</span>
       <span className="crow__meta">{p.rating ? '★ ' + p.rating.toFixed(1) : 'No reviews yet'}</span>
       <span className="crow__meta">{p.shops} shops</span>
+      {showBadge && <span className="crow__sv">{badge && <span className="sortval">{badge}</span>}</span>}
       <span className="crow__price"><Price value={p.best} size={15} /></span>
       <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}><Icon name="bookmark" size={14} /></button>
       <CompareBtn p={p} className="crow__cmp" />
@@ -170,14 +172,14 @@ function ResultRowCompact({ p, go, saved, onSave }) {
 }
 
 // ---- result card (grid view) ------------------------------
-function ResultCard({ p, go }) {
+function ResultCard({ p, go, badge }) {
   return (
     <div className="pcard" onClick={() => go('product', { id: p.id })}>
       {p.drop >= 12 && <span className="pcard__tag"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
       <CompareBtn p={p} className="pcard__cmp" />
       <div className="pcard__img"><ProdImg p={p} fill size={42} /></div>
       <div className="pcard__name">{p.name}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}><Stars rating={p.rating} /><VariantHint p={p} /></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}>{badge && <span className="sortval">{badge}</span>}<Stars rating={p.rating} /><VariantHint p={p} /></div>
       <div className="pcard__foot">
         <div>
           {p.best != null ? (<><div className="pcard__from">from</div><Price value={p.best} size={20} /></>) : <div className="no-offers">No offers yet</div>}
@@ -389,12 +391,99 @@ const VIEWS = [
   { id: 'compact', icon: 'align-justify', label: 'Compact' },
 ];
 
-const SORTS = [
-  { id: 'best', label: 'Best price', fn: (a, b) => (a.best || 9e15) - (b.best || 9e15) },
-  { id: 'drop', label: 'Biggest drop', fn: (a, b) => (b.drop || 0) - (a.drop || 0) },
-  { id: 'shops', label: 'Most shops', fn: (a, b) => b.shops - a.shops },
-  { id: 'rating', label: 'Top rated', fn: (a, b) => (b.rating || 0) - (a.rating || 0) },
+// ---- sorting ----------------------------------------------
+// every field sorts both ways. `w` overrides the direction wording,
+// `badge` surfaces the sorted value on each row so the order is legible.
+const DIRW = { num: { asc: 'Low \u2192 High', desc: 'High \u2192 Low' }, text: { asc: 'A \u2192 Z', desc: 'Z \u2192 A' }, date: { asc: 'Oldest first', desc: 'Newest first' } };
+const lastUpd = (p) => { const t = (p.offers || []).map(o => o.updated_at).filter(Boolean); return t.length ? Math.max(...t) : undefined; };
+const SORT_FIELDS = [
+  { id: 'best', label: 'Price', grp: 'Price', type: 'num', dir: 'asc', val: p => p.best, w: { asc: 'Cheapest first', desc: 'Priciest first' } },
+  { id: 'drop', label: 'Price drop', grp: 'Price', type: 'num', dir: 'desc', val: p => p.drop, w: { asc: 'Smallest drop', desc: 'Biggest drop' }, badge: p => p.drop != null ? '\u2212' + p.drop + '%' : null },
+  { id: 'save', label: 'Kroner off', grp: 'Price', type: 'num', dir: 'desc', val: p => (p.was != null && p.best != null) ? p.was - p.best : undefined, badge: p => (p.was != null && p.best != null) ? 'kr ' + fmt(p.was - p.best) + ' off' : null },
+  { id: 'updated', label: 'Price updated', grp: 'Price', type: 'date', dir: 'desc', val: lastUpd, badge: p => lastUpd(p) ? relTime(lastUpd(p)) : null },
+  { id: 'rating', label: 'Rating', grp: 'Popularity', type: 'num', dir: 'desc', val: p => p.rating },
+  { id: 'reviews', label: 'Reviews', grp: 'Popularity', type: 'num', dir: 'desc', val: p => p.reviews, badge: p => p.reviews != null ? fmt(p.reviews) + ' reviews' : null },
+  { id: 'shops', label: 'Shops with offers', grp: 'Popularity', type: 'num', dir: 'desc', val: p => p.shops },
+  { id: 'name', label: 'Product name', grp: 'Catalog', type: 'text', dir: 'asc', val: p => p.name },
+  { id: 'brand', label: 'Brand', grp: 'Catalog', type: 'text', dir: 'asc', val: p => p.brand },
 ];
+const REL_FIELD = { id: 'rel', label: 'Best match', type: 'none', dir: 'desc', val: () => 0 };
+// spec fields are derived from the same FACETS defs the filters use
+function specSorts(facetDefs, facetBase, grp) {
+  return facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2).map(d => {
+    const num = facetBase[d.key].vals.every(v => typeof v === 'number');
+    // a product with several values on this axis (e.g. 128/256/512 GB) sorts by
+    // the end of its range that matches the direction
+    const pick = (v, dir) => { const a = v.slice().sort((x, y) => num ? x - y : String(x).localeCompare(String(y))); return dir === 'asc' ? a[0] : a[a.length - 1]; };
+    const one = (p, dir) => { const v = fval(p, d.key); if (v === undefined) return undefined; return Array.isArray(v) ? (v.length ? pick(v, dir) : undefined) : v; };
+    return {
+      id: 'facet:' + d.key, label: d.label, grp, type: num ? 'num' : 'text', dir: num ? 'desc' : 'asc', val: one,
+      badge: (p, dir) => { const v = one(p, dir); return v === undefined ? null : fdisp(v, d); },
+    };
+  });
+}
+const dirWord = (fd, dir) => (fd.w || DIRW[fd.type] || DIRW.num)[dir];
+const _blank = (v) => v === undefined || v === null || v === '' || (typeof v === 'number' && !isFinite(v));
+function sortList(list, fd, dir) {
+  if (!fd || fd.type === 'none') return list;
+  const mul = dir === 'asc' ? 1 : -1;
+  return list.map((p, i) => ({ p, i, v: fd.val(p, dir) })).sort((a, b) => {
+    // products with no value on this axis stay at the bottom either way
+    if (_blank(a.v) || _blank(b.v)) return _blank(a.v) && _blank(b.v) ? a.i - b.i : _blank(a.v) ? 1 : -1;
+    const c = fd.type === 'text' ? String(a.v).localeCompare(String(b.v), 'nb') : a.v - b.v;
+    return c * mul || a.i - b.i;
+  }).map(o => o.p);
+}
+
+function SortMenu({ fields, field, dir, onPick }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const k = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', h); document.addEventListener('keydown', k);
+    return () => { document.removeEventListener('mousedown', h); document.removeEventListener('keydown', k); };
+  }, []);
+  const cur = fields.find(x => x.id === field) || fields[0];
+  const grps = [];
+  fields.forEach(fd => { const g = grps.find(x => x.t === (fd.grp || '')); if (g) g.items.push(fd); else grps.push({ t: fd.grp || '', items: [fd] }); });
+  const pick = (fd, d) => { onPick(fd.id, d || (fd.id === cur.id ? dir : fd.dir)); setOpen(false); };
+  return (
+    <div className="fdrop sortdrop" ref={ref}>
+      <button className={'fdrop__btn' + (open ? ' is-open' : '')} aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(o => !o)}>
+        {cur.label}<Icon name="chevron-down" size={14} />
+      </button>
+      {open && (
+        <div className="fdrop__menu sortmenu">
+          {grps.map(g => (
+            <div className="sortmenu__grp" key={g.t}>
+              {g.t && <div className="sortmenu__hd">{g.t}</div>}
+              {g.items.map(fd => {
+                const on = fd.id === cur.id;
+                return (
+                  <div key={fd.id} className={'sortopt' + (on ? ' is-on' : '')}>
+                    <button className="sortopt__lbl" onClick={() => pick(fd)}>
+                      <span className="sortopt__dot"><Icon name="check" size={11} /></span>{fd.label}
+                    </button>
+                    {fd.type !== 'none' && (
+                      <span className="sortopt__dirs">
+                        {['asc', 'desc'].map(d => (
+                          <button key={d} className={on && dir === d ? 'is-on' : ''} title={dirWord(fd, d)} aria-label={fd.label + ': ' + dirWord(fd, d)} onClick={() => pick(fd, d)}>
+                            <Icon name={d === 'asc' ? 'arrow-up' : 'arrow-down'} size={12} />
+                          </button>
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ===========================================================
 // RESULTS SCREEN
@@ -404,8 +493,13 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} window.scrollTo(0, 0); };
   const baseSel = { query, cat };
-  const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat]);
+  // `n` bumps when the host merges server rows into CATALOG in place (same pattern as SearchSuggest)
+  const [n, bump] = useState(0);
+  const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat, n]);
+  const [shown, setShown] = useState(60);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [sort, setSort] = useState(() => (window.history.state || {}).rsort || 'best');
+  const [dir, setDir] = useState(() => (window.history.state || {}).rdir || (SORT_FIELDS.find(s => s.id === (window.history.state || {}).rsort) || SORT_FIELDS[0]).dir);
   const [f, setF] = useState(() => {
     const st = window.history.state || {};
     if (st.rfilters) return { ...emptyFilters(), ...st.rfilters };
@@ -414,10 +508,10 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   });
   useWatchStore();
   // filters live in the history entry so browser Back restores them
-  useEffect(() => { try { window.history.replaceState({ ...window.history.state, rfilters: f, rsort: sort }, ''); } catch (e) {} }, [f, sort]);
+  useEffect(() => { try { window.history.replaceState({ ...window.history.state, rfilters: f, rsort: sort, rdir: dir }, ''); } catch (e) {} }, [f, sort, dir]);
   // reset filters when the search changes (skip the mount that restored them)
   const _fInit = useRef(true);
-  useEffect(() => { if (_fInit.current) { _fInit.current = false; return; } setF(emptyFilters()); }, [query, cat]);
+  useEffect(() => { if (_fInit.current) { _fInit.current = false; return; } setF(emptyFilters()); setShown(60); }, [query, cat]);
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
   // data-driven per-category facets (window.FACETS is replaced by the boot layer)
   const facetDefs = cat ? ((window.FACETS || {})[cat] || []) : [];
@@ -434,6 +528,19 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   }, [baseResults, cat]);
   const setFacet = (key, v) => setF(prev => { const cur = prev.facets[key] || []; const next = cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v]; const fac = { ...prev.facets }; if (next.length) fac[key] = next; else delete fac[key]; return { ...prev, facets: fac }; });
   const setBoolFacet = (key) => setF(prev => { const fac = { ...prev.facets }; if (fac[key]) delete fac[key]; else fac[key] = true; return { ...prev, facets: fac }; });
+
+  // sortable fields = universal ones + this category's spec axes (+ relevance on a search)
+  const sortFields = useMemo(() => [
+    ...(query ? [REL_FIELD] : []),
+    ...SORT_FIELDS,
+    ...specSorts(facetDefs, facetBase, (cat || 'Product') + ' specs'),
+  ], [query, cat, facetBase]);
+  const sortField = sortFields.find(s => s.id === sort) || SORT_FIELDS[0];
+  const sortDir = sortFields.some(s => s.id === sort) ? dir : sortField.dir;
+  const pickSort = (id, d) => { setSort(id); setDir(d); window.scrollTo(0, 0); };
+  // a spec sort that doesn't exist in the new category falls back to price
+  useEffect(() => { if (!sortFields.some(s => s.id === sort)) { setSort('best'); setDir('asc'); } }, [sortFields, sort]);
+  const badgeOf = sortField.badge ? (p) => sortField.badge(p, sortDir) : null;
 
   const prices = baseResults.map(p => p.best).filter(n => n != null && isFinite(n));
   const base = {
@@ -462,7 +569,21 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     }
     return true;
   });
-  list = list.slice().sort((SORTS.find(s => s.id === sort) || SORTS[0]).fn);
+  list = sortList(list, sortField, sortDir);
+
+  // paging: reveal 60 at a time; when the host serves a category, the true size
+  // lives in CATALOG.meta.cats and the rest of the rows are fetched on demand
+  const catTotal = (cat && !query) ? (metaOf()?.cats?.[cat]) : undefined;
+  const serverMore = !!window.onLoadMore && catTotal != null && catTotal > baseResults.length;
+  const localMore = list.length > shown;
+  const loadMore = async () => {
+    if (localMore) { setShown(s => s + 60); return; }
+    if (!serverMore || loadingMore) return;
+    setLoadingMore(true);
+    try { await window.onLoadMore({ cat, offset: baseResults.length }); bump(x => x + 1); setShown(s => s + 60); }
+    catch (e) {}
+    setLoadingMore(false);
+  };
 
   const title = cat ? cat : query ? <>Results for <span className="q">“{query}”</span></> : 'All products';
   const activeChips = [
@@ -497,12 +618,15 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
             <h1>{title}</h1>
           </div>
           <div className="results__bar">
-            <div className="count">{list.length} {list.length === 1 ? 'product' : 'products'} · {list.reduce((n, p) => n + p.shops, 0)} offers tracked</div>
+            <div className="count">{catTotal != null && catTotal > list.length ? <>{fmt(list.length)} of {fmt(catTotal)} products</> : <>{fmt(list.length)} {list.length === 1 ? 'product' : 'products'}</>} · {list.reduce((t, p) => t + p.shops, 0)} offers tracked</div>
             <div className="results__sort">
               <span className="results__sortlbl">Sort</span>
-              <div className="sortbar">
-                {SORTS.map(s => <button key={s.id} className={sort === s.id ? 'is-on' : ''} onClick={() => setSort(s.id)}>{s.label}</button>)}
-              </div>
+              <SortMenu fields={sortFields} field={sortField.id} dir={sortDir} onPick={pickSort} />
+              {sortField.type !== 'none' && (
+                <button className="dirbtn" onClick={() => pickSort(sortField.id, sortDir === 'asc' ? 'desc' : 'asc')} title={'Sorted ' + dirWord(sortField, sortDir).toLowerCase() + ' \u2014 click to reverse'} aria-label={'Reverse sort order (now ' + dirWord(sortField, sortDir) + ')'}>
+                  <Icon name={sortDir === 'asc' ? 'arrow-up' : 'arrow-down'} size={13} /><span>{dirWord(sortField, sortDir)}</span>
+                </button>
+              )}
               <span className="results__sortlbl" style={{ marginLeft: 'var(--s-3)' }}>View</span>
               <div className="sortbar viewbar" role="group" aria-label="View mode">
                 {VIEWS.map(v => <button key={v.id} className={view === v.id ? 'is-on' : ''} title={v.label} aria-label={v.label + ' view'} aria-pressed={view === v.id} onClick={() => setView(v.id)}><Icon name={v.icon} size={15} /></button>)}
@@ -527,16 +651,23 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
             </div>
           ) : view === 'grid' ? (
             <div className="pgrid">
-              {list.map(p => <ResultCard key={p.id} p={p} go={go} />)}
+              {list.slice(0, shown).map(p => <ResultCard key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} />)}
             </div>
           ) : view === 'compact' ? (
-            <div className="rlist rlist--compact">
-              {list.map(p => <ResultRowCompact key={p.id} p={p} go={go} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
+            <div className={'rlist rlist--compact' + (badgeOf ? ' has-sv' : '')}>
+              {list.slice(0, shown).map(p => <ResultRowCompact key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} showBadge={!!badgeOf} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
             </div>
           ) : (
             <div className="rlist">
-              {list.map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
+              {list.slice(0, shown).map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} badge={badgeOf && badgeOf(p)} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
             </div>
+          )}
+          {list.length > 0 && (localMore || serverMore) && (
+            <Btn style={{ width: '100%', justifyContent: 'center', marginTop: 'var(--s-5)' }} disabled={loadingMore} onClick={loadMore}>
+              {loadingMore
+                ? <React.Fragment><span style={{ width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }}></span> Loading…</React.Fragment>
+                : 'Load more'}
+            </Btn>
           )}
         </main>
       </div>
