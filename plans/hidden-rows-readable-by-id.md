@@ -1,5 +1,17 @@
 # Hidden products stay fully readable at their PDP URL
 
+**DONE 2026-07-26.** Intent decided: `hidden` means *not served*, not
+"unlisted". Both premises were re-measured on prod first and both still held
+(`?hidden=1` → 200 with the 200-row backlog; `ids=<demoted id>` → the row in
+full plus 4 padded neighbours). The fix went into `rowsFor` rather than the
+`ids=` branch — every read path routes through it, so MCP `get_product` was
+leaking the same rows and would have stayed broken. Ops opts back in with the
+`INGEST_TOKEN` bearer on `ids=` *and* on the `?hidden=1` listing, which was
+unauthenticated (that was §4 of [read-path-whats-left](read-path-whats-left.md),
+tracked as the highest-value open item). `tools/enrich.mjs` and
+`tools/group.mjs` now send the token; ENRICHMENT.md's verify step shows it.
+The demotion test asserts all three directions and fails without the fix.
+
 Found 2026-07-25. A deliberate design decision that stopped holding once
 auto-discovery started creating (and admin triage started demoting) rows at
 scale.

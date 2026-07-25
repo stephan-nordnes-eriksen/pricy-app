@@ -75,13 +75,10 @@ that file is open.
 
 ## 4. Owned elsewhere — link, don't duplicate
 
-- **`/api/products?hidden=1` is unauthenticated.** Owned by
-  [search-and-paging-at-scale](search-and-paging-at-scale.md) § "What this plan
-  did not close". **Re-verified on prod 2026-07-26: still 200, still serving
-  the ops listing of hidden/discovered rows.** This is an exposure rather than
-  a latency nit, and it is the highest-value item in any of these files —
-  same class as the `catalog.json` dump that got bearer-gated in that plan's
-  Done 4.
+- ~~**`/api/products?hidden=1` is unauthenticated.**~~ **CLOSED 2026-07-26**
+  together with the `ids=` leak it shared a root cause with — see
+  [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md). Bearer-gated
+  now, same as the `catalog.json` dump.
 - **Search paging** — still `LIMIT 100` with no `offset`, the one surface that
   cannot reach past its cap. Same owner. **FTS5 is the candidate here**, and
   this is the *only* remaining reason to want it:

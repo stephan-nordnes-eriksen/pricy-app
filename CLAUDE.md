@@ -142,6 +142,12 @@ Two Claude Design projects feed this repo:
   `ean-<digits>` (same EAN from two shops dedupes for free), `meta.hidden: 1`,
   excluded from every user-facing query (search/cat/all-heads/catMeta/
   catalog.json) but collecting offers + price history from day one.
+  **`hidden` means not served, not merely unlisted** (2026-07-26): the
+  exclusion lives in `rowsFor` itself, so `ids=` — the PDP's own fetch —
+  drops them too, and `?hidden=1` (the ops backlog listing) is bearer-gated
+  like `catalog.json`. Ops opts back in with the `INGEST_TOKEN` bearer on
+  either. Before this, a demoted row kept a working product page and the
+  whole backlog was enumerable by guessing `ean-<barcode>` ids.
   Adtraction feeds emit such rows for every unmatched EAN; discover.mjs
   writes unknown-EAN pages as `ean-*` entries into crawl-urls.json;
   scrapeSource carries JSON-LD name/brand/category so crawl pushes create

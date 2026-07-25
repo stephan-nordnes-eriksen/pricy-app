@@ -189,8 +189,9 @@ page. A `q=` search never calls it — the client already holds all ≤100 rows.
 - **Search still truncates at 100** with no `offset` (Done 2). The list
   branches page; search doesn't — and `sort=`/filters do nothing on a `q=`
   query, where the client already holds the whole (≤ 100 row) result set.
-- **`/api/products?hidden=1` is still unauthenticated** — ops-only listing of
-  discovered rows, same class as the dump that got gated in Done 4.
+- ~~**`/api/products?hidden=1` is still unauthenticated**~~ — gated 2026-07-26,
+  same as the dump in Done 4, along with the `ids=` read of hidden rows it
+  shared a root cause with: [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md).
 - **Facet counts are pre-filter**: `fcounts` counts the whole category, not
   what the other active filters leave — same as the client did. Narrowing them
   as you filter is a second histogram per request.

@@ -118,9 +118,15 @@ none.
 ### 3. Verify
 
 ```
-curl -s "$BASE/api/products?hidden=1"     # triaged ids gone from here
+# triaged ids gone from here (the listing is bearer-gated)
+curl -s "$BASE/api/products?hidden=1" -H "authorization: Bearer $TOKEN"
 curl -s "$BASE/api/products?q=<name>"     # …and promoted ones findable here
 ```
+
+Reading a hidden row by `ids=` needs the same bearer. `hidden` means not
+served to a normal caller anywhere, PDP included — so demoting a bad row
+really does take its product page down, and the discovery backlog is not
+enumerable by guessing `ean-<barcode>` ids.
 
 Product images arrive automatically on the next crawl/cron after
 promotion (image sync deliberately skips hidden rows).
