@@ -731,7 +731,10 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
      FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${where}
      GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid`
   ).bind(...bind).all();
-  const fcounts = cat ? {} : null; // per-cat only: the rail has no facets without one
+  // per-cat only: the rail has no facets without one. Counted in a Map and
+  // served as [value, count] PAIRS — a JSON object would stringify the
+  // numeric axes (55 → "55") and the rail's option ids must keep their type
+  const fcounts = cat ? new Map() : null;
   let rows = [];
   for (const x of results) {
     const m = JSON.parse(x.meta);
@@ -746,12 +749,18 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
     // facetBase), which is what made them lie once a category outgrew 400
     if (fcounts) for (const k of Object.keys(r.f)) {
       const v = fval(m, r.f, k);
-      if (v !== undefined) for (const x2 of [].concat(v)) ((fcounts[k] ??= {})[x2] = (fcounts[k][x2] || 0) + 1);
+      if (v === undefined) continue;
+      if (!fcounts.has(k)) fcounts.set(k, new Map());
+      for (const x2 of [].concat(v)) fcounts.get(k).set(x2, (fcounts.get(k).get(x2) || 0) + 1);
     }
     if (!filters || matches(r, filters)) rows.push(r);
   }
   if (sort) rows = sortRows(rows, sort, dir === 'desc' ? 'desc' : 'asc');
-  return { ids: rows.slice(offset, offset + limit).map(r => r.id), total: rows.length, fcounts };
+  return {
+    ids: rows.slice(offset, offset + limit).map(r => r.id),
+    total: rows.length,
+    fcounts: fcounts && Object.fromEntries([...fcounts].map(([k, m]) => [k, [...m]])),
+  };
 }
 
 // Heads ranked by drop% (1 - best/was). perCat keeps the top `limit` per

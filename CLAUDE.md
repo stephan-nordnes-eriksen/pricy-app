@@ -52,7 +52,8 @@ Two Claude Design projects feed this repo:
   WHOLE category in JS (facet values are derived, SQL can't see them: `type`
   is stored on 0 rows and derived on 7,099) and cuts the page from that, so
   `meta.total` (matching rows) and `meta.fcounts` (the category's facet
-  histogram, ≤ 908 bytes) ride along — the two numbers a partial cache can't
+  histogram as `{key: [[value, count], …]}` — pairs, not a JSON object, or
+  numeric axes stringify — ≤ 908 bytes) ride along — the two numbers a partial cache can't
   produce. Costs 60 → 64 ms on a category (catMeta alone is 36 ms of it);
   all heads WITH a sort parses 14k rows at 144 ms, which only Browse's "All
   products" link hits. `matches`/`sortRows`/`fval` mirror Results' own

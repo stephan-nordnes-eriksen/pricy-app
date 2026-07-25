@@ -701,7 +701,7 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   assert.strictEqual(filtered.meta.total, 2, 'meta.total counts every matching row, not the page');
   assert.strictEqual((await get('cat=Pets')).meta.total, 3);
   const fc = (await get('cat=Pets')).meta.fcounts;
-  assert.deepStrictEqual(fc.animal, { Dog: 2, Cat: 1 }, 'facet counts cover the category, filters do not narrow them');
+  assert.deepStrictEqual(fc.animal, [['Dog', 2], ['Cat', 1]], 'facet counts cover the category as [value, count] pairs (a JSON key would stringify numeric axes)');
   assert.ok(!(await get('cat=Audio')).meta.fcounts.animal, 'histogram is per queried category');
   assert.strictEqual((await get('')).meta.fcounts, undefined, 'no category, no rail, no histogram');
 
