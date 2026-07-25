@@ -66,8 +66,12 @@ Two Claude Design projects feed this repo:
   `CATALOG.meta`, which the next `ids=`/`q=` fetch replaces wholesale. The
   `name=` is the rail's refine-within-results box (2026-07-26, `filters.q`
   upstream): every whitespace token must be a substring of the product NAME,
-  no diacritic folding — it is NOT `q=`, which is the header's blob search.
-  Same reason as the rest: refining client-side would only ever see the page.
+  diacritic-folded on both sides — it is NOT `q=`, which is the header's blob
+  search. Same reason as the rest: refining client-side would only ever see
+  the page. The FOLD list is duplicated in `refineToks`/`refineMatch`
+  upstream and MUST stay identical: the screen re-filters its own cache with
+  those, so a server that folds while the client doesn't serves rows Results
+  then drops — a non-zero count over an empty list.
   `meta.fcounts` stays category-wide (computed before filtering), which is why
   Results falls back to counting its own rows while a refine is active.
   SCREEN owns the page number; never offset by rows on screen, a slice can

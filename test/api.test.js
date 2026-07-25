@@ -732,6 +732,20 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   assert.strictEqual(bad.products.length, 3, 'an unparseable filter param must not 500 the listing');
 });
 
+// The refine box filters twice — server-side over the whole category, then
+// client-side over the merged cache. Both use their own copy of FOLD, and a
+// server that folds while the screen doesn't serves rows the screen drops:
+// a non-zero count over an empty list, with a live "Load more" under it.
+test('the name filter folds identically on both sides', () => {
+  const fold = (f) => {
+    const m = require('node:fs').readFileSync(path.join(__dirname, '..', f), 'utf8').match(/const FOLD = (\[.*?\]);/);
+    assert.ok(m, `no FOLD list in ${f} — did the fold move or get renamed?`);
+    return JSON.parse(m[1].replace(/'/g, '"'));
+  };
+  assert.deepStrictEqual(fold('worker/index.js'), fold('proto/Results.jsx'),
+    'worker/index.js and the prototype must fold the same characters the same way');
+});
+
 test('GET /api/products: a category beyond 100 heads survives the D1 param cap', async () => {
   const DB = d1();
   const call = api({ DB });
