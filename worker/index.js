@@ -229,8 +229,10 @@ const autoAdd = (r) => /^(ean-\d+|p-[a-z0-9-]+)$/.test(r.product_id) && typeof r
 // shops sell handling fees, gift cards and freight as priced "products"
 // The fee half is deliberately NOT \b-anchored: Norwegian compounds glue the
 // words together ("Håndteringsavgift", "Fraktkostnad"), so \bavgift\b misses
-// every real occurrence.
-const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b|avgift|gebyr|gavekort|frakt|ekspedisjon|service ?fee|håndtering/i;
+// every real occurrence. Keep these terms narrow for the same reason —
+// "ekspedisjon" was in here until it ate a LEGO "ørkenekspedisjon"; the fee
+// sense of it is "ekspedisjonsgebyr", which `gebyr` already covers.
+const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b|avgift|gebyr|gavekort|frakt|service ?fee|håndtering/i;
 // …except where those words ARE the product (a jewellery bracelet, a watch strap
 // shop) — the category the shop itself assigned already proves it isn't an accessory
 const JUNK_OK = new Set(['Jewelry', 'Watches']);
