@@ -1012,9 +1012,11 @@ export default {
       } else if (p.get('sort') === 'drop') {
         products = await rowsFor(db, await topDropIds(db, { limit, perCat: p.get('perCat') === '1' }), { expand: false });
       } else {
-        // same cap: this branch is "/results with no query and no category"
-        products = (await catalogBody(db)).filter(x => !x.family).slice(0, PAGE_MAX);
-        products.forEach(x => delete x.specs); // lean like every list query
+        // "/results with no query and no category" — same cap, and the same
+        // id-list shape as cat=: catalogBody() would build the WHOLE catalog
+        // just to throw all but PAGE_MAX of it away
+        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} ORDER BY rowid LIMIT ${PAGE_MAX}`).all();
+        products = await rowsFor(db, results.map(r => r.id), { expand: false });
       }
       return json({ meta: await catMeta(db), products });
     }
