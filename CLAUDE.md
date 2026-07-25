@@ -50,7 +50,9 @@ Two Claude Design projects feed this repo:
   boot's `hydrateCatalog` appends server cats the prototype doesn't know
   into `CATEGORIES`/`CAT_ICONS` in place, so browse/header/suggest/
   onboarding all render them. New category = one line in cats.json + rows
-  that use it. No upstream edit.
+  that use it. No upstream edit. 31 cats as of 2026-07-25 (the original 10
+  were all electronics-ish, so a sport/pet/jewellery shop had nothing to
+  promote into).
 - **Facet filters** (2026-07-22, FILTERS-PLAN.md): `worker/facets.json`
   is the per-cat facet registry, served as `meta.facets` by `catMeta`;
   admin PATCH accepts a `facets` object per product. Upstream Results
@@ -89,13 +91,32 @@ Two Claude Design projects feed this repo:
   Adtraction feeds emit such rows for every unmatched EAN; discover.mjs
   writes unknown-EAN pages as `ean-*` entries into crawl-urls.json;
   scrapeSource carries JSON-LD name/brand/category so crawl pushes create
-  too. **Open catalog (2026-07-22, OPEN-CATALOG-PLAN.md):** EAN→product
+  too. **No EAN? still a product** (2026-07-25): most Shopify/small-Woo
+  shops publish no `gtin` at all, so `discoverSource` falls back to
+  `slugId(brand, name)` → a `p-<slug>` id. It still merges offers across
+  shops that name a product identically; where it doesn't, we get a real
+  single-shop product instead of nothing. Trade-off: a shop renaming a
+  product strands the old row — re-home it with `POST /api/admin/alias`. **Open catalog (2026-07-22, OPEN-CATALOG-PLAN.md):** EAN→product
   routing lives in the D1 `eans` table (bootstrapped from `worker/eans.json`,
   `OR IGNORE` — runtime rows win); hidden rows **auto-promote** at ingest
-  when a source supplies name + brand + a category the `CATMAP` var
-  (wrangler.jsonc, per-shop `{raw srcCat → our cat}`) maps to a
-  `worker/cats.json` cat — `meta.auto: 1`,
-  accessory-name blocklist, unmapped stays hidden (that IS the junk filter);
+  when a source supplies a name + a category resolving to a
+  `worker/cats.json` cat — `meta.auto: 1`, accessory-name blocklist
+  (`JUNK_RE`, with `JUNK_OK` exempting Jewelry/Watches), still-unresolved
+  stays hidden (that IS the junk filter).
+  **Category resolution, in order (widened 2026-07-25 — this is what makes a
+  NEW shop go live with no config):** the `CATMAP` var (wrangler.jsonc,
+  per-shop `{raw srcCat → our cat}`) → `CAT_RULES` in worker/index.js, one
+  shared Norwegian retail vocabulary matched on the shop's own category label
+  → the same rules against the product **name** (shops whose pages carry no
+  breadcrumb at all) → `CATMAP[shop]["*"]`, a reserved key giving a
+  single-category shop a floor. Only set `"*"` where the WHOLE shop is one
+  category; a general retailer must stay unmapped so the rules decide per
+  product. `classify` is exported from worker/index.js so a crawl sample can
+  be scored offline before the rules change — measure, don't guess
+  (`node tools/crawl.mjs --dry --limit 12 --out s.json`, then classify each
+  row and look at the misses; that loop took promotion 45% → 93%).
+  Growing the vocabulary beats adding CATMAP entries: rules help every shop,
+  a CATMAP entry helps one.
   manual triage is deploy-free via the admin API (bearer = INGEST_TOKEN):
   `PATCH /api/admin/products/:id` (meta merge, `hidden: null` promotes,
   `hidden: 1` demotes — demoted auto rows never re-promote) and
@@ -113,9 +134,20 @@ Two Claude Design projects feed this repo:
   comparison services (Prisjakt etc.).** A shop with no/failing source
   freezes at its last stored price; empty `SOURCES` (current prod state)
   makes the cron a no-op. The interim price writer is manual:
-  `node tools/crawl.mjs [--dry] [--shop X] [--limit N] [--out f.json]`
+  `node tools/crawl.mjs [--dry] [--shop X] [--limit N] [--out f.json]
+  [--no-images]`
   scrapes first-party pages listed in `tools/crawl-urls.json` and POSTs to
-  `/api/ingest` (`npm run test:crawlers` live-checks one page per shop,
+  `/api/ingest`. Shops crawl concurrently (`CRAWL_CONC`, default 8; pages
+  within one shop stay sequential-with-a-pause — per-host rate is the
+  politeness that matters). A shop entry is either a curated
+  `{product_id: url}` map or a `"$discover": { sitemap, pathFilter?,
+  sitemapFilter?, limit?, ua?, delayMs? }` block that walks the shop's own
+  sitemap for its whole catalog (`limit` strides across the sitemap rather
+  than taking the head). `--no-images` drops the image field, which lifts
+  the 40-row POST chunk (syncImages' subrequest budget) to the route's own
+  500 — use it for full-catalog runs; images land on the next ordinary
+  crawl. 50 shops wired as of 2026-07-25, 47 of them sitemap-discovered.
+  (`npm run test:crawlers` live-checks one page per shop,
   on demand only) (bearer =
   `INGEST_TOKEN` secret; token also in untracked `tools/.ingest-token`).
   `eans.json` arrays hold confirmed variants only — extend them as real
