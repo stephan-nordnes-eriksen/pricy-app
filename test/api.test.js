@@ -1337,14 +1337,18 @@ test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free 
     { product_id: 'p-bergans-slingsby-vindjakke', shop: 'Bergans', price: 1799, name: 'Bergans Slingsby Vindjakke', brand: 'Bergans', srcCat: 'Jakker og bukser' },
     { product_id: 'ean-7099999999901', shop: 'Musti', price: 349, name: 'Royal Canin Adult 4 kg', brand: 'Royal Canin', srcCat: 'Hundefôr' },
     { product_id: 'p-ukjent-dings', shop: 'Bergans', price: 99, name: 'Ukjent dings', brand: 'Acme', srcCat: 'Diverse' },
-    // no srcCat at all — the product name is the last resort
-    { product_id: 'ean-7099999999902', shop: 'Musti', price: 599, name: 'Trixie kattetre 120 cm', brand: 'Trixie' },
+    // the product NAME is deliberately not a fallback — a recognisable name
+    // under an unrecognisable label stays hidden
+    { product_id: 'ean-7099999999902', shop: 'Musti', price: 599, name: 'Trixie kattetre 120 cm', brand: 'Trixie', srcCat: 'Diverse' },
+    // shops sell fees as priced products; those are never products
+    { product_id: 'ean-7099999999903', shop: 'Musti', price: 49, name: 'Håndteringsavgift', brand: 'Musti', srcCat: 'Hundefôr' },
   ]);
 
   const of = async (id) => (await (await call(`/api/products?ids=${id}`)).json()).products[0];
   assert.strictEqual((await of('p-bergans-slingsby-vindjakke'))?.cat, 'Fashion', 'gtin-free slug row goes live off its category label');
   assert.strictEqual((await of('ean-7099999999901'))?.cat, 'Pets');
-  assert.strictEqual((await of('ean-7099999999902'))?.cat, 'Pets', 'no srcCat → classify from the name');
+  assert.strictEqual((await of('ean-7099999999902'))?.hidden, 1, 'a good name under an unmapped label stays hidden');
+  assert.strictEqual((await of('ean-7099999999903'))?.hidden, 1, 'a handling fee is not a product');
   assert.strictEqual((await of('p-ukjent-dings'))?.hidden, 1, 'nothing recognisable still stays hidden');
 
   // CATMAP's "*" floor catches what neither the label nor the name recognises,

@@ -226,7 +226,11 @@ export async function discoverSource(shop, cfg) {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       const html = await res.text();
       const { ean, ...row } = scrapeRow(html);
-      const product_id = ean ? `ean-${ean}` : slugId(row.brand, row.name);
+      // a name is mandatory on the slug path: some shops publish priced
+      // brand/landing pages whose Product node carries a brand but no name,
+      // which would key on the brand alone (p-aiaiai) and can never become a
+      // product — ingest rejects the whole POST over one of them
+      const product_id = ean ? `ean-${ean}` : (row.name ? slugId(row.brand, row.name) : null);
       if (!product_id) throw new Error('no gtin and no name — nothing to key a discovered row on');
       rows.push({ product_id, shop, url, ...row });
     } catch (e) {

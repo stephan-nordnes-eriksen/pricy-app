@@ -225,7 +225,12 @@ const autoAdd = (r) => /^(ean-\d+|p-[a-z0-9-]+)$/.test(r.product_id) && typeof r
 // Auto-promotion bits (OPEN-CATALOG-PLAN B3): CATS (cats.json) gates valid
 // categories + default icons, an accessory blocklist keeps junk hidden
 // regardless of category mapping, and kw = distinct name/brand/cat tokens.
-const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b/i;
+// …plus the non-products a full-catalog sitemap crawl inevitably picks up:
+// shops sell handling fees, gift cards and freight as priced "products"
+// The fee half is deliberately NOT \b-anchored: Norwegian compounds glue the
+// words together ("Håndteringsavgift", "Fraktkostnad"), so \bavgift\b misses
+// every real occurrence.
+const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b|avgift|gebyr|gavekort|frakt|ekspedisjon|service ?fee|håndtering/i;
 // …except where those words ARE the product (a jewellery bracelet, a watch strap
 // shop) — the category the shop itself assigned already proves it isn't an accessory
 const JUNK_OK = new Set(['Jewelry', 'Watches']);
@@ -327,11 +332,16 @@ async function ingest(db, rows, env) {
     const brand = meta.brand ?? (r.brand ? String(r.brand) : null) ?? 'Unspecified';
     const srcCat = r.srcCat ?? meta.srcCat;
     // CATMAP's exact per-shop mapping wins; the shared vocabulary rules cover
-    // every label nobody hand-mapped; the product name is the next resort for
-    // shops whose pages carry no category/breadcrumb at all; and CATMAP's
-    // reserved "*" key is a single-category shop's floor (a pure bike shop
-    // whose pages send SKU codes instead of categories is still selling bikes)
-    const cat = catmap[r.shop]?.[srcCat] ?? classify(srcCat) ?? classify(meta.name) ?? catmap[r.shop]?.['*'];
+    // every label nobody hand-mapped; and CATMAP's reserved "*" key is a
+    // single-category shop's floor (a pure bike shop whose pages send SKU
+    // codes instead of categories is still selling bikes).
+    // Deliberately NOT a fallback: the product NAME. Measured over a real
+    // 12,614-row crawl it decided only 101 rows (+0.8%), and most of those
+    // were things the curated CATMAP entries exist to EXCLUDE — PanzerGlass
+    // screen protectors under "Tilbehør", "Refurbished" iPhones, Hue
+    // lightstrips whose names end in "tv". A name fallback silently overrides
+    // that curation, which is worse than leaving 0.8% hidden.
+    const cat = catmap[r.shop]?.[srcCat] ?? classify(srcCat) ?? catmap[r.shop]?.['*'];
     if (!meta.name || !CATS[cat] || (JUNK_RE.test(meta.name) && !JUNK_OK.has(cat))) continue;
     const { hidden, ...rest } = meta;
     promoted[r.product_id] = { ...rest, brand, cat, icon: CATS[cat], kw: kwOf(meta.name, brand, cat), auto: 1 };
