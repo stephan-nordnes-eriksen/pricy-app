@@ -509,10 +509,16 @@ const ph = (arr) => arr.map(() => '?').join(',');
 // cap (Audio crossed 124 heads on 2026-07-23 and killed its cat slice).
 // size 45: the expand query binds the list twice. Per-product result order
 // survives concatenation (a product's offers/points land in one chunk).
+// Chunks are independent, so they go out concurrently — Promise.all keeps
+// chunk order, so the concatenation is identical to awaiting them in turn.
+// This is the whole latency story of a category page: 400 ids = 9 chunks ×
+// 4 families, and sequentially that was 36 D1 round trips at ~20 ms each
+// (plans/api-latency-round-trips.md). Query COUNT is unchanged, so the
+// subrequest budget is untouched.
 const chunked = async (ids, run, size = 45) => {
-  const out = [];
-  for (let i = 0; i < ids.length; i += size) out.push(...await run(ids.slice(i, i + size)));
-  return out;
+  const jobs = [];
+  for (let i = 0; i < ids.length; i += size) jobs.push(run(ids.slice(i, i + size)));
+  return (await Promise.all(jobs)).flat();
 };
 
 // most rows one list query will return (see the cat= branch for why)
@@ -547,9 +553,13 @@ async function rowsFor(db, ids, { expand = true } = {}) {
     }
   }
   const all = prods.map(r => r.id);
-  const offs = await chunked(all, async c => (await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(c)}) ORDER BY price`).bind(...c).all()).results);
-  const pts = await chunked(all, async c => (await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(c)}) ORDER BY day`).bind(...c).all()).results);
-  const withImg = new Set((await chunked(all, async c => (await db.prepare(`SELECT product_id FROM images WHERE product_id IN (${ph(c)})`).bind(...c).all()).results)).map(r => r.product_id));
+  // the three families are independent of each other too — one wait, not three
+  const [offs, pts, imgs] = await Promise.all([
+    chunked(all, async c => (await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(c)}) ORDER BY price`).bind(...c).all()).results),
+    chunked(all, async c => (await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(c)}) ORDER BY day`).bind(...c).all()).results),
+    chunked(all, async c => (await db.prepare(`SELECT product_id FROM images WHERE product_id IN (${ph(c)})`).bind(...c).all()).results),
+  ]);
+  const withImg = new Set(imgs.map(r => r.product_id));
   const rows = shapeRows(prods, offs, pts, withImg);
   // full spec sheets (Icecat-sized, ~100 rows) only ride detail fetches —
   // list queries stay lean; boot's Object.assign merge never wipes a
