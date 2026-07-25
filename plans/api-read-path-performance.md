@@ -72,8 +72,8 @@ category presence read, so stale values show up as wrong product counts on
 Browse. Invalidation is tied to a version counter every write bumps, not a
 TTL — and the counter lives in D1, because a memo invalidated only in the
 isolate that wrote would still serve wrong counts from every other isolate.
-A miss is still 5 round trips (`db.batch()` would make it 1, and needs the
-test shim taught to return per-statement rows).
+A miss sends all five in one `db.batch()` round trip (2026-07-26) — that
+needed the test shim taught to return per-statement rows, which it now is.
 
 ### 2. `searchIds` folds the whole meta blob per row per token
 
@@ -105,21 +105,24 @@ so read these rows as "request minus catMeta":
 | 20,000 | 116 ms | 71 | 23 | ~22 ms | 9 MB |
 | 50,000 | 236 ms | 125 | 47 | ~64 ms | 22 MB |
 
-**Trigger to revisit: a single category past ~20k heads** — and even then,
-fix `catMeta` first and re-measure, because it is the larger half of that
-116 ms. Retained heap is ~440 B/row against a 128 MB isolate, so memory is
-not the failure mode until ~100k rows in one category.
+**Trigger to revisit: a single category past ~20k heads.** The advice used to
+be "fix `catMeta` first, it is the larger half of that 116 ms" — that is done,
+so the `catMeta` column is now ~0 on a warm isolate and this scan is what is
+left. Retained heap is ~440 B/row against a 128 MB isolate, so memory is not
+the failure mode until ~100k rows in one category.
 
 The all-heads branch *with* a sort parses all 14k rows (145 ms). One link
 reaches it — Browse's "All products". If that ever becomes a real entry
 point, it is the first thing to move to SQL, because it is also the case
 where facets don't exist (no `cat`, so no rail) and SQL loses nothing.
 
-### 4. `rowsFor` chunking — cheap here, dominant on prod
+### 4. `rowsFor` chunking — cheap here, dominant on prod — FIXED 2026-07-26
 
-4 ms in process, ~600 ms live: 400 ids is 9 chunks × 4 query families = 36
-sequential D1 round trips. Nothing about it is visible to this harness. Owned
-by [api-latency-round-trips](api-latency-round-trips.md).
+4 ms in process, ~600 ms live: 400 ids was 9 chunks × 4 query families = 36
+sequential D1 round trips, now concurrent. Nothing about it was ever visible to
+this harness — the cleanest example in the repo of why this file cannot rank a
+latency fix. Owned by
+[api-latency-round-trips](api-latency-round-trips.md).
 
 ### 5. The 400-row page is ~180 KB
 

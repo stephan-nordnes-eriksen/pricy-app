@@ -120,11 +120,33 @@ Two traps worth remembering, both nearly shipped:
   bump for precisely this reason), then walks all three write paths and asserts
   the *served* meta moved. Verified to fail with each bump removed individually.
 
+### 3. `catMeta` miss: 5 round trips → 1 `db.batch()` — DONE 2026-07-26
+
+The scans still cost what they cost; what goes away is four waits. Measured on
+`wrangler dev --remote` with the cache force-disabled so every request missed
+(cleaner than forcing a miss by writing to prod, and it isolates the miss path
+exactly), medians of 15:
+
+| request | 5 sequential | 1 batch | |
+|---|---|---|---|
+| `ids=lego` | 275 ms | 222 ms | −53 ms |
+| `cat=Toys&limit=400` | 479 ms | 453 ms | −26 ms |
+
+Less than the ~80 ms four round trips "should" cost, so a D1 query on an
+already-open session is cheaper than the 20 ms the model above assumes. Real
+but modest — worth it mainly because a cold isolate is a real user's first
+page, and because teaching the shim is a one-time cost that any future batched
+SELECT now inherits.
+
+**The shim fix is the load-bearing part.** `test/api.test.js`'s D1 shim
+implemented `batch()` as "call `.run()` on each statement", which returns no
+rows — a batched SELECT would have passed the whole suite and served empty
+pages in prod. It now returns one `{results, success}` per statement, like real
+D1. Verified by reverting just the shim: 34 tests fail. (node:sqlite's `all()`
+returns `[]` for DML, so one path covers reads and writes.)
+
 ## Still open
 
-- **A `catMeta` miss is still 5 round trips.** `db.batch()` would make it 1;
-  needs the shim taught to return per-statement rows. Marked `ponytail:` at the
-  function. Do it if cold isolates ever show up in the numbers.
 - `listIds`' 85 ms scan (real CPU, already priced) and the 245 KB payload
   (23 ms) — both untouched, both now a visible share of the remaining 330 ms.
 - Search's CPU: `q=` is 206 ms, one scan and one round trip. FTS5 is its

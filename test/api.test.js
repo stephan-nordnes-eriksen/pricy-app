@@ -25,10 +25,20 @@ function d1() {
   return {
     exec: async (sql) => db.exec(sql),
     prepare: (sql) => ({ bind: (...args) => stmt(sql, args), ...stmt(sql, []) }),
+    // real D1 returns one D1Result per statement, ROWS INCLUDED, so a batch of
+    // SELECTs is a legitimate way to spend one round trip instead of five
+    // (catMeta does exactly that). A shim that only .run()s each statement
+    // returns nothing, which passes here and serves empty pages in prod — so
+    // this returns per-statement results. node:sqlite's all() is safe for DML
+    // too (returns []), so one path covers reads and writes alike.
     batch: async (stmts) => {
       db.exec('BEGIN');
-      try { for (const s of stmts) await s.run(); db.exec('COMMIT'); }
-      catch (e) { db.exec('ROLLBACK'); throw e; }
+      try {
+        const out = [];
+        for (const s of stmts) out.push({ ...await s.all(), success: true });
+        db.exec('COMMIT');
+        return out;
+      } catch (e) { db.exec('ROLLBACK'); throw e; }
     },
   };
 }

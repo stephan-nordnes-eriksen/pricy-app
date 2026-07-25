@@ -838,21 +838,32 @@ async function topDropIds(db, { limit = 4, perCat = false } = {}) {
 // and any write anywhere bumps the version, so no isolate can serve a count
 // that is behind the data. Falsy ver = don't cache (a just-written or
 // unversioned db, and the ops catalog.json dump).
-// ponytail: a MISS is still 5 round trips — db.batch() would make it 1, but
-// that needs the test shim taught to return per-statement rows. Do it if cold
-// isolates ever show up in the numbers.
+// A miss sends all five in ONE db.batch() round trip rather than five in a
+// row — the scans still cost what they cost, but the ~80 ms of waiting is the
+// part a cold isolate was paying. batch() returns one D1Result per statement
+// WITH rows; test/api.test.js's shim had to be taught that (a shim that only
+// .run()s each statement returns nothing, which passes locally and serves
+// empty pages in prod).
 // Callers must treat the result as read-only — it is shared between requests.
 const metaCache = new WeakMap(); // db → { ver, val }
 async function catMeta(db, ver) {
   const hit = metaCache.get(db);
   if (ver && hit?.ver === ver) return hit.val;
-  const products = (await db.prepare(`SELECT COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()}`).first()).n;
-  const shops = (await db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers').first()).n;
-  const freshest = (await db.prepare('SELECT MAX(updated_at) AS t FROM offers').first()).t ?? null;
-  const { results } = await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} GROUP BY 1`).all();
-  // per-cat sub-category counts (facets.type) — Browse's type chips read
-  // these off CATALOG.meta so they don't depend on which rows are hydrated
-  const tr = (await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, json_extract(meta, '$.facets.type') AS t, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND json_extract(meta, '$.facets.type') IS NOT NULL GROUP BY 1, 2`).all()).results;
+  const heads = `FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()}`;
+  const [nRes, sRes, fRes, cRes, tRes] = await db.batch([
+    db.prepare(`SELECT COUNT(*) AS n ${heads}`),
+    db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers'),
+    db.prepare('SELECT MAX(updated_at) AS t FROM offers'),
+    db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n ${heads} GROUP BY 1`),
+    // per-cat sub-category counts (facets.type) — Browse's type chips read
+    // these off CATALOG.meta so they don't depend on which rows are hydrated
+    db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, json_extract(meta, '$.facets.type') AS t, COUNT(*) AS n ${heads} AND json_extract(meta, '$.facets.type') IS NOT NULL GROUP BY 1, 2`),
+  ]);
+  const products = nRes.results[0].n;
+  const shops = sRes.results[0].n;
+  const freshest = fRes.results[0].t ?? null;
+  const results = cRes.results;
+  const tr = tRes.results;
   const types = {};
   for (const r of tr) if (r.cat) (types[r.cat] ??= {})[r.t] = r.n;
   const val = { products, shops, freshest, icons: CATS, facets: FACETS, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
