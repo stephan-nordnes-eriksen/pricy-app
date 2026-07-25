@@ -176,12 +176,32 @@ const dayOf = (t) => new Date(t).toISOString().slice(0, 10);
 // rows new to the DB (e.g. variant children) get their demo offers/history;
 // existing offers/price_points are never touched, and rows dropped upstream
 // stay (purchases/watches reference them).
+// Catalog version: seed_meta row 2 is a counter every write to products/offers
+// bumps. catMeta's cache is keyed on it, so an ingest in ONE isolate
+// invalidates the cache in ALL of them — the reason this isn't a guessed TTL
+// (a stale meta.cats shows up as wrong product counts on Browse).
+// Text column, so CAST both ways; starts at 1 on the first write.
+const bumpVer = (db) => db.prepare(
+  `INSERT INTO seed_meta (id, hash) VALUES (2, '1') ON CONFLICT(id) DO UPDATE SET hash = CAST(CAST(hash AS INTEGER) + 1 AS TEXT)`
+);
+
 let seedHash;
+// returns the catalog version for catMeta's cache, or '' meaning "don't cache
+// this request" (we just wrote, so the value we read is already behind)
 async function seedCatalog(db) {
   // hash covers eans.json too: an eans-only change must re-run seeding so the
   // new file rows land in the eans table (OR IGNORE — runtime aliases win)
   seedHash ??= await sha(JSON.stringify(seed) + JSON.stringify(eansFile));
-  if ((await db.prepare('SELECT hash FROM seed_meta WHERE id = 1').first())?.hash === seedHash) return;
+  // one round trip for both markers: row 1 pins the seed hash, row 2 the
+  // catalog version. This SELECT is on every request already — reading the
+  // version here is what makes a catMeta cache hit cost nothing.
+  const mark = Object.fromEntries((await db.prepare('SELECT id, hash FROM seed_meta WHERE id <= 2').all()).results.map(r => [r.id, String(r.hash)]));
+  // No version row yet = a db seeded before versioning existed (prod, on the
+  // deploy that adds this) and not written since. Fall back to the seed hash:
+  // stable, so the cache still works, and the first write replaces it with a
+  // counter that can never collide with a sha. Cheaper than writing the row
+  // from a read path.
+  if (mark[1] === seedHash) return mark[2] ?? seedHash;
   const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(r => r.id));
   // Demo offers/history are for virgin DBs only (local dev, tests): once a
   // real source has ever stamped an offer (updated_at set — seeding never
@@ -204,7 +224,9 @@ async function seedCatalog(db) {
         .bind(id, dayOf(Date.now() - (history.length - 1 - i) * 86400e3), price)));
   }
   stmts.push(db.prepare('INSERT INTO seed_meta (id, hash) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET hash = excluded.hash').bind(seedHash));
+  stmts.push(bumpVer(db));
   await db.batch(stmts);
+  return '';
 }
 
 // per-product best in-stock offer — the alert hook reads it after every
@@ -382,6 +404,8 @@ async function ingest(db, rows, env) {
   // ponytail: 200-statement chunks — one giant batch trips D1 limits on a
   // full-feed run; the upserts are idempotent so losing cross-chunk atomicity is fine
   for (let i = 0; i < stmts.length; i += 200) await db.batch(stmts.slice(i, i + 200));
+  // one bump covers this whole ingest — creates, promotions, offers, points
+  await bumpVer(db).run();
   await fireAlerts(db, env, before);
   // hidden rows skip image sync — no UI shows them; the download happens on
   // the first ingest after enrichment unhides the product
@@ -806,7 +830,22 @@ async function topDropIds(db, { limit = 4, perCat = false } = {}) {
 
 // Global aggregates + per-category head counts — served as meta on every
 // /api/products response so the UI can show real totals off a partial cache.
-async function catMeta(db) {
+//
+// Five unindexed full-table aggregates, paid by every response including a
+// PDP ids= fetch that touches no category — ~40 ms of CPU and 5 D1 round
+// trips (~100 ms on prod). So it is memoised per database, keyed on the
+// catalog version seedCatalog already read this request: a hit costs nothing,
+// and any write anywhere bumps the version, so no isolate can serve a count
+// that is behind the data. Falsy ver = don't cache (a just-written or
+// unversioned db, and the ops catalog.json dump).
+// ponytail: a MISS is still 5 round trips — db.batch() would make it 1, but
+// that needs the test shim taught to return per-statement rows. Do it if cold
+// isolates ever show up in the numbers.
+// Callers must treat the result as read-only — it is shared between requests.
+const metaCache = new WeakMap(); // db → { ver, val }
+async function catMeta(db, ver) {
+  const hit = metaCache.get(db);
+  if (ver && hit?.ver === ver) return hit.val;
   const products = (await db.prepare(`SELECT COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()}`).first()).n;
   const shops = (await db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers').first()).n;
   const freshest = (await db.prepare('SELECT MAX(updated_at) AS t FROM offers').first()).t ?? null;
@@ -816,7 +855,9 @@ async function catMeta(db) {
   const tr = (await db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, json_extract(meta, '$.facets.type') AS t, COUNT(*) AS n FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND json_extract(meta, '$.facets.type') IS NOT NULL GROUP BY 1, 2`).all()).results;
   const types = {};
   for (const r of tr) if (r.cat) (types[r.cat] ??= {})[r.t] = r.n;
-  return { products, shops, freshest, icons: CATS, facets: FACETS, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  const val = { products, shops, freshest, icons: CATS, facets: FACETS, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  if (ver) metaCache.set(db, { ver, val });
+  return val;
 }
 
 async function purchasesBody(db, userId) {
@@ -886,7 +927,7 @@ async function mcpTool(db, sid, name, a) {
 
   const user = await sessionUser(db, sid);
   if (!user) throw new Error('not logged in — use the login tool (or signup to create an account)');
-  await seedCatalog(db);
+  const ver = await seedCatalog(db);
 
   const brief = (p) => ({ id: p.id, name: p.name, brand: p.brand, category: p.cat, best_price_nok: p.best, was_nok: p.was, drop_pct: p.drop, shops: p.shops, in_stock: p.stock });
 
@@ -902,7 +943,7 @@ async function mcpTool(db, sid, name, a) {
       .map(p => [terms.filter(t => `${p.name} ${p.brand ?? ''} ${p.cat ?? ''} ${p.icon ?? ''}`.toLowerCase().includes(t)).length, p])
       .filter(([s]) => s > 0)
       .sort((x, y) => y[0] - x[0]);
-    if (!scored.length) return { results: [], hint: 'no matches — categories: ' + Object.keys((await catMeta(db)).cats).join(', ') };
+    if (!scored.length) return { results: [], hint: 'no matches — categories: ' + Object.keys((await catMeta(db, ver)).cats).join(', ') };
     return { results: scored.slice(0, 8).map(([, p]) => brief(p)) };
   }
 
@@ -1214,7 +1255,7 @@ export default {
     // Query-based catalog: the SPA's lazy cache fetches slices from here.
     // Precedence ids > q > top=drop > list (cat= or all heads).
     if (route === 'GET /api/products') {
-      await seedCatalog(db);
+      const ver = await seedCatalog(db);
       const p = url.searchParams;
       const limit = Math.min(100, Math.max(1, Number(p.get('limit')) || 4));
       // list branches (cat=, all heads): one PAGE_MAX page by default,
@@ -1259,7 +1300,7 @@ export default {
         extra = { total: slice.total, fcounts: slice.fcounts || undefined };
         products = await rowsFor(db, slice.ids, { expand: false });
       }
-      return json({ meta: { ...await catMeta(db), ...extra }, products });
+      return json({ meta: { ...await catMeta(db, ver), ...extra }, products });
     }
 
     // 4d interim: the laptop crawler (tools/crawl.mjs) pushes ingest()-shaped
@@ -1311,7 +1352,7 @@ export default {
       if (typeof patch.cat === 'string' && !CATS[patch.cat]) return json({ error: 'unknown cat', cats: Object.keys(CATS).sort() }, 400);
       const meta = JSON.parse(cur.meta);
       for (const [k, v] of Object.entries(patch)) v === null ? delete meta[k] : meta[k] = typeof v === 'string' ? v.trim() : v;
-      await db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id).run();
+      await db.batch([db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id), bumpVer(db)]);
       return json({ ok: true, id, meta });
     }
 
@@ -1353,6 +1394,7 @@ export default {
         // the image re-fetches under the target id on the next ingest
         try { await env.IMAGES?.delete(`products/${orphan}`); } catch {}
       }
+      await bumpVer(db).run(); // covers both the create above and the migration
       return json({ ok: true, ean: key, product_id: target, migrated });
     }
 

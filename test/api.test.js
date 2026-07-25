@@ -1840,3 +1840,37 @@ test('POST /api/report: session-gated, validated, capped at 20/day; rows ride th
   const { n } = await DB.prepare('SELECT COUNT(*) AS n FROM reports').first();
   assert.strictEqual(n, 1, "GDPR delete must take ola's reports; kari's stays");
 });
+
+// catMeta is memoised per db, keyed on the seed_meta version counter that
+// every write bumps (worker/index.js). A missed bump doesn't fail anything
+// else in this suite — it just serves yesterday's product counts forever — so
+// this walks all three write paths and asserts the SERVED meta moved each time.
+test('served meta stays live across ingest, admin PATCH and alias (catMeta cache invalidation)', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  const meta = async () => (await (await call('/api/products?cat=Pets&limit=1')).json()).meta;
+
+  // twice: the first request seeds, and seedCatalog deliberately returns no
+  // version on a request that just wrote, so only the second one caches. A
+  // cold cache can't go stale — warm it or this test proves nothing.
+  await meta();
+  const base = await meta();
+
+  // 1. ingest — a brand-new shop must show up in meta.shops
+  await req('/api/ingest', 'POST', [{ product_id: 'ean-7099920000001', shop: 'Dyrebutikken', price: 349, name: 'Hundeseng Deluxe', brand: 'Acme' }]);
+  const afterIngest = await meta();
+  assert.strictEqual(afterIngest.shops, base.shops + 1, 'a new shop must reach meta.shops without waiting for a TTL');
+  assert.strictEqual(afterIngest.products, base.products, 'the discovered row is hidden, so head count is unchanged');
+
+  // 2. admin PATCH — promoting the hidden row must move the category count
+  await req('/api/admin/products/ean-7099920000001', 'PATCH', { cat: 'Pets', brand: 'Acme', kw: 'hundeseng', hidden: null });
+  const afterPatch = await meta();
+  assert.strictEqual(afterPatch.products, base.products + 1, 'promotion must reach meta.products');
+  assert.strictEqual(afterPatch.cats.Pets, (base.cats.Pets ?? 0) + 1, 'promotion must reach meta.cats — this is what Browse counts');
+
+  // 3. alias creating a target — another visible head
+  await req('/api/admin/alias', 'POST', { ean: '7099920000002', product_id: 'hundeseng~xl', meta: { name: 'Hundeseng Deluxe XL', cat: 'Pets' } });
+  assert.strictEqual((await meta()).products, base.products + 2, 'an alias-created product must reach meta.products');
+});
