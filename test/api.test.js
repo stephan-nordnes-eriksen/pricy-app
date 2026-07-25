@@ -39,15 +39,26 @@ before(async () => {
   ({ parsePrice, parseSitemapXml } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
 });
 
-const api = (env) => (pathname, { method = 'GET', body, cookie } = {}) =>
-  worker.fetch(new Request('http://pricy.test' + pathname, {
-    method,
-    headers: {
-      ...(body ? { 'content-type': 'application/json' } : {}),
-      ...(cookie ? { cookie } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  }), env);
+// Ops routes (ingest, admin, the catalog.json dump) are bearer-gated, so
+// every test env gets a token unless it declares its own — including
+// `INGEST_TOKEN: undefined`, which is how the "endpoint disabled" path is
+// tested. Mutated in place: some tests swap bindings on `env` after api().
+const OPS = 'ops-token';
+const api = (env) => {
+  if (!('INGEST_TOKEN' in env)) env.INGEST_TOKEN = OPS;
+  const call = (pathname, { method = 'GET', body, cookie, token } = {}) =>
+    worker.fetch(new Request('http://pricy.test' + pathname, {
+      method,
+      headers: {
+        ...(body ? { 'content-type': 'application/json' } : {}),
+        ...(cookie ? { cookie } : {}),
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    }), env);
+  call.token = env.INGEST_TOKEN; // so catBody can reach the gated dump
+  return call;
+};
 
 const cookieOf = (res) => (res.headers.get('set-cookie') || '').split(';')[0];
 
@@ -394,11 +405,12 @@ test('unknown api routes 404', async () => {
 const seed = require(path.join(__dirname, '..', 'worker', 'seed.json'));
 
 // body is {meta, products} since the honest-metrics pass
-const catBody = async (call) => (await (await call('/api/catalog.json')).json()).products;
+const catBody = async (call) => (await (await call('/api/catalog.json', { token: call.token })).json()).products;
 
-test('catalog route seeds D1 on first request and serves the demo shape, no auth', async () => {
+test('catalog route seeds D1 on first request and serves the demo shape, ops-gated', async () => {
   const call = api({ DB: d1() });
-  const res = await call('/api/catalog.json');
+  assert.strictEqual((await call('/api/catalog.json')).status, 401, 'the 7 MB ops dump must not be public');
+  const res = await call('/api/catalog.json', { token: OPS });
   assert.strictEqual(res.status, 200);
   const { meta, products: cat } = await res.json();
   assert.strictEqual(cat.length, seed.length, 'every seed product must be served');
@@ -612,6 +624,38 @@ test('GET /api/products: cat filters exactly, no params serves all heads', async
   assert.strictEqual(all.length, seed.filter(p => !p.family).length, 'no params = every head');
 });
 
+// PAGE_MAX bounded the response, but rowid decided WHICH rows you got: with
+// Toys at 1,387 heads, 70% of the category was unreachable and the reachable
+// part was "whichever shop we crawled first". Now ranked by offer count (the
+// point of a price comparison) and paged with limit/offset.
+test('GET /api/products: list branches rank by offer count and page with limit/offset', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  // inserted worst-first, so rowid order is the opposite of the ranking
+  const shopsFor = { '7099930000001': ['Power'], '7099930000002': ['Power', 'Elkjøp'], '7099930000003': ['Power', 'Elkjøp', 'Komplett'] };
+  for (const [ean, shops] of Object.entries(shopsFor)) {
+    await req('/api/ingest', 'POST', shops.map(shop => ({ product_id: 'ean-' + ean, shop, price: 500, name: 'Hundeseng ' + ean.slice(-1), brand: 'Acme' })));
+    await req('/api/admin/products/ean-' + ean, 'PATCH', { cat: 'Pets', hidden: null });
+  }
+  const ids = async (qs) => (await (await call('/api/products?' + qs)).json()).products.map(p => p.id);
+
+  assert.deepStrictEqual(await ids('cat=Pets'), ['ean-7099930000003', 'ean-7099930000002', 'ean-7099930000001'],
+    'most offers first — an offer-less or single-shop row must not outrank a three-shop one on insertion order');
+  assert.deepStrictEqual(await ids('cat=Pets&limit=2'), ['ean-7099930000003', 'ean-7099930000002'], 'limit takes the head of the ranking');
+  assert.deepStrictEqual(await ids('cat=Pets&limit=2&offset=2'), ['ean-7099930000001'], 'offset reaches the rest of the category');
+  assert.deepStrictEqual(await ids('cat=Pets&offset=99'), [], 'past the end is empty, not an error');
+
+  // same paging on the all-heads branch, and the cap still holds
+  const page1 = await ids('limit=5');
+  const page2 = await ids('limit=5&offset=5');
+  assert.strictEqual(page1.length, 5);
+  assert.strictEqual(new Set([...page1, ...page2]).size, 10, 'pages must not overlap');
+  const heads = seed.filter(p => !p.family).length + 3;
+  assert.strictEqual((await ids('limit=9999')).length, Math.min(heads, 400), 'limit is clamped to PAGE_MAX');
+});
+
 test('GET /api/products: a category beyond 100 heads survives the D1 param cap', async () => {
   const DB = d1();
   const call = api({ DB });
@@ -638,7 +682,7 @@ test('GET /api/products: a category beyond 100 heads survives the D1 param cap',
 test('seed evolution: changed seed refreshes meta, leaves real offers alone, adds new rows', async () => {
   const DB = d1();
   const call = api({ DB });
-  await call('/api/catalog.json'); // seeds + writes the seed_meta marker
+  await call('/api/products'); // seeds + writes the seed_meta marker
 
   // simulate a pre-4e prod DB: stale meta, a real ingested price, no marker
   await DB.prepare('UPDATE products SET meta = ? WHERE id = ?')
@@ -650,7 +694,7 @@ test('seed evolution: changed seed refreshes meta, leaves real offers alone, add
   await DB.prepare("DELETE FROM price_points WHERE product_id = 'xm5'").run();
   await DB.prepare('DELETE FROM seed_meta').run();
 
-  const { products } = await (await call('/api/catalog.json')).json(); // re-seeds
+  const { products } = await (await call('/api/catalog.json', { token: call.token })).json(); // re-seeds
   const airpods = products.find(p => p.id === 'airpods');
   assert.strictEqual(airpods.name, seed.find(p => p.id === 'airpods').name, 'stale meta must be re-upserted from the seed');
   assert.strictEqual(airpods.offers.find(o => o.shop === shop).price, 1234, 'real offer prices must survive the re-seed');
@@ -660,7 +704,7 @@ test('seed evolution: changed seed refreshes meta, leaves real offers alone, add
   // marker written: the same seed must not re-seed again
   await DB.prepare('UPDATE products SET meta = ? WHERE id = ?')
     .bind(JSON.stringify({ name: 'Stale Again', cat: 'Phones' }), 'airpods').run();
-  const again = (await (await call('/api/catalog.json')).json()).products.find(p => p.id === 'airpods');
+  const again = (await (await call('/api/catalog.json', { token: call.token })).json()).products.find(p => p.id === 'airpods');
   assert.strictEqual(again.name, 'Stale Again', 'matching seed_meta hash must skip the upsert');
 
   // once ANY offer is source-stamped (updated_at), the DB is no longer
@@ -670,7 +714,7 @@ test('seed evolution: changed seed refreshes meta, leaves real offers alone, add
   await DB.prepare("DELETE FROM offers WHERE product_id = 'xm5'").run();
   await DB.prepare("DELETE FROM price_points WHERE product_id = 'xm5'").run();
   await DB.prepare('DELETE FROM seed_meta').run();
-  const honest = (await (await call('/api/catalog.json')).json()).products.find(p => p.id === 'xm5');
+  const honest = (await (await call('/api/catalog.json', { token: call.token })).json()).products.find(p => p.id === 'xm5');
   assert.ok(honest, 'new row still lands on re-seed');
   assert.deepStrictEqual([honest.offers, honest.history], [[], []], 'non-virgin DB must not get demo offers/history');
 });
@@ -770,7 +814,7 @@ test('adtraction source: EAN-matched feed rows update offers with deep link; unk
 test('scrape source: first-party JSON-LD product page updates the offer', async () => {
   const DB = d1();
   const call = api({ DB });
-  await call('/api/catalog.json'); // seeds
+  await call('/api/products'); // seeds
 
   const html = `<html><head><script type="application/ld+json">
     {"@context":"https://schema.org","@graph":[{"@type":"Product","name":"AirPods Pro",
@@ -791,7 +835,7 @@ test('scrape source: first-party JSON-LD product page updates the offer', async 
 test('scrape source: NetOnNet shape — priceSpecification price, browser UA opt-in', async () => {
   const DB = d1();
   const call = api({ DB });
-  await call('/api/catalog.json'); // seeds
+  await call('/api/products'); // seeds
 
   const html = `<html><head><script type="application/ld+json">
     {"@context":"https://schema.org","@type":"Product","name":"AirPods Pro",
@@ -1138,7 +1182,7 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
     body: JSON.stringify(rows),
   }), env);
 
-  assert.strictEqual((await api({ DB: d1() })('/api/ingest', { method: 'POST', body: [] })).status, 503, 'no INGEST_TOKEN secret = endpoint disabled');
+  assert.strictEqual((await api({ DB: d1(), INGEST_TOKEN: undefined })('/api/ingest', { method: 'POST', body: [] })).status, 503, 'no INGEST_TOKEN secret = endpoint disabled');
   const row = { product_id: 'airpods', shop: 'Elkjøp', price: 1999, ship: 'Fri frakt', stock: 1, url: 'https://www.elkjop.no/airpods' };
   assert.strictEqual((await push([row])).status, 401, 'missing bearer');
   assert.strictEqual((await push([row], 'wrong-token')).status, 401, 'wrong bearer');
@@ -1156,7 +1200,7 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(ok.status, 200);
   assert.deepStrictEqual(await ok.json(), { ok: true, ingested: 1 });
 
-  const { meta, products } = await (await call('/api/catalog.json')).json();
+  const { meta, products } = await (await call('/api/catalog.json', { token: call.token })).json();
   let airpods = products.find(p => p.id === 'airpods');
   let offer = airpods.offers.find(o => o.shop === 'Elkjøp');
   assert.strictEqual(offer.price, 1999);
@@ -1553,7 +1597,7 @@ const withLog = async (fn) => {
 
 test('alerts: crossing below target fires once (logged), no refire while below, re-arms above', async () => {
   const { call, push, alerts } = alertEnv();
-  await call('/api/catalog.json'); // seeds
+  await call('/api/products'); // seeds
   const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   const target = seedBest - 100;
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target }], cookie });
@@ -1591,7 +1635,7 @@ test('alerts: crossing below target fires once (logged), no refire while below, 
 
 test('alerts: paused and target-less watches never fire', async () => {
   const { call, push, alerts } = alertEnv();
-  await call('/api/catalog.json');
+  await call('/api/products');
   const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
   const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target: seedBest - 100, paused: true }], cookie: kari });
@@ -1602,7 +1646,7 @@ test('alerts: paused and target-less watches never fire', async () => {
 
 test('alerts: threshold minimum-drop is respected; an all-time low overrides it unless lows is off', async () => {
   const { call, push, alerts } = alertEnv();
-  await call('/api/catalog.json');
+  await call('/api/products');
   const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   await call('/api/settings', { method: 'PUT', body: { threshold: '10', lows: false }, cookie });
 
@@ -1641,7 +1685,7 @@ test('alerts: SEND_EMAIL binding emails the alert; a failing send still records 
     headers: { 'content-type': 'application/json', authorization: 'Bearer sekrit-token' },
     body: JSON.stringify(rows),
   }), env);
-  await call('/api/catalog.json');
+  await call('/api/products');
   const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target: seedBest - 100 }], cookie });
 
@@ -1672,7 +1716,7 @@ test('alerts: SEND_EMAIL binding emails the alert; a failing send still records 
 // activity feed: GET /api/alerts serves the session user's alert history
 test('GET /api/alerts: 401 unauthenticated, scoped to the session user, newest first, capped at 50', async () => {
   const { DB, call, push } = alertEnv();
-  await call('/api/catalog.json'); // seeds
+  await call('/api/products'); // seeds
   assert.strictEqual((await call('/api/alerts')).status, 401, 'no session must 401');
 
   const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));

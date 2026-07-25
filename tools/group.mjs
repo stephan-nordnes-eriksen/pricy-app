@@ -6,8 +6,11 @@
 // `<head>~<combo>` child (migrating its collected offers/history).
 //
 // Print-only, deliberately: shop listing titles are messy and the clustering
-// WILL misfire sometimes — a human reads, edits, runs. Env: PRICY_URL.
+// WILL misfire sometimes — a human reads, edits, runs. Env: PRICY_URL,
+// INGEST_TOKEN (falls back to tools/.ingest-token — the ops dump is gated).
+import { readFileSync } from 'node:fs';
 const base = process.env.PRICY_URL || 'https://pricy.no';
+const auth = { authorization: `Bearer ${process.env.INGEST_TOKEN || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim()}` };
 
 // NO + EN colour words → canonical option id (never contains '-' or '~')
 const COLORS = {
@@ -42,7 +45,7 @@ function tokensOf(p) {
 }
 
 const hidden = (await (await fetch(`${base}/api/products?hidden=1`)).json()).products ?? [];
-const visible = (await (await fetch(`${base}/api/catalog.json`)).json()).products ?? [];
+const visible = (await (await fetch(`${base}/api/catalog.json`, { headers: auth })).json()).products ?? [];
 // cluster pool: every discovered row, plus visible catalog heads so a
 // discovered SKU can match an existing product's family
 const pool = [

@@ -19,7 +19,9 @@ const eans = JSON.parse(readFileSync(new URL('../worker/eans.json', import.meta.
 // hand-written) — never overwrite those; thin runtime-PATCHed sheets are
 // fair game, Icecat depth replaces them
 const curated = new Set(JSON.parse(readFileSync(new URL('../worker/seed.json', import.meta.url), 'utf8')).filter(p => p.specs).map(p => p.id));
-const { products } = await (await fetch(`${base}/api/catalog.json`)).json();
+// the ops dump is bearer-gated (7.2 MB per hit) — same token as ingest
+const token = process.env.INGEST_TOKEN || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim();
+const { products } = await (await fetch(`${base}/api/catalog.json`, { headers: { authorization: `Bearer ${token}` } })).json();
 const sheets = {};
 const miss = [];
 for (const p of products) {

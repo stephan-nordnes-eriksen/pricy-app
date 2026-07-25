@@ -515,7 +515,7 @@ const chunked = async (ids, run, size = 45) => {
   return out;
 };
 
-// most rows a list query will return (see the cat= branch for why)
+// most rows one list query will return (see the cat= branch for why)
 const PAGE_MAX = 400;
 
 // auto-discovered products carry meta.hidden = 1 until enriched — every
@@ -606,6 +606,25 @@ async function searchIds(db, q) {
   const { results } = await db.prepare(
     `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => `${blob} LIKE ? ESCAPE '\\'`).join(' OR ')}) ORDER BY ${score} DESC, rowid LIMIT 100`
   ).bind(...toks.map(t => `%${t}%`), ...toks.flatMap(t => [`% ${t}%`, `%${t}%`, `%${t}%`])).all();
+  return results.map(r => r.id);
+}
+
+// Category listing (cat = null → every head), ranked and paged. Order used
+// to be rowid — "whichever shop we crawled first" — which decided WHICH 400
+// of Toys' 1,387 rows you could see. Offer count is the cheapest honest
+// signal a price comparison has: a product several shops carry is the one
+// worth leading with, and the offer-less rows sink to the back. Ties keep
+// rowid, so curated seed rows stay first among their peers.
+// ponytail: LEFT JOIN + GROUP BY over the whole head set per call (the sort
+// can't stop at LIMIT the way rowid order did), like topDropIds. Measured on
+// a synthetic 14k-row/14k-offer copy: 1.3 → 8 ms for a category, 11 ms for
+// all heads. Store a shops column on the product row if that stops being fine.
+async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0 } = {}) {
+  const { results } = await db.prepare(
+    `SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id
+     WHERE json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')}${cat == null ? '' : " AND json_extract(p.meta, '$.cat') = ?"}
+     GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid LIMIT ? OFFSET ?`
+  ).bind(...(cat == null ? [] : [cat]), limit, offset).all();
   return results.map(r => r.id);
 }
 
@@ -1021,20 +1040,29 @@ export default {
     const route = request.method + ' ' + url.pathname;
 
     if (route === 'GET /api/catalog.json') {
-      // full dump — kept for ops/tools/debugging; the SPA uses /api/products.
-      // ponytail: cap it when the catalog outgrows one response
+      // full dump — ops/tools/debugging only; the SPA uses /api/products.
+      // Bearer-gated since it outgrew one response (7.2 MB at 14k rows):
+      // unauthenticated, every hit built and serialised the whole catalog.
+      // tools/ read it with the INGEST_TOKEN they already carry.
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
       const products = await catalogBody(db);
       return json({ meta: await catMeta(db), products });
     }
 
     // Query-based catalog: the SPA's lazy cache fetches slices from here.
     // Precedence ids > q > cat > sort; no params = all heads.
-    // ponytail: the no-param and cat cases are uncapped at current scale —
-    // add limit+paging when the catalog outgrows one response
     if (route === 'GET /api/products') {
       await seedCatalog(db);
       const p = url.searchParams;
       const limit = Math.min(100, Math.max(1, Number(p.get('limit')) || 4));
+      // list branches (cat=, all heads): one PAGE_MAX page by default,
+      // `limit`+`offset` to walk the rest. meta.cats[cat] / meta.products is
+      // the total, so a caller knows when to stop.
+      const page = {
+        limit: Math.min(PAGE_MAX, Math.max(1, Number(p.get('limit')) || PAGE_MAX)),
+        offset: Math.max(0, Number(p.get('offset')) || 0),
+      };
       let products;
       if (p.get('hidden') === '1') {
         // enrichment listing (tools/enrich.mjs): auto-discovered rows awaiting
@@ -1052,21 +1080,18 @@ export default {
       } else if (p.get('q') != null) {
         products = await rowsFor(db, await searchIds(db, p.get('q')), { expand: false });
       } else if (p.get('cat') != null) {
-        // ponytail: PAGE_MAX rows per category, no paging — the SPA renders
-        // one card per row, and a full-catalog crawl puts thousands in a
-        // category. Seeded/curated rows sort first (rowid), discovered ones
-        // fill the rest. Add offset paging the day a category needs browsing
-        // past this; search (LIMIT 100) is the way to the rest today.
-        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()} ORDER BY rowid LIMIT ${PAGE_MAX}`).bind(p.get('cat')).all();
-        products = await rowsFor(db, results.map(r => r.id), { expand: false });
+        // PAGE_MAX rows per page — the SPA renders one card per row, and a
+        // full-catalog crawl puts thousands in a category (Toys 1,387).
+        // ponytail: the SPA still asks for page 0 only; the UI half (a
+        // "Load more" that raises offset) is an upstream prototype change.
+        products = await rowsFor(db, await listIds(db, { cat: p.get('cat'), ...page }), { expand: false });
       } else if (p.get('sort') === 'drop') {
         products = await rowsFor(db, await topDropIds(db, { limit, perCat: p.get('perCat') === '1' }), { expand: false });
       } else {
-        // "/results with no query and no category" — same cap, and the same
+        // "/results with no query and no category" — same page, and the same
         // id-list shape as cat=: catalogBody() would build the WHOLE catalog
         // just to throw all but PAGE_MAX of it away
-        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} ORDER BY rowid LIMIT ${PAGE_MAX}`).all();
-        products = await rowsFor(db, results.map(r => r.id), { expand: false });
+        products = await rowsFor(db, await listIds(db, page), { expand: false });
       }
       return json({ meta: await catMeta(db), products });
     }

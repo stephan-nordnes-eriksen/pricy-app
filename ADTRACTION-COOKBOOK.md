@@ -57,8 +57,9 @@ One approved feed is enough to start; repeat per shop as approvals land.
 
 5. **Verify in prod:** wait for the hourly cron (or
    `npx wrangler tail pricy` and watch an `ingest:` line), then
-   spot-check `https://pricy.no/api/catalog.json` for real prices and
-   feed deep links on that shop.
+   spot-check the ops dump for real prices and feed deep links on that shop
+   (bearer-gated: `curl -H "authorization: Bearer $(cat tools/.ingest-token)"
+   https://pricy.no/api/catalog.json`).
 
 6. **Extend `worker/eans.json`** with variant EANs the feed reveals
    (13-digit, zero-padded, confirmed same product only). Feed rows with

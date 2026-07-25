@@ -39,13 +39,16 @@ Two Claude Design projects feed this repo:
   `rowsFor`/`searchIds`/`topDropIds`/`catMeta` in `worker/index.js`.
   `searchIds` is a substring LIKE over the meta blob minus `$.specs` and
   `$.icon` (both are non-text: the icon is a lucide NAME, so leaving it in
-  made every Furniture row match "sofa"), LIMIT 100, unranked. **Known gap:
-  no diacritic folding** — "hundefor" finds nothing, "hundefôr" does. Fixing
-  it means an ASCII-folded copy in `kw` plus a backfill of every already
-  promoted row, so it's a migration, not a one-liner.
-  List queries are capped at `PAGE_MAX` (400) rows with no paging.
-  `/api/catalog.json` remains as a full dump for ops/tools only — the SPA
-  must never call it. Upstream is synced (2026-07-21): category counts and
+  made every Furniture row match "sofa"), LIMIT 100, ranked
+  word-start-in-name > in-name > brand > blob, and diacritic-folded on both
+  sides of the LIKE (in the query, not a stored column — no migration).
+  List queries (`cat=`, all heads) serve one `PAGE_MAX` (400) page ranked by
+  offer count, `&limit=&offset=` for the rest; `meta.cats[cat]` /
+  `meta.products` is the total. The SPA only ever asks for page 0 — a
+  "Load more" is an upstream prototype change.
+  `/api/catalog.json` remains a full dump for ops/tools only — the SPA must
+  never call it, and it is **bearer-gated on `INGEST_TOKEN`** (7.2 MB per
+  hit at 14k rows); `tools/` send the token. Upstream is synced (2026-07-21): category counts and
   presence read `CATALOG.meta.cats`, SignedHome "Biggest drops" ranks
   `window.CATALOG`, and SearchSuggest refreshes via boot's
   `window.onSuggestData(q, refresh)` hook; browse prefetches
@@ -77,7 +80,8 @@ Two Claude Design projects feed this repo:
   only counts stored values, and Browse falls back to counting the
   hydrated slice. build.js fails if a rule derives a key facets.json
   doesn't declare. Tune rules against a real crawl, never a sample —
-  replay `/api/catalog.json` through `deriveFacets` and read the misses.
+  replay `/api/catalog.json` (bearer-gated) through `deriveFacets` and read
+  the misses.
   Per-product `specs` ride the same
   meta-merge PATCH (bulk: `node tools/apply-specs.mjs specs.json`) — boot
   feeds `r.specs` into the prototype's SPECS, so the PDP Specifications
