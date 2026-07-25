@@ -41,6 +41,13 @@ F. [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md) — `hidden:1`
    means "unlisted", not "hidden": a demoted product keeps a working PDP.
    Decide whether that's the intent, then fix the code or the docs.
 
+Not a backlog item, but read it before any performance change:
+[api-read-path-performance](api-read-path-performance.md) — where
+`/api/products`' time actually goes (measured), the ceilings in the order they
+should be fixed (`catMeta` first, it is ~half of every response), the
+optimisations already priced and rejected, and the harness that produced the
+numbers.
+
 **Excluded by decision** (planned elsewhere or parked):
 - BankID login (parked, PLAN.md 4b) — fake button stays working.
 - Buy-now / auto-buy execution (AUTOBUY-PLAN.md, FULFILLMENT-PLAN.md).
