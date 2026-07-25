@@ -41,6 +41,13 @@ F. [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md) — `hidden:1`
    means "unlisted", not "hidden": a demoted product keeps a working PDP.
    Decide whether that's the intent, then fix the code or the docs.
 
+G. [api-latency-round-trips](api-latency-round-trips.md) — a category page
+   takes **~950 ms on prod**, and ~600 ms of it is `rowsFor` issuing 36
+   sequential D1 queries for one 400-row page (9 id-chunks × 4 query
+   families). Not caused by any recent change; nobody had timed prod. The fix
+   is `batch()`/`Promise.all` over work that is already independent, then
+   caching `catMeta`'s 5 round trips. Measured 2026-07-25.
+
 Not a backlog item, but read it before any performance change:
 [api-read-path-performance](api-read-path-performance.md) — where
 `/api/products`' time actually goes (measured), the ceilings in the order they

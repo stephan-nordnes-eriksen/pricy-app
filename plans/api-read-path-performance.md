@@ -1,8 +1,16 @@
 # Read-path performance: where the time goes, and what to fix first
 
-Standing reference, not a backlog item — nothing here is slow enough to fix
-today. It exists so the next performance change starts from a measurement
-instead of an instinct, and so nobody re-litigates a trade already priced.
+Standing reference, not a backlog item. It exists so the next performance
+change starts from a measurement instead of an instinct, and so nobody
+re-litigates a trade already priced.
+
+> **Read [api-latency-round-trips](api-latency-round-trips.md) first if you
+> care about how long a page takes.** Everything below is measured IN PROCESS
+> over node:sqlite, where a query costs microseconds — it prices CPU, and it is
+> blind to D1 round trips. Timed against live prod, a category page is ~950 ms,
+> and the term that dominates it (`rowsFor`'s 36 sequential queries) shows up
+> here as 4 ms. Both files are true; they answer different questions. Use this
+> one for "which algorithm", that one for "why is it slow".
 
 Written 2026-07-25, at 14,059 heads / 14,156 offers / 50 shops / 31
 categories, right after `/api/products` learned server-side sort and filters
@@ -27,11 +35,15 @@ ratios are what matter.
 | `catalog.json` (ops dump, bearer-gated) | 208 ms | 6.1 MB |
 
 **Every row in that table pays ~40 ms of `catMeta` before it does its own
-work.** That is the single most important number on this page.
+work** — the single most important number *for CPU*. On prod, `catMeta` is 5
+round trips (~100 ms) and `rowsFor` is 36 (~600 ms); see the round-trips file.
 
 ## The ceilings, in the order they should be fixed
 
 ### 1. `catMeta` runs five full-table aggregates on every response
+
+*(First by CPU. By wall-clock on prod it is second, behind `rowsFor` —
+[api-latency-round-trips](api-latency-round-trips.md). Caching it fixes both.)*
 
 `worker/index.js`, called by both `/api/products` and `/api/catalog.json`.
 Counts heads, counts distinct shops, maxes `updated_at`, groups heads by
@@ -90,7 +102,13 @@ reaches it — Browse's "All products". If that ever becomes a real entry
 point, it is the first thing to move to SQL, because it is also the case
 where facets don't exist (no `cat`, so no rail) and SQL loses nothing.
 
-### 4. The 400-row page is ~180 KB
+### 4. `rowsFor` chunking — cheap here, dominant on prod
+
+4 ms in process, ~600 ms live: 400 ids is 9 chunks × 4 query families = 36
+sequential D1 round trips. Nothing about it is visible to this harness. Owned
+by [api-latency-round-trips](api-latency-round-trips.md).
+
+### 5. The 400-row page is ~180 KB
 
 Not CPU, but it is the biggest thing the browser waits for, and every
 sort or filter change fetches a fresh one. Cheapest lever if it matters:
@@ -98,7 +116,7 @@ drop `history` from list rows the way `specs` already is (`rowsFor`'s
 `expand: false` branch) and let the PDP fetch it — sparklines are the only
 list consumer.
 
-### 5. `catalog.json` is 6.1 MB and builds the whole catalog per hit
+### 6. `catalog.json` is 6.1 MB and builds the whole catalog per hit
 
 Already bearer-gated (Done 4). Tools want it whole. Leave it alone unless a
 tool starts polling it; then page it *and* keep the gate.
@@ -126,6 +144,10 @@ tool starts polling it; then page it *and* keep the gate.
 
 ## Rules that produced these numbers
 
+0. **Time prod with curl before ranking a LATENCY fix.** This harness prices
+   CPU and cannot see round trips; a `%{time_starttransfer}` median over 4
+   cache-busted requests takes a minute. Ranking `catMeta` above `rowsFor`
+   from local numbers alone was exactly this mistake.
 1. **Measure against the real catalog, never a sample or the seed.** Both
    category-classifier tunings that went wrong were tuned on samples. Pull
    `/api/catalog.json` with the bearer and replay it.
