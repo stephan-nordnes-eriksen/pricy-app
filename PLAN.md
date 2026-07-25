@@ -192,10 +192,28 @@ Outstanding tasks (in rough order):
 
 #### Coverage rollout — ingest more products (2026-07-15)
 
-State: 24 products × 8 shops = 192 offer cells; 2 are real (Power), the
-rest still serve seeded demo prices and stay frozen until a real row
-arrives. Goal: every product shows ≥2 shops with real prices and deep
-links, or a note here on why not (shop blocks us / doesn't stock it).
+**State 2026-07-25 — the per-shop ritual below is superseded for discovery.**
+A full-catalog sitemap crawl took the catalog to **14,059 products / 55 shops
+/ 31 categories** (from 647 / 8 / 10). What unblocked it was removing two
+gates that scaled with hand-written config instead of with shops: promotion
+now resolves categories from a shared Norwegian vocabulary (`CAT_RULES`) plus
+a per-shop `CATMAP["*"]` floor rather than requiring an exact per-shop
+mapping, and products with no `gtin` get a `slugId(brand, name)` id rather
+than being discarded. See CLAUDE.md for the resolution order.
+
+The ritual below is still the right process for adding a *curated* shop or
+chasing a specific product; it is no longer how bulk coverage happens —
+that's a `"$discover"` entry in `tools/crawl-urls.json`.
+
+What the scale-up exposed is tracked in [plans/](plans/) items A–F; the two
+that matter most are **cross-shop matching** (only 94 of 14,059 products have
+more than one shop's price) and **crawl/ingest robustness** (the crawl is a
+manual laptop job that no longer fits the Worker cron).
+
+Original 2026-07-15 state: 24 products × 8 shops = 192 offer cells; 2 are
+real (Power), the rest still serve seeded demo prices and stay frozen until a
+real row arrives. Goal: every product shows ≥2 shops with real prices and
+deep links, or a note here on why not (shop blocks us / doesn't stock it).
 
 Per-shop ritual (repeat for each scrapeable shop):
 
