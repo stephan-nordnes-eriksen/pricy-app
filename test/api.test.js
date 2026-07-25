@@ -1362,6 +1362,16 @@ test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free 
   assert.strictEqual((await floorOf('p-pilo-dropout-d757'))?.cat, 'Bikes', 'unrecognisable row falls to the shop floor');
   assert.strictEqual((await floorOf('p-agu-dwr-benvarmere'))?.cat, 'Fashion', 'a real category match still outranks the floor');
 
+  // the category's lucide icon name is not search text: every Furniture row
+  // carries icon "sofa", and must not turn up for a search on "sofa" unless
+  // the product itself says so
+  await push([{ product_id: 'p-uptown-matstol-white', shop: 'Trademax', price: 2799, name: 'Uptown matstol white', brand: 'Uptown', srcCat: 'Spisebord' }]);
+  const chair = await of('p-uptown-matstol-white');
+  assert.strictEqual(chair?.cat, 'Furniture');
+  assert.strictEqual(chair?.icon, 'sofa', 'precondition: the Furniture icon really is "sofa"');
+  const hits = (await (await call('/api/products?q=sofa')).json()).products;
+  assert.ok(!hits.some(p => p.id === 'p-uptown-matstol-white'), `icon name leaked into search: ${hits.map(p => p.id)}`);
+
   // slug ids merge offers across shops the same way an EAN does
   await push([{ product_id: 'p-bergans-slingsby-vindjakke', shop: 'Milrab', price: 1599, name: 'Bergans Slingsby Vindjakke', brand: 'Bergans', srcCat: 'Jakker og bukser' }]);
   const merged = await of('p-bergans-slingsby-vindjakke');

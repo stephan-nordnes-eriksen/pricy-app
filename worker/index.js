@@ -566,7 +566,12 @@ async function searchIds(db, q) {
     .map(t => t.replace(/[\\%_]/g, c => '\\' + c));
   if (!toks.length) return [];
   const { results } = await db.prepare(
-    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => "lower(json_remove(meta, '$.specs')) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
+    // $.icon is dropped for the same reason as $.specs: it is not search text.
+    // It holds the category's lucide icon NAME, so leaving it in makes every
+    // Furniture row match "sofa", every Bikes row "bike", every Books row
+    // "book" — harmless when 10 categories were all electronics, badly wrong
+    // once the icon set is sofa/bike/book/car/shirt/camera/pill/gem/tent.
+    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => "lower(json_remove(meta, '$.specs', '$.icon')) LIKE ? ESCAPE '\\'").join(' OR ')}) LIMIT 100`
   ).bind(...toks.map(t => `%${t}%`)).all();
   return results.map(r => r.id);
 }
