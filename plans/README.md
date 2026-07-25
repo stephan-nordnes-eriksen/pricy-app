@@ -15,8 +15,7 @@ something changes.
 Found while taking the catalog to 14k products across 55 shops. Ordered by
 how much each one hurts a user today. To work one of these, paste the prompt
 in [IMPLEMENT-PROMPT.md](IMPLEMENT-PROMPT.md) into a fresh session — one item
-per session, they each touch ingest, the query layer and live data. (G has its
-own prompt, [FIX-ROWSFOR-PROMPT.md](FIX-ROWSFOR-PROMPT.md).)
+per session, they each touch ingest, the query layer and live data.
 
 A. [cross-shop-product-matching](cross-shop-product-matching.md) — only 94
    of 14,059 products have more than one shop's price. A comparison site
@@ -47,10 +46,7 @@ G. [api-latency-round-trips](api-latency-round-trips.md) — a category page
    sequential D1 queries for one 400-row page (9 id-chunks × 4 query
    families). Not caused by any recent change; nobody had timed prod. The fix
    is `batch()`/`Promise.all` over work that is already independent, then
-   caching `catMeta`'s 5 round trips. Measured 2026-07-25. Paste-ready prompt:
-   [FIX-ROWSFOR-PROMPT.md](FIX-ROWSFOR-PROMPT.md) — its own, not an `<ITEM>` in
-   IMPLEMENT-PROMPT.md, because none of that prompt's crawl/promotion/migration
-   framing applies.
+   caching `catMeta`'s 5 round trips. Measured 2026-07-25.
 
 Not a backlog item, but read it before any performance change:
 [api-read-path-performance](api-read-path-performance.md) — where
