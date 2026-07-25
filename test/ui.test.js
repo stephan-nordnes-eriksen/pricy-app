@@ -716,6 +716,20 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   assert.ok(await until(() => win.api.some(c => c.call.includes('name=wireless'))),
     'typing in the refine box must re-query the server, got: ' + win.api.map(c => c.call).join(' | '));
 
+  // ...but the first letters never reach the wire. "e" matches nearly the whole
+  // catalog and the 400-row page it merges is what made early keystrokes slow.
+  // Gaps of 300 ms: past upstream's own 250 ms debounce, so without the hold
+  // each of these WOULD fetch (that is exactly the reported lag).
+  const box = q(win, '.refine input');
+  type(win, box, 'e'); await tick(300);
+  type(win, box, 'es'); await tick(300);
+  type(win, box, 'esp');
+  assert.ok(!win.api.some(c => /[?&]name=es?&/.test(c.call)),
+    'a 1–2 letter refine must be held until it is superseded, got: ' + win.api.map(c => c.call).join(' | '));
+  assert.ok(await until(() => win.api.some(c => c.call.includes('name=esp'))),
+    'the third letter must go through');
+  type(win, box, '');
+
   const res = await win.onQuery({
     cat: 'Audio', sort: 'best', dir: 'desc', page: 2,
     filters: { q: 'buds', brands: ['Sony', 'Bose'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },

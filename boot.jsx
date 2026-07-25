@@ -388,7 +388,25 @@ const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
   ...(f.facets && Object.keys(f.facets).length ? { facets: JSON.stringify(Object.fromEntries(Object.entries(f.facets).sort())) } : {}),
   limit: PAGE, offset: page * PAGE,
 });
-window.onQuery = (q) => fetchProducts(listQuery(q)).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts }));
+// A 1–2 letter refine matches nearly the whole catalog — "e" on Toys is 1,309
+// of its 1,387 rows — so every early keystroke merged a fresh 400-row page and
+// left the screen recounting its facets over all of them. Measured on prod the
+// SERVER is not the problem (`name=e` is 327 ms, the same as the unrefined
+// listing); the round trip and the merge it triggers are. So hold anything
+// shorter than REFINE_MIN past upstream's own 250 ms debounce: the third
+// character supersedes it and nothing is ever fetched for "e" or "es". A held
+// call resolves `null`, which is the contract upstream already has
+// (`if (dead || !r) return`). "Load more" is a click, not a keystroke — never
+// held, or the button would stall for half a second.
+const REFINE_MIN = 3, REFINE_HOLD = 400;
+let held = null;
+window.onQuery = (q) => {
+  if (held) { clearTimeout(held.t); held.res(null); held = null; }
+  const go = () => fetchProducts(listQuery(q)).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts }));
+  const n = String((q.filters || {}).q || '').trim().length;
+  if (q.page || !n || n >= REFINE_MIN) return go();
+  return new Promise(res => { held = { res, t: setTimeout(() => { held = null; res(go()); }, REFINE_HOLD) }; });
+};
 
 function toUrl(name, params = {}) {
   if (name === 'product') return '/product/' + encodeURIComponent(params.id);
