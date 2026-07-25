@@ -498,6 +498,9 @@ const chunked = async (ids, run, size = 45) => {
   return out;
 };
 
+// most rows a list query will return (see the cat= branch for why)
+const PAGE_MAX = 400;
+
 // auto-discovered products carry meta.hidden = 1 until enriched — every
 // user-facing query excludes them; direct id fetches (rowsFor) still work
 // so ops/enrichment can inspect them
@@ -999,12 +1002,18 @@ export default {
       } else if (p.get('q') != null) {
         products = await rowsFor(db, await searchIds(db, p.get('q')), { expand: false });
       } else if (p.get('cat') != null) {
-        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()}`).bind(p.get('cat')).all();
+        // ponytail: PAGE_MAX rows per category, no paging — the SPA renders
+        // one card per row, and a full-catalog crawl puts thousands in a
+        // category. Seeded/curated rows sort first (rowid), discovered ones
+        // fill the rest. Add offset paging the day a category needs browsing
+        // past this; search (LIMIT 100) is the way to the rest today.
+        const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()} ORDER BY rowid LIMIT ${PAGE_MAX}`).bind(p.get('cat')).all();
         products = await rowsFor(db, results.map(r => r.id), { expand: false });
       } else if (p.get('sort') === 'drop') {
         products = await rowsFor(db, await topDropIds(db, { limit, perCat: p.get('perCat') === '1' }), { expand: false });
       } else {
-        products = (await catalogBody(db)).filter(x => !x.family); // all heads
+        // same cap: this branch is "/results with no query and no category"
+        products = (await catalogBody(db)).filter(x => !x.family).slice(0, PAGE_MAX);
         products.forEach(x => delete x.specs); // lean like every list query
       }
       return json({ meta: await catMeta(db), products });
