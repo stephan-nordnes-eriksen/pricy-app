@@ -4,29 +4,34 @@ Found 2026-07-25, measuring the freshly deployed server-side sort/filter
 against live pricy.no. Nothing here was caused by that change — `cat=Toys` with
 no sort measured the same. It had always been this slow; nobody had timed prod.
 
-**All four fixes shipped 2026-07-26.** A category page is now **271 ms** (was
-954), a PDP fetch **121 ms** (was 318). Kept as a record of the method, because
-the method is the transferable part: the local harness ranked these fixes in
-the wrong order, and only curl against prod caught it.
+**All five fixes shipped 2026-07-26.** A category page is now **275 ms** (was
+954), a PDP fetch **122 ms** (was 318), a search **139 ms** (was 416). Kept as
+a record of the method, because the method is the transferable part: the local
+harness ranked these fixes in the wrong order every time, and only curl against
+prod caught it.
+
+Every one of the five turned out to be something other than what the standing
+estimate said it was. That is the finding, more than any individual number.
 
 ## Where it landed
 
-One warm pass against live, from a laptop, all cache-busted. Medians of 11
-(21 for the headline row):
+One warm pass against live, from a laptop, all cache-busted, medians of 13:
 
 | request | before | after | |
 |---|---|---|---|
 | `/robots.txt` (network floor) | 55 ms | 46 ms | — |
-| `/api/me` 401 (schema + session lookup) | 45 ms | 38 ms | — |
-| `/api/products?ids=lego` | 318 ms | **121 ms** | −62% |
-| `/api/products?cat=Toys&limit=1` | 404 ms | **153 ms** | −62% |
-| **`/api/products?cat=Toys&limit=400`** | **954 ms** | **271 ms** | **−72%** |
-| `/api/products?cat=Audio&limit=1` (425 heads) | 327 ms | **128 ms** | −61% |
-| `/api/products?q=hodetelefoner` | 416 ms | **210 ms** | −50% |
-| `/api/products?top=drop&perCat=1&limit=4` | — | **143 ms** | — |
+| `/api/me` 401 (schema + session lookup) | 45 ms | 34 ms | — |
+| `/api/products?ids=lego` | 318 ms | **122 ms** | −62% |
+| `/api/products?cat=Toys&limit=1` | 404 ms | **149 ms** | −63% |
+| **`/api/products?cat=Toys&limit=400`** | **954 ms** | **275 ms** | **−71%** |
+| `/api/products?cat=Audio&limit=1` (425 heads) | 327 ms | **132 ms** | −60% |
+| `/api/products?q=hodetelefoner` | 416 ms | **139 ms** | −67% |
+| `/api/products?q=sofa+seng` (2 tokens) | ~347 ms | **178 ms** | −49% |
+| `/api/products?top=drop&perCat=1&limit=4` | — | **134 ms** | — |
 
-`ids=` and `q=` took the biggest proportional cut: they were paying for five
-category aggregates they never read.
+Everything except the 400-row category page now sits within ~100 ms of the
+46 ms network floor. What is left in the big one is `rowsFor`'s remaining
+chunk waits and 245 KB of response body.
 
 **Read these as ±30 ms, not to the millisecond.** The 400-row page spans
 222–334 ms across 21 warm samples (p25 255, p75 302, plus two >470 ms
@@ -79,7 +84,7 @@ The whole page fit one model: **prod ms ≈ sequential D1 round trips × ~20 ms.
 | `listIds` (one scan, real CPU) | 1 | 85 ms | 1, indexed — SQL 12–16 ms |
 | **`rowsFor` for 400 ids** | **36** | **~600 ms** | **~4 waits** |
 | 245 KB transfer | — | 23 ms | unchanged |
-| | | **≈ 880 ms** (observed 954) | **observed 271** |
+| | | **≈ 880 ms** (observed 954) | **observed 275** |
 
 The `listIds` row is where the model was wrong in kind, not just degree: it was
 booked as CPU on the strength of an in-process profile, and ~25 ms of it was an
@@ -178,8 +183,8 @@ all 14k products.
 | Audio (425 heads) | — → 2,158 | → **5 ms** |
 
 The query now scales with the *category*, not the catalog. End to end on prod:
-`cat=Toys&limit=400` 313 → **271 ms**, `cat=Toys&limit=1` 185 → **153 ms**,
-`cat=Audio&limit=1` 160 → **128 ms**.
+`cat=Toys&limit=400` 313 → **275 ms**, `cat=Toys&limit=1` 185 → **149 ms**,
+`cat=Audio&limit=1` 160 → **132 ms**.
 
 Not one of the trades
 [api-read-path-performance](api-read-path-performance.md) rejected — those were
@@ -197,18 +202,71 @@ base 379, trim again 370 — the 60 ms was session drift, not the change.
 `json_remove` costs SQLite per-row CPU that cancels the smaller transfer.
 Don't retry it; halving this payload is not where the time is.
 
+### 5. Search: fold once at write time, not per row per token — DONE 2026-07-26
+
+Both files named **FTS5** as the fix. The measurement says otherwise.
+Decomposed on prod D1 over the full 14k-row scan, by adding one layer at a
+time:
+
+| query | SQL |
+|---|---|
+| raw `meta LIKE '%tok%'` | 15 ms |
+| `+ json_remove($.specs, $.icon)` | 21 ms |
+| `+ lower()` | 25 ms |
+| `+ the 18 replace() folds` | **85–100 ms** |
+
+**The scan was never the problem — it is 15 ms.** The diacritic fold was ~65 ms
+of it, and it is paid per row *per token*: one token 90 ms, two tokens 190.
+
+So the fold moved to write time. `search_index` holds the three folded values
+`searchIds` matches on (blob, name, brand), maintained by AFTER
+INSERT/UPDATE/DELETE triggers on `products` — triggers rather than calls at
+each write site, so every writer is covered including ones nobody has written
+yet. The LIKE patterns, the ranking and the `LIMIT 100` are untouched.
+
+**Why not FTS5.** It attacks the 15 ms, so it buys ~13 ms more than this did,
+and it costs: the tuned ranking (word-start-in-name > in-name > brand > blob,
+itself the fix for a measured bug) rewritten onto bm25, and infix matching
+lost — `LIKE '%tok%'` matches mid-word, FTS5 needs the trigram tokenizer for
+that, and the header's suggest box depends on it. Revisit only if paging past
+`LIMIT 100` becomes the requirement; that is FTS5's real remaining advantage,
+and it is a feature question, not a latency one.
+
+Bootstrap rides the `seed_meta` marker `seedCatalog` already reads, so it costs
+no extra round trip: row 3 pins a sha of the generated SQL, and a mismatch
+(fresh db, or any `FOLD`/`searchCols` edit) reinstalls the triggers and refolds
+every row once, globally. A fold fix therefore still needs no hand-run
+backfill — the exact property the old query-time design was chosen for.
+
+**Verified by diffing against the old code.** Prod was still serving the previous
+implementation over the same D1, so both were queried side by side: 12 queries,
+including every diacritic case (`hundefor`, `oretelefoner`, `tradlos`,
+`kjokken`), returned byte-identical id lists.
+
+**The suite passed with the backfill deleted** — and on prod that means every
+search returns nothing, because all 14k rows predate the triggers. The added
+test inserts a product before any request, the way prod's rows did, and asserts
+search finds it; a second covers the DELETE trigger. Each fails with its piece
+removed.
+
 ## Still open
 
 - `listIds`' JS shaping — the part the 85 ms estimate was really about, now
-  that its SQL is 12–16 ms. Still the largest single term in a 271 ms category
+  that its SQL is 12–16 ms. Still the largest single term in a 275 ms category
   page, and still guarded by the trade
   [api-read-path-performance](api-read-path-performance.md) §3 priced and
   rejected: the facet values it computes are derived, so SQL cannot see them.
   Trigger to revisit is unchanged — one category past ~20k heads.
-- The 245 KB response payload (23 ms). Cheapest lever is dropping `history`
-  from list rows the way `specs` already is.
-- Search's CPU: `q=` is 210 ms, one scan and one round trip. FTS5 is its
-  answer ([api-read-path-performance](api-read-path-performance.md) §2).
+- The 245 KB response payload (23 ms), now a visible share of the one request
+  still over 200 ms. Cheapest lever is dropping `history` from list rows the
+  way `specs` already is.
+- Search **paging**: still `LIMIT 100`, no offset — the only surface that
+  cannot reach past its cap. This is now a feature gap, not a latency one, and
+  FTS5 is the reason it is still worth considering (§5).
+- `search_index` costs ~2.8 MB of duplicated folded text on a 10 MB database,
+  and a trigger write on every products write. Neither has been a problem;
+  both scale with the catalog, so re-check them if it grows an order of
+  magnitude.
 
 ## Why it stayed hidden
 

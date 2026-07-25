@@ -13,8 +13,10 @@ re-litigates a trade already priced.
 > one for "which algorithm", that one for "why is it slow".
 >
 > Everything that file listed shipped 2026-07-26 — a category page is now
-> 271 ms. §1 and §4 below are done; §2 stands; §3's SQL half got an index,
-> its JS half stands.
+> 275 ms and a search 139 ms. §1, §2 and §4 below are done; §3's SQL half got
+> an index, its JS half stands. In all five cases the fix was NOT what this
+> file predicted, because this file cannot see round trips or D1-side SQL
+> cost. Treat its rankings as hypotheses to measure, not conclusions.
 
 Written 2026-07-25, at 14,059 heads / 14,156 offers / 50 shops / 31
 categories, right after `/api/products` learned server-side sort and filters
@@ -76,17 +78,27 @@ isolate that wrote would still serve wrong counts from every other isolate.
 A miss sends all five in one `db.batch()` round trip (2026-07-26) — that
 needed the test shim taught to return per-statement rows, which it now is.
 
-### 2. `searchIds` folds the whole meta blob per row per token
+### 2. `searchIds` folds the whole meta blob per row per token — FIXED 2026-07-26
 
 97 ms for one query — the second most expensive live request. The diacritic
 fold is a `replace()` chain over `json_remove(meta, '$.specs', '$.icon')`,
 evaluated per row per token, and it cannot use an index by construction
 (see the comment above `FOLD`).
 
-The fix is the one already named there: SQLite **FTS5** over a folded column,
-which also closes search's other open item (`LIMIT 100`, no paging — the only
-surface that still can't reach past its cap). Do both in one pass; they are
-the same migration. Do it when search becomes a main surface, not before.
+This was the one number in this file that held up: it *was* the fold, and it
+was ~65 ms of the ~90 ms query on prod. But the prescription below was wrong.
+Measured layer by layer on D1, the underlying scan is only 15 ms, so **FTS5
+would have bought ~13 ms** over simply folding at write time — while costing a
+rewrite of the tuned ranking onto bm25 and the loss of infix matching, which
+the header's suggest box needs. What shipped instead: a `search_index` table of
+pre-folded text, maintained by triggers on `products`, with the query shape,
+ranking and LIMIT unchanged and results verified byte-identical against the old
+implementation. See
+[api-latency-round-trips](api-latency-round-trips.md) §5.
+
+FTS5 remains the answer to the OTHER half of the original item — `LIMIT 100`
+with no paging. That is a feature gap, not a latency one, and it no longer has
+to be done in the same pass.
 
 ### 3. `listIds` shapes the whole category in JS
 
