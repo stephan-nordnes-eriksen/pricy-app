@@ -6,7 +6,7 @@
 - Chosen method: none — Product JSON-LD not present despite a product
   catalog existing
 - Alternatives: none found
-- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.tegne.no/sitemap_index.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Tegne.no"`.
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.tegne.no/sitemap_index.xml`); 393 priced rows ingested to pricy.no. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: robots.txt uses the Content-Signal convention
   (`Content-Signal: search=yes,ai-train=no,use=reference`, `Allow: /` for
   `User-agent: *`; only `Amazonbot`/`Applebot` etc. get a blanket

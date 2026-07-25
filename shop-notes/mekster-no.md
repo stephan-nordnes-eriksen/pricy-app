@@ -12,7 +12,7 @@
   (see spot-check below). No contract or approval needed — cheapest
   option, scrapeSource() already exists.
 - Alternatives: none found (no affiliate signal in SHOP-CANDIDATES.md)
-- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.mekster.no/media/no_products_google_sitemap_index.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Mekster"`.
+- Status: deliberately not wired 2026-07-25 — sitemap discovery works (`https://www.mekster.no/media/no_products_google_sitemap_index.xml`, 12/12 sampled pages yielded a priced JSON-LD offer), but every row it sends is filed under "Reservedeler": car spare parts. `CAT_SKIP` in worker/index.js excludes exactly that vocabulary, so a full crawl here would be ~400 pages of traffic for zero promoted products. Re-wire only if pricy.no ever wants a parts category.
 - Notes:
   - **Category mapping**: Mekster sells car parts/accessories/oil/tools —
     fits none of worker/cats.json's current categories (Audio, Phones, TV,

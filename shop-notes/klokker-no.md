@@ -13,7 +13,7 @@
   or approval needed — cheapest option, and the strongest-signal one of
   the recheck batch.
 - Alternatives: none needed — this is now a confirmed-good scrape target
-- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://klokker.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Klokker.no"`.
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://klokker.no/sitemap.xml`); 225 priced rows ingested to pricy.no. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes:
   - **Category mapping**: watches (large Casio range) — needs the new
     **"Jewelry"** category (shared with Mestergull/David-Andersen/Pandora/

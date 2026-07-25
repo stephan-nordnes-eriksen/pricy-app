@@ -13,7 +13,7 @@
   shared ZOO.se storefront platform, worth a quick look if other Zoo.se-
   family shops turn up affiliate programs later, but nothing concrete to
   act on now.
-- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.petxl.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "PetXL"`.
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.petxl.no/sitemap.xml`); 128 priced rows ingested to pricy.no. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes:
   - robots.txt (curl'd live, `www.petxl.no/robots.txt`): disallows
     `/kasse`, `/mine-sider`, `/sok`, and blocks the `proximic` bot
