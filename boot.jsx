@@ -362,6 +362,20 @@ window.onSuggestData = (q, refresh) => {
   return () => clearTimeout(t);
 };
 
+// Results' "Load more" (upstream) asks the host for the next server page of a
+// category once it has revealed everything it holds; hydrateCatalog merges the
+// rows into CATALOG in place and upstream bumps its own memo.
+// Counted in PAGES, not off the row count the screen has: a cat= slice can
+// already carry rows from an ids=/sort=drop fetch, and offsetting by those
+// would step past rows in the server's ranking. Advanced only on success, so
+// a failed page is retried rather than skipped.
+const PAGE = 400; // worker PAGE_MAX
+const PAGES = new Map();
+window.onLoadMore = ({ cat }) => {
+  const page = (PAGES.get(cat) || 0) + 1;
+  return fetchProducts({ cat, offset: page * PAGE, limit: PAGE }).then(() => PAGES.set(cat, page));
+};
+
 function toUrl(name, params = {}) {
   if (name === 'product') return '/product/' + encodeURIComponent(params.id);
   if (name === 'results') {
