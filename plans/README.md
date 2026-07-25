@@ -15,7 +15,8 @@ something changes.
 Found while taking the catalog to 14k products across 55 shops. Ordered by
 how much each one hurts a user today. To work one of these, paste the prompt
 in [IMPLEMENT-PROMPT.md](IMPLEMENT-PROMPT.md) into a fresh session — one item
-per session, they each touch ingest, the query layer and live data.
+per session, they each touch ingest, the query layer and live data. (G has its
+own prompt, [FIX-ROWSFOR-PROMPT.md](FIX-ROWSFOR-PROMPT.md).)
 
 A. [cross-shop-product-matching](cross-shop-product-matching.md) — only 94
    of 14,059 products have more than one shop's price. A comparison site
@@ -53,10 +54,10 @@ G. [api-latency-round-trips](api-latency-round-trips.md) — a category page
 
 Not a backlog item, but read it before any performance change:
 [api-read-path-performance](api-read-path-performance.md) — where
-`/api/products`' time actually goes (measured), the ceilings in the order they
-should be fixed (`catMeta` first, it is ~half of every response), the
-optimisations already priced and rejected, and the harness that produced the
-numbers.
+`/api/products`' CPU goes (measured in process), the optimisations already
+priced and rejected, and the harness that produced the numbers. It ranks
+`catMeta` first; that holds for CPU only. For wall-clock, G above wins — the
+two files are cross-linked so neither gets read alone.
 
 **Excluded by decision** (planned elsewhere or parked):
 - BankID login (parked, PLAN.md 4b) — fake button stays working.
@@ -69,7 +70,7 @@ numbers.
   rollout). The freshness *claims* made meanwhile are in scope:
   [marketing-copy-honesty](marketing-copy-honesty.md).
   Catalog scale itself is no longer "in flight": the 2026-07-25 crawl
-  landed it, and what it exposed is items A–F above. The no-op hourly
+  landed it, and what it exposed is items A–G above. The no-op hourly
   cron specifically is now
   [ingest-crawl-robustness](ingest-crawl-robustness.md) Open 4 — it needs
   sharding or Queues, not just a populated `SOURCES`.
@@ -84,7 +85,7 @@ follow-ups.
 
 ## Suggested order (honesty/feature backlog, 2026-07-18/19 audits)
 
-The A–F catalog-scale items above are a separate track — they're data and
+The A–G catalog-scale items above are a separate track — they're data and
 API work, these are copy and feature work. A and B outrank everything in
 either list.
 
