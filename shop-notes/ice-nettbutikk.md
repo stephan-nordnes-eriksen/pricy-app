@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none viable yet — see Notes
 - Alternatives: none identified (no affiliate-network signal found)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: SHOP-CANDIDATES.md had "Unknown" ingest / "Silent" verdict. Real
   recheck done: `curl -sL -A 'Mozilla/5.0' https://nettbutikk.ice.no/robots.txt`
   → open for general UAs (only `MJ12bot` and `FreddyAiBot` named-blocked;

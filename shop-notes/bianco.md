@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: `scrapeSource()` — real recheck found clean, complete `Product`/`Offer` JSON-LD (brand, NOK price, shipping details all present natively — no gaps at all, better signal than most shops in this batch). No approval needed, cheapest tier.
 - Alternatives: none needed — this is the clean case.
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - **Real recheck done** (Ingest notes were Unknown; scrape verdict Ambiguous).
   - `robots.txt` (sandbox disabled, `https://www.bianco.com/robots.txt`): explicitly friendly — opens with the comment *"Fashion lives here. Crawl and discover."* Only blocks cart/wishlist/order-confirmation/search-with-query paths and irrelevant filter-query params. Product pages fully open.

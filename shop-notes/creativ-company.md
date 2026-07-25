@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — confirmed Product/Offer JSON-LD, robots.txt is Silent on product paths (Magento boilerplate: search/checkout/customer paths only), ToS page (handelsbetingelser) has no scraping/automation clause. Cheapest option, no approval needed. SHOP-CANDIDATES.md's "bot-detection wall" note didn't reproduce with a plain curl this round.
 - Alternatives: none found.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap unreadable: no usable sitemap to drive full-catalog discovery from.
 - Notes: `curl https://www.cchobby.no/robots.txt` (sandbox disabled) is standard Magento — disallows `/checkout/`, `/customer`, `/catalogsearch`, `/clerk/search/` etc., product pages open. WebFetch of `cchobby.no/handelsbetingelser` (terms) found no automated-access/bot/scraping mention — only orders/payment/returns/privacy/cookies. Real product page `https://www.cchobby.no/creativ-kartong-a4-ark-210x297-mm-180-g-ass-farger-30-ass-ark-1-pk` has clean JSON-LD:
   `{"@type":"Product","name":"Creativ Kartong...","offers":{"@type":"http://schema.org/Offer","price":69.95,"priceCurrency":"NOK","availability":"http://schema.org/InStock"}}` — note the `@type` values are full schema.org URIs rather than bare strings (`"http://schema.org/Offer"` not `"Offer"`), but `productOffer()` in worker/sources.js only checks for `o.price != null`, not the `@type` string, so this parses fine as-is.
 

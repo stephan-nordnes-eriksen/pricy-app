@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none — Product JSON-LD present but has no price at all
 - Alternatives: none found
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: robots.txt is open (`Allow: /`, only `/search/` and `/user/*`
   disallowed). Fetched a real product page
   (`https://www.norengros.no/product/tendercare-allroundsape-med-parfyme--P400078/400078`,

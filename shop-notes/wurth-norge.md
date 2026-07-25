@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none — likely not viable (B2B, bot-blocked)
 - Alternatives: none found
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/*oauth*?*redirect_uri, /*authorize*?*redirect_uri, /is-bin/INTERSHOP.enfinity/, /*ViewRequisition-ViewOrderSummary). Not crawled, not wired.
 - Notes: robots.txt is reachable and mostly open (Intershop-platform
   disallows are narrow — login/basket/quick-buy AJAX endpoints, not
   product pages). But a live fetch of a real category page

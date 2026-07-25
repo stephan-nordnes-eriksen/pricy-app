@@ -9,7 +9,7 @@
   clause. No approval needed, code already exists.
 - Alternatives: none found — no affiliate signal in SHOP-CANDIDATES.md
   (part of Norske Nettbutikker AS / importpris.no group).
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Recheck performed — robots.txt disallows admin/order/invoice
   paths only (`/kontrollpanel`, `/htmlpackingslip*`, `/pdfinvoice.php`,
   etc.), `Crawl-delay: 5` for `*` and `SemrushBot`, and explicitly

@@ -13,7 +13,7 @@
   or approval needed — cheapest option, and the strongest-signal one of
   the recheck batch.
 - Alternatives: none needed — this is now a confirmed-good scrape target
-- Status: not started
+- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://klokker.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Klokker.no"`.
 - Notes:
   - **Category mapping**: watches (large Casio range) — needs the new
     **"Jewelry"** category (shared with Mestergull/David-Andersen/Pandora/

@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: `scrapeSource()` first-party fetch against **dyregonett.no** (not dyrego.no — see Notes) — real WooCommerce Product/Offer JSON-LD confirmed, no affiliate program found, least-manual viable option.
 - Alternatives: none confirmed on any affiliate network (no Adtraction/Awin/Partner-ads/Tradedoubler signal on homepage or product page).
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - dyrego.no itself is a brick-and-mortar store-locator/brochure site — its own `sitemap.xml` lists only store addresses, careers, brochures, contact, privacy (`curl -sL https://dyrego.no/sitemap.xml`, 15 URLs, zero products). Its "BESØK VÅR NETTBUTIKK HER" nav text links out to **dyregonett.no**, a separate domain, which is the actual WooCommerce e-commerce site — treat dyregonett.no as the real ingest target, not dyrego.no.
   - dyregonett.no robots.txt (`curl -sL https://dyregonett.no/robots.txt`): WordPress-standard blocks (`/wp-admin/`, feeds, comments, trackback) plus a joke `Disallow: /` aimed at fictional bot names (`t-800`, `hal9000`, `roberto`, `ultron`, `teslabot`) — not a real scraper ban. `Googlebot` explicitly `Allow: /*`. No product/category path block.

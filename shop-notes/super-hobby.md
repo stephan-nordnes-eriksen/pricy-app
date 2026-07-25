@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — confirmed Product/Offer JSON-LD, robots.txt is Silent on product paths (only blocks Amazonbot by name + search/checkout query params). Cheapest option, no approval needed. SHOP-CANDIDATES.md's "JS-rendered ToS" note didn't block the product pages themselves.
 - Alternatives: none found.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: `curl https://super-hobby.co.no/robots.txt` (sandbox disabled) shows `Disallow: /` for `Amazonbot` specifically, `Allow: /` for `facebookexternalhit`, and a generic `User-agent: *` section that only blocks search/checkout/account query params — product pages (`/products/*.html`) are open, `Sitemap: https://super-hobby.co.no/sitemap.xml` is listed and live (fetched today, lastmod 2026-07-24).
 
   Caveat: fetching bare `https://www.super-hobby.co.no/` returned an unrelated 404 page branded "SPISELIGHAGE.NO" (a different Norwegian garden shop) — looked like the domain was dead/repurposed at first. But the sitemap and real product URLs pulled from it resolve fine on the same host, so the root path itself is just misconfigured/uncached, not the shop — don't be misled by testing `/` alone here, always hit a real product URL. Real product page `https://www.super-hobby.co.no/products/German-Infantry-WWII.html` (title "German Infantry (WWII) Italeri 6033") has confirmed `"@type": "Product"` and `"@type": "Offer"` JSON-LD blocks.

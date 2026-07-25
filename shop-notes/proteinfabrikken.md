@@ -6,7 +6,7 @@
 - Chosen method: none yet — scrapeSource() as it exists today would NOT
   work (see Notes); no affiliate network confirmed either.
 - Alternatives: none identified this pass.
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/*prefn*=*, /*prefv*=*, /*pmin*, /*pmax*). Not crawled, not wired.
 - Notes:
   - Platform: Salesforce Commerce Cloud/Demandware (`prefn`/`prefv`
     facet params, `on/demandware.store/*` disallow, `?dwcont*` cart

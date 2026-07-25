@@ -8,7 +8,7 @@
   no contract or approval needed, code already exists.
 - Alternatives: none found — Ingest notes said "Unknown", no affiliate
   network signal turned up in this pass.
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.parfymeri.no/sitemap.xml`); 258 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes:
   - robots.txt (Magento default) disallows `/catalog/product/view/`,
     `/catalog/category/view/` (the raw controller paths) — but real product

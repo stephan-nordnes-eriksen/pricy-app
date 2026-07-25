@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none viable yet — see Notes
 - Alternatives: none identified (no affiliate-network signal found)
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/bin/, /obj/, /fckeditor/, /Services/). Not crawled, not wired.
 - Notes: SHOP-CANDIDATES.md had "Unknown" ingest / "Silent" verdict. Real
   recheck done:
   `curl -sL -A 'Mozilla/5.0' https://www.foto.no/robots.txt` → genuinely

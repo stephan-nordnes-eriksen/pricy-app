@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — scrapeSource() as it exists today cannot ingest this shop
 - Alternatives: none found (no affiliate-network signal)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap unreadable: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - robots.txt (curled, sandbox disabled): `Allow: /` plus narrow `Disallow` on ajax/admin action endpoints only. Product/category paths are wide open — no block.
   - ToS (WebFetch'd `https://www.norfloor.no/salgsbetingelser-1`): standard consumer-purchase boilerplate, no scraping/automation language.

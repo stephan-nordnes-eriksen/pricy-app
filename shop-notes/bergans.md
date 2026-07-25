@@ -8,7 +8,7 @@
   copyright takedown clause but no automation/scraping ban. No approval
   needed, code already exists.
 - Alternatives: none found — brand-direct site, no affiliate signal.
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.bergans.com/no/sitemap_products.xml`); 390 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Recheck performed — robots.txt: `Allow: /` for `*`, only
   `/api`, `/my-pages`, `/checkout`, `/preview`, `/search` per-locale
   disallowed (no named bot blocks), and product sitemaps are listed

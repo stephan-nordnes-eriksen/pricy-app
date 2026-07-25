@@ -7,7 +7,7 @@
   already in worker/sources.js) — cheapest option, no approval needed,
   confirmed working JSON-LD shape below
 - Alternatives: none found (no affiliate-network signal)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.japanphoto.no/sitemap.xml`); 365 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: SHOP-CANDIDATES.md had "Unknown" ingest / "Ambiguous" verdict
   (generic copyright clause on kjøpsvilkår, not a scraping ban). Real
   recheck reclassifies this to phase1-scrape:

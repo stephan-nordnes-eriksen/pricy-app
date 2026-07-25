@@ -15,7 +15,7 @@
   Partner-ads/Tradedoubler) in footer/home/category HTML — matches pass 1.
   If a headless-render check later finds product pages, re-classify to
   phase1-scrape.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - robots.txt: `User-agent: *` / `Allow: /` — fully open, no path blocks.
   - ToS checked: `/brukervilkar` — only a generic clause that users may

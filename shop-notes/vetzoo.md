@@ -16,7 +16,7 @@
   as-is.
 - Alternatives: none — no Adtraction/Awin/Partner-ads/Tradedoubler signal
   found in homepage or product-page HTML (matches pass 1's "Unknown").
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - robots.txt: `Allow: /` with only `Disallow` on `?size=`, `?color=`,
     `?q=` filter query strings — product/category paths themselves are

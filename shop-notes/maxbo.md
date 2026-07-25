@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — scrapeSource() cannot work against this shop's server-rendered HTML at all
 - Alternatives: none found (no affiliate-network signal)
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/registrere, /handlekurv, /minside/, /glemtpassord). Not crawled, not wired.
 - Notes:
   - robots.txt (curled, sandbox disabled): narrow disallow list (account/checkout/internal-search/tracking-param paths only: `/registrere`, `/handlekurv`, `/minside/`, `/sok*`, various `?query=`/`?nosto=`/`?algoliaQueryId=` tracking params). Product pages are not blocked.
   - ToS (WebSearch + WebFetch summary of `https://www.maxbo.no/kundeservice/kjopsbetingelser/`): standard Norwegian consumer-purchase boilerplate, no scraping/automation language.

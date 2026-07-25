@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — real check confirmed Product/Offer JSON-LD is present and robots.txt is wide open. Cheapest option, no approval needed.
 - Alternatives: none found (no affiliate program signal turned up).
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.jernia.no/sitemap.xml`); 388 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: SHOP-CANDIDATES.md flagged "Inconclusive JSON-LD" / "Unknown (ToS not found)" — did the real recheck as instructed.
   - `curl https://www.jernia.no/robots.txt` → `User-agent: *` / `Allow: /` (fully open, no disallowed paths).
   - `curl <product page> | grep -iE 'ld+json|scrap|crawl|robot'` on the Kenwood kjøkkenmaskin PDP found 6 `ld+json` blocks; every "robot" hit was a false positive from category names "Robotstøvsuger"/"Robotgressklipper" (robot vacuum/lawnmower — actual products they sell), not a scraping restriction.

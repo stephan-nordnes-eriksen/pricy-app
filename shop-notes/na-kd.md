@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: `scrapeSource()` (existing generic JSON-LD parser) — real recheck found clean, working `Product`/`Offer` JSON-LD on a live product page, and no ToS scraping prohibition. Cheaper than chasing SHOP-CANDIDATES.md's vague "Multiple networks" ingest note, since no specific network could be confirmed and scraping needs no contract.
 - Alternatives: SHOP-CANDIDATES.md's Ingest notes said "Multiple networks" for affiliate programs — a real recheck did not turn up which network(s) specifically (no time spent chasing this further since the WebSearch budget for this session was exhausted mid-check); worth a look later if scrape ingestion underperforms.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - **Real recheck done** (Ingest notes were vague, scrape verdict was Ambiguous).
   - `robots.txt` (sandbox disabled): `Allow: /` for `*`, only disallows `*/checkout`, `/*zendesk`, `/*nakdwardrobe*`, `/*catwalk$`, `/*ReturnUrl*` — product/category paths open. Several per-locale sitemaps listed (`sitemap?ssw=1&batch=N&language=xx-XX`), useful for enumerating more product URLs later.

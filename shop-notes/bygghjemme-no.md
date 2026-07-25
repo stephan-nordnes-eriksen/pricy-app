@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — first-party Product JSON-LD confirmed present with real offers/price, no ToS or robots block. Cheapest option (no contract, no approval).
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - robots.txt (curled, sandbox disabled): only disallows cart/checkout/search/admin/compare paths (`/handlekurv`, `/kasse`, `/sok`, `/admin`, `/compare`, etc). No named-bot blocks, product paths (`/…/p-<id>`) wide open.
   - ToS (WebFetch'd `https://www.bygghjemme.no/kjopsbetingelser/`): standard Norwegian consumer-purchase boilerplate (forbrukerkjøpsloven, angrerett, etc). No mention of scraping/automated access/bots/crawlers.

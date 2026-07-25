@@ -10,7 +10,7 @@
   mention, and a real product page shows full Product+Offer JSON-LD with a
   real NOK price. No contract or approval needed — cheapest option.
 - Alternatives: none found
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - **Category mapping**: paper goods, office/desk tools — fits none of
     worker/cats.json's current categories. Needs a new **"Office"**

@@ -8,7 +8,7 @@
   `media.sportholding.no` image CDN, same clean JSON-LD shape), no
   approval or new code needed.
 - Alternatives: none found (no affiliate-network signal for Sport 1).
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.sport1.no/sitemap.xml`); 355 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Rechecked live (curl, sandbox disabled).
   `robots.txt`: byte-identical structure to Intersport's — `Allow: /` for
   all, only `/profile/`, `/signup/`, `/signin/` blocked. ToS page at the

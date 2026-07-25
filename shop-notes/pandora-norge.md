@@ -9,7 +9,7 @@
   challenge), so treating as Unknown-but-not-blocked per the tiering rule.
   No contract, no approval needed.
 - Alternatives: none found
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap unreadable: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - **Category mapping**: charms/rings/bracelets — needs the new
     **"Jewelry"** category (shared with Mestergull/David-Andersen/

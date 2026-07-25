@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — real Product/Offer JSON-LD confirmed on a live product page. Cheapest option, no approval needed.
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://fagmobler.no/sitemap_index.xml`); 366 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes:
   - **Real check performed.** robots.txt (`fagmobler.no/robots.txt`) only blocks `/sok` and `/artikkelsok` (site search) — product/category paths open, has a `sitemap_index.xml` with a dedicated `products/sitemap.xml`.
   - ToS (`fagmobler.no/kjopsbetingelser`): curl returned a large (900KB) page bundling app-shell i18n strings for many locales/features (Clerk-auth-style keys) alongside the real Norwegian ToS prose — grepped for scrap/crawl/robot/automat, only false-positive hits ("automatisk invitasjoner" etc. are unrelated auth-dashboard i18n strings bundled in the JS, not ToS text). No genuine scraping/crawling/bot/robots restriction found in the actual terms content. Silent, matches SHOP-CANDIDATES.md's Ambiguous-leaning-Silent read.

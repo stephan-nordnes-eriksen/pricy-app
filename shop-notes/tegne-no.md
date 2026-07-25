@@ -6,7 +6,7 @@
 - Chosen method: none — Product JSON-LD not present despite a product
   catalog existing
 - Alternatives: none found
-- Status: not started
+- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.tegne.no/sitemap_index.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Tegne.no"`.
 - Notes: robots.txt uses the Content-Signal convention
   (`Content-Signal: search=yes,ai-train=no,use=reference`, `Allow: /` for
   `User-agent: *`; only `Amazonbot`/`Applebot` etc. get a blanket

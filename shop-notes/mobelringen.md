@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — real Product/Offer JSON-LD confirmed on a live product page. Cheapest option, no approval needed.
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `http://backend.mobelringen.no/media/sitemap/sitemaps-1-1.xml`); 371 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes:
   - **Real check performed.** robots.txt (`mobelringen.no/robots.txt`) blocks Yandex entirely, and blocks query-string filter/sort/search/account/cart paths for everyone else — plain product/category paths are open (`Allow: /`).
   - ToS (`mobelringen.no/kundeservice/kjopsbetingelser`, checked via WebFetch since curl returns a JS app-shell with a 404 "denne siden finnes ikke" body for this Next.js route): silent on scraping/crawling/bots/robots/automated access.

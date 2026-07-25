@@ -10,7 +10,7 @@
   without a code change — doesn't cleanly fit the "no new code" phase1
   definition.
 - Alternatives: none — no affiliate-network signal found.
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/nyhetsbrev-axelbruun, /bedrift, /aker-solutions, /applyvendor). Not crawled, not wired.
 - Notes: Real recheck performed. **robots.txt** (curl, sandbox off): a long
   list of Disallow paths, all account/admin/forum/campaign-page related
   (`/admin`, `/bedrift`, `/boards/...`, `/danskebank`, etc.) — nothing

@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none — Product+Offer JSON-LD present but price is 0
 - Alternatives: none found
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/config, /search, /account$, /account/). Not crawled, not wired.
 - Notes: Two findings from a live recheck:
   1. robots.txt (Squarespace) lists many named AI/scraper bots
      (GPTBot, ClaudeBot, anthropic-ai, Amazonbot, Bytespider, CCBot, etc.)

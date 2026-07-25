@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none confirmed yet — see notes
 - Alternatives: first-party scrape (SHOP-CANDIDATES.md verdict Silent; robots.txt confirmed open — `Allow: /`, only a sitemap pointer, nothing disallowed) is the likely cheapest real option here, not checked for JSON-LD this round.
-- Status: not started
+- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.rum21.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Rum21"`.
 - Notes:
   - **Real check performed**: SHOP-CANDIDATES.md's own row for Rum21 says "Same corp family as RoyalDesign" but does NOT itself claim "Confirmed" on any network (unlike RoyalDesign's "Confirmed intl. affiliate"). Verified via WebFetch of `rum21.no/om-oss`: confirmed Rum21 is legally part of **Royal Design Group AB** (same parent as RoyalDesign.no, "med butikker som RoyalDesign.no"). But shared ownership doesn't guarantee shared affiliate-network enrollment for pricy.no's purposes — [[royaldesign]]'s own network is itself unconfirmed this round (see that note), so there's nothing concrete to inherit here yet.
   - No affiliate tracking-pixel domains found on the Rum21 homepage (same caveat as RoyalDesign — these normally only fire post-purchase, so absence isn't conclusive).

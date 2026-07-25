@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: `scrapeSource()`-style scrape — real recheck found genuine schema.org Product data and a clean ToS/robots. No approval needed. **Caveat**: the JSON-LD is `ProductGroup`+`hasVariant` shaped with no flat top-level `Product`/`Offer` block anywhere on the page (unlike DinSko/Bianco/NA-KD) — `productOffer()` as it exists today would find nothing on this page and return null, since it only reads `n.offers` on the top-level node, never descending into `hasVariant`. Phase B needs a small addition (dig into `hasVariant[0].offers`, or the cheapest matching variant) before this shop actually yields prices — same shape of gap `spec.priceSpecification` handling already covers for NetOnNet.
 - Alternatives: none — no affiliate-network signal found in the research pass either (Ingest notes: Unknown).
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.kappahl.com/sitemap.xml`); 73 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes:
   - **Real recheck done** (Ingest notes/scrape verdict were both Unknown/Ambiguous).
   - `robots.txt` (sandbox disabled): only disallows search/utility/checkout paths (`*/search`, `*/etsi`, `*/szukaj`, `/kassan`, `/checkout`, etc.) — no product/category block, no named bots.

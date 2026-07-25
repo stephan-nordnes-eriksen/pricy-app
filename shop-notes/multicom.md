@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: First-party scrape via scrapeSource() — Product JSON-LD confirmed, robots.txt only blocks one unrelated category (`/*cat-c/c90262`), ToS has no automation restriction. No approval needed, cheapest option and only option found.
 - Alternatives: none found — no affiliate-network signal in SHOP-CANDIDATES.md ("Unknown" ingest notes).
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - Recheck done: WebFetch on https://www.multicom.no/pages/terms found no bot/crawler/scraping restriction. `curl -sL https://www.multicom.no/robots.txt` (note: bare `multicom.no` redirects — use `www.`) shows only `Disallow: /*cat-c/c90262` (+ wildcard) and a sitemap link — product/category paths in general are open.
   - Category fit: **Computers** — Multicom sells PC components (GPUs, CPUs, RAM, motherboards). The current catalog has no discrete GPU/component rows, so this would need new `worker/extra.json` entries — flagging, not acting.

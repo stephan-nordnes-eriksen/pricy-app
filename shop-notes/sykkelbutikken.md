@@ -8,7 +8,7 @@
   boilerplate with no scraping-relevant block. No approval needed, code
   already exists.
 - Alternatives: none found — no affiliate signal in SHOP-CANDIDATES.md.
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes: Recheck performed — robots.txt is the stock PrestaShop
   auto-generated file: disallows only cart/account/order/search query
   params and controller paths (`?order=`, `controller=cart`,

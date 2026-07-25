@@ -10,7 +10,7 @@
   (`price` appears 9x in inline JS state, not schema.org) — real new code,
   not evaluated further this round per instructions (no speculative
   parsing against unconfirmed shapes).
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/account, /cart, /search, /team-sales). Not crawled, not wired.
 - Notes: Rechecked live (curl, sandbox disabled).
   `robots.txt`: `Allow: *` for all, only blocks `/account`, `/cart`,
   `/search`, `/team-sales`, `/checkout`, `/login`, and a long list of

@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none — meal-kit recipe boxes are not discrete SKUs, and no Product markup exists to scrape anyway
 - Alternatives: none identified
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   `curl -sL https://www.godtlevert.no/robots.txt`: plain `Allow: /` for
   `User-Agent: *`, disallowing only `/app/` and `*print=true` — no

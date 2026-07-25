@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — real check found genuine Product/Offer JSON-LD (price + NOK currency) on actual product pages, and robots.txt only blocks checkout/search/admin paths, not products. Cheaper than chasing the unconfirmed affiliate network.
 - Alternatives: SHOP-CANDIDATES.md says "Confirmed affiliate (network unconfirmed)" — WebSearch only turned up VigLink/affi.io listings (aggregator directories, not primary network confirmation), couldn't pin down a real network (Awin/Adtraction/Partner-ads/Tradedoubler). Worth another pass in Phase B if scrape ever needs a fallback, but not needed now since scrape works.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Real recheck as instructed (verdict was "Unknown, ToS not found").
   - `curl https://www.byggmax.no/robots.txt` → standard Magento disallow list (`/catalog/`, `/catalogsearch/`, `/checkout/`, `/customer/`, etc.) — none of it blocks product detail pages, which live at the domain root (e.g. `/karmskrue-7x70-mm-p24067`).
   - First attempt (`/fixboard`, `/trelast-og-byggevarer`) turned out to be category/landing pages with only Organization/BreadcrumbList/WebSite JSON-LD, no Product. Pulled real product URLs from their own sitemap (`byggmax.no/pub/media/Sitemap_nb_no_product.xml`, pattern `<name>-p<digits>`) instead.

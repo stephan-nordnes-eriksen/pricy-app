@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: first-party scrapeSource() off Product JSON-LD — no contract, no approval, code already exists
 - Alternatives: none found (no affiliate-network signal; payments run through Avarda Checkout, not relevant to pricing)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.blivakker.no/sitemap.xml`); 398 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Real check done. `curl -sL https://www.blivakker.no/robots.txt`
   (unsandboxed): mostly Silent (`Disallow: /cart`, `/search`, `/checkout`,
   `/mypage`, `/login`, etc — no product-path block) **but** it opens with a

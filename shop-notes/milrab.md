@@ -7,7 +7,7 @@
   schema.org Product JSON-LD confirmed on a real product page, no
   approval or new code needed.
 - Alternatives: none found (no affiliate-network signal).
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `http://milrab.no/sitemap.xml`); 383 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: SHOP-CANDIDATES.md flagged scrape verdict as "Unknown (site
   403s)" — reproduced with WebFetch (403 on the ToS page), but a plain
   curl (sandbox disabled) got a normal 200, so the 403 is WebFetch's

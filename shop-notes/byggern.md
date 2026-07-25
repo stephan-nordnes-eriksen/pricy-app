@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — scrapeSource() as it exists today cannot get a price from this shop
 - Alternatives: none found (SHOP-CANDIDATES.md notes it's "part of the XL-BYGG group" — XL-BYGG is sitting behind a Vercel bot-checkpoint, see xl-bygg.md; Byggern itself is directly reachable and does NOT share that block, so it isn't riding on XL-BYGG's infra for the storefront)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - robots.txt (curled, sandbox disabled): `Allow: /` for all crawlers, nothing disallowed at all. No block.
   - ToS (WebFetch'd both `https://www.byggern.no/artikler/andre-artikler/salgsbetingelser-for-byggern-netthandel` and the search-summarized consumer terms): standard Norwegian consumer-purchase boilerplate, no scraping/automation language.

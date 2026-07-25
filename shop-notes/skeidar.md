@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none viable yet — see notes
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/_next/data/, /episerver/, /util/, /cart/). Not crawled, not wired.
 - Notes:
   - **Real check performed.** robots.txt (`skeidar.no/robots.txt`) blocks only `_next/data`, cms/`episerver`, cart/checkout/account/search/compare — product/category paths are open.
   - ToS (`skeidar.no/kundeservice?tab=kjopsvilkar-for-netthandel`, via WebFetch): silent on scraping/crawling/bots/robots/automated access.

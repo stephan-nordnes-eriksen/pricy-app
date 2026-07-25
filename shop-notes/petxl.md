@@ -13,7 +13,7 @@
   shared ZOO.se storefront platform, worth a quick look if other Zoo.se-
   family shops turn up affiliate programs later, but nothing concrete to
   act on now.
-- Status: not started
+- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.petxl.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "PetXL"`.
 - Notes:
   - robots.txt (curl'd live, `www.petxl.no/robots.txt`): disallows
     `/kasse`, `/mine-sider`, `/sok`, and blocks the `proximic` bot

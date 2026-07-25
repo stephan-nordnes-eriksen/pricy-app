@@ -9,7 +9,7 @@
   code already exists.
 - Alternatives: none found — no affiliate signal in SHOP-CANDIDATES.md;
   "Norway's largest bike shop" per its own marketing, family-owned.
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://bikeshop.no/sitemap.xml`); 337 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Recheck performed — robots.txt disallows only admin/checkout/
   search-ish paths (`/bin/`, `/obj/`, `/Kasse/`, `/search`, etc.), no
   named bot blocks — identical boilerplate to foss-sport.no, likely same

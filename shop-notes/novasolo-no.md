@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — no standard scrape path found
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Reclassified check from SHOP-CANDIDATES.md's "Unknown" ingest notes / Ambiguous verdict.
   - robots.txt: mostly open (`Allow: /`, blocks admin/order-doc paths + has a `Crawl-delay: 5`), no bot/product block.
   - ToS: could not find a dedicated vilkår/terms page (search results point elsewhere — novasolo.com/novasol.us are different companies); fetched the FAQ page instead, no scraping/crawling/bot clause found there. Genuine ToS text still unverified.

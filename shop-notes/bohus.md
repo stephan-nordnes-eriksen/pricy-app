@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none viable yet — see notes
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/cart/, /cart$, /create-account, /forgot-password). Not crawled, not wired.
 - Notes:
   - **Real check performed.** robots.txt (`bohus.no/robots.txt`) blocks only cart/account/search/filter/sort paths — product/category pages are open.
   - ToS (`bohus.no/kjopsbetingelser`, via WebFetch): silent on scraping/crawling/bots/robots/automated access.

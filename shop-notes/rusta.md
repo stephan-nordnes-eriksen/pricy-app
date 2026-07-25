@@ -7,7 +7,7 @@
   JSON-LD confirmed live, robots.txt wide open, ToS silent on scraping. No
   approval needed, cheapest option.
 - Alternatives: none found (no affiliate-network signal for NO)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.rusta.com/sitemap.xml`); 65 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Recheck performed (SHOP-CANDIDATES.md had this as "Unknown"
   ingest / Silent verdict):
   - robots.txt (`curl -sL https://rusta.com/robots.txt`): `User-agent: *` /

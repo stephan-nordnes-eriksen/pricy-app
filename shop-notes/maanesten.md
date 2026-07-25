@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — JSON-LD shape doesn't match scrapeSource() as-is
 - Alternatives: none found
-- Status: not started
+- Status: not viable 2026-07-25 — robots unreachable: no usable sitemap to drive full-catalog discovery from.
 - Notes: robots.txt is Shopify boilerplate open (`Allow: /`, agentic-access
   friendly, same as Klokker.no/Stefan Papir). Fetched a real product page
   (`https://maanesten.no/products/rio-ring`, 200 OK) and found ld+json, but

@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none viable yet — see Notes
 - Alternatives: none identified (no affiliate-network signal found)
-- Status: not started
+- Status: not viable 2026-07-25 — robots unreachable: no usable sitemap to drive full-catalog discovery from.
 - Notes: SHOP-CANDIDATES.md had "Unknown" ingest / "Unknown (ToS not
   retrievable)" verdict. Real recheck done, same conclusion — still
   unresolved:

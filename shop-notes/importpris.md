@@ -5,7 +5,7 @@
 - Tier: phase1-scrape (reclassified — SHOP-CANDIDATES.md had this at "Unknown ingest / Unknown scrape verdict (ToS not found)")
 - Chosen method: scrapeSource() — real check found clean Product/Offer JSON-LD in NOK, clean robots.txt, and a ToS page with no scraping/bot restriction. No approval needed, no code changes required.
 - Alternatives: none found (no affiliate-network signal).
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - Checked robots.txt live (sandbox disabled): standard `Disallow` list is admin/checkout/invoice/packing-slip paths only (`/kontrollpanel`, `/search`, `/pdfinvoice.php`, etc.) — no product/category block, no named scraper-bot block. `Crawl-delay: 5` for `*`.
   - WebFetched `/pages/conditions` (Salgsbetingelser): no mention of scraping/automated access/bots/crawlers found (page is mostly standard Norwegian consumer-purchase-law boilerplate).

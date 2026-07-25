@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — confirmed Product/Offer JSON-LD with NOK prices, robots.txt fully open. No approval needed.
 - Alternatives: none found.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap unreadable: no usable sitemap to drive full-catalog discovery from.
 - Notes: Real recheck done (was "Unknown" ingest note, Silent verdict — confirmed Silent holds).
   - `curl https://www.lysbutikken.no/robots.txt` → `Allow: /`, `Crawl-delay: 3` (be polite, but nothing disallowed).
   - Spot-checked `https://www.lysbutikken.no/mira-gulvlampe`: JSON-LD has `"@type":"Product"`, `"@type":"Offer"` (x2 — likely variant pricing), `"price":"2409.00"`/`"1699.00"`, `"priceCurrency":"NOK"`. Clean match.

@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — content is client-side rendered, plain fetch finds no product data
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md; RoyalDesign/Rum21 in the same category are on a confirmed intl. affiliate program, Bolia is not listed as such)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Reclassified check from SHOP-CANDIDATES.md's "Unknown" ingest notes / Silent verdict.
   - ToS (`bolia.com/en/this-is-us/customer-care/terms-and-conditions/`, fetched directly): no scraping/crawling/bot/automated-access clause. Verdict: Silent, confirmed.
   - robots.txt (`bolia.com/robots.txt`): open, only disallows `/jsnlog.logger`; the file's own comment says "just crawl it to explore our beautiful designs" — friendliest signal seen in this whole batch.

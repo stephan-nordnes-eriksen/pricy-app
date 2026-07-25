@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — reachable but no product page checked in time
 - Alternatives: none found
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/account/, /checkout/, /widgets/, */f/*). Not crawled, not wired.
 - Notes: robots.txt (via the `www.thune.no` redirect target) is open —
   only `/account/`, `/checkout/`, `/widgets/` disallowed, everything else
   crawlable, and it's clearly a Shopware storefront (sitemap uses

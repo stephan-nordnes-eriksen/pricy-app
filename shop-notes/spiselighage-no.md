@@ -7,7 +7,7 @@
   Product/Offer JSON-LD confirmed live, robots.txt only blocks WP admin/
   logs (default WooCommerce boilerplate), ToS silent on scraping.
 - Alternatives: none found
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Recheck performed (SHOP-CANDIDATES.md had this as "No signal
   found" ingest / Silent verdict):
   - robots.txt: standard WooCommerce defaults (`Disallow: /wp-admin/`,

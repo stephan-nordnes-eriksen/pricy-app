@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — confirmed clean, standard Product/Offer JSON-LD in NOK, no ToS or robots.txt restriction found. No approval needed, no code changes to worker/sources.js required.
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md).
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - Checked robots.txt live (sandbox disabled): only `MJ12bot` gets a `Crawl-Delay: 3`, everything else open; sitemap listed. No product/category path blocks.
   - WebFetched `/kjopsvilkar` (ToS): no mention of scraping/automated access/bots/crawlers.

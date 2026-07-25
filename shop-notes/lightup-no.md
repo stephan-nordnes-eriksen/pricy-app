@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — scrapeSource() finds nothing usable on this store today; would need a Shopify-analytics-JSON parser (non-trivial new code), not the cheap path.
 - Alternatives: none confirmed. No affiliate-network signal found (SHOP-CANDIDATES.md lists ingest notes as "Unknown").
-- Status: not started
+- Status: not viable 2026-07-25 — robots unreachable: no usable sitemap to drive full-catalog discovery from.
 - Notes: Real live recheck done (SHOP-CANDIDATES.md only had it as Unknown/Ambiguous).
   - ToS: fetched `/pages/alle-vilkar` — it's just a links page (refund/shipping/privacy/ToS policy links), no inline text to read; the actual policy pages weren't reachable/rendered via WebFetch. Silent so far, not confirmed clean.
   - robots.txt: wide open (`Allow: /`), Shopify-standard, and unusually welcoming — explicitly documents an agents.md, a UCP (`/.well-known/ucp`) and an MCP endpoint (`/api/ucp/mcp`) "for catalog, cart, and checkout", and recommends installing shop.app's agent skill. Only disallows admin/cart/checkout/account paths. Best-case robots signal of any shop checked this round.

@@ -10,7 +10,7 @@
   most clearly-sanctioned option of anything checked this round.
 - Alternatives: none needed — this is about as green a light as scraping
   gets.
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes: Recheck performed (SHOP-CANDIDATES.md verdict was "Silent
   (explicitly invites agent/MCP access)" — confirmed and detailed below):
   - robots.txt (`curl -sL https://varekompaniet.no/robots.txt`): standard

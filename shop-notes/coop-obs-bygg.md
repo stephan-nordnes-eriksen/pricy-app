@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — scrapeSource() as it exists today cannot get a price from this shop
 - Alternatives: none found (no affiliate-network signal)
-- Status: not started
+- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.obsbygg.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Obs Bygg"`.
 - Notes:
   - robots.txt (curled, sandbox disabled): only disallows `/kassen/`, `/sok`, `/startside`. Product/category paths open — no block.
   - ToS (WebFetch'd `https://www.obsbygg.no/kjopsvilkar`): standard consumer-purchase boilerplate, no scraping/automation language.

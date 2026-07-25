@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — confirmed Product/Offer JSON-LD with NOK prices, robots.txt only blocks checkout/favorites. No approval needed.
 - Alternatives: none found.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Real recheck done (was "Unknown" ingest note, Ambiguous verdict).
   - `curl https://lampan.no/robots.txt` → only `Disallow: /checkout/` and `/my-favorites/` — product pages open.
   - Spot-checked `https://lampan.no/p/mattis-20cm/`: rich JSON-LD — 16x `"@type":"Product"`, 32x `"@type":"Offer"` (likely a full catalog/OfferCatalog block on the page, not just the one product), `"price":"329"`, `"priceCurrency":"NOK"`. scrapeSource()'s `productOffer()` grabs the first Offer-bearing node so this should parse fine, though worth double-checking in Phase B that it picks the *right* offer given how many are embedded on one page.

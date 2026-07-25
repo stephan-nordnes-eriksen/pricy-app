@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: undetermined — see notes.
 - Alternatives: none found.
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/waf/, /edit/, /ViewHelper/DesktopSwitch, /*?sortby=). Not crawled, not wired.
 - Notes:
   - Real check performed: WebFetch on https://oslohificenter.no/hvorfor-handle
     (real sales-terms page, found via search) — no clause on automated

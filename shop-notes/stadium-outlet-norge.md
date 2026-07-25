@@ -7,7 +7,7 @@
   single-product URL / JSON-LD presence couldn't be confirmed via curl
   this round (see Notes). Needs a browser-based recheck.
 - Alternatives: none evaluated (no affiliate-network signal found).
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap unreadable: no usable sitemap to drive full-catalog discovery from.
 - Notes: Rechecked live (curl, sandbox disabled).
   `robots.txt`: only blocks `/*SearchParameter*` and `/my-stadium/` —
   product/category paths open (Intershop-platform boilerplate). ToS

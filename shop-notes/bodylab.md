@@ -8,7 +8,7 @@
   or approval needed, code already exists. Matches the table's "Silent"
   verdict.
 - Alternatives: none found — no affiliate network signal in this pass.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - robots.txt only disallows `/search/`, `/account/`, `/checkout/`,
     `/widgets/` — product pages wide open.

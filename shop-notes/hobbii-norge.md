@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — confirmed Product/Offer JSON-LD, robots.txt is Silent on product paths (standard Shopify boilerplate disallow list: cart/checkout/account/admin only), international chain with no NO-specific affiliate signal found. Cheapest option, no approval needed.
 - Alternatives: Hobbii is an international group (hobbii.com, .no, .de, etc. — same Shopify-family platform as cchobby.no's multi-country setup); worth a Phase B check for a group-wide EU affiliate program, but nothing confirmed and scrape already works today.
-- Status: not started
+- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://hobbii.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Hobbii"`.
 - Notes: robots.txt Silent (Shopify default: `/admin`, `/cart`, `/checkout`, `/account`, `/orders` disallowed, product/collection paths open). Real product page `https://hobbii.no/products/hp-1005670-honey-bunny` returns JSON-LD with `"@type": "Product"` and `"@type": "Offer"` present (Shopify's standard product schema — price/currency/availability all populate).
 
   Category mapping: yarn/crochet/knitting supplies fit none of worker/cats.json's current categories (Audio, Phones, TV, Projectors, Gaming, Home, Computers, Toys, E-readers, Kitchen) — needs a new "Hobby" or "Crafts" category + worker/extra.json rows before this shop can actually list anything.

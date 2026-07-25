@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: `scrapeSource()`-style scrape — real recheck found the site explicitly invites automated/agent access, and real schema.org product data exists. **Caveat**: like KappAhl, the JSON-LD on the one page checked is `ProductGroup`+`hasVariant` only (no flat `Product`/`offers` block), so `productOffer()` as shipped won't extract a price here yet — needs the same small `hasVariant`-digging addition.
 - Alternatives: none found — no affiliate-network signal in the research pass.
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - **Real recheck done** (Ingest notes/scrape verdict were both Unknown/Silent).
   - `robots.txt` (sandbox disabled) is unusually explicit and scraper-friendly for a Shopify storefront: *"Shopify storefront. Public product, collection, page, blog, policy, cart, and localized HTML is crawlable."* It documents an `agents.md` file and a UCP/MCP endpoint (`/api/ucp/mcp`) for agentic shopping, and its only caution is against **fully automated checkout/payment** without human approval — reading product/price data isn't restricted at all. `Allow: /` for `*`. Real product+collection sitemaps present (`sitemap_products_1.xml`, etc.).

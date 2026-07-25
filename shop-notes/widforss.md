@@ -7,7 +7,7 @@
   Product JSON-LD confirmed, no robots.txt restriction on product pages,
   no code changes needed.
 - Alternatives: none found — no affiliate-network signal.
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.widforss.no/sitemap.xml`); 380 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Real recheck performed. **robots.txt** (curl, sandbox off):
   disallows `/account/*`, `/nyakassan*`, `/kassa*` (checkout), `/sok/*`
   (search), sort/list-style query params, plus a blanket Baiduspider

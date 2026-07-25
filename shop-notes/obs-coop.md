@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: undetermined — see notes.
 - Alternatives: none found.
-- Status: not started
+- Status: wired but not yet ingested — `$discover` entry present in `tools/crawl-urls.json` (sitemap `https://www.obs.no/sitemap.xml`), but the 2026-07-25 full crawl got no rows from it (the run logged a rate-limit/403 on the sitemap fetch). Retry it on its own with `node tools/crawl.mjs --shop "Obs"`.
 - Notes:
   - Real check performed: WebFetch on https://www.obs.no/kjopsvilkar (real
     ToS page, found via search since /kjopsvilkar isn't linked from the

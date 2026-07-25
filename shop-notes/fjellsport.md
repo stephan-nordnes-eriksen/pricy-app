@@ -12,7 +12,7 @@
   unconfirmed network" — searched for Fjellsport.no + Adtraction/Awin/
   Partner-ads/Tradedoubler this round and found no confirmation of any of
   the four; not pursued further.
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.fjellsport.no/api/sitemap/nb-no/sitemapindex.xml`); 371 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Real recheck performed. **robots.txt** (curl, sandbox off):
   disallows `/search/`, `/checkout/`, `/mine-sider/`, `/produkter/`,
   `/media/`, `/customer/`, plus filter query params — `/produkter/` looked

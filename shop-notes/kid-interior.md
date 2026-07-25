@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — clean Product/Offer JSON-LD on product pages, no contract needed
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.kid.no/sitemap.xml`); 369 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Reclassified from SHOP-CANDIDATES.md's "Unknown ingest notes". Rechecked:
   - robots.txt: minimal, only `Sitemap:` directive — fully open, no bot block.
   - ToS (`kid.no/info/kjoepsvilkaar`, fetched directly): standard purchase/returns/payment/dispute terms only — no scraping/crawling/bot/automated-access clause. Verdict: Silent, confirmed.

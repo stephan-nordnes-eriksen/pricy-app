@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — blocked on reachability
 - Alternatives: none found
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap unreadable: no usable sitemap to drive full-catalog discovery from.
 - Notes: Live recheck (`curl -sL https://lyreco.no/robots.txt` and
   `https://www.staples.no/robots.txt`, sandbox disabled): both return
   Akamai's "Access Denied" edge-block page on the robots.txt request

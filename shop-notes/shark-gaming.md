@@ -7,7 +7,7 @@
   real product pages, no approval needed, cheapest option available.
 - Alternatives: SHOP-CANDIDATES.md notes "Possible DK Adtraction" but that's
   unconfirmed for the .no storefront and unnecessary — JSON-LD already works.
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://sharkgaming.no/sitemap_no.xml`); 125 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes:
   - Real check performed (ingest notes were "Possible DK Adtraction" /
     Ambiguous verdict, worth a look): WebSearch found no reachable

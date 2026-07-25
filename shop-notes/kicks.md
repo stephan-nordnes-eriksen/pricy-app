@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: first-party scrapeSource() off Product JSON-LD — no contract, no approval, code already exists (needs one small allowance, see Notes)
 - Alternatives: none found (no affiliate-network signal)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.kicks.no/sitemap`); 271 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Real check done. `curl -sL https://www.kicks.no/robots.txt`
   (unsandboxed) is Silent — only `Disallow: /internal/`, `/hkb/`; a
   Sitemap is listed. WebFetched `kicks.no/kundeservice/kjopsvillkar` — no

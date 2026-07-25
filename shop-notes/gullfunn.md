@@ -13,7 +13,7 @@
 - Alternatives: "Possible Adtraction" per SHOP-CANDIDATES.md but
   unverified — worth checking the Adtraction directory in Phase B, but
   scrape works today with zero setup.
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - **Category mapping**: jewelry/watches/bunad silver/gifts — needs the
     new **"Jewelry"** category (shared with Mestergull/David-Andersen/

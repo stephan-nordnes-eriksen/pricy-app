@@ -7,7 +7,7 @@
   actual per-SKU structured data (JSON-LD or microdata) could be located
   this round, so scrapeSource() viability is still unconfirmed.
 - Alternatives: none surfaced — no affiliate-network signal found either.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Real recheck performed. **robots.txt** (curl, sandbox off): only
   disallows `/ScriptResource.axd`, `/WebResource.axd`, `/upload/` — pure
   ASP.NET boilerplate, no product/category block, no named-bot block.

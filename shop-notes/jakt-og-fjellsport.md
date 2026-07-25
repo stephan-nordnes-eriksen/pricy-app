@@ -7,7 +7,7 @@
   platform serves zero structured product data of any kind, so the generic
   scrapeSource() JSON-LD parser has nothing to read.
 - Alternatives: none surfaced.
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes: Real recheck performed. **robots.txt** (curl, sandbox off): the
   request returned the site's homepage HTML instead of a robots.txt file —
   i.e. no robots.txt exists (old custom PHP cart, csrf-token + Fancybox JS

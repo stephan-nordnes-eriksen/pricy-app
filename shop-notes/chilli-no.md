@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — clean Product/Offer JSON-LD on product pages, no contract needed
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://www.chilli.no/api/sitemap/nb-NO/sitemapindex.xml`); 372 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: Reclassified from SHOP-CANDIDATES.md's "Unknown ingest notes". Rechecked:
   - robots.txt: `Allow: /`, disallows only /search, /checkout, /orderconfirmationpage, /client-telemetry — no bot/product-page block.
   - ToS (`chilli.no/vilkår`, fetched directly): covers age/agreement/governing-law only — no scraping/crawling/bot/automated-access clause. Verdict: Silent, confirmed.

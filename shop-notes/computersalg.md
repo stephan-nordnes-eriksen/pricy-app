@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: undecided — the "own affiliate program" noted in SHOP-CANDIDATES.md couldn't be confirmed or identified (no Adtraction/Awin/Partner-ads/Tradedoubler mention found anywhere on-site), and no product page could be confirmed to carry usable JSON-LD via curl.
 - Alternatives: none confirmed yet.
-- Status: not started
+- Status: not viable 2026-07-25 — no sitemap: no usable sitemap to drive full-catalog discovery from.
 - Notes:
   - `computersalg.no` 301-redirects every path to the equivalent `csmegastore.no` URL (confirmed via `curl -I`, sandbox disabled) — they're the same site/company, csmegastore.no is the live domain.
   - Checked robots.txt live on csmegastore.no: only checkout/order/account paths disallowed, nothing product/category-related, no named scraper block.

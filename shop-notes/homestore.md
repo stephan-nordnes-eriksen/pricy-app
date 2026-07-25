@@ -7,7 +7,7 @@
   real product pages, no approval needed, cheapest option available.
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md
   or otherwise).
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - Real check performed: WebFetch on https://www.homestore.no/pages/conditions
     (ToS) — no scraping/bot/automation clause. curl (sandbox disabled) on

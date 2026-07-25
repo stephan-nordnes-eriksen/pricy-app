@@ -10,7 +10,7 @@
 - Alternatives: none found — SHOP-CANDIDATES.md's "Some affiliate program,
   unconfirmed network" note was actually for Fjellsport.no, not this shop;
   no affiliate signal found for VPG itself.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Recheck performed — robots.txt: `Allow: /` broadly, only
   `/account/`, `/checkout/`, `/widgets/` and a `*/f/*` param disallowed;
   no named bot blocks (GPTBot explicitly allowed). ToS

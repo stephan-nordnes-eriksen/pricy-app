@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: n/a yet — see Notes, technical blocker not a legal one
 - Alternatives: none found (no affiliate-network signal in SHOP-CANDIDATES.md)
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/bin, /*Service=mypage*, /*View=cart*, /*Action=checkout*). Not crawled, not wired.
 - Notes: Real recheck done. **ToS** (elektroimportoren.no vilkar, via WebFetch):
   no explicit scraping/bot/automation ban found; only a generic copyright
   clause embedded as an HTML comment on every page ("Slike objekter kan ikke

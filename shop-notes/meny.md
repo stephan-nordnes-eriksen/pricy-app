@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none — no scrapable structured product data found, and per-store pricing is a separate structural blocker
 - Alternatives: none identified (no affiliate-network signal found either)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   `curl -sL https://meny.no/robots.txt`: plain `Allow: /` for
   `User-Agent: *`, with a handful of marketing/test-page disallows

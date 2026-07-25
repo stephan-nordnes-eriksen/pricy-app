@@ -5,7 +5,7 @@
 - Tier: phase1-scrape
 - Chosen method: scrapeSource() — confirmed Product/Offer JSON-LD, robots.txt is Silent on product paths (only blocks admin/checkout/search), ToS page (kundeservice/vilkar) has no automation/scraping clause. Cheapest option, no approval needed.
 - Alternatives: none found (no affiliate program signal in SHOP-CANDIDATES.md).
-- Status: not started
+- Status: working — full-catalog sitemap discovery live 2026-07-25 (`tools/crawl-urls.json` → `$discover`, sitemap `https://gamezone.no/sitemap.xml`); 364 priced rows ingested to pricy.no in that run. Products with no gtin ride `p-<brand-name-slug>` ids (worker/sources.js `slugId`); categories come from the shared `CAT_RULES` vocabulary, so no per-shop CATMAP table was needed.
 - Notes: `curl https://gamezone.no/robots.txt` (sandbox disabled) shows `Allow: /` with only `/bin/`, `/Kasse/` (checkout), `/search` etc. disallowed — product/category paths open. WebFetch of gamezone.no/kundeservice/vilkar found no automated-access/bot/scraping language. Real product page `https://gamezone.no/brettspill/129618/scythe-brettspill` returns clean JSON-LD: `{"@type":"Product","name":"Scythe Brettspill",...,"offers":{"@type":"Offer","availability":"...InStock","priceCurrency":"NOK","price":768.0}}` — exactly the shape `productOffer()` expects, price parses fine.
 
   Category mapping: Gamezone sells board games, TCG/Warhammer, gadgets & candy. Board games loosely fit the existing "Toys" cat (worker/cats.json); gadgets/candy don't map to anything current — a dedicated "Hobby" or "Games" category would fit better than shoehorning into Toys, but Toys works as a stopgap for the board-game SKUs. Flag for Phase B decision.

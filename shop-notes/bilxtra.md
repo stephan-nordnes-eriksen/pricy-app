@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — JSON-LD not usable as scrapeSource() expects it
 - Alternatives: none found (no affiliate signal)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: robots.txt is open (`Allow: /`, only admin/api/checkout/account
   paths disallowed) — reachable, not blocked. Fetched a real product page
   (`https://bilxtra.no/bildeler/eksosanlegg/01-eksosanlegg-komplett/ljuddampare-83f77`,

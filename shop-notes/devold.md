@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — real recheck found the site is clean (robots/ToS) but genuinely lacks any schema.org `Product` JSON-LD to scrape with the existing `scrapeSource()`. Not a quick-fix gap like KappAhl/Skomani's `hasVariant` case — would need bespoke parsing of the site's Next.js `__NEXT_DATA__` JSON blob, which is a real (if small) engineering task, not zero-effort. Recording as needs-recheck rather than phase1-scrape since the shipped code genuinely won't ingest this shop as-is.
 - Alternatives: no affiliate-network signal found either (Ingest notes: Unknown) — nothing cheaper on offer this round.
-- Status: not started
+- Status: excluded 2026-07-25 — robots.txt `Disallow` covers this shop's product paths (/*/checkout, /*/myaccount, /*/cart, /*/basket). Not crawled, not wired.
 - Notes:
   - **Real recheck done** (Ingest notes/scrape verdict were both Unknown/Ambiguous).
   - `robots.txt` (sandbox disabled): only disallows account/cart/wishlist/search/login/registration paths — no product/category block, no named bots. Has locale-specific product sitemaps (`sitemaps/product-sitemap_nb-no.xml`, confirming a real NO product catalog with URLs like `devold.com/nb-no/produkt/nansen-refined-sweater-tc786550a/`).

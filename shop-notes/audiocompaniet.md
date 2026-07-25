@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: undetermined — see notes.
 - Alternatives: none found.
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes:
   - Real check performed: WebFetch found the real terms page at
     https://www.audiocompaniet.no/side/kjopsbetingelser via the site footer

@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none yet — blocked on reachability
 - Alternatives: none found
-- Status: not started
+- Status: not viable 2026-07-25 — robots unreachable: no usable sitemap to drive full-catalog discovery from.
 - Notes: Live recheck (`curl -sL https://eurodel.no/robots.txt`, sandbox
   disabled) returns a Cloudflare "Just a moment..." JS challenge page —
   confirms SHOP-CANDIDATES.md's Cloudflare-challenge verdict, doesn't

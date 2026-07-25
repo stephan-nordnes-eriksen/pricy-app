@@ -5,7 +5,7 @@
 - Tier: needs-recheck
 - Chosen method: none viable yet — see Notes
 - Alternatives: none found (no affiliate-network signal in any search)
-- Status: not started
+- Status: not viable 2026-07-25 — sitemap reachable, but a sampled discovery crawl through `discoverSource()` produced no priced JSON-LD offer on any page tried (several sub-sitemap/UA/path-filter combinations). Nothing to ingest until the shop's markup changes.
 - Notes: Did a real check, not just the ToS text. `curl -sL https://www.apotek1.no/robots.txt`
   (unsandboxed) shows a Silent robots.txt — `Disallow: /p/`, `/artikler/`,
   `/komponenter/` etc, none of which match the real product path
