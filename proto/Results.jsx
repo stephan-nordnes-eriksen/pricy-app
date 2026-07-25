@@ -103,8 +103,13 @@ function searchCatalog({ query, cat }) {
 // ---- refine-within-results (free text on product name) ----
 // narrows whatever set is already on screen (query or category + filters);
 // every token must appear in the NAME — brand/keyword hits don't count here
-const refineToks = (q) => String(q || '').toLowerCase().trim().split(/\s+/).filter(Boolean);
-const refineMatch = (p, toks) => { const n = p.name.toLowerCase(); return toks.every(t => n.includes(t)); };
+// Norwegian shoppers type "hundefor", the catalog says "Hundefôr" — 25% of
+// rows carry æ/ø/å/é. Uppercase forms are listed so the pairs survive hosts
+// whose lower() is ASCII-only; toLowerCase makes them no-ops here.
+const FOLD = [['æ','ae'],['Æ','ae'],['ø','o'],['Ø','o'],['å','a'],['Å','a'],['ä','a'],['Ä','a'],['ö','o'],['Ö','o'],['ü','u'],['Ü','u'],['é','e'],['É','e'],['è','e'],['ê','e'],['ô','o'],['ç','c']];
+const foldTxt = (s) => FOLD.reduce((a, [x, y]) => a.split(x).join(y), String(s).toLowerCase());
+const refineToks = (q) => foldTxt(q || '').trim().split(/\s+/).filter(Boolean);
+const refineMatch = (p, toks) => { const n = foldTxt(p.name); return toks.every(t => n.includes(t)); };
 const _reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 function HiName({ text, q }) {
   const toks = refineToks(q);
