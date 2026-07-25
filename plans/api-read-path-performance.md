@@ -7,10 +7,13 @@ re-litigates a trade already priced.
 > **Read [api-latency-round-trips](api-latency-round-trips.md) first if you
 > care about how long a page takes.** Everything below is measured IN PROCESS
 > over node:sqlite, where a query costs microseconds — it prices CPU, and it is
-> blind to D1 round trips. Timed against live prod, a category page is ~950 ms,
-> and the term that dominates it (`rowsFor`'s 36 sequential queries) shows up
+> blind to D1 round trips. Timed against live prod, a category page was ~950 ms,
+> and the term that dominated it (`rowsFor`'s 36 sequential queries) shows up
 > here as 4 ms. Both files are true; they answer different questions. Use this
 > one for "which algorithm", that one for "why is it slow".
+>
+> Both of that file's items shipped 2026-07-26 — a category page is now 330 ms.
+> §1 below is done; §2 and §3 stand.
 
 Written 2026-07-25, at 14,059 heads / 14,156 offers / 50 shops / 31
 categories, right after `/api/products` learned server-side sort and filters
@@ -34,16 +37,21 @@ ratios are what matter.
 | `sort=best` (all heads) | 145 ms | 170 KB |
 | `catalog.json` (ops dump, bearer-gated) | 208 ms | 6.1 MB |
 
-**Every row in that table pays ~40 ms of `catMeta` before it does its own
-work** — the single most important number *for CPU*. On prod, `catMeta` is 5
-round trips (~100 ms) and `rowsFor` is 36 (~600 ms); see the round-trips file.
+**Every row in that table paid ~40 ms of `catMeta` before it did its own
+work** — the single most important number *for CPU*. On prod, `catMeta` was 5
+round trips (~100 ms) and `rowsFor` 36 (~600 ms); see the round-trips file.
+Both are **fixed as of 2026-07-26** — the table above is the pre-fix baseline,
+kept because it is still the right *relative* weighting of everything that
+remains. Subtract `catMeta` from every row of it.
 
 ## The ceilings, in the order they should be fixed
 
-### 1. `catMeta` runs five full-table aggregates on every response
+### 1. `catMeta` runs five full-table aggregates on every response — FIXED 2026-07-26
 
-*(First by CPU. By wall-clock on prod it is second, behind `rowsFor` —
-[api-latency-round-trips](api-latency-round-trips.md). Caching it fixes both.)*
+*(Was first by CPU, second by wall-clock behind `rowsFor`. Caching it fixed
+both — see [api-latency-round-trips](api-latency-round-trips.md) for the
+shipped shape and the two traps it nearly hid. Kept here because the reasoning
+below is why it was worth doing, and §3's numbers still quote it.)*
 
 `worker/index.js`, called by both `/api/products` and `/api/catalog.json`.
 Counts heads, counts distinct shops, maxes `updated_at`, groups heads by
@@ -55,14 +63,17 @@ Measured share of the request: ~36 ms of 64 at 14k rows, 47 ms of 62, and
 125 ms of 236 once one category held 50k rows. Roughly **half of every
 response, at every size measured.**
 
-Why it is first: it is the biggest single term, it is paid by requests that
-get nothing from it, and it is the *easiest* to fix — the numbers only change
-on ingest/seed. An in-isolate memo with a short TTL, or a row refreshed by the
-cron and the ingest route, removes most of it without touching a query.
+Why it was first: it was the biggest single term, it was paid by requests that
+got nothing from it, and it was the *easiest* to fix — the numbers only change
+on ingest/seed.
 
-Careful: `meta.cats` is what the UI's counts and category presence read, so
-stale values show up as wrong product counts on Browse. Tie invalidation to
-ingest rather than guessing a TTL.
+Careful, and this shaped the fix: `meta.cats` is what the UI's counts and
+category presence read, so stale values show up as wrong product counts on
+Browse. Invalidation is tied to a version counter every write bumps, not a
+TTL — and the counter lives in D1, because a memo invalidated only in the
+isolate that wrote would still serve wrong counts from every other isolate.
+A miss is still 5 round trips (`db.batch()` would make it 1, and needs the
+test shim taught to return per-statement rows).
 
 ### 2. `searchIds` folds the whole meta blob per row per token
 
@@ -83,7 +94,9 @@ cannot see what the rail filters on — `facets.type` is stored on 0 rows and
 derived on 7,099 of 14,059. Full reasoning in
 [search-and-paging-at-scale](search-and-paging-at-scale.md) Done 5.
 
-It scales linearly and stays a minority of the request:
+It scales linearly. It was a minority of the request; with §1 fixed it is now
+the largest CPU term — but the `catMeta` column below is ~0 on a warm isolate,
+so read these rows as "request minus catMeta":
 
 | rows in one category | request | catMeta | SQL scan | added by the JS shape | heap |
 |---|---|---|---|---|---|

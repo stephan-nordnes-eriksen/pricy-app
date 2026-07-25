@@ -758,10 +758,10 @@ function listFilters(p) {
 //   50,000     236 ms    125 ms      47 ms      ~64 ms             22 MB
 // So at 36x the biggest category we have, moving these sorts to SQL saves 27%
 // of the request and costs a second implementation that still cannot filter or
-// count the derived facets. Fix catMeta FIRST if this API ever gets slow: five
-// full-table aggregates on EVERY response (a PDP ids= fetch pays them too),
-// already half the request at every size above, and cacheable — it only
-// changes on ingest. After that: stored facet values + a SQL ORDER BY.
+// count the derived facets. The catMeta column above is now ~0 on a warm
+// isolate (2026-07-26, it is memoised on a catalog version), so this scan is
+// the dominant CPU term again — but on prod the request is 330 ms and this is
+// 85 ms of it. Next, in order: stored facet values + a SQL ORDER BY.
 // Retained heap is ~440 B/row against a 128 MB isolate (a row without the meta
 // blob is ~280 B, if 100k-row categories ever arrive).
 async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = null, dir = 'asc', filters = null } = {}) {
