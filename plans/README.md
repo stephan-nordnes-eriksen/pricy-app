@@ -13,7 +13,9 @@ something changes.
 ## Catalog-scale backlog (2026-07-25)
 
 Found while taking the catalog to 14k products across 55 shops. Ordered by
-how much each one hurts a user today:
+how much each one hurts a user today. To work one of these, paste the prompt
+in [IMPLEMENT-PROMPT.md](IMPLEMENT-PROMPT.md) into a fresh session — one item
+per session, they each touch ingest, the query layer and live data.
 
 A. [cross-shop-product-matching](cross-shop-product-matching.md) — only 94
    of 14,059 products have more than one shop's price. A comparison site
