@@ -1,19 +1,34 @@
 {
   "Ringo": {
     "lego-roses": "https://www.ringo.no/produkt/lego-10328-rosebukett/",
-    "$discover": { "sitemap": "https://www.ringo.no/sitemap_index.xml" }
+    "$discover": {
+      "sitemap": "https://ringo.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
   },
   "Hi-Fi Klubben": {
-    "xm5": "https://www.hifiklubben.no/sony-wh-1000xm5-traadloes-hodetelefon/sonywh1000xm5b/"
+    "xm5": "https://www.hifiklubben.no/sony-wh-1000xm5-traadloes-hodetelefon/sonywh1000xm5b/",
+    "$discover": {
+      "sitemap": "https://www.hifiklubben.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
   },
   "Lekeverden": {
-    "$discover": { "sitemap": "https://lekeverden.no/sitemap_index.xml" }
+    "$discover": {
+      "sitemap": "https://lekeverden.no/sitemap_index.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
   },
   "Kidsdreamstore": {
-    "$discover": { "sitemap": "https://kidsdreamstore.no/sitemap.xml" }
-  },
-  "Lekekassen": {
-    "$discover": { "sitemap": "https://lekekassen.no/media/sitemap/lekekassen.xml" }
+    "$discover": {
+      "sitemap": "https://kidsdreamstore.no/sitemap.xml",
+      "ua": "browser",
+      "limit": 400,
+      "delayMs": 400
+    }
   },
   "Clas Ohlson": {
     "airpods": "https://www.clasohlson.com/no/p/39-2739",
@@ -636,5 +651,312 @@
     "ean-8806096360309": "https://www.netonnet.no/art/tv/22-45/lg-43nano80a6b/1054266.11450/",
     "ean-8806099033620": "https://www.netonnet.no/art/tv/22-45/samsung-tq43ls03heuxxc/1065282.11450/",
     "ean-7394291111228": "https://www.netonnet.no/art/lyd/hodetelefoner/in-ear-hodetelefoner/andersson-cep-c2000-white/1034986.11399/"
+  },
+  "Blivakker": {
+    "$discover": {
+      "sitemap": "https://www.blivakker.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Bjørklund": {
+    "$discover": {
+      "sitemap": "https://bjorklund.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Bikeshop": {
+    "$discover": {
+      "sitemap": "https://bikeshop.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "David-Andersen": {
+    "$discover": {
+      "sitemap": "https://david-andersen.no/sitemap-products.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Christiania Belysning": {
+    "$discover": {
+      "sitemap": "https://www.christiania-belysning.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Gamezone": {
+    "$discover": {
+      "sitemap": "https://gamezone.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Foss Sport": {
+    "$discover": {
+      "sitemap": "https://foss-sport.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Dyrekassen": {
+    "$discover": {
+      "sitemap": "https://www.dyrekassen.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Japan Photo": {
+    "$discover": {
+      "sitemap": "https://www.japanphoto.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Fagmøbler": {
+    "$discover": {
+      "sitemap": "https://fagmobler.no/sitemap_index.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Parfymeri": {
+    "$discover": {
+      "sitemap": "https://www.parfymeri.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Guttelus": {
+    "$discover": {
+      "sitemap": "https://guttelus.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Jernia": {
+    "$discover": {
+      "sitemap": "https://www.jernia.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Hobbii": {
+    "$discover": {
+      "sitemap": "https://hobbii.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Bergans": {
+    "$discover": {
+      "sitemap": "https://www.bergans.com/no/sitemap_products.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Junior Barneklær": {
+    "$discover": {
+      "sitemap": "https://junior-barneklaer.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Intersport": {
+    "$discover": {
+      "sitemap": "https://www.intersport.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Kicks": {
+    "$discover": {
+      "sitemap": "https://www.kicks.no/sitemap",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Klokker.no": {
+    "$discover": {
+      "sitemap": "https://klokker.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Outland": {
+    "$discover": {
+      "sitemap": "https://www.outland.no/sitemap/products.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Møbelringen": {
+    "$discover": {
+      "sitemap": "http://backend.mobelringen.no/media/sitemap/sitemaps-1-1.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "PetXL": {
+    "$discover": {
+      "sitemap": "https://www.petxl.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Shark Gaming": {
+    "$discover": {
+      "sitemap": "https://sharkgaming.no/sitemap_no.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Skoringen": {
+    "$discover": {
+      "sitemap": "https://www.skoringen.no/product-sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Sport 1": {
+    "$discover": {
+      "sitemap": "https://www.sport1.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Sporttema": {
+    "$discover": {
+      "sitemap": "https://sporttema.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Vitusapotek": {
+    "$discover": {
+      "sitemap": "https://www.vitusapotek.no/api/be/sitemap/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Zooservice": {
+    "$discover": {
+      "sitemap": "https://zooservice.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Mestergull": {
+    "$discover": {
+      "sitemap": "https://mestergull.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Fjellsport": {
+    "$discover": {
+      "sitemap": "https://www.fjellsport.no/api/sitemap/nb-no/sitemapindex.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "JYSK": {
+    "$discover": {
+      "sitemap": "https://jysk.no/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Chilli": {
+    "$discover": {
+      "sitemap": "https://www.chilli.no/api/sitemap/nb-NO/sitemapindex.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "KappAhl": {
+    "$discover": {
+      "sitemap": "https://www.kappahl.com/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Kid Interiør": {
+    "$discover": {
+      "sitemap": "https://www.kid.no/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Kjell & Company": {
+    "$discover": {
+      "sitemap": "https://www.kjell.com/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Milrab": {
+    "$discover": {
+      "sitemap": "http://milrab.no/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Lekia": {
+    "$discover": {
+      "sitemap": "https://lekia.no/sitemap.axd",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Nettdyret": {
+    "$discover": {
+      "sitemap": "https://nettdyret.no/sitemap-1-index.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Panduro": {
+    "$discover": {
+      "sitemap": "https://panduro.com/sitemap.panduro.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Rusta": {
+    "$discover": {
+      "sitemap": "https://www.rusta.com/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Widforss": {
+    "$discover": {
+      "sitemap": "https://www.widforss.no/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Trademax": {
+    "$discover": {
+      "sitemap": "https://www.trademax.no/api/sitemap/nb-no/sitemapindex.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
   }
 }
