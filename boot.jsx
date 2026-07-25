@@ -589,6 +589,12 @@ function App() {
 let navSeq = 0; // async-nav race token (nav + popstate share it)
 // returns the payload so fetchProducts' callers can read per-query meta
 // (total/fcounts) that must NOT live on CATALOG.meta — see window.onQuery
+// id → row for the merged cache. Stale-proofed on CATALOG.length rather than
+// kept eagerly: the array is shared with sync-owned prototype code.
+function catIndex() {
+  if (CATALOG.length !== catIndex.len) { catIndex.ix = new Map(CATALOG.map(p => [p.id, p])); catIndex.len = CATALOG.length; }
+  return catIndex.ix;
+}
 function hydrateCatalog(data) {
   // body is {meta, products}; a bare array (older stubs) still works
   const rows = Array.isArray(data) ? data : data.products;
@@ -605,10 +611,18 @@ function hydrateCatalog(data) {
   // Heads first, then children: a child's head may ride the same payload.
   // Existing rows are mutated in place (Object.assign) so references held
   // by WATCHED/RECENT/listings stay live.
+  // Indexed by id, because this used to be CATALOG.find() per incoming row —
+  // O(page x cache), and the cache grows all session. Merging one 400-row page
+  // measured 2.5 ms into a fresh cache but 36 ms once it held 14k rows (Node;
+  // a browser is slower), synchronously, on every landed query — which is what
+  // made typing in the refine box feel worse the longer you had been browsing.
+  // Indexed: 1.9 ms at 14k. Rebuilt whenever CATALOG's length moved under us,
+  // so a future upstream that pushes rows itself can't leave a stale index.
+  const ix = catIndex();
   const upsert = (r) => {
-    const cur = CATALOG.find(p => p.id === r.id);
+    const cur = ix.get(r.id);
     if (cur) return Object.assign(cur, r);
-    CATALOG.push(r);
+    CATALOG.push(r); ix.set(r.id, r); catIndex.len = CATALOG.length;
     return r;
   };
   rows.filter(r => !r.family).forEach(r => {
@@ -622,7 +636,7 @@ function hydrateCatalog(data) {
   });
   rows.filter(r => r.family).forEach(r => {
     if (r.specs) SPECS[r.id] = r.specs;
-    const head = CATALOG.find(p => p.id === r.family);
+    const head = ix.get(r.family);
     if (head) (head.listings = head.listings || {})[r.id.slice(r.id.indexOf('~') + 1)] = r;
   });
   // served meta always wins — never recompute totals from the partial

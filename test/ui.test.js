@@ -760,6 +760,10 @@ test('lazy catalog: a PDP visit merges into the cache without evicting earlier s
   assert.ok(win.CATALOG.some(p => p.id === 'lego'), 'PDP product must be in the cache');
   assert.ok(win.CATALOG.length > audioCount, 'earlier Audio slice must survive the merge');
   assert.ok(win.CATALOG.filter(p => p.cat === 'Audio').length === audioCount, 'no Audio rows lost');
+  // the merge upserts through an id index now — a stale one re-pushes rows it
+  // should have found, which shows up here and nowhere else
+  assert.strictEqual(new Set(win.CATALOG.map(p => p.id)).size, win.CATALOG.length,
+    'every merged slice must upsert, never duplicate');
 });
 
 test('lazy catalog: browse shows FULL category counts (meta.cats) off its small drops slice', async () => {

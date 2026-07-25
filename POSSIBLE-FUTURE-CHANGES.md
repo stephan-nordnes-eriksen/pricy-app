@@ -23,3 +23,7 @@ What I do not need help with
 1. Coding
 2. Hosting
 3.
+
+
+
+Tracking what is being clicked. Perhaps do "popular products"-type analysis based on that, and also track stuff like "did you buy this item"-type of deal, so you can keep track of savings
