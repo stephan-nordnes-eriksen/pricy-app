@@ -141,6 +141,25 @@ second implementation of the same semantics and no facet honesty. Not taken;
 noted in `listIds` as the upgrade path if "All products" with a sort ever
 matters.
 
+**Does it hold when a category has many thousands of products?** Measured, not
+assumed — one synthetic category grown from real rows, whole request timed:
+
+| rows in the category | request | catMeta | SQL scan | added by (b) | heap |
+|---|---|---|---|---|---|
+| 1,400 (today's largest) | 62 ms | 47 | 14 | ~1 ms | <1 MB |
+| 10,000 | 80 ms | 57 | 18 | ~5 ms | 4 MB |
+| 20,000 | 116 ms | 71 | 23 | ~22 ms | 9 MB |
+| 50,000 | 236 ms | 125 | 47 | ~64 ms | 22 MB |
+
+Linear, and never the dominant term. At 50k rows — 36x the biggest category we
+have — moving the sorts to SQL takes the request 236 → ~172 ms (−27%) and buys
+a second implementation that still cannot filter or count derived facets. The
+real wall is **catMeta**: five full-table aggregates on EVERY response (a PDP
+`ids=` fetch pays them too), ~53% of the request at every size measured, and
+cacheable — it only changes on ingest. Fix that before touching this. Memory is
+not the failure mode: ~440 B retained per row, 22 MB at 50k, against a 128 MB
+isolate.
+
 Two things fell out for free, both impossible from a partial cache:
 `meta.total` (rows matching the query — the count line can stop saying
 "400 of 1 387" once a filter is on) and `meta.fcounts` (the category's facet

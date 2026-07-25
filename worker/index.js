@@ -714,6 +714,22 @@ function listFilters(p) {
 // ponytail: all heads WITH a sort parses 14k rows, 64 → 144 ms. That is one
 // link on Browse ("All products"), so it pays it. Push the universal fields
 // into a SQL ORDER BY (measured 21 ms for the id list) if it ever matters.
+//
+// It scales LINEARLY in category size, and it is never the dominant term.
+// One synthetic category grown from real rows, whole request measured:
+//   rows      request   catMeta   SQL scan   added by this shape   heap
+//    1,400      62 ms     47 ms      14 ms       ~1 ms             <1 MB
+//   10,000      80 ms     57 ms      18 ms       ~5 ms              4 MB
+//   20,000     116 ms     71 ms      23 ms      ~22 ms              9 MB
+//   50,000     236 ms    125 ms      47 ms      ~64 ms             22 MB
+// So at 36x the biggest category we have, moving these sorts to SQL saves 27%
+// of the request and costs a second implementation that still cannot filter or
+// count the derived facets. Fix catMeta FIRST if this API ever gets slow: five
+// full-table aggregates on EVERY response (a PDP ids= fetch pays them too),
+// already half the request at every size above, and cacheable — it only
+// changes on ingest. After that: stored facet values + a SQL ORDER BY.
+// Retained heap is ~440 B/row against a 128 MB isolate (a row without the meta
+// blob is ~280 B, if 100k-row categories ever arrive).
 async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = null, dir = 'asc', filters = null } = {}) {
   const where = `json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')}${cat == null ? '' : " AND json_extract(p.meta, '$.cat') = ?"}`;
   const bind = cat == null ? [] : [cat];
