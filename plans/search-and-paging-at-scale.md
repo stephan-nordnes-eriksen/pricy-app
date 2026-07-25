@@ -174,10 +174,15 @@ ignore. `matches`/`sortRows`/`fval` in worker/index.js therefore mirror
 Results' own predicate and comparator line for line, quirks included; if they
 drift, `list.length` and `meta.total` disagree on screen.
 
-Upstream half: `window.onLoadMore` becomes `window.onQuery({cat, sort, dir,
-filters, page})` — called (debounced) whenever the query changes and for "Load
-more", with the screen owning the page number and reading `total`/`fcounts`
-off the resolved value. boot.jsx keeps the old hook alive until that syncs.
+**Upstream shipped it too** (synced 2026-07-25): `window.onLoadMore` is now
+`window.onQuery({cat, sort, dir, filters, page})`, called on a 250 ms debounce
+whenever the query changes (mount included — boot's route prefetch asks for the
+same slice, so the mount call is a cache hit) and again for "Load more". The
+screen owns the page number, resets it with the query, and reads `total` /
+`fcounts` off the resolved value: the count line stops saying "400 of 1 387"
+once a filter is on, "Load more" disappears at the real end of a filtered set,
+and the rail lists every value in the CATEGORY rather than every value in the
+page. A `q=` search never calls it — the client already holds all ≤100 rows.
 
 ## What this plan did not close
 

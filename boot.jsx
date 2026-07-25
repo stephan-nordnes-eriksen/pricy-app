@@ -387,15 +387,6 @@ const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
 });
 window.onQuery = (q) => fetchProducts(listQuery(q)).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts }));
 
-// ponytail: the hook onQuery replaces, kept so the currently synced Results
-// keeps paging categories until the one that calls onQuery lands. Delete it
-// with that sync — nothing else calls it.
-const PAGES = new Map();
-window.onLoadMore = ({ cat }) => {
-  const page = (PAGES.get(cat) || 0) + 1;
-  return window.onQuery({ cat, sort: 'best', dir: 'asc', page }).then(() => PAGES.set(cat, page));
-};
-
 function toUrl(name, params = {}) {
   if (name === 'product') return '/product/' + encodeURIComponent(params.id);
   if (name === 'results') {

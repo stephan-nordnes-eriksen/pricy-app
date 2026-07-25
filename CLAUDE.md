@@ -59,9 +59,14 @@ Two Claude Design projects feed this repo:
   products" link hits. `matches`/`sortRows`/`fval` mirror Results' own
   predicate and comparator — if they drift, the screen's count and the served
   total disagree. Boot's `window.onQuery({cat, sort, dir, filters, page})` is
-  the one hook: page 0 on every change, page n for "Load more" (the SCREEN
-  owns the page number, and boot never offsets by rows on screen — a slice
-  can hold rows from an `ids=`/`top=drop` fetch).
+  the one hook (upstream synced 2026-07-25, `onLoadMore` is gone): Results
+  calls it debounced on every query change and for "Load more", and reads
+  `total`/`fcounts` off the resolved value — they must NOT be read off
+  `CATALOG.meta`, which the next `ids=`/`q=` fetch replaces wholesale. The
+  SCREEN owns the page number; never offset by rows on screen, a slice can
+  hold rows from an `ids=`/`top=drop` fetch. `ensureRoute` prefetches the
+  screen's own default sort (`sort=best&dir=asc`) so the mount call is a
+  FETCHED hit rather than a second 400-row fetch.
   `/api/catalog.json` remains a full dump for ops/tools only — the SPA must
   never call it, and it is **bearer-gated on `INGEST_TOKEN`** (7.2 MB per
   hit at 14k rows); `tools/` send the token. Upstream is synced (2026-07-21): category counts and

@@ -716,10 +716,12 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   }
   assert.strictEqual(typeof res.total, 'number', 'the served total must come back to the screen');
 
-  // same selection, different click order = the same cache entry
-  const n = win.api.length;
+  // same selection, different click order = the same cache entry. Counted by
+  // URL, not by log length: Results runs its own debounced onQuery on mount
+  const hits = () => win.api.filter(c => c.call.includes('brand=Bose%2CSony')).length;
+  const before = hits();
   await win.onQuery({ cat: 'Audio', sort: 'best', dir: 'desc', page: 2, filters: { brands: ['Bose', 'Sony'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
-  assert.strictEqual(win.api.length, n, 'a re-ordered but identical selection must not refetch');
+  assert.strictEqual(hits(), before, 'a re-ordered but identical selection must not refetch');
 });
 
 test('lazy catalog: a PDP visit merges into the cache without evicting earlier slices', async () => {
