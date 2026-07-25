@@ -28,6 +28,12 @@ const SCHEMA = [
   // worker/eans.json, extended at runtime via POST /api/admin/alias.
   // ean is eanKey-normalized (digits, no leading zeros).
   'CREATE TABLE IF NOT EXISTS eans (ean TEXT PRIMARY KEY, product_id TEXT NOT NULL)',
+  // Pre-folded search text, one row per product, maintained by triggers (see
+  // SEARCH_SQL). searchIds used to build the diacritic fold — 18 nested
+  // replace() calls — per row per token, at query time. Measured on prod D1
+  // over the 14k-row scan: raw `meta LIKE` 15 ms, +json_remove 21, +lower 25,
+  // +the folds 85-100. The scan was never the problem; the folds were.
+  'CREATE TABLE IF NOT EXISTS search_index (product_id TEXT PRIMARY KEY, sk TEXT NOT NULL, nm TEXT NOT NULL, br TEXT NOT NULL)',
   // Expression index on the category. Every `cat=` listing filters on
   // json_extract(meta,'$.cat'), which is not a column, so without this SQLite
   // scans all 14k products to find one category's rows. Measured on prod D1:
@@ -201,10 +207,19 @@ async function seedCatalog(db) {
   // hash covers eans.json too: an eans-only change must re-run seeding so the
   // new file rows land in the eans table (OR IGNORE — runtime aliases win)
   seedHash ??= await sha(JSON.stringify(seed) + JSON.stringify(eansFile));
+  searchVer ??= await sha(SEARCH_SQL.join('|'));
   // one round trip for both markers: row 1 pins the seed hash, row 2 the
   // catalog version. This SELECT is on every request already — reading the
   // version here is what makes a catMeta cache hit cost nothing.
-  const mark = Object.fromEntries((await db.prepare('SELECT id, hash FROM seed_meta WHERE id <= 2').all()).results.map(r => [r.id, String(r.hash)]));
+  const mark = Object.fromEntries((await db.prepare('SELECT id, hash FROM seed_meta WHERE id <= 3').all()).results.map(r => [r.id, String(r.hash)]));
+  // Row 3 pins the search-index build. Mismatched (fresh db, or FOLD/searchCols
+  // edited) = install the triggers and refold every row, once, globally. Must
+  // run BEFORE seeding below, or the seed's inserts predate the triggers.
+  // Concurrent requests can both do it; the upsert makes that harmless.
+  if (mark[3] !== searchVer) {
+    for (const sql of SEARCH_SQL) await db.prepare(sql).run();
+    await db.prepare('INSERT INTO seed_meta (id, hash) VALUES (3, ?) ON CONFLICT(id) DO UPDATE SET hash = excluded.hash').bind(searchVer).run();
+  }
   // No version row yet = a db seeded before versioning existed (prod, on the
   // deploy that adds this) and not written since. Fall back to the seed hash:
   // stable, so the cache still works, and the first write replaces it with a
@@ -612,11 +627,43 @@ async function rowsFor(db, ids, { expand = true } = {}) {
 // Uppercase forms are listed because sqlite's lower() is ASCII-only, so
 // "Øretelefoner" never lowercases; JS's toLowerCase makes those pairs no-ops
 // on the query side, which is fine.
-// ponytail: folds the whole meta blob per row per token — 15 → 55 ms over 14k
-// rows locally. FTS5 over a folded column when that stops being cheap.
+// The fold now runs ONCE PER WRITE into search_index rather than per row per
+// token at query time — see SEARCH_SQL. The old note here said "no migration,
+// and it covers hidden and future rows for free"; triggers keep both of those
+// true, and SEARCH_VER rebuilds every row whenever this list changes, so a
+// fold fix still needs no hand-run backfill.
 const FOLD = [['æ', 'ae'], ['Æ', 'ae'], ['ø', 'o'], ['Ø', 'o'], ['å', 'a'], ['Å', 'a'], ['ä', 'a'], ['Ä', 'a'], ['ö', 'o'], ['Ö', 'o'], ['ü', 'u'], ['Ü', 'u'], ['é', 'e'], ['É', 'e'], ['è', 'e'], ['ê', 'e'], ['ô', 'o'], ['ç', 'c']];
 const foldSql = (expr) => FOLD.reduce((s, [a, b]) => `replace(${s}, '${a}', '${b}')`, `lower(${expr})`);
 const foldJs = (s) => FOLD.reduce((s2, [a, b]) => s2.split(a).join(b), String(s).toLowerCase());
+
+// The three folded values searchIds matches on, over any expression naming a
+// products row. `$.icon` is dropped for the same reason as `$.specs`: it is
+// not search text (it holds the category's lucide icon NAME, so leaving it in
+// made every Furniture row match "sofa"). The leading space on `nm` is what
+// makes '% tok%' mean "starts a word in the name".
+const searchCols = (meta) => [
+  foldSql(`json_remove(${meta}, '$.specs', '$.icon')`),
+  `' ' || ${foldSql(`json_extract(${meta}, '$.name')`)}`,
+  foldSql(`coalesce(json_extract(${meta}, '$.brand'), '')`),
+].join(', ');
+const SET_COLS = 'sk = excluded.sk, nm = excluded.nm, br = excluded.br';
+// Triggers, not write-site calls: every path that writes products is covered,
+// including ones nobody has written yet. Recreated (not IF NOT EXISTS) on a
+// SEARCH_VER change so a FOLD edit actually reaches them.
+const SEARCH_SQL = [
+  'DROP TRIGGER IF EXISTS products_search_ai',
+  'DROP TRIGGER IF EXISTS products_search_au',
+  'DROP TRIGGER IF EXISTS products_search_ad',
+  `CREATE TRIGGER products_search_ai AFTER INSERT ON products BEGIN INSERT INTO search_index (product_id, sk, nm, br) VALUES (new.id, ${searchCols('new.meta')}) ON CONFLICT(product_id) DO UPDATE SET ${SET_COLS}; END`,
+  `CREATE TRIGGER products_search_au AFTER UPDATE OF meta ON products BEGIN INSERT INTO search_index (product_id, sk, nm, br) VALUES (new.id, ${searchCols('new.meta')}) ON CONFLICT(product_id) DO UPDATE SET ${SET_COLS}; END`,
+  'CREATE TRIGGER products_search_ad AFTER DELETE ON products BEGIN DELETE FROM search_index WHERE product_id = old.id; END',
+  // WHERE true: SQLite needs it to tell this ON CONFLICT from a join clause
+  `INSERT INTO search_index (product_id, sk, nm, br) SELECT id, ${searchCols('meta')} FROM products WHERE true ON CONFLICT(product_id) DO UPDATE SET ${SET_COLS}`,
+];
+// Hashed, not length-counted: any change to FOLD or searchCols changes this,
+// so the rebuild is automatic. seed_meta row 3 pins it; seedCatalog reads that
+// row for free in the marker SELECT it already runs.
+let searchVer;
 
 // Broad candidate match for free-text search: LIKE over the whole meta JSON
 // (name/brand/cat/kw all live there). Deliberately broader than the client's
@@ -628,15 +675,13 @@ async function searchIds(db, q) {
     .filter(t => t.length >= 2).slice(0, 8)
     .map(t => foldJs(t).replace(/[\\%_]/g, c => '\\' + c));
   if (!toks.length) return [];
-  // $.icon is dropped for the same reason as $.specs: it is not search text.
-  // It holds the category's lucide icon NAME, so leaving it in makes every
-  // Furniture row match "sofa", every Bikes row "bike", every Books row
-  // "book" — harmless when 10 categories were all electronics, badly wrong
-  // once the icon set is sofa/bike/book/car/shirt/camera/pill/gem/tent.
-  const blob = foldSql("json_remove(meta, '$.specs', '$.icon')");
+  // Folded once at write time (search_index, see SEARCH_SQL) instead of per
+  // row per token here. Same three values, same LIKE patterns, same ranking —
+  // only where the folding happens changed.
+  const blob = 's.sk';
   // leading space + '% tok%' = the token starts a word in the name
-  const name = `' ' || ${foldSql("json_extract(meta, '$.name')")}`;
-  const brand = foldSql("coalesce(json_extract(meta, '$.brand'), '')");
+  const name = 's.nm';
+  const brand = 's.br';
   // Rank before truncating, or LIMIT 100 over rowid order returns "whichever
   // shop we crawled first": q=ring matched 409 names and served 100 of them
   // with 25 non-jewellery rows in the way. Word-start-in-name beats
@@ -647,7 +692,9 @@ async function searchIds(db, q) {
     `(CASE WHEN ${name} LIKE ? ESCAPE '\\' THEN 4 ELSE 0 END) + (CASE WHEN ${name} LIKE ? ESCAPE '\\' THEN 2 ELSE 0 END) + (CASE WHEN ${brand} LIKE ? ESCAPE '\\' THEN 1 ELSE 0 END)`
   ).join(' + ');
   const { results } = await db.prepare(
-    `SELECT id FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()} AND (${toks.map(() => `${blob} LIKE ? ESCAPE '\\'`).join(' OR ')}) ORDER BY ${score} DESC, rowid LIMIT 100`
+    `SELECT p.id FROM products p JOIN search_index s ON s.product_id = p.id
+     WHERE json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')} AND (${toks.map(() => `${blob} LIKE ? ESCAPE '\\'`).join(' OR ')})
+     ORDER BY ${score} DESC, p.rowid LIMIT 100`
   ).bind(...toks.map(t => `%${t}%`), ...toks.flatMap(t => [`% ${t}%`, `%${t}%`, `%${t}%`])).all();
   return results.map(r => r.id);
 }

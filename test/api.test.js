@@ -1908,3 +1908,41 @@ test('the cat= listing has an index to use, and uses it', async () => {
   const plan = results.map(r => r.detail).join(' | ');
   assert.match(plan, /idx_products_cat/, `cat= must SEARCH via the index, not SCAN products — got: ${plan}`);
 });
+
+// search_index is built by triggers, which only fire on writes that happen
+// AFTER they exist. Prod had 14,059 products before any of this, so the
+// one-time backfill is what makes search work there at all — and nothing else
+// in this suite touches it: with the backfill deleted the whole suite still
+// passed, while prod would have served zero search results for every query.
+test('search finds products that predate the index (the prod migration)', async () => {
+  const DB = d1();
+  // rows in place before any request — no triggers exist yet, exactly like prod
+  DB.exec('CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)');
+  await DB.prepare('INSERT INTO products (id, meta) VALUES (?, ?)')
+    .bind('legacy-1', JSON.stringify({ name: 'Trådløs Øretelefon Legacy', brand: 'Oldco', cat: 'Audio', kw: 'legacy' })).run();
+
+  const call = api({ DB });
+  const ids = async (q) => (await (await call('/api/products?q=' + encodeURIComponent(q))).json()).products.map(p => p.id);
+  assert.deepStrictEqual(await ids('legacy'), ['legacy-1'], 'a pre-existing row must be backfilled into search_index');
+  assert.deepStrictEqual(await ids('tradlos'), ['legacy-1'], 'and folded, so the ASCII-typed query still finds it');
+
+  const n = await DB.prepare('SELECT COUNT(*) AS n FROM search_index').first();
+  assert.ok(n.n > 0, 'search_index must be populated');
+});
+
+// The alias route deletes the orphan product row; its search text has to go
+// with it, or the table grows a leak nothing ever collects.
+test('deleting a product drops its search_index row', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  await req('/api/ingest', 'POST', [{ product_id: 'ean-7099930000001', shop: 'Power', price: 99, name: 'Slettes Snart', brand: 'Acme' }]);
+  assert.ok(await DB.prepare("SELECT 1 FROM search_index WHERE product_id = 'ean-7099930000001'").first(), 'ingest-created row must be indexed');
+
+  await req('/api/admin/alias', 'POST', { ean: '7099930000001', product_id: 'airpods' });
+  assert.strictEqual(
+    await DB.prepare("SELECT 1 FROM search_index WHERE product_id = 'ean-7099930000001'").first(), null,
+    'the deleted orphan must not leave search text behind');
+  await call('/api/products?q=slettes'); // must not 500 on the now-missing row
+});
