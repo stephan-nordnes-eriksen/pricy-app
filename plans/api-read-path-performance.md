@@ -12,8 +12,9 @@ re-litigates a trade already priced.
 > here as 4 ms. Both files are true; they answer different questions. Use this
 > one for "which algorithm", that one for "why is it slow".
 >
-> Both of that file's items shipped 2026-07-26 — a category page is now 330 ms.
-> §1 below is done; §2 and §3 stand.
+> Everything that file listed shipped 2026-07-26 — a category page is now
+> 279 ms. §1 and §4 below are done; §2 stands; §3's SQL half got an index,
+> its JS half stands.
 
 Written 2026-07-25, at 14,059 heads / 14,156 offers / 50 shops / 31
 categories, right after `/api/products` learned server-side sort and filters
@@ -96,7 +97,11 @@ derived on 7,099 of 14,059. Full reasoning in
 
 It scales linearly. It was a minority of the request; with §1 fixed it is now
 the largest CPU term — but the `catMeta` column below is ~0 on a warm isolate,
-so read these rows as "request minus catMeta":
+so read these rows as "request minus catMeta". Its *SQL* half is no longer in
+the picture either: an expression index on the category (2026-07-26) took the
+query from 35–44 ms to 12–16 and made it scale with the category rather than
+the catalog. What is left below is the JS shaping, which is what the rejected
+trades at the bottom are about:
 
 | rows in one category | request | catMeta | SQL scan | added by the JS shape | heap |
 |---|---|---|---|---|---|

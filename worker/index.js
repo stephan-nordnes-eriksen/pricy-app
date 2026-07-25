@@ -28,6 +28,15 @@ const SCHEMA = [
   // worker/eans.json, extended at runtime via POST /api/admin/alias.
   // ean is eanKey-normalized (digits, no leading zeros).
   'CREATE TABLE IF NOT EXISTS eans (ean TEXT PRIMARY KEY, product_id TEXT NOT NULL)',
+  // Expression index on the category. Every `cat=` listing filters on
+  // json_extract(meta,'$.cat'), which is not a column, so without this SQLite
+  // scans all 14k products to find one category's rows. Measured on prod D1:
+  // cat=Toys 35-44 -> 12-16 ms, rows_read 19,274 -> 6,968; the query now
+  // scales with the CATEGORY, not the catalog (Audio, 425 heads: 5 ms).
+  // Costs index maintenance on every products write, which is one extra btree
+  // on a 14k-row table. SQLite matches an expression index only when the query
+  // spells the expression identically — keep this and listIds' WHERE in sync.
+  `CREATE INDEX IF NOT EXISTS idx_products_cat ON products(json_extract(meta,'$.cat'))`,
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db

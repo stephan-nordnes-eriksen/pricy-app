@@ -4,9 +4,9 @@ Found 2026-07-25, measuring the freshly deployed server-side sort/filter
 against live pricy.no. Nothing here was caused by that change — `cat=Toys` with
 no sort measured the same. It had always been this slow; nobody had timed prod.
 
-**Both fixes shipped 2026-07-26.** A category page is now **330 ms** (was 954),
-a PDP fetch **128 ms** (was 318). Kept as a record of the method, because the
-method is the transferable part: the local harness ranked these two fixes in
+**All four fixes shipped 2026-07-26.** A category page is now **279 ms** (was
+954), a PDP fetch **120 ms** (was 318). Kept as a record of the method, because
+the method is the transferable part: the local harness ranked these fixes in
 the wrong order, and only curl against prod caught it.
 
 ## Where it landed
@@ -17,10 +17,10 @@ Median of 9 cache-busted requests from a laptop, against live, **warm**:
 |---|---|---|---|
 | `/robots.txt` (network floor) | 55 ms | 41 ms | — |
 | `/api/me` 401 (schema + session lookup) | 45 ms | 36 ms | — |
-| `/api/products?ids=lego` | 318 ms | **128 ms** | −60% |
-| `/api/products?cat=Toys&limit=1` | 404 ms | **187 ms** | −54% |
-| **`/api/products?cat=Toys&limit=400`** | **954 ms** | **330 ms** | **−65%** |
-| `/api/products?cat=Audio&limit=1` (425 heads) | 327 ms | **160 ms** | −51% |
+| `/api/products?ids=lego` | 318 ms | **120 ms** | −62% |
+| `/api/products?cat=Toys&limit=1` | 404 ms | **153 ms** | −62% |
+| **`/api/products?cat=Toys&limit=400`** | **954 ms** | **279 ms** | **−71%** |
+| `/api/products?cat=Audio&limit=1` (425 heads) | 327 ms | **134 ms** | −59% |
 | `/api/products?q=hodetelefoner` | 416 ms | **206 ms** | −51% |
 | `/api/products?top=drop&perCat=1&limit=4` | — | **143 ms** | — |
 
@@ -28,8 +28,10 @@ Median of 9 cache-busted requests from a laptop, against live, **warm**:
 category aggregates they never read.
 
 **Measure warm.** The first samples after a deploy read 777 ms with every
-isolate cold; it settled to 330 ms once warm. A post-deploy measurement without
-a warmup will misreport a cache as a regression.
+isolate cold; it settled once warm, and a later round needed ~80 warming
+requests before the medians stopped bouncing between hit (~115 ms) and miss
+(~470 ms). A post-deploy measurement without a warmup will misreport a cache
+as a regression.
 
 ## What was wrong
 
@@ -66,10 +68,14 @@ The whole page fit one model: **prod ms ≈ sequential D1 round trips × ~20 ms.
 | Worker + network floor | — | 50 ms | 41 ms |
 | `seedCatalog` marker check | 1 | 20 ms | 1 (now carries the catalog version too) |
 | `catMeta` | 5 | 100 ms | **0 on a warm isolate** |
-| `listIds` (one scan, real CPU) | 1 | 85 ms | unchanged |
+| `listIds` (one scan, real CPU) | 1 | 85 ms | 1, indexed — SQL 12–16 ms |
 | **`rowsFor` for 400 ids** | **36** | **~600 ms** | **~4 waits** |
 | 245 KB transfer | — | 23 ms | unchanged |
-| | | **≈ 880 ms** (observed 954) | **observed 330** |
+| | | **≈ 880 ms** (observed 954) | **observed 279** |
+
+The `listIds` row is where the model was wrong in kind, not just degree: it was
+booked as CPU on the strength of an in-process profile, and ~25 ms of it was an
+unindexed scan that no local harness would ever flag.
 
 ## What shipped
 
@@ -145,10 +151,53 @@ pages in prod. It now returns one `{results, success}` per statement, like real
 D1. Verified by reverting just the shim: 34 tests fail. (node:sqlite's `all()`
 returns `[]` for DML, so one path covers reads and writes.)
 
+### 4. `listIds`: an expression index on the category — DONE 2026-07-26
+
+The in-process profile priced `listIds` at 85 ms of JS and both files treated
+it as CPU that only a rejected redesign could fix. D1's own
+`sql_duration_ms` says otherwise: the query was **35–44 ms and read 19,274
+rows to serve a 1,387-row category**, because `cat=` filters on
+`json_extract(meta,'$.cat')` — not a column, so every category listing scanned
+all 14k products.
+
+`CREATE INDEX idx_products_cat ON products(json_extract(meta,'$.cat'))`, in
+`SCHEMA`. `EXPLAIN QUERY PLAN` goes from `SCAN p` to
+`SEARCH p USING INDEX idx_products_cat`:
+
+| | rows read | SQL | 
+|---|---|---|
+| Toys (1,387 heads) | 19,274 → 6,968 | 35–44 → **12–16 ms** |
+| Audio (425 heads) | — → 2,158 | → **5 ms** |
+
+The query now scales with the *category*, not the catalog. End to end on prod:
+`cat=Toys&limit=400` 313 → **279 ms**, `cat=Toys&limit=1` 185 → **153 ms**.
+
+Not one of the trades
+[api-read-path-performance](api-read-path-performance.md) rejected — those were
+about moving the JS *shaping* into SQL. This leaves the shaping exactly where
+it is and only fixes how its input rows are found.
+
+**Measured and rejected: trimming the meta blob.** `listIds` pulls whole meta
+rows and needs almost all of it (`deriveFacets` reads `{name, cat}`, `fval`
+falls back to `$.specs` and `$.variants`, `sortRows`/`matches` read
+`was/rating/reviews/name/brand`), but *not* `kw`/`icon`/`srcCat` — **48% of the
+bytes** on Toys (284 KB → 147 KB), 41% over all heads (3.09 → 1.82 MB).
+Selecting `json_remove(p.meta, '$.kw', '$.icon', '$.srcCat')` does exactly that
+and is **worth nothing**: A/B/A on `wrangler dev --remote` measured trim 319 ms,
+base 379, trim again 370 — the 60 ms was session drift, not the change.
+`json_remove` costs SQLite per-row CPU that cancels the smaller transfer.
+Don't retry it; halving this payload is not where the time is.
+
 ## Still open
 
-- `listIds`' 85 ms scan (real CPU, already priced) and the 245 KB payload
-  (23 ms) — both untouched, both now a visible share of the remaining 330 ms.
+- `listIds`' JS shaping — the part the 85 ms estimate was really about, now
+  that its SQL is 12–16 ms. Still the largest single term in a 279 ms category
+  page, and still guarded by the trade
+  [api-read-path-performance](api-read-path-performance.md) §3 priced and
+  rejected: the facet values it computes are derived, so SQL cannot see them.
+  Trigger to revisit is unchanged — one category past ~20k heads.
+- The 245 KB response payload (23 ms). Cheapest lever is dropping `history`
+  from list rows the way `specs` already is.
 - Search's CPU: `q=` is 206 ms, one scan and one round trip. FTS5 is its
   answer ([api-read-path-performance](api-read-path-performance.md) §2).
 

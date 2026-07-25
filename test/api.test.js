@@ -1884,3 +1884,27 @@ test('served meta stays live across ingest, admin PATCH and alias (catMeta cache
   await req('/api/admin/alias', 'POST', { ean: '7099920000002', product_id: 'hundeseng~xl', meta: { name: 'Hundeseng Deluxe XL', cat: 'Pets' } });
   assert.strictEqual((await meta()).products, base.products + 2, 'an alias-created product must reach meta.products');
 });
+
+// The cat= listing filters on json_extract(meta,'$.cat'), which is not a
+// column — without the expression index SQLite scans all 14k products to serve
+// one category (measured on prod D1: 35-44 ms and 19,274 rows read, vs 12-16 ms
+// and 6,968 with it). Nothing else fails if it disappears; the page just gets
+// slower, which is exactly the kind of regression nobody notices.
+test('the cat= listing has an index to use, and uses it', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/products?cat=Audio&limit=1'); // ensureSchema + seed
+
+  const idx = await DB.prepare("SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'idx_products_cat'").first();
+  assert.ok(idx, 'idx_products_cat must be in SCHEMA');
+
+  // SQLite only matches an expression index when the query spells the
+  // expression identically, so assert the PLAN, not just the index's existence
+  const { results } = await DB.prepare(
+    `EXPLAIN QUERY PLAN SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id
+     WHERE json_extract(p.meta, '$.family') IS NULL AND json_extract(p.meta, '$.hidden') IS NOT 1
+       AND json_extract(p.meta, '$.cat') = 'Audio' GROUP BY p.id`
+  ).all();
+  const plan = results.map(r => r.detail).join(' | ');
+  assert.match(plan, /idx_products_cat/, `cat= must SEARCH via the index, not SCAN products — got: ${plan}`);
+});
