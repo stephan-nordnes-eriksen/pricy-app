@@ -100,6 +100,31 @@ function searchCatalog({ query, cat }) {
   });
 }
 
+// ---- refine-within-results (free text on product name) ----
+// narrows whatever set is already on screen (query or category + filters);
+// every token must appear in the NAME — brand/keyword hits don't count here
+const refineToks = (q) => String(q || '').toLowerCase().trim().split(/\s+/).filter(Boolean);
+const refineMatch = (p, toks) => { const n = p.name.toLowerCase(); return toks.every(t => n.includes(t)); };
+const _reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function HiName({ text, q }) {
+  const toks = refineToks(q);
+  if (!toks.length) return <>{text}</>;
+  const parts = String(text).split(new RegExp('(' + toks.map(_reEsc).join('|') + ')', 'ig'));
+  return <>{parts.map((s, i) => i % 2 ? <mark key={i} className="hitext">{s}</mark> : s)}</>;
+}
+function RefineField({ value, onChange, scope, n }) {
+  return (
+    <div className={'refine' + (value ? ' is-on' : '')}>
+      <Icon name="search" size={15} />
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder={'Search names in ' + scope} aria-label={'Search product names in ' + scope} />
+      {!!value && <>
+        <span className="refine__n">{fmt(n)} {n === 1 ? 'hit' : 'hits'}</span>
+        <button className="refine__clear" onClick={() => onChange('')} aria-label="Clear name search"><Icon name="x" size={14} /></button>
+      </>}
+    </div>
+  );
+}
+
 // ---- small UI bits ----------------------------------------
 function Stars({ rating, reviews }) {
   if (!rating) return <span className="stars"><span className="stars__n">No reviews yet</span></span>;
@@ -119,13 +144,13 @@ function Spark({ points, hit }) {
 }
 
 // ---- result row (details view) ----------------------------
-function ResultRow({ p, go, spark, saved, onSave, badge }) {
+function ResultRow({ p, go, spark, saved, onSave, badge, hl }) {
   return (
     <div className="rrow" onClick={() => go('product', { id: p.id })}>
       <div className="rrow__img"><ProdImg p={p} fill size={34} /></div>
       <div className="rrow__main">
         <div className="rrow__brand">{p.brand}</div>
-        <div className="rrow__name">{p.name}</div>
+        <div className="rrow__name"><HiName text={p.name} q={hl} /></div>
         <div className="rrow__metarow">
           {badge && <span className="sortval">{badge}</span>}
           <Stars rating={p.rating} reviews={p.reviews} />
@@ -154,12 +179,12 @@ function ResultRow({ p, go, spark, saved, onSave, badge }) {
 }
 
 // ---- result row (compact view) ----------------------------
-function ResultRowCompact({ p, go, saved, onSave, badge, showBadge }) {
+function ResultRowCompact({ p, go, saved, onSave, badge, showBadge, hl }) {
   return (
     <div className="crow" onClick={() => go('product', { id: p.id })}>
       <div className="crow__img"><ProdImg p={p} fill size={18} /></div>
       <span className="crow__brand">{p.brand}</span>
-      <span className="crow__name">{p.name}</span>
+      <span className="crow__name"><HiName text={p.name} q={hl} /></span>
       <span className="crow__drop">{p.drop >= 12 ? <>▼ −{p.drop}%</> : null}</span>
       <span className="crow__meta">{p.rating ? '★ ' + p.rating.toFixed(1) : 'No reviews yet'}</span>
       <span className="crow__meta">{p.shops} shops</span>
@@ -172,13 +197,13 @@ function ResultRowCompact({ p, go, saved, onSave, badge, showBadge }) {
 }
 
 // ---- result card (grid view) ------------------------------
-function ResultCard({ p, go, badge }) {
+function ResultCard({ p, go, badge, hl }) {
   return (
     <div className="pcard" onClick={() => go('product', { id: p.id })}>
       {p.drop >= 12 && <span className="pcard__tag"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
       <CompareBtn p={p} className="pcard__cmp" />
       <div className="pcard__img"><ProdImg p={p} fill size={42} /></div>
-      <div className="pcard__name">{p.name}</div>
+      <div className="pcard__name"><HiName text={p.name} q={hl} /></div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}>{badge && <span className="sortval">{badge}</span>}<Stars rating={p.rating} /><VariantHint p={p} /></div>
       <div className="pcard__foot">
         <div>
@@ -236,6 +261,9 @@ function FList({ entries, cap = 6, scrollAt = 12, searching = false, listClass =
   );
 }
 
+// price fields hold strings ('' = unset); the slider works in numbers
+const numOr = (v, d) => (v !== '' && v != null && isFinite(+v) ? +v : d);
+
 function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBoolFacet }) {
   const brands = base.brands; // brands present in the active result set
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
@@ -283,7 +311,7 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
           ),
         }))} />
       </FGroup>}
-      {pBrand && <FGroup id="brand" title="Brand" nSel={f.brands.length} forceOpen={searching}>
+      {pBrand && brands.length > 0 && <FGroup id="brand" title="Brand" nSel={f.brands.length} forceOpen={searching}>
         <FList searching={searching} entries={brands.filter(pBrand).map(b => ({ on: f.brands.includes(b), node: <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} /> }))} />
       </FGroup>}
       {pPrice && <FGroup id="price" title="Price (kr)" nSel={(f.min !== '' ? 1 : 0) + (f.max !== '' ? 1 : 0)} forceOpen={searching}>
@@ -292,7 +320,9 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
           <span className="pricefields__d">–</span>
           <input type="number" placeholder={String(base.max)} value={f.max} onChange={e => set('max', e.target.value)} />
         </div>
-        <input className="range" type="range" min={base.min} max={base.max} value={f.max || base.max} onChange={e => set('max', e.target.value)} />
+        <RangeSlider min={base.min} max={base.max} label="price"
+          lo={numOr(f.min, base.min)} hi={numOr(f.max, base.max)}
+          onChange={(lo, hi) => { set('min', lo <= base.min ? '' : String(lo)); set('max', hi >= base.max ? '' : String(hi)); }} />
         <div className="pricefields__lbl"><span>kr {fmt(base.min)}</span><span>kr {fmt(base.max)}</span></div>
       </FGroup>}
       {pRating && <FGroup id="rating" title="Rating" nSel={f.rating ? 1 : 0} forceOpen={searching}>
@@ -359,7 +389,9 @@ function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, 
             <span className="pricefields__d">–</span>
             <input type="number" placeholder={String(base.max)} value={f.max} onChange={e => set('max', e.target.value)} />
           </div>
-          <input className="range" type="range" min={base.min} max={base.max} value={f.max || base.max} onChange={e => set('max', e.target.value)} />
+          <RangeSlider min={base.min} max={base.max} label="price"
+            lo={numOr(f.min, base.min)} hi={numOr(f.max, base.max)}
+            onChange={(lo, hi) => { set('min', lo <= base.min ? '' : String(lo)); set('max', hi >= base.max ? '' : String(hi)); }} />
         </div>
       </Dropdown>
       <Dropdown label={f.rating ? 'Rating · ' + f.rating + '+' : 'Rating'} active={!!f.rating}>
@@ -488,7 +520,7 @@ function SortMenu({ fields, field, dir, onPick }) {
 // ===========================================================
 // RESULTS SCREEN
 // ===========================================================
-const emptyFilters = () => ({ brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} });
+const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} });
 function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} window.scrollTo(0, 0); };
@@ -516,6 +548,12 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const _fInit = useRef(true);
   useEffect(() => { if (_fInit.current) { _fInit.current = false; return; } setF(emptyFilters()); setShown(60); }, [query, cat]);
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
+  // the free-text refine narrows the base set first, so brand counts, the price range
+  // and every filter below it read from what's actually matching — but a text that
+  // matches nothing falls back to the unrefined set so the rail keeps real bounds
+  const rToks = refineToks(f.q);
+  const pool = useMemo(() => rToks.length ? baseResults.filter(p => refineMatch(p, rToks)) : baseResults, [baseResults, f.q]);
+  const countPool = pool.length ? pool : baseResults;
   // data-driven per-category facets (window.FACETS is replaced by the boot layer)
   const facetDefs = cat ? ((window.FACETS || {})[cat] || []) : [];
   // counts come from the host when it served this key (every value in the category,
@@ -525,14 +563,16 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     facetDefs.forEach(def => {
       if (def.type !== 'options') return;
       const counts = new Map();
-      const srv = served.fcounts && served.fcounts[def.key];
+      // host-served counts are category-wide; once a refine text narrows the set we
+      // count the rows we hold so brand and spec counts agree with each other
+      const srv = !rToks.length && served.fcounts && served.fcounts[def.key];
       if (srv) srv.forEach(pair => counts.set(pair[0], pair[1]));
-      else baseResults.forEach(p => { const v = fval(p, def.key); if (v === undefined) return; if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1)); else counts.set(v, (counts.get(v) || 0) + 1); });
+      else countPool.forEach(p => { const v = fval(p, def.key); if (v === undefined) return; if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1)); else counts.set(v, (counts.get(v) || 0) + 1); });
       const vals = [...counts.keys()].sort((a, b) => typeof a === 'number' && typeof b === 'number' ? a - b : typeof a === 'number' ? -1 : typeof b === 'number' ? 1 : String(a).localeCompare(String(b)));
       m[def.key] = { vals, counts };
     });
     return m;
-  }, [baseResults, cat, served]);
+  }, [countPool, cat, served, f.q]);
   const setFacet = (key, v) => setF(prev => { const cur = prev.facets[key] || []; const next = cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v]; const fac = { ...prev.facets }; if (next.length) fac[key] = next; else delete fac[key]; return { ...prev, facets: fac }; });
   const setBoolFacet = (key) => setF(prev => { const fac = { ...prev.facets }; if (fac[key]) delete fac[key]; else fac[key] = true; return { ...prev, facets: fac }; });
 
@@ -566,17 +606,17 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   useEffect(() => { if (!sortFields.some(s => s.id === sort)) { setSort('best'); setDir('asc'); } }, [sortFields, sort]);
   const badgeOf = sortField.badge ? (p) => sortField.badge(p, sortDir) : null;
 
-  const prices = baseResults.map(p => p.best).filter(n => n != null && isFinite(n));
+  const prices = countPool.map(p => p.best).filter(n => n != null && isFinite(n));
   const base = {
     min: prices.length ? Math.floor(Math.min(...prices) / 100) * 100 : 0,
     max: prices.length ? Math.ceil(Math.max(...prices) / 100) * 100 : 1000,
     cat,
-    byBrand: baseResults.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
+    byBrand: countPool.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
   };
   base.brands = Object.keys(base.byBrand).sort();
   base.cat = baseSel.cat;
 
-  let list = baseResults.filter(p => {
+  let list = pool.filter(p => {
     if (f.brands.length && !f.brands.includes(p.brand)) return false;
     if ((f.min || f.max) && p.best == null) return false;
     if (f.min && p.best < +f.min) return false;
@@ -615,8 +655,10 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     setLoadingMore(false);
   };
 
+  const scope = cat ? cat : query ? 'these results' : 'all products';
   const title = cat ? cat : query ? <>Results for <span className="q">“{query}”</span></> : 'All products';
   const activeChips = [
+    ...(f.q ? [{ k: 'q', label: 'name: “' + f.q + '”', clear: () => set('q', '') }] : []),
     ...f.brands.map(b => ({ k: 'brand:' + b, label: b, clear: () => set('brands', f.brands.filter(x => x !== b)) })),
     ...(f.min ? [{ k: 'min', label: 'min kr ' + fmt(+f.min), clear: () => set('min', '') }] : []),
     ...(f.max ? [{ k: 'max', label: 'max kr ' + fmt(+f.max), clear: () => set('max', '') }] : []),
@@ -646,9 +688,10 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
           {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />}
           <div className="results__title">
             <h1>{title}</h1>
+            <RefineField value={f.q} onChange={v => { set('q', v); setShown(60); }} scope={scope} n={list.length} />
           </div>
           <div className="results__bar">
-            <div className="count">{catTotal != null && catTotal > list.length ? <>{fmt(list.length)} of {fmt(catTotal)} products</> : <>{fmt(list.length)} {list.length === 1 ? 'product' : 'products'}</>} · {list.reduce((t, p) => t + p.shops, 0)} offers tracked</div>
+            <div className="count">{rToks.length ? <>{fmt(list.length)} {list.length === 1 ? 'product' : 'products'} matching “{f.q}”</> : catTotal != null && catTotal > list.length ? <>{fmt(list.length)} of {fmt(catTotal)} products</> : <>{fmt(list.length)} {list.length === 1 ? 'product' : 'products'}</>} · {list.reduce((t, p) => t + p.shops, 0)} offers tracked</div>
             <div className="results__sort">
               <span className="results__sortlbl">Sort</span>
               <SortMenu fields={sortFields} field={sortField.id} dir={sortDir} onPick={pickSort} />
@@ -675,21 +718,30 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
           {list.length === 0 ? (
             <div className="empty">
               <div className="empty__ic"><Icon name="search-x" size={40} /></div>
-              <h2>No products match those filters</h2>
-              <p>Try widening your price range or clearing a filter.</p>
-              <Btn variant="primary" onClick={() => setF(emptyFilters())}>Clear filters</Btn>
+              {rToks.length ? (<>
+                <h2>No name in {scope} matches “{f.q}”</h2>
+                <p>Try fewer words — this searches product names only.</p>
+                <div className="empty__acts">
+                  <Btn variant="primary" onClick={() => set('q', '')}>Clear text</Btn>
+                  {activeChips.length > 1 && <Btn variant="ghost" onClick={() => setF(emptyFilters())}>Clear everything</Btn>}
+                </div>
+              </>) : (<>
+                <h2>No products match those filters</h2>
+                <p>Try widening your price range or clearing a filter.</p>
+                <Btn variant="primary" onClick={() => setF(emptyFilters())}>Clear filters</Btn>
+              </>)}
             </div>
           ) : view === 'grid' ? (
             <div className="pgrid">
-              {list.slice(0, shown).map(p => <ResultCard key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} />)}
+              {list.slice(0, shown).map(p => <ResultCard key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} hl={f.q} />)}
             </div>
           ) : view === 'compact' ? (
             <div className={'rlist rlist--compact' + (badgeOf ? ' has-sv' : '')}>
-              {list.slice(0, shown).map(p => <ResultRowCompact key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} showBadge={!!badgeOf} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
+              {list.slice(0, shown).map(p => <ResultRowCompact key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} showBadge={!!badgeOf} hl={f.q} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
             </div>
           ) : (
             <div className="rlist">
-              {list.slice(0, shown).map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} badge={badgeOf && badgeOf(p)} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
+              {list.slice(0, shown).map(p => <ResultRow key={p.id} p={p} go={go} spark={sparklines} badge={badgeOf && badgeOf(p)} hl={f.q} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
             </div>
           )}
           {list.length > 0 && (localMore || serverMore) && (
@@ -918,4 +970,4 @@ function ProductPage({ go, id }) {
   );
 }
 
-Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, Results, ProductPage, ResultRow, ResultRowCompact, ResultCard, Stars });
+Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, Results, ProductPage, ResultRow, ResultRowCompact, ResultCard, Stars, HiName, refineToks, refineMatch });

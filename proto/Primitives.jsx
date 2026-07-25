@@ -153,6 +153,47 @@ function HistoryChart({ points, low }) {
   );
 }
 
+// --- Dual-thumb range slider (min AND max are scrubbable) ----
+// Two stacked native inputs keep keyboard + a11y for free; the wrapper adds
+// click-and-drag on the bare track (moves whichever thumb is nearer).
+function niceStep(span) { const raw = (span || 1) / 100; const pow = Math.pow(10, Math.floor(Math.log10(raw || 1))); const n = raw / pow; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow; }
+function RangeSlider({ min, max, step, lo, hi, onChange, label = 'value' }) {
+  const wrap = useRef(null);
+  const span = (max - min) || 1;
+  const st = step || Math.max(1, niceStep(span));
+  const clamp = v => Math.min(max, Math.max(min, isFinite(v) ? v : min));
+  const pct = v => ((clamp(v) - min) / span) * 100;
+  const a = pct(lo), b = pct(hi);
+  const drag = (e) => {
+    if (e.target !== wrap.current && e.target.tagName === 'INPUT') return; // native thumb drag
+    const r = wrap.current.getBoundingClientRect();
+    const valAt = x => clamp(min + Math.round((((x - r.left) / r.width) * span) / st) * st);
+    const v0 = valAt(e.clientX);
+    const pickLo = Math.abs(v0 - lo) <= Math.abs(v0 - hi);
+    let cur = { lo: clamp(lo), hi: clamp(hi) };
+    const move = (ev) => {
+      const v = valAt(ev.clientX);
+      cur = pickLo ? { lo: Math.min(v, cur.hi), hi: cur.hi } : { lo: cur.lo, hi: Math.max(v, cur.lo) };
+      onChange(cur.lo, cur.hi);
+    };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+    move(e); e.preventDefault();
+  };
+  return (
+    <div className="range2" ref={wrap} onPointerDown={drag}>
+      <div className="range2__track" />
+      <div className="range2__fill" style={{ left: a + '%', right: (100 - b) + '%' }} />
+      <input className="range2__in" type="range" min={min} max={max} step={st} value={clamp(lo)}
+        aria-label={'Minimum ' + label} style={{ zIndex: a > 55 ? 4 : 3 }}
+        onChange={e => onChange(Math.min(+e.target.value, clamp(hi)), clamp(hi))} />
+      <input className="range2__in" type="range" min={min} max={max} step={st} value={clamp(hi)}
+        aria-label={'Maximum ' + label}
+        onChange={e => onChange(clamp(lo), Math.max(+e.target.value, clamp(lo)))} />
+    </div>
+  );
+}
+
 // ===========================================================
 // DATA — Norwegian shops + products
 // ===========================================================
@@ -195,4 +236,4 @@ PRODUCTS.forEach(p => {
 const CATEGORIES = ['Audio', 'Phones', 'TV', 'Gaming', 'Home', 'Computers', 'Toys', 'E-readers', 'Kitchen'];
 const POPULAR = ['airpods pro', 'rtx 4070', 'robot vacuum', 'espresso machine', 'air fryer'];
 
-Object.assign(window, { ProdImg, fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, StockBadge, SHOPS, PRODUCTS, CATEGORIES, POPULAR });
+Object.assign(window, { ProdImg, fmt, metaOf, relTime, trustLine, Icon, Price, Tag, Delta, Btn, Sparkline, HistoryChart, StockBadge, RangeSlider, SHOPS, PRODUCTS, CATEGORIES, POPULAR });
