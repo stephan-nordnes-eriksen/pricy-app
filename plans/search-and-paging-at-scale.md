@@ -1,8 +1,8 @@
 # Search and listing quality at 14k products
 
 Found 2026-07-25. The catalog went 647 → 14,059 rows in one session; these
-are the query-side limits that scale exposed. One of them was a live bug and
-is already fixed (recorded here for context); the rest are open.
+are the query-side limits that scale exposed. All four are now fixed — kept
+as the record of what scale broke and what each fix cost.
 
 ## Fixed already (2026-07-25, commit "search: stop matching the category's
 ## lucide icon name")
@@ -15,7 +15,7 @@ smartphone, laptop); wrong once the icon set became sofa/bike/book/car/
 shirt/camera/pill/gem/tent. `$.icon` is now removed from the search blob
 alongside `$.specs`. Test asserts it.
 
-## Open 1 — no diacritic folding
+## Done 1 — no diacritic folding (2026-07-25, commit 59f8703)
 
 `searchIds` (worker/index.js:563) is a substring LIKE over lowercased meta.
 Norwegian catalogs are full of æ/ø/å, and users type without them:
@@ -25,7 +25,11 @@ Norwegian catalogs are full of æ/ø/å, and users type without them:
 
 Same for søljer/soljer, møbler/mobler, kjøkken/kjokken.
 
-**Fix shape:** an ASCII-folded copy of the searchable text in `kw` (`kwOf`
+**Fixed, and NOT the way this said:** folding happens in the QUERY — the same
+`replace()` chain (`foldSql`/`foldJs`) on both sides of the LIKE — so there is
+no stored column and no backfill, and hidden plus future rows are covered for
+free. Costs a full-blob fold per row per token (15 → 55 ms over 14k rows).
+Original fix shape, for the record: an ASCII-folded copy of the text in `kw` (`kwOf`
 already builds that field at promotion), and fold the query the same way.
 Note this is a **migration, not a one-liner** — `kw` is written once at
 promotion and 13,705 rows already have an unfolded one. Needs a backfill
@@ -33,7 +37,7 @@ pass, and auto-promoted rows are guarded against re-promotion
 (`meta.auto` + hidden checks), so the backfill has to write `kw` directly
 rather than re-run promotion.
 
-## Open 2 — search is unranked, capped at 100
+## Done 2 — search is unranked, capped at 100 (2026-07-25, commit 59f8703)
 
 `LIMIT 100` with no ORDER BY: results come back in rowid order, which is
 "whichever shop was crawled first". A search for a specific product can miss
@@ -41,9 +45,12 @@ it entirely if 100 other rows matched the substring earlier in the table.
 There is no relevance signal at all — an exact name match ranks below a row
 that merely mentions the token in its `srcCat`.
 
-**Fix shape:** rank before truncating. Cheapest useful signal is match
-position/field (name > brand > kw > srcCat) plus offer count. SQLite FTS5
-is the real answer if this becomes the product's main surface.
+**Fixed:** `ORDER BY` scores word-start-in-name (4) > substring-in-name (2) >
+brand (1) > mentioned anywhere in the blob (0), ties keep rowid so curated rows
+stay first. Measured: q=ring 75 → 96 of 100 rows in Jewelry, q=kjokken 20 → 95
+in Kitchen. **Still LIMIT 100 with no paging** — search is the one surface that
+can't reach past its cap. SQLite FTS5 is the real answer if search becomes the
+product's main surface.
 
 ## Done 3 — list queries capped at 400, no paging (2026-07-25)
 
@@ -93,3 +100,15 @@ pages. Kept whole because the tools want the whole thing:
 already read from `tools/.ingest-token` (`enrich.mjs` only ever used
 `?hidden=1`, which is untouched). Ops one-liners need
 `-H "authorization: Bearer $(cat tools/.ingest-token)"` from now on.
+
+## What this plan did not close
+
+- **Search still truncates at 100** with no `offset` (Done 2). The list
+  branches page; search doesn't.
+- **Filters and sort are client-side, over hydrated rows only.** Now that a
+  category admits it has 1,387 products and shows 400, "Price: cheapest first"
+  means cheapest *of the loaded page*. Fixing it means the sort/filter state
+  travelling to the server (`sort=`/`facet=` on `/api/products`), which is a
+  bigger change than paging was.
+- **`/api/products?hidden=1` is still unauthenticated** — ops-only listing of
+  discovered rows, same class as the dump that got gated in Done 4.
