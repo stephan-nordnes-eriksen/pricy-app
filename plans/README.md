@@ -33,9 +33,10 @@ D. [search-and-paging-at-scale](search-and-paging-at-scale.md) — no
    diacritic folding ("hundefor" finds nothing), unranked LIMIT 100, and
    ~70% of a big category unreachable behind the 400-row cap. Includes the
    `meta.icon` search bug already fixed on 2026-07-25, for context.
-E. [facets-for-the-new-categories](facets-for-the-new-categories.md) — 24
-   of 31 categories have no facet defs, and they're the ones holding the
-   most products. Compounds D: filtering is the only way past the cap.
+E. ~~facets-for-the-new-categories~~ — done 2026-07-25, see
+   [plans-implemented](../plans-implemented/facets-for-the-new-categories.md):
+   all 31 categories declare facets and derive their values from the product
+   name (`worker/facetrules.js`).
 F. [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md) — `hidden:1`
    means "unlisted", not "hidden": a demoted product keeps a working PDP.
    Decide whether that's the intent, then fix the code or the docs.

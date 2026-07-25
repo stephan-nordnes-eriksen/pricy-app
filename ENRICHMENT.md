@@ -94,9 +94,13 @@ curl -sX PATCH "$BASE/api/admin/products/<id>" \
   -d '{"facets":{"size":65,"panel":"OLED","refresh":120}}'
 ```
 
-Products without facets still filter via their demo spec strings where
-those exist; `facets` wins when both are present. `"facets": null`
-deletes the whole object.
+Products without facets still filter via values derived from their name
+(`worker/facetrules.js`, every category) and their demo spec strings where
+those exist; a PATCHed `facets` wins over both. `"facets": null` deletes the
+whole object — the name-derived values come back, since they're computed per
+request, not stored. So the curl below is for **corrections and the values
+no name carries** (panel, refresh rate, ANC), not for bulk typing: a rule
+fix in facetrules.js beats a thousand PATCHes.
 
 The `type` facet is the sub-category (SUBCATS-PLAN.md) — use the
 canonical values, never invent near-duplicates (each new spelling becomes
@@ -104,10 +108,12 @@ its own filter option): Audio `Headphones`/`Earbuds`/`Speakers`/
 `Soundbars`; Gaming `Consoles`/`Handhelds`/`Controllers`/`Games`;
 Computers `Laptops`/`Tablets`/`Monitors`; Home `Vacuums`/`Smart lighting`/
 `Media streamers`/`Security`/`Small appliances`; Kitchen `Coffee makers`/
-`Air fryers`/`Microwaves`/`Multicookers`. Seed rows already carry theirs
-(extra.json / build.js `DEMO_TYPE`) — only discovered `ean-*` rows need
-the curl. Product kind unclear from the name? Leave it untyped (it just
-won't match type selections) — a wrong sub-category is worse than none.
+`Air fryers`/`Microwaves`/`Multicookers`. The other 26 categories' values
+are whatever `worker/facetrules.js` emits for that cat — read them there
+before typing a row by hand. Seed rows already carry theirs (extra.json /
+build.js `DEMO_TYPE`). Product kind unclear from the name? Leave it untyped
+(it just won't match type selections) — a wrong sub-category is worse than
+none.
 
 ### 3. Verify
 

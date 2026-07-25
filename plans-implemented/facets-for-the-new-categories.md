@@ -1,5 +1,20 @@
 # 24 of 31 categories render an empty filter column
 
+**Implemented 2026-07-25.** All 31 categories declare facets
+(`worker/facets.json`, 2–7 each) and every one of them renders a non-empty
+filter column on a real prod slice — verified by replaying the 14,118-row
+`/api/catalog.json` dump through the rules.
+
+Deviation from the plan below: values are derived from the product **name**
+in `worker/facetrules.js` and applied in `shapeRows`, not from `srcCat` at
+promotion. Two reasons — `srcCat` is only stored on rows that were hidden at
+some point (auto-promotion drops it into meta on the way past, and curated
+rows never had one), and deriving at read means a rule fix reaches all 14k
+rows on the next deploy instead of needing a 14k-row backfill. `type` is one
+key among many: the name also carries colour, material, size/volume/weight,
+audience, and a dozen category-specific attributes. Explicit `meta.facets`
+still wins, so the enrichment path is unchanged.
+
 Found 2026-07-25, after cats.json went from 10 categories to 31.
 
 ## Current state

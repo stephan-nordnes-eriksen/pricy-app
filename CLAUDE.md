@@ -67,7 +67,18 @@ Two Claude Design projects feed this repo:
   derive from values present, spec strings are the fallback via `fval`,
   the old hardcoded NC filter is gone); boot's `hydrateCatalog` swaps the
   served registry in wholesale. New filter = a facets.json entry (+ data
-  via enrich curls). No upstream edit. Per-product `specs` ride the same
+  via enrich curls). No upstream edit. **All 31 cats declare facets and
+  most of their VALUES are derived from the product name** (2026-07-25,
+  `worker/facetrules.js`: per-cat regex tables → `{type, color, material,
+  size, volume, weight, audience, …}`), merged UNDER `meta.facets` in
+  `shapeRows` — explicit enrichment always wins. Derived, not stored, so a
+  rule fix reaches all 14k rows on the next deploy with no backfill; the
+  cost is that `catMeta`'s `meta.types` SQL aggregate (Browse type chips)
+  only counts stored values, and Browse falls back to counting the
+  hydrated slice. build.js fails if a rule derives a key facets.json
+  doesn't declare. Tune rules against a real crawl, never a sample —
+  replay `/api/catalog.json` through `deriveFacets` and read the misses.
+  Per-product `specs` ride the same
   meta-merge PATCH (bulk: `node tools/apply-specs.mjs specs.json`) — boot
   feeds `r.specs` into the prototype's SPECS, so the PDP Specifications
   section renders for any product whose cat has a SPEC_KINDS schema

@@ -156,6 +156,16 @@ Then run the sync ritual (get_file pulls → `npm test` → commit).
   facet values at ingest from source names/JSON-LD ('65"' in a TV name →
   size: 65), same spirit as auto-promotion.
 
+## Phase E — all 31 categories (2026-07-25)
+
+**RESOLVED.** `worker/facets.json` covers every category in cats.json (2–7
+facets each), and `worker/facetrules.js` derives the values from the product
+name — the only per-product signal 13.7k of the 14.1k rows carry. Applied in
+`shapeRows` under `meta.facets`, so enrichment still outranks it and no
+backfill exists to run. Verified by replaying the prod `/api/catalog.json`
+dump: every category renders a non-empty filter column, 1.9 ms per 400-row
+slice. Details: plans-implemented/facets-for-the-new-categories.md.
+
 ## Phase D — per-category coverage (researched 2026-07-23)
 
 Current `worker/facets.json` only covers TV/Audio/Phones(refresh). Went
