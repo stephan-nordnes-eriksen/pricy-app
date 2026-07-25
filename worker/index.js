@@ -572,21 +572,25 @@ const chunked = async (ids, run, size = 45) => {
 // most rows one list query will return (see the cat= branch for why)
 const PAGE_MAX = 400;
 
-// auto-discovered products carry meta.hidden = 1 until enriched — every
-// user-facing query excludes them; direct id fetches (rowsFor) still work
-// so ops/enrichment can inspect them
+// auto-discovered products carry meta.hidden = 1 until enriched, and admin
+// PATCH {hidden: 1} demotes a bad row. hidden means NOT SERVED — to any
+// normal caller, on any route, direct id fetches included (an `ean-*` id is
+// derived from the barcode, so the backlog was enumerable by construction,
+// and a demoted product kept a working PDP). Ops opt back in with the
+// INGEST_TOKEN bearer: rowsFor's `hidden` flag, set by the two gated branches.
 const visible = (col = 'meta') => `json_extract(${col}, '$.hidden') IS NOT 1`;
 
 // Rows for a set of product ids, in the catalog.json row shape. expand=true
 // (the PDP/watchlist case) resolves child ids (`head~combo`) to their head,
 // includes every child of each head, and adds ≤4 same-category head
 // neighbors so the PDP's "More in {cat}" has rows to show.
-async function rowsFor(db, ids, { expand = true } = {}) {
+async function rowsFor(db, ids, { expand = true, hidden = false } = {}) {
   const heads = [...new Set(ids.map(id => id.includes('~') ? id.slice(0, id.indexOf('~')) : id))];
   if (!heads.length) return [];
+  const vis = hidden ? '' : ` AND ${visible()}`;
   const prods = expand
-    ? await chunked(heads, async c => (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(c)}) OR json_extract(meta, '$.family') IN (${ph(c)}) ORDER BY rowid`).bind(...c, ...c).all()).results)
-    : (await chunked(heads, async c => (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(c)})`).bind(...c).all()).results))
+    ? await chunked(heads, async c => (await db.prepare(`SELECT id, meta FROM products WHERE (id IN (${ph(c)}) OR json_extract(meta, '$.family') IN (${ph(c)}))${vis} ORDER BY rowid`).bind(...c, ...c).all()).results)
+    : (await chunked(heads, async c => (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(c)})${vis}`).bind(...c).all()).results))
         .sort((a, b) => heads.indexOf(a.id) - heads.indexOf(b.id)); // caller's order is the ranking (sort=drop)
   if (expand) {
     const cats = [...new Set(prods.filter(r => heads.includes(r.id)).map(r => JSON.parse(r.meta).cat).filter(Boolean))];
@@ -1345,19 +1349,25 @@ export default {
         filters: listFilters(p),
       };
       let products, extra;
+      // the ops bearer is the only way to see meta.hidden rows (see visible())
+      const denied = ingestAuth(request, env);
+      const ops = !denied;
       if (p.get('hidden') === '1') {
         // enrichment listing (tools/enrich.mjs): auto-discovered rows awaiting
-        // a hand-written worker/extra.json entry. Not used by the SPA.
+        // a hand-written worker/extra.json entry. Not used by the SPA — it is
+        // the undiscovered backlog, so it is gated like the catalog.json dump.
+        if (denied) return denied;
         const { results } = await db.prepare(`SELECT id FROM products WHERE json_extract(meta, '$.hidden') = 1 ORDER BY rowid LIMIT 200`).all();
         // 90-id chunks: D1 caps bound parameters at 100 per statement
         products = [];
         for (let i = 0; i < results.length; i += 90) {
-          products.push(...await rowsFor(db, results.slice(i, i + 90).map(r => r.id), { expand: false }));
+          products.push(...await rowsFor(db, results.slice(i, i + 90).map(r => r.id), { expand: false, hidden: true }));
         }
       } else if (p.get('ids') != null) {
         const ids = p.get('ids').split(',').map(s => s.trim()).filter(Boolean);
         if (ids.length > 100) return json({ error: 'too many ids (max 100)' }, 400);
-        products = await rowsFor(db, ids);
+        // ops needs a specific hidden row too — the listing above stops at 200
+        products = await rowsFor(db, ids, { hidden: ops });
       } else if (p.get('q') != null) {
         products = await rowsFor(db, await searchIds(db, p.get('q')), { expand: false });
       } else if (p.get('top') === 'drop') {

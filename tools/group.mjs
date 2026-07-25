@@ -44,7 +44,7 @@ function tokensOf(p) {
   return { storage, color, fp: [...new Set(words.filter(w => !COLORS[w]))].join(' ') };
 }
 
-const hidden = (await (await fetch(`${base}/api/products?hidden=1`)).json()).products ?? [];
+const hidden = (await (await fetch(`${base}/api/products?hidden=1`, { headers: auth })).json()).products ?? [];
 const visible = (await (await fetch(`${base}/api/catalog.json`, { headers: auth })).json()).products ?? [];
 // cluster pool: every discovered row, plus visible catalog heads so a
 // discovered SKU can match an existing product's family

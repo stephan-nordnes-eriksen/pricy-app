@@ -3,7 +3,9 @@
 // print ready-to-run admin curls (promote / alias-to-variant) — no deploy
 // needed. Full runbook: ENRICHMENT.md.
 const base = process.env.PRICY_URL || 'https://pricy.no';
-const { products } = await (await fetch(`${base}/api/products?hidden=1`)).json();
+// the hidden listing is bearer-gated (INGEST_TOKEN, falls back to the file)
+const auth = { authorization: `Bearer ${process.env.INGEST_TOKEN || (await import('node:fs')).readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim()}` };
+const { products } = await (await fetch(`${base}/api/products?hidden=1`, { headers: auth })).json();
 if (!products?.length) { console.log('no hidden products — nothing to enrich'); process.exit(0); }
 console.log(`BASE=${base}; TOKEN=$(cat tools/.ingest-token)\n`);
 const H = `-H "authorization: Bearer $TOKEN" -H 'content-type: application/json'`;

@@ -879,7 +879,7 @@ test('adtraction source: EAN-matched feed rows update offers with deep link; unk
   assert.strictEqual(after.length, before.length, 'discovered products must stay out of the visible catalog');
 
   // the unknown EAN was discovered: hidden product with the feed's name + offer
-  const hidden = (await (await call('/api/products?hidden=1')).json()).products;
+  const hidden = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products;
   const noob = hidden.find(p => p.id === 'ean-7091234567890');
   assert.ok(noob, 'an unknown feed EAN must create a hidden product');
   assert.strictEqual(noob.name, 'Not in catalog');
@@ -1347,7 +1347,7 @@ test('POST /api/ingest discovery: unknown ean- rows create hidden products, excl
   assert.strictEqual((await (await call('/api/products?q=mystery')).json()).products.length, 0, 'hidden products must not be searchable');
   assert.ok(!(await catBody(call)).some(p => p.id === 'ean-7099999999991'), 'hidden products stay out of the ops dump');
 
-  const widget = (await (await call('/api/products?hidden=1')).json()).products.find(p => p.id === 'ean-7099999999991');
+  const widget = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products.find(p => p.id === 'ean-7099999999991');
   assert.ok(widget, 'the hidden listing must surface the discovered product');
   assert.strictEqual(widget.name, 'Mystery Widget 3000');
   assert.strictEqual(widget.brand, 'Acme');
@@ -1378,7 +1378,7 @@ test('eans table routes ingest rows; admin alias re-homes a discovered product a
   assert.strictEqual((await push([{ product_id: `ean-${ean.replace(/^0+/, '')}`, shop: 'Komplett', price: 2222, name: 'whatever the feed calls it' }])).status, 200);
   const mapped = (await catBody(call)).find(p => p.id === pid);
   assert.strictEqual(mapped.offers.find(o => o.shop === 'Komplett').price, 2222, 'seeded eans.json mapping must route the row');
-  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0, 'no hidden product for a mapped EAN');
+  assert.strictEqual((await (await call('/api/products?hidden=1', { token: call.token })).json()).products.length, 0, 'no hidden product for a mapped EAN');
 
   // discover a new product with offers + history + a watch (Milrab is not a
   // seed shop; Power is — the alias below must handle both)
@@ -1401,13 +1401,13 @@ test('eans table routes ingest rows; admin alias re-homes a discovered product a
   const xm5 = (await catBody(call)).find(p => p.id === 'xm5');
   assert.strictEqual(xm5.offers.find(o => o.shop === 'Milrab').price, 500, 'collected offers migrate to the target');
   assert.strictEqual(xm5.offers.find(o => o.shop === 'Power').price, 3169, 'a shop the target already has keeps the target\'s offer');
-  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0, 'the orphan row is gone');
+  assert.strictEqual((await (await call('/api/products?hidden=1', { token: call.token })).json()).products.length, 0, 'the orphan row is gone');
   assert.deepStrictEqual((await (await call('/api/me', { cookie })).json()).watches.map(w => w.id), ['xm5'], 'watches follow the migration');
 
   // future rows for that EAN land straight on the target
   await push([{ product_id: 'ean-7099999999991', shop: 'Elkjøp', price: 470, name: 'Mystery Widget 3000' }]);
   assert.strictEqual((await catBody(call)).find(p => p.id === 'xm5').offers.find(o => o.shop === 'Elkjøp').price, 470, 'runtime alias routes future ingests');
-  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0);
+  assert.strictEqual((await (await call('/api/products?hidden=1', { token: call.token })).json()).products.length, 0);
 });
 
 test('admin PATCH: validated meta merge — manual promote and demote without a deploy', async () => {
@@ -1520,13 +1520,23 @@ test('auto-promotion: a hidden row with name+CATMAP-mapped srcCat goes live (bra
   const brandless = (await (await call('/api/products?q=nameless phone')).json()).products.find(p => p.id === 'ean-7099999999994');
   assert.ok(brandless, 'brandless-but-mapped product still auto-promotes');
   assert.strictEqual(brandless.brand, 'Unspecified');
-  const hiddenIds = (await (await call('/api/products?hidden=1')).json()).products.map(p => p.id);
+  const hiddenIds = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products.map(p => p.id);
   assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999996'], 'unclassifiable and blocklisted rows stay hidden');
 
   // a human demotion out-ranks the machine: auto:1 + hidden:1 never re-promotes
   await req('/api/admin/products/ean-7099999999993', 'PATCH', { hidden: 1 });
   await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Google Pixel 9 128 GB', brand: 'Google', srcCat: 'Mobiltelefoner' }]);
   assert.ok(!(await (await call('/api/products?q=pixel 9')).json()).products.some(p => p.id === 'ean-7099999999993'), 'demoted product must not re-promote');
+
+  // …and demotion takes the PDP down too: `ids=` used to serve hidden rows in
+  // full, so a demoted product kept a working product page and the whole
+  // ean-* backlog was readable by guessing barcodes. Ops keeps its access
+  // through the bearer, which is now also required for the hidden listing.
+  const byId = async (opts) => (await (await call('/api/products?ids=ean-7099999999993', opts)).json()).products;
+  assert.ok(!(await byId()).some(p => p.id === 'ean-7099999999993'), 'a demoted product must not be readable at its PDP url');
+  assert.ok(!(await byId()).some(p => p.hidden === 1), 'no hidden row rides along in the PDP neighbour padding');
+  assert.ok((await byId({ token: call.token })).some(p => p.id === 'ean-7099999999993'), 'the ops bearer still reads hidden rows by id');
+  assert.strictEqual((await call('/api/products?hidden=1')).status, 401, 'the hidden listing is bearer-gated');
 });
 
 // The scale fix (2026-07-25): a brand-new shop with NO CATMAP entry at all must
@@ -1549,7 +1559,9 @@ test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free 
     { product_id: 'ean-7099999999903', shop: 'Musti', price: 49, name: 'Håndteringsavgift', brand: 'Musti', srcCat: 'Hundefôr' },
   ]);
 
-  const of = async (id) => (await (await call(`/api/products?ids=${id}`)).json()).products[0];
+  // token'd: half these ids are expected to stay hidden, and `ids=` only
+  // serves hidden rows to ops (the neighbour padding makes [0] unreliable too)
+  const of = async (id) => (await (await call(`/api/products?ids=${id}`, { token: call.token })).json()).products.find(p => p.id === id);
   assert.strictEqual((await of('p-bergans-slingsby-vindjakke'))?.cat, 'Fashion', 'gtin-free slug row goes live off its category label');
   assert.strictEqual((await of('ean-7099999999901'))?.cat, 'Pets');
   assert.strictEqual((await of('ean-7099999999902'))?.hidden, 1, 'a good name under an unmapped label stays hidden');
@@ -1604,7 +1616,7 @@ test('alias with meta creates a variant child: data re-homed, child rides its he
   assert.strictEqual(child.family, 'iphone');
   assert.strictEqual(child.vlabel, '256 GB Teal');
   assert.strictEqual(child.offers.find(o => o.shop === 'Power').price, 11990, 'collected offers moved onto the child');
-  assert.strictEqual((await (await call('/api/products?hidden=1')).json()).products.length, 0, 'orphan gone');
+  assert.strictEqual((await (await call('/api/products?hidden=1', { token: call.token })).json()).products.length, 0, 'orphan gone');
 
   // future ingests of that EAN land on the child
   await req('/api/ingest', 'POST', [{ product_id: 'ean-7099999999997', shop: 'CDON', price: 11790, name: 'iPhone 15 256GB Teal' }]);
