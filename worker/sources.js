@@ -192,13 +192,20 @@ export function parseSitemapXml(xml) {
 // category URLs into separate named sub-sitemaps, so filtering the INDEX
 // entries by name (sitemapFilter) already isolates the product sub-sitemap(s)
 // without needing a per-shop URL-path pattern.
-async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|vare|artikkel/i } = {}) {
-  const res = await fetch(sitemapUrl, { headers: { 'user-agent': UA } });
+async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|vare|artikkel/i, maxSitemaps = 40 } = {}) {
+  const res = await fetch(sitemapUrl, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(60_000) });
   if (!res.ok) throw new Error(`sitemap fetch ${res.status}`);
   const { isIndex, locs } = parseSitemapXml(await res.text());
   if (isIndex) {
-    const subs = locs.filter(u => sitemapFilter.test(u));
-    const nested = await Promise.all(subs.map(u => sitemapUrls(u, { pathFilter, sitemapFilter })));
+    // Bounded: a big shop (Hobbii — one sub-sitemap per yarn colour) can list
+    // hundreds of sub-sitemaps, and walking them all downloaded so much XML
+    // the crawl simply never reached a product page. We only ever sample
+    // `limit` URLs out of the result anyway, so more sub-sitemaps buys
+    // nothing but wall-clock.
+    const all = locs.filter(u => sitemapFilter.test(u));
+    const subs = all.slice(0, maxSitemaps);
+    if (all.length > subs.length) console.warn(`ingest: ${sitemapUrl} lists ${all.length} sub-sitemaps, walking the first ${subs.length}`);
+    const nested = await Promise.all(subs.map(u => sitemapUrls(u, { pathFilter, sitemapFilter, maxSitemaps })));
     return [...new Set(nested.flat())];
   }
   return [...new Set(pathFilter ? locs.filter(u => pathFilter.test(u)) : locs)];
