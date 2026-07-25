@@ -900,7 +900,8 @@
       "sitemap": "https://www.kjell.com/sitemap.xml",
       "sitemapFilter": ".",
       "limit": 400,
-      "delayMs": 400
+      "delayMs": 400,
+      "pathFilter": "/no/"
     }
   },
   "Milrab": {
