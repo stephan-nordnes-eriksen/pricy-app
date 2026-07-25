@@ -41,19 +41,25 @@ F. [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md) — `hidden:1`
    means "unlisted", not "hidden": a demoted product keeps a working PDP.
    Decide whether that's the intent, then fix the code or the docs.
 
-G. [api-latency-round-trips](api-latency-round-trips.md) — a category page
-   takes **~950 ms on prod**, and ~600 ms of it is `rowsFor` issuing 36
-   sequential D1 queries for one 400-row page (9 id-chunks × 4 query
-   families). Not caused by any recent change; nobody had timed prod. The fix
-   is `batch()`/`Promise.all` over work that is already independent, then
-   caching `catMeta`'s 5 round trips. Measured 2026-07-25.
+G. ~~api-latency-round-trips~~ — **done 2026-07-26**, five fixes, all still
+   in [api-latency-round-trips](api-latency-round-trips.md) as the record. A
+   category page went **954 → 275 ms**, a PDP fetch 318 → 122, a search
+   416 → 139. What remains is
+   [read-path-whats-left](read-path-whats-left.md) — leftovers plus the four
+   invariants those fixes introduced, each of which fails silently. Read that
+   before touching the query layer.
 
-Not a backlog item, but read it before any performance change:
-[api-read-path-performance](api-read-path-performance.md) — where
-`/api/products`' CPU goes (measured in process), the optimisations already
-priced and rejected, and the harness that produced the numbers. It ranks
-`catMeta` first; that holds for CPU only. For wall-clock, G above wins — the
-two files are cross-linked so neither gets read alone.
+Not backlog items, but read them before any performance change:
+- [api-latency-round-trips](api-latency-round-trips.md) — what each of the
+  five actually turned out to be (none matched the standing estimate), and
+  the measurement method that found them: warm curl medians, `wrangler dev
+  --remote` for a real-D1 A/B without deploying, and D1's own
+  `sql_duration_ms`/`rows_read` to split server-side SQL from the rest.
+- [api-read-path-performance](api-read-path-performance.md) — where
+  `/api/products`' CPU goes (measured in process) and the optimisations
+  already priced and rejected. Its rankings are **hypotheses to measure, not
+  conclusions**: it sees neither round trips nor D1-side SQL cost, and it
+  ranked all five of G's fixes wrong.
 
 **Excluded by decision** (planned elsewhere or parked):
 - BankID login (parked, PLAN.md 4b) — fake button stays working.
