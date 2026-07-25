@@ -13,7 +13,7 @@ re-litigates a trade already priced.
 > one for "which algorithm", that one for "why is it slow".
 >
 > Everything that file listed shipped 2026-07-26 — a category page is now
-> 279 ms. §1 and §4 below are done; §2 stands; §3's SQL half got an index,
+> 271 ms. §1 and §4 below are done; §2 stands; §3's SQL half got an index,
 > its JS half stands.
 
 Written 2026-07-25, at 14,059 heads / 14,156 offers / 50 shops / 31

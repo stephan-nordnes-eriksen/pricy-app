@@ -4,28 +4,35 @@ Found 2026-07-25, measuring the freshly deployed server-side sort/filter
 against live pricy.no. Nothing here was caused by that change — `cat=Toys` with
 no sort measured the same. It had always been this slow; nobody had timed prod.
 
-**All four fixes shipped 2026-07-26.** A category page is now **279 ms** (was
-954), a PDP fetch **120 ms** (was 318). Kept as a record of the method, because
+**All four fixes shipped 2026-07-26.** A category page is now **271 ms** (was
+954), a PDP fetch **121 ms** (was 318). Kept as a record of the method, because
 the method is the transferable part: the local harness ranked these fixes in
 the wrong order, and only curl against prod caught it.
 
 ## Where it landed
 
-Median of 9 cache-busted requests from a laptop, against live, **warm**:
+One warm pass against live, from a laptop, all cache-busted. Medians of 11
+(21 for the headline row):
 
 | request | before | after | |
 |---|---|---|---|
-| `/robots.txt` (network floor) | 55 ms | 41 ms | — |
-| `/api/me` 401 (schema + session lookup) | 45 ms | 36 ms | — |
-| `/api/products?ids=lego` | 318 ms | **120 ms** | −62% |
+| `/robots.txt` (network floor) | 55 ms | 46 ms | — |
+| `/api/me` 401 (schema + session lookup) | 45 ms | 38 ms | — |
+| `/api/products?ids=lego` | 318 ms | **121 ms** | −62% |
 | `/api/products?cat=Toys&limit=1` | 404 ms | **153 ms** | −62% |
-| **`/api/products?cat=Toys&limit=400`** | **954 ms** | **279 ms** | **−71%** |
-| `/api/products?cat=Audio&limit=1` (425 heads) | 327 ms | **134 ms** | −59% |
-| `/api/products?q=hodetelefoner` | 416 ms | **206 ms** | −51% |
+| **`/api/products?cat=Toys&limit=400`** | **954 ms** | **271 ms** | **−72%** |
+| `/api/products?cat=Audio&limit=1` (425 heads) | 327 ms | **128 ms** | −61% |
+| `/api/products?q=hodetelefoner` | 416 ms | **210 ms** | −50% |
 | `/api/products?top=drop&perCat=1&limit=4` | — | **143 ms** | — |
 
 `ids=` and `q=` took the biggest proportional cut: they were paying for five
 category aggregates they never read.
+
+**Read these as ±30 ms, not to the millisecond.** The 400-row page spans
+222–334 ms across 21 warm samples (p25 255, p75 302, plus two >470 ms
+outliers), and consecutive blocks of 11 disagreed by 50 ms. Anything smaller
+than that spread needs an A/B/A on one host, not two numbers from this table —
+which is exactly how the rejected byte-trim below looked like a 60 ms win.
 
 **Measure warm.** The first samples after a deploy read 777 ms with every
 isolate cold; it settled once warm, and a later round needed ~80 warming
@@ -42,19 +49,20 @@ chunks at ~58 ms each**:
 
 | rows requested | chunks of 45 | before | after |
 |---|---|---|---|
-| 1 | 1 | 407 ms | 212 ms |
-| 45 | 1 | 379 ms | 178 ms |
-| 90 | 2 | 429 ms | 193 ms |
-| 180 | 4 | 570 ms | 252 ms |
-| 400 | 9 | 874 ms | 362 ms |
+| 1 | 1 | 407 ms | 147 ms |
+| 45 | 1 | 379 ms | 158 ms |
+| 90 | 2 | 429 ms | 166 ms |
+| 180 | 4 | 570 ms | 198 ms |
+| 400 | 9 | 874 ms | 258 ms |
 
 `rowsFor` (worker/index.js) calls `chunked()` four times — products, offers,
 price_points, images — and `chunked` awaited its chunks in a `for` loop, one
 after the other. 400 ids is 9 chunks × 4 families = **36 sequential D1
 queries**, and they were what the user waited for.
 
-The residual slope (~20 ms/chunk, down from 58) is D1 partly serialising
-concurrent queries. It is no longer the dominant term.
+The residual slope (~14 ms/chunk, down from 58) is D1 partly serialising
+concurrent queries, plus the growing response payload. It is no longer the
+dominant term.
 
 **It was never CPU.** The same handlers profiled in-process against the same
 14,059 rows came out at 44–67 ms
@@ -65,13 +73,13 @@ The whole page fit one model: **prod ms ≈ sequential D1 round trips × ~20 ms.
 
 | stage | round trips (before) | ~cost | after |
 |---|---|---|---|
-| Worker + network floor | — | 50 ms | 41 ms |
+| Worker + network floor | — | 50 ms | 46 ms |
 | `seedCatalog` marker check | 1 | 20 ms | 1 (now carries the catalog version too) |
 | `catMeta` | 5 | 100 ms | **0 on a warm isolate** |
 | `listIds` (one scan, real CPU) | 1 | 85 ms | 1, indexed — SQL 12–16 ms |
 | **`rowsFor` for 400 ids** | **36** | **~600 ms** | **~4 waits** |
 | 245 KB transfer | — | 23 ms | unchanged |
-| | | **≈ 880 ms** (observed 954) | **observed 279** |
+| | | **≈ 880 ms** (observed 954) | **observed 271** |
 
 The `listIds` row is where the model was wrong in kind, not just degree: it was
 booked as CPU on the strength of an in-process profile, and ~25 ms of it was an
@@ -170,7 +178,8 @@ all 14k products.
 | Audio (425 heads) | — → 2,158 | → **5 ms** |
 
 The query now scales with the *category*, not the catalog. End to end on prod:
-`cat=Toys&limit=400` 313 → **279 ms**, `cat=Toys&limit=1` 185 → **153 ms**.
+`cat=Toys&limit=400` 313 → **271 ms**, `cat=Toys&limit=1` 185 → **153 ms**,
+`cat=Audio&limit=1` 160 → **128 ms**.
 
 Not one of the trades
 [api-read-path-performance](api-read-path-performance.md) rejected — those were
@@ -191,14 +200,14 @@ Don't retry it; halving this payload is not where the time is.
 ## Still open
 
 - `listIds`' JS shaping — the part the 85 ms estimate was really about, now
-  that its SQL is 12–16 ms. Still the largest single term in a 279 ms category
+  that its SQL is 12–16 ms. Still the largest single term in a 271 ms category
   page, and still guarded by the trade
   [api-read-path-performance](api-read-path-performance.md) §3 priced and
   rejected: the facet values it computes are derived, so SQL cannot see them.
   Trigger to revisit is unchanged — one category past ~20k heads.
 - The 245 KB response payload (23 ms). Cheapest lever is dropping `history`
   from list rows the way `specs` already is.
-- Search's CPU: `q=` is 206 ms, one scan and one round trip. FTS5 is its
+- Search's CPU: `q=` is 210 ms, one scan and one round trip. FTS5 is its
   answer ([api-read-path-performance](api-read-path-performance.md) §2).
 
 ## Why it stayed hidden
