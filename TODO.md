@@ -13,6 +13,9 @@
 - [ ] If you type "demo", a full screen 3d demo should run
 - [x] view mode (grid/list etc.)
 - [x] Set up proper product discovery. None of this manual adding bs. We will suck up the json / whatever from the shops, and create all products that we haven't seen before (2026-07-21: unknown EANs auto-create hidden products at ingest; enrich via tools/enrich.mjs + extra.json)
+- [ ] Back to search should remember selected filters
+- [ ] Hide parts of the shop list. Only show the top 5 cheapest by defalt
+- [ ] 
 
 
 Where to pick up tomorrow:
