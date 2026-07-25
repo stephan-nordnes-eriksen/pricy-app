@@ -31,7 +31,7 @@ Two Claude Design projects feed this repo:
   (gitignored). D1 `products`/`offers`/`price_points`, seeded from that
   file on first use, offers refreshed by the hourly cron `scheduled`
   handler. The catalog is **query-based** (no eager full load): the SPA
-  fetches `GET /api/products?ids=|q=|cat=|sort=drop` slices which boot's
+  fetches `GET /api/products?ids=|q=|cat=|top=drop` slices which boot's
   `hydrateCatalog` MERGES into the prototype's CATALOG array (a lazy
   session cache; `ensureRoute` prefetches each route's slice before
   setScreen, `hydrateSession` batch-fetches every id the login references,
@@ -44,17 +44,30 @@ Two Claude Design projects feed this repo:
   sides of the LIKE (in the query, not a stored column — no migration).
   List queries (`cat=`, all heads) serve one `PAGE_MAX` (400) page ranked by
   offer count, `&limit=&offset=` for the rest; `meta.cats[cat]` /
-  `meta.products` is the total. Upstream Results reveals 60 rows at a time
-  and its "Load more" calls boot's `window.onLoadMore({cat})` for the next
-  server page (boot counts pages per cat — never offset by the rows on
-  screen, a slice can hold rows from an `ids=`/`sort=drop` fetch).
+  `meta.products` is the total. Upstream Results reveals 60 rows at a time.
+  **The whole query is server-side** (2026-07-25): `&sort=<SORT_FIELDS id
+  |facet:key>&dir=&brand=a,b&min=&max=&rating=&sale=1&instock=1&facets=<json>`
+  — sorting/filtering only the loaded page meant "cheapest first" on Toys was
+  the cheapest of 400 of 1,387 rows (kr 19 vs kr 2). `listIds` shapes the
+  WHOLE category in JS (facet values are derived, SQL can't see them: `type`
+  is stored on 0 rows and derived on 7,099) and cuts the page from that, so
+  `meta.total` (matching rows) and `meta.fcounts` (the category's facet
+  histogram, ≤ 908 bytes) ride along — the two numbers a partial cache can't
+  produce. Costs 60 → 64 ms on a category (catMeta alone is 36 ms of it);
+  all heads WITH a sort parses 14k rows at 144 ms, which only Browse's "All
+  products" link hits. `matches`/`sortRows`/`fval` mirror Results' own
+  predicate and comparator — if they drift, the screen's count and the served
+  total disagree. Boot's `window.onQuery({cat, sort, dir, filters, page})` is
+  the one hook: page 0 on every change, page n for "Load more" (the SCREEN
+  owns the page number, and boot never offsets by rows on screen — a slice
+  can hold rows from an `ids=`/`top=drop` fetch).
   `/api/catalog.json` remains a full dump for ops/tools only — the SPA must
   never call it, and it is **bearer-gated on `INGEST_TOKEN`** (7.2 MB per
   hit at 14k rows); `tools/` send the token. Upstream is synced (2026-07-21): category counts and
   presence read `CATALOG.meta.cats`, SignedHome "Biggest drops" ranks
   `window.CATALOG`, and SearchSuggest refreshes via boot's
   `window.onSuggestData(q, refresh)` hook; browse prefetches
-  `sort=drop&perCat=1&limit=4`.
+  `top=drop&perCat=1&limit=4`.
 - **Categories are dynamic** (2026-07-22): `worker/cats.json` is the
   registry (`{cat: default icon}`, must be a superset of the prototype's
   CATEGORIES — build.js enforces both directions). It gates CATMAP

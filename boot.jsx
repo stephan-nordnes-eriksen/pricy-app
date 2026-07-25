@@ -316,12 +316,15 @@ function fetchProducts(params) {
 // the cache (or the baked demo catalog) already has, like today.
 function ensureRoute(name, params = {}) {
   const wants = [];
-  if (name === 'home') wants.push({ sort: 'drop', limit: 3 }); // "Biggest drops" sidecard
-  else if (name === 'results') wants.push(params.cat ? { cat: params.cat } : params.query ? { q: params.query } : {});
+  if (name === 'home') wants.push({ top: 'drop', limit: 3 }); // "Biggest drops" sidecard
+  // the list screens mirror Results' own default sort (SORT_FIELDS[0], price
+  // ascending) — the screen re-queries with its sort on mount, and a prefetch
+  // of a different slice would just be a second 400-row fetch per visit
+  else if (name === 'results') wants.push(params.query ? { q: params.query } : listQuery({ cat: params.cat, sort: 'best', dir: 'asc' }));
   else if (name === 'product') wants.push({ ids: params.id }); // server adds family + same-cat neighbors
   // browse renders per-cat top drops + global top-4 from the cache; counts
   // and category presence come from the served meta.cats (upstream synced)
-  else if (name === 'browse') wants.push({ sort: 'drop', perCat: 1, limit: 4 });
+  else if (name === 'browse') wants.push({ top: 'drop', perCat: 1, limit: 4 });
   else if (name === 'compare') {
     const first = CompareStore.prods()[0];
     if (first) wants.push({ cat: first.cat }); // CmpAdd candidates are same-category
@@ -362,18 +365,35 @@ window.onSuggestData = (q, refresh) => {
   return () => clearTimeout(t);
 };
 
-// Results' "Load more" (upstream) asks the host for the next server page of a
-// category once it has revealed everything it holds; hydrateCatalog merges the
-// rows into CATALOG in place and upstream bumps its own memo.
-// Counted in PAGES, not off the row count the screen has: a cat= slice can
-// already carry rows from an ids=/sort=drop fetch, and offsetting by those
-// would step past rows in the server's ranking. Advanced only on success, so
-// a failed page is retried rather than skipped.
+// Results' whole query — category, sort, filters, page — travels to the
+// server (upstream calls this on every change and for "Load more"), so the
+// page it serves is the page the screen shows. Sorting and filtering stay
+// client-side over the merged cache; this only decides WHICH rows are in it,
+// which is the difference between "cheapest of the 400 loaded" and cheapest
+// in the category. `total` and `fcounts` are the two numbers the screen can't
+// compute from a partial cache — they come back per query, never off
+// CATALOG.meta (any later ids=/q= fetch replaces that wholesale).
 const PAGE = 400; // worker PAGE_MAX
+const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
+  ...(cat ? { cat } : {}),
+  ...(sort ? { sort, dir: dir || 'asc' } : {}),
+  ...(f.brands && f.brands.length ? { brand: f.brands.slice().sort().join(',') } : {}),
+  ...(f.min ? { min: f.min } : {}), ...(f.max ? { max: f.max } : {}),
+  ...(f.rating ? { rating: f.rating } : {}),
+  ...(f.sale ? { sale: 1 } : {}), ...(f.instock ? { instock: 1 } : {}),
+  // sorted keys so the same selection is the same FETCHED cache entry
+  ...(f.facets && Object.keys(f.facets).length ? { facets: JSON.stringify(Object.fromEntries(Object.entries(f.facets).sort())) } : {}),
+  limit: PAGE, offset: page * PAGE,
+});
+window.onQuery = (q) => fetchProducts(listQuery(q)).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts }));
+
+// ponytail: the hook onQuery replaces, kept so the currently synced Results
+// keeps paging categories until the one that calls onQuery lands. Delete it
+// with that sync — nothing else calls it.
 const PAGES = new Map();
 window.onLoadMore = ({ cat }) => {
   const page = (PAGES.get(cat) || 0) + 1;
-  return fetchProducts({ cat, offset: page * PAGE, limit: PAGE }).then(() => PAGES.set(cat, page));
+  return window.onQuery({ cat, sort: 'best', dir: 'asc', page }).then(() => PAGES.set(cat, page));
 };
 
 function toUrl(name, params = {}) {
@@ -555,6 +575,8 @@ function App() {
 // automatically. window.CATALOG is the same array object, so it stays in
 // sync too.
 let navSeq = 0; // async-nav race token (nav + popstate share it)
+// returns the payload so fetchProducts' callers can read per-query meta
+// (total/fcounts) that must NOT live on CATALOG.meta — see window.onQuery
 function hydrateCatalog(data) {
   // body is {meta, products}; a bare array (older stubs) still works
   const rows = Array.isArray(data) ? data : data.products;
@@ -616,6 +638,7 @@ function hydrateCatalog(data) {
   }
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
+  return data;
 }
 
 // Boot: who am I + alert history first (cheap), then ONE ids= batch for

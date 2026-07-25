@@ -1,8 +1,9 @@
 # Search and listing quality at 14k products
 
 Found 2026-07-25. The catalog went 647 → 14,059 rows in one session; these
-are the query-side limits that scale exposed. All four are now fixed — kept
-as the record of what scale broke and what each fix cost.
+are the query-side limits that scale exposed. All are now fixed (Done 5 was
+found by fixing Done 3) — kept as the record of what scale broke and what each
+fix cost.
 
 ## Fixed already (2026-07-25, commit "search: stop matching the category's
 ## lucide icon name")
@@ -101,14 +102,71 @@ already read from `tools/.ingest-token` (`enrich.mjs` only ever used
 `?hidden=1`, which is untouched). Ops one-liners need
 `-H "authorization: Bearer $(cat tools/.ingest-token)"` from now on.
 
+## Done 5 — sort and filters were client-side, over hydrated rows (2026-07-25)
+
+Paging fixed WHICH 400 rows you could reach; it did not fix what "first page"
+meant. Results sorts and filters in the browser over whatever CATALOG holds,
+so on Toys (1,387 products, 400 loaded) "Price: cheapest first" meant cheapest
+of the loaded 400 — **kr 19, against kr 2 in the category** — "Brand: LEGO"
+searched 400 rows for LEGO, and the rail's facet counts counted the slice.
+
+**Fixed:** the whole query travels. `/api/products` takes
+`sort=<SORT_FIELDS id | facet:key>&dir=`, `brand=a,b`, `min`/`max`, `rating`,
+`sale=1`, `instock=1`, `facets=<json>`, and answers with `meta.total` +
+`meta.fcounts`.
+
+Which of the plan's (a)/(b)/(c) — **(b), measured, not guessed.** Facet values
+are derived per row (`worker/facetrules.js`), and on the real 14k catalog
+`facets.type` is **stored on 0 rows and derived on 7,099**, so SQL sees 0% of
+what the rail filters on: (c)'s "split it" would have left the rail lying and
+still needed a second code path. (a) wanted a backfill plus a re-derive pass on
+every rule change — the exact cost the derived design was chosen to avoid.
+
+(b) is cheap because the bill was already paid elsewhere. Replayed prod's
+14,059 heads into local sqlite and timed the route itself:
+
+| request | before | after |
+|---|---|---|
+| `cat=Toys` (default page) | 60 ms | 64 ms |
+| `cat=Toys&sort=best&dir=asc` | 60 ms | 65 ms |
+| `cat=Fashion&sort=name` | 56 ms | 68 ms |
+| all heads, no params (SQL fast path) | 64 ms | 66 ms |
+| all heads **with a sort** (14k rows parsed) | 64 ms | 144 ms |
+
+`catMeta` alone is 36 ms of every one of those and `rowsFor` 4 ms — the
+whole-category shape is ~7 ms of a 64 ms request. The id-list SQL sorts
+(`ORDER BY MIN(o.price)`, `json_extract(rating)`, …) measured free too,
+13 → 15 ms, but they only ever cover the non-derived half, so they buy a
+second implementation of the same semantics and no facet honesty. Not taken;
+noted in `listIds` as the upgrade path if "All products" with a sort ever
+matters.
+
+Two things fell out for free, both impossible from a partial cache:
+`meta.total` (rows matching the query — the count line can stop saying
+"400 of 1 387" once a filter is on) and `meta.fcounts` (the category's facet
+histogram, ≤ 908 bytes for the worst category, so the rail can offer every
+value in the CATEGORY instead of every value in the page).
+
+Ordering is deliberately NOT a contract: `hydrateCatalog` merges slices into
+one session cache, so a served order is lost the moment a second slice lands.
+The client keeps sorting locally and the server's only job is putting the
+RIGHT rows in the cache — cheaper, and it makes the response order free to
+ignore. `matches`/`sortRows`/`fval` in worker/index.js therefore mirror
+Results' own predicate and comparator line for line, quirks included; if they
+drift, `list.length` and `meta.total` disagree on screen.
+
+Upstream half: `window.onLoadMore` becomes `window.onQuery({cat, sort, dir,
+filters, page})` — called (debounced) whenever the query changes and for "Load
+more", with the screen owning the page number and reading `total`/`fcounts`
+off the resolved value. boot.jsx keeps the old hook alive until that syncs.
+
 ## What this plan did not close
 
 - **Search still truncates at 100** with no `offset` (Done 2). The list
-  branches page; search doesn't.
-- **Filters and sort are client-side, over hydrated rows only.** Now that a
-  category admits it has 1,387 products and shows 400, "Price: cheapest first"
-  means cheapest *of the loaded page*. Fixing it means the sort/filter state
-  travelling to the server (`sort=`/`facet=` on `/api/products`), which is a
-  bigger change than paging was.
+  branches page; search doesn't — and `sort=`/filters do nothing on a `q=`
+  query, where the client already holds the whole (≤ 100 row) result set.
 - **`/api/products?hidden=1` is still unauthenticated** — ops-only listing of
   discovered rows, same class as the dump that got gated in Done 4.
+- **Facet counts are pre-filter**: `fcounts` counts the whole category, not
+  what the other active filters leave — same as the client did. Narrowing them
+  as you filter is a second histogram per request.

@@ -609,23 +609,149 @@ async function searchIds(db, q) {
   return results.map(r => r.id);
 }
 
-// Category listing (cat = null → every head), ranked and paged. Order used
-// to be rowid — "whichever shop we crawled first" — which decided WHICH 400
-// of Toys' 1,387 rows you could see. Offer count is the cheapest honest
-// signal a price comparison has: a product several shops carry is the one
-// worth leading with, and the offer-less rows sink to the back. Ties keep
-// rowid, so curated seed rows stay first among their peers.
-// ponytail: LEFT JOIN + GROUP BY over the whole head set per call (the sort
-// can't stop at LIMIT the way rowid order did), like topDropIds. Measured on
-// a synthetic 14k-row/14k-offer copy: 1.3 → 8 ms for a category, 11 ms for
-// all heads. Store a shops column on the product row if that stops being fine.
-async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0 } = {}) {
+// The prototype's own facet lookup (AppData.jsx `fval`), ported so a
+// server-side filter keeps exactly the rows the screen would: the merged
+// facet value wins, then the spec sheet, then the head's variant axis.
+// facetNorm's array handling is odd (['a','b'] → "a,b") but it is what the
+// client does, and the two predicates must agree or the screen's count and
+// the served total drift apart.
+const facetNorm = (v) => v == null ? undefined : typeof v === 'boolean' ? v : isFinite(parseFloat(v)) ? parseFloat(v) : String(v).trim();
+function fval(m, f, k) {
+  const v = facetNorm(f[k] ?? (m.specs || {})[k]);
+  if (v !== undefined) return v;
+  const axis = ((m.variants || {}).axes || []).find(a => a.id === k);
+  if (!axis) return undefined;
+  const ids = axis.options.map(o => o.id);
+  return ids.every(id => isFinite(parseFloat(id))) ? ids.map(id => parseFloat(id)) : ids;
+}
+
+// Sort fields mirror the prototype's SORT_FIELDS ids; `facet:<key>` is one of
+// its spec axes. An axis holding several values sorts on the end of its range
+// that matches the direction, like specSorts does.
+const SORT_VAL = {
+  best: r => r.best,
+  drop: r => r.drop,
+  save: r => (r.m.was != null && r.best != null) ? r.m.was - r.best : undefined,
+  updated: r => r.updated,
+  rating: r => r.m.rating,
+  reviews: r => r.m.reviews,
+  shops: r => r.shops,
+  name: r => r.m.name,
+  brand: r => r.m.brand,
+};
+const blank = (v) => v === undefined || v === null || v === '' || (typeof v === 'number' && !isFinite(v));
+function sortRows(rows, sort, dir) {
+  const fk = sort.startsWith('facet:') ? sort.slice(6) : null;
+  const val = fk
+    ? (r) => { const v = fval(r.m, r.f, fk); if (!Array.isArray(v)) return v; const a = v.slice().sort((x, y) => typeof x === 'number' ? x - y : String(x).localeCompare(String(y))); return dir === 'asc' ? a[0] : a[a.length - 1]; }
+    : SORT_VAL[sort];
+  if (!val) return rows;
+  const mul = dir === 'asc' ? 1 : -1;
+  return rows.map((r, i) => ({ r, i, v: val(r) })).sort((a, b) => {
+    if (blank(a.v) || blank(b.v)) return blank(a.v) && blank(b.v) ? a.i - b.i : blank(a.v) ? 1 : -1;
+    return (typeof a.v === 'string' ? String(a.v).localeCompare(String(b.v), 'nb') : a.v - b.v) * mul || a.i - b.i;
+  }).map(o => o.r);
+}
+
+// Mirrors Results' own filter predicate line for line, quirks included (a row
+// with no drop passes `sale`, because `undefined < 12` is false there too).
+function matches(r, f) {
+  if (f.brands.length && !f.brands.includes(r.m.brand)) return false;
+  if ((f.min || f.max) && r.best == null) return false;
+  if (f.min && r.best < f.min) return false;
+  if (f.max && r.best > f.max) return false;
+  if (f.rating && (r.m.rating || 0) < f.rating) return false;
+  if (f.sale && r.drop < 12) return false;
+  if (f.instock && !r.stock) return false;
+  for (const k in f.facets) {
+    const sel = f.facets[k];
+    const v = fval(r.m, r.f, k);
+    if (sel === true) { if (v !== true) return false; }
+    else if (v === undefined || (Array.isArray(v) ? !v.some(x => sel.includes(x)) : !sel.includes(v))) return false;
+  }
+  return true;
+}
+
+// Results' filter state off the query string, or null when nothing is set.
+// `facets` is JSON because its values are typed (numbers for spec axes, `true`
+// for the bool ones) and its keys are whatever facets.json declares.
+function listFilters(p) {
+  const num = (k) => { const n = Number(p.get(k)); return p.get(k) && isFinite(n) ? n : 0; };
+  let facets = {};
+  try { facets = JSON.parse(p.get('facets') || '{}') || {}; } catch (e) {} // a broken filter param must not 500 a listing
+  const f = {
+    brands: (p.get('brand') || '').split(',').filter(Boolean).slice(0, 50),
+    min: num('min'), max: num('max'), rating: num('rating'),
+    sale: p.get('sale') === '1', instock: p.get('instock') === '1',
+    facets: typeof facets === 'object' && facets ? facets : {},
+  };
+  const on = f.brands.length || f.min || f.max || f.rating || f.sale || f.instock || Object.keys(f.facets).length;
+  return on ? f : null;
+}
+
+// Category listing (cat = null → every head), ranked, filtered, sorted, paged.
+// Default order is offer count: rowid was "whichever shop we crawled first",
+// which decided WHICH 400 of Toys' 1,387 rows you could see, and offer count is
+// the cheapest honest signal a price comparison has (offer-less rows sink;
+// ties keep rowid so curated seed rows stay first among their peers).
+//
+// `sort`/`filters` make that page the page the SCREEN is showing. Results
+// re-sorts and re-filters its merged cache locally, so nothing here needs the
+// response order honoured — the server's whole job is picking the RIGHT rows,
+// and the client's own sort then lands on the true first page instead of the
+// cheapest of whatever happened to be loaded.
+//
+// It runs in JS, not SQL, because facet values are DERIVED per row
+// (worker/facetrules.js): on the live 14k-row catalog `facets.type` is stored
+// on 0 rows and derived on 7,099, so SQL cannot see what the rail filters on.
+// Shaping the whole category in JS also makes `total` and the facet histogram
+// free — the two numbers the screen cannot compute from a partial cache.
+// Measured end to end (this route, prod's 14,059 heads replayed into local
+// sqlite): cat=Toys 60 → 64 ms per request, of which catMeta alone is 36 ms
+// and rowsFor 4 ms. The category's histogram costs ≤ 908 bytes (Beauty).
+// Worth it: the cheapest Toy in the default page is kr 19, the cheapest in the
+// category is kr 2 — that gap was the whole bug.
+// ponytail: all heads WITH a sort parses 14k rows, 64 → 144 ms. That is one
+// link on Browse ("All products"), so it pays it. Push the universal fields
+// into a SQL ORDER BY (measured 21 ms for the id list) if it ever matters.
+async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = null, dir = 'asc', filters = null } = {}) {
+  const where = `json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')}${cat == null ? '' : " AND json_extract(p.meta, '$.cat') = ?"}`;
+  const bind = cat == null ? [] : [cat];
+  if (!sort && !filters && !cat) {
+    // untouched fast path: no sort, no filters, no facet counts to serve
+    const { results } = await db.prepare(
+      `SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${where}
+       GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid LIMIT ? OFFSET ?`
+    ).bind(...bind, limit, offset).all();
+    return { ids: results.map(r => r.id) };
+  }
   const { results } = await db.prepare(
-    `SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id
-     WHERE json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')}${cat == null ? '' : " AND json_extract(p.meta, '$.cat') = ?"}
-     GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid LIMIT ? OFFSET ?`
-  ).bind(...(cat == null ? [] : [cat]), limit, offset).all();
-  return results.map(r => r.id);
+    `SELECT p.id, p.meta, MIN(o.price) AS best, COUNT(o.product_id) AS shops,
+            MAX(CASE WHEN o.stock = 1 THEN 1 ELSE 0 END) AS stock, MAX(o.updated_at) AS updated
+     FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${where}
+     GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid`
+  ).bind(...bind).all();
+  const fcounts = cat ? {} : null; // per-cat only: the rail has no facets without one
+  let rows = [];
+  for (const x of results) {
+    const m = JSON.parse(x.meta);
+    const derived = deriveFacets(m);
+    const r = {
+      id: x.id, m, f: derived ? { ...derived, ...m.facets } : (m.facets || {}),
+      best: x.best ?? undefined, shops: x.shops, stock: x.stock === 1, updated: x.updated || undefined,
+    };
+    r.drop = m.was && r.best ? Math.round((1 - r.best / m.was) * 100) : undefined;
+    // histogram over the WHOLE category, before filtering — same values and
+    // counts the rail used to derive from the loaded page (Results.jsx's
+    // facetBase), which is what made them lie once a category outgrew 400
+    if (fcounts) for (const k of Object.keys(r.f)) {
+      const v = fval(m, r.f, k);
+      if (v !== undefined) for (const x2 of [].concat(v)) ((fcounts[k] ??= {})[x2] = (fcounts[k][x2] || 0) + 1);
+    }
+    if (!filters || matches(r, filters)) rows.push(r);
+  }
+  if (sort) rows = sortRows(rows, sort, dir === 'desc' ? 'desc' : 'asc');
+  return { ids: rows.slice(offset, offset + limit).map(r => r.id), total: rows.length, fcounts };
 }
 
 // Heads ranked by drop% (1 - best/was). perCat keeps the top `limit` per
@@ -1051,7 +1177,7 @@ export default {
     }
 
     // Query-based catalog: the SPA's lazy cache fetches slices from here.
-    // Precedence ids > q > cat > sort; no params = all heads.
+    // Precedence ids > q > top=drop > list (cat= or all heads).
     if (route === 'GET /api/products') {
       await seedCatalog(db);
       const p = url.searchParams;
@@ -1062,8 +1188,11 @@ export default {
       const page = {
         limit: Math.min(PAGE_MAX, Math.max(1, Number(p.get('limit')) || PAGE_MAX)),
         offset: Math.max(0, Number(p.get('offset')) || 0),
+        sort: p.get('sort'),
+        dir: p.get('dir'),
+        filters: listFilters(p),
       };
-      let products;
+      let products, extra;
       if (p.get('hidden') === '1') {
         // enrichment listing (tools/enrich.mjs): auto-discovered rows awaiting
         // a hand-written worker/extra.json entry. Not used by the SPA.
@@ -1079,21 +1208,23 @@ export default {
         products = await rowsFor(db, ids);
       } else if (p.get('q') != null) {
         products = await rowsFor(db, await searchIds(db, p.get('q')), { expand: false });
-      } else if (p.get('cat') != null) {
-        // PAGE_MAX rows per page — the SPA renders one card per row, and a
-        // full-catalog crawl puts thousands in a category (Toys 1,387).
-        // ponytail: the SPA still asks for page 0 only; the UI half (a
-        // "Load more" that raises offset) is an upstream prototype change.
-        products = await rowsFor(db, await listIds(db, { cat: p.get('cat'), ...page }), { expand: false });
-      } else if (p.get('sort') === 'drop') {
+      } else if (p.get('top') === 'drop') {
         products = await rowsFor(db, await topDropIds(db, { limit, perCat: p.get('perCat') === '1' }), { expand: false });
       } else {
-        // "/results with no query and no category" — same page, and the same
-        // id-list shape as cat=: catalogBody() would build the WHOLE catalog
-        // just to throw all but PAGE_MAX of it away
-        products = await rowsFor(db, await listIds(db, page), { expand: false });
+        // cat= (PAGE_MAX rows per page — the SPA renders one card per row, and
+        // a full-catalog crawl puts thousands in a category: Toys 1,387), or
+        // "/results with no query and no category", which takes the same page
+        // and the same id-list shape: catalogBody() would build the WHOLE
+        // catalog just to throw all but PAGE_MAX of it away.
+        // Results' sort and filters ride along, so this is the page the screen
+        // actually shows; `total` (matching rows) and `fcounts` (the category's
+        // facet histogram) come back as meta — neither is computable from the
+        // partial cache the screen holds.
+        const slice = await listIds(db, { cat: p.get('cat'), ...page });
+        extra = { total: slice.total, fcounts: slice.fcounts || undefined };
+        products = await rowsFor(db, slice.ids, { expand: false });
       }
-      return json({ meta: await catMeta(db), products });
+      return json({ meta: { ...await catMeta(db), ...extra }, products });
     }
 
     // 4d interim: the laptop crawler (tools/crawl.mjs) pushes ingest()-shaped

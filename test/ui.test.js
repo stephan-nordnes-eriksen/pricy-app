@@ -61,7 +61,7 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         out = toks.length ? heads.filter(r => toks.some(t => `${r.name} ${r.brand} ${r.cat} ${r.kw || ''}`.toLowerCase().includes(t))) : [];
       } else if (p.get('cat') != null) {
         out = heads.filter(r => r.cat === p.get('cat'));
-      } else if (p.get('sort') === 'drop') {
+      } else if (p.get('top') === 'drop') {
         const dr = r => r.was ? 1 - Math.min(...r.offers.map(o => o.price)) / r.was : -1;
         const sorted = [...heads].sort((a, b) => dr(b) - dr(a));
         const lim = Number(p.get('limit')) || 4;
@@ -83,7 +83,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         // ...and the per-cat sub-category counts (Browse type chips)
         types: heads.reduce((m, r) => { const t = r.facets?.type; if (t) ((m[r.cat] ??= {})[t] = (m[r.cat][t] || 0) + 1); return m; }, {}),
       };
-      return ok({ meta, products: out });
+      // list branches carry the query's own total (worker: meta.total)
+      return ok({ meta: p.get('ids') || p.get('q') || p.get('top') ? meta : { ...meta, total: out.length }, products: out });
     }
     if (u === '/api/me') return ME ? ok(ME) : ok({ error: 'unauthenticated' }, 401);
     if (u === '/api/auth/login' || u === '/api/auth/signup') {
@@ -695,6 +696,32 @@ test('lazy catalog: session ids (watches + recents + purchases) land in ONE ids=
   assert.ok(await until(() => qa(win, '.wrow, .rcard').length > 0), 'watch/recent rows must render from the batch');
 });
 
+// window.onQuery is the whole Results query on the wire — if boot's
+// serialisation and worker/index.js's listFilters() drift apart, the screen
+// silently gets an unfiltered page back.
+test('lazy catalog: onQuery puts Results’ sort and filters on the query string', async () => {
+  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  assert.ok(win.api.some(c => /\?cat=Audio&dir=asc&limit=400&offset=0&sort=best$/.test(c.call)),
+    'the route prefetch must ask for the screen’s own default sort, got: ' + win.api.map(c => c.call).join(' | '));
+
+  const res = await win.onQuery({
+    cat: 'Audio', sort: 'best', dir: 'desc', page: 2,
+    filters: { brands: ['Sony', 'Bose'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },
+  });
+  const call = win.api[win.api.length - 1].call;
+  for (const part of ['cat=Audio', 'sort=best', 'dir=desc', 'offset=800', 'limit=400', 'brand=Bose%2CSony',
+    'min=100', 'max=900', 'rating=4', 'sale=1', 'instock=1', 'facets=' + encodeURIComponent('{"nc":true,"size":[55,65]}')]) {
+    assert.ok(call.includes(part), `onQuery must send ${part}, got: ${call}`);
+  }
+  assert.strictEqual(typeof res.total, 'number', 'the served total must come back to the screen');
+
+  // same selection, different click order = the same cache entry
+  const n = win.api.length;
+  await win.onQuery({ cat: 'Audio', sort: 'best', dir: 'desc', page: 2, filters: { brands: ['Bose', 'Sony'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
+  assert.strictEqual(win.api.length, n, 'a re-ordered but identical selection must not refetch');
+});
+
 test('lazy catalog: a PDP visit merges into the cache without evicting earlier slices', async () => {
   const win = boot('http://pricy.test/search?cat=Audio', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
@@ -711,7 +738,7 @@ test('lazy catalog: a PDP visit merges into the cache without evicting earlier s
 test('lazy catalog: browse shows FULL category counts (meta.cats) off its small drops slice', async () => {
   const win = boot('http://pricy.test/browse', { session: true });
   assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'category tiles did not render');
-  assert.ok(win.api.some(c => /GET \/api\/products\?limit=4&perCat=1&sort=drop/.test(c.call)),
+  assert.ok(win.api.some(c => /GET \/api\/products\?limit=4&perCat=1&top=drop/.test(c.call)),
     'browse must prefetch the per-cat drops slice, got: ' + win.api.map(c => c.call).join(' | '));
   assert.ok(!win.api.some(c => c.call === 'GET /api/products'), 'browse must not fetch all heads anymore');
   const heads = CATALOG_JSON.filter(p => !p.family);

@@ -497,7 +497,7 @@ test('facet values derive from the product name, per category', async () => {
 
 // Query-based catalog: /api/products serves slices in the catalog.json row
 // shape — ids (expanded to family + neighbors), q (broad candidates, the
-// client re-filters), cat, sort=drop; meta carries per-category head counts
+// client re-filters), cat, top=drop; meta carries per-category head counts
 test('GET /api/products: ids expand to head + siblings + same-cat neighbors', async () => {
   const call = api({ DB: d1() });
   const res = await call('/api/products?ids=iphone~256-blue');
@@ -596,9 +596,9 @@ test('GET /api/products: search ranks name matches above blob matches before tru
     'word-start-in-name > substring-in-name > brand > mentioned anywhere in the blob');
 });
 
-test('GET /api/products: sort=drop ranks by real drop%, perCat covers every category', async () => {
+test('GET /api/products: top=drop ranks by real drop%, perCat covers every category', async () => {
   const call = api({ DB: d1() });
-  const { products } = await (await call('/api/products?sort=drop&limit=3')).json();
+  const { products } = await (await call('/api/products?top=drop&limit=3')).json();
   assert.strictEqual(products.length, 3);
   const drops = products.map(p => p.drop);
   assert.deepStrictEqual(drops, [...drops].sort((a, b) => b - a), 'ordered by drop desc');
@@ -607,7 +607,7 @@ test('GET /api/products: sort=drop ranks by real drop%, perCat covers every cate
     .sort((a, b) => b.drop - a.drop)[0];
   assert.strictEqual(products[0].id, wantTop.id, 'global top drop matches the seed-derived answer');
 
-  const per = (await (await call('/api/products?sort=drop&perCat=1&limit=2')).json()).products;
+  const per = (await (await call('/api/products?top=drop&perCat=1&limit=2')).json()).products;
   const cats = new Set(per.map(p => p.cat));
   const seedCats = new Set(seed.filter(p => !p.family && p.was).map(p => p.cat));
   assert.deepStrictEqual(cats, seedCats, 'perCat serves top drops for every category that has any');
@@ -654,6 +654,62 @@ test('GET /api/products: list branches rank by offer count and page with limit/o
   assert.strictEqual(new Set([...page1, ...page2]).size, 10, 'pages must not overlap');
   const heads = seed.filter(p => !p.family).length + 3;
   assert.strictEqual((await ids('limit=9999')).length, Math.min(heads, 400), 'limit is clamped to PAGE_MAX');
+});
+
+// Ranking the page was only half of it: Results sorts and filters client-side
+// over the rows it has, so on a 1,387-row category "cheapest first" meant
+// cheapest of the 400 loaded. sort=/filters now pick WHICH rows the page holds
+// (the screen still re-sorts locally), and meta.total/meta.fcounts are the two
+// numbers a partial cache cannot produce.
+test('GET /api/products: sort and filters run over the whole category, not the page', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  // three Pets heads. The cheapest is the one NO shop but one carries, so the
+  // default offer-count ranking puts it last — exactly the row a client-side
+  // "cheapest first" over page 0 could never see.
+  const rows = [
+    { ean: '7099931000001', name: 'Hundefôr Laks 2kg', brand: 'Acme', price: 900, shops: ['Power', 'Elkjøp', 'Komplett'] },
+    { ean: '7099931000002', name: 'Kattesand Klumpende', brand: 'Zoo', price: 500, shops: ['Power', 'Elkjøp'] },
+    { ean: '7099931000003', name: 'Hundeseng Myk', brand: 'Zoo', price: 100, shops: ['Power'] },
+  ];
+  for (const r of rows) {
+    await req('/api/ingest', 'POST', r.shops.map(shop => ({ product_id: 'ean-' + r.ean, shop, price: r.price, name: r.name, brand: r.brand })));
+    await req('/api/admin/products/ean-' + r.ean, 'PATCH', { cat: 'Pets', hidden: null });
+  }
+  const id = (ean) => 'ean-' + ean;
+  const get = async (qs) => (await (await call('/api/products?' + qs)).json());
+  const ids = async (qs) => (await get(qs)).products.map(p => p.id);
+
+  // sort: the whole category is ordered before the page is cut
+  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=asc&limit=1'), [id('7099931000003')],
+    'page 1 of "cheapest first" must be the cheapest in the CATEGORY, not of the default page');
+  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=desc&limit=1'), [id('7099931000001')], 'direction travels too');
+  assert.deepStrictEqual(await ids('cat=Pets&sort=name&dir=asc&limit=1'), [id('7099931000001')], 'text fields sort as text');
+  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=asc&limit=1&offset=1'), [id('7099931000002')], 'paging follows the sort');
+
+  // filters: stored (brand) and DERIVED (facetrules reads animal off the name)
+  assert.deepStrictEqual((await ids('cat=Pets&brand=Zoo&sort=best&dir=asc')).sort(), [id('7099931000002'), id('7099931000003')].sort());
+  assert.deepStrictEqual(await ids('cat=Pets&facets=' + encodeURIComponent('{"animal":["Cat"]}')), [id('7099931000002')],
+    'a derived facet value must filter server-side — SQL cannot see it');
+  assert.deepStrictEqual(await ids('cat=Pets&min=200&max=600'), [id('7099931000002')], 'price bounds filter on the best offer');
+  assert.deepStrictEqual(await ids('cat=Pets&brand=Nobody'), [], 'no match is empty, not unfiltered');
+
+  // totals and the rail's counts, over the whole category
+  const filtered = await get('cat=Pets&brand=Zoo');
+  assert.strictEqual(filtered.meta.total, 2, 'meta.total counts every matching row, not the page');
+  assert.strictEqual((await get('cat=Pets')).meta.total, 3);
+  const fc = (await get('cat=Pets')).meta.fcounts;
+  assert.deepStrictEqual(fc.animal, { Dog: 2, Cat: 1 }, 'facet counts cover the category, filters do not narrow them');
+  assert.ok(!(await get('cat=Audio')).meta.fcounts.animal, 'histogram is per queried category');
+  assert.strictEqual((await get('')).meta.fcounts, undefined, 'no category, no rail, no histogram');
+
+  // the other branches keep their own semantics
+  assert.ok((await ids('ids=' + id('7099931000001') + '&sort=best')).includes(id('7099931000001')), 'ids= ignores list params');
+  assert.strictEqual((await get('q=hundeseng&sort=best')).meta.total, undefined, 'q= is not a paged list branch');
+  const bad = await get('cat=Pets&facets=' + encodeURIComponent('{oops'));
+  assert.strictEqual(bad.products.length, 3, 'an unparseable filter param must not 500 the listing');
 });
 
 test('GET /api/products: a category beyond 100 heads survives the D1 param cap', async () => {
