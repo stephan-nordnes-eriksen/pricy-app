@@ -44,8 +44,10 @@ Two Claude Design projects feed this repo:
   sides of the LIKE (in the query, not a stored column — no migration).
   List queries (`cat=`, all heads) serve one `PAGE_MAX` (400) page ranked by
   offer count, `&limit=&offset=` for the rest; `meta.cats[cat]` /
-  `meta.products` is the total. The SPA only ever asks for page 0 — a
-  "Load more" is an upstream prototype change.
+  `meta.products` is the total. Upstream Results reveals 60 rows at a time
+  and its "Load more" calls boot's `window.onLoadMore({cat})` for the next
+  server page (boot counts pages per cat — never offset by the rows on
+  screen, a slice can hold rows from an `ids=`/`sort=drop` fetch).
   `/api/catalog.json` remains a full dump for ops/tools only — the SPA must
   never call it, and it is **bearer-gated on `INGEST_TOKEN`** (7.2 MB per
   hit at 14k rows); `tools/` send the token. Upstream is synced (2026-07-21): category counts and

@@ -62,28 +62,19 @@ already ride every response (`meta.cats[cat]`, `meta.products`). Cost on a
 synthetic 14k-row copy: 1.3 → 8 ms per category query, 11 ms for all heads;
 the sort can no longer stop early at LIMIT, which is the whole bill.
 
-**Still open (upstream):** the SPA asks for page 0 and nothing else, because
-upstream `Results.jsx` renders one card per row in `CATALOG` with no
-"Load more" and no hook boot.jsx could drive (`AppHeader`'s
-`window.onSuggestData` is the only such hook in the prototype). Paste-ready
-prompt for the prototype project:
+**Upstream shipped it too** (synced 2026-07-25): Results reveals 60 rows at a
+time, its "Load more" calls `window.onLoadMore({cat, offset})` once the local
+list is exhausted, `searchCatalog`'s memo takes a bump token so rows merged
+into CATALOG in place become visible, and the count reads "400 of 1 387
+products". boot.jsx answers with `fetchProducts({cat, offset: page * 400})`,
+counting pages per category — offsetting by the rows on screen would step past
+rows in the server ranking, since a cat slice can already hold rows from an
+`ids=`/`sort=drop` fetch. Verified on prod: the 7th click fetches
+`?cat=Toys&limit=400&offset=400` and the count goes to 800 of 1 387.
 
-> In Results.jsx, the results list renders every row it has. Add paging:
-> keep a `shown` count in state (start 60, +60 per click), render
-> `list.slice(0, shown)`, and under the list show a `Load more` button
-> whenever `list.length > shown`. When the whole local list is shown and the
-> host page supplies `window.onLoadMore`, call
-> `await window.onLoadMore({ cat, offset: list.length })` instead and
-> re-render when it resolves (same pattern as AppHeader's
-> `window.onSuggestData`) — the host fetches the next server page and merges
-> it into CATALOG. The results bar count should read
-> `X of Y products` when `window.CATALOG.meta?.cats?.[cat]` is larger than
-> the loaded list, so a category with 1,387 products doesn't claim it has
-> 400.
-
-Then boot.jsx implements `window.onLoadMore` as
-`fetchProducts({ cat, offset, limit: 400 })` — one line, the server half is
-already live.
+The same pass reworked sorting (unprompted, kept): a grouped field menu with
+per-field direction toggles, spec axes derived from the category's FACETS
+defs, and the active field's value badged on each row.
 
 ## Done 4 — /api/catalog.json is now 7.2 MB (2026-07-25)
 
