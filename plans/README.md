@@ -46,7 +46,10 @@ G. [api-latency-round-trips](api-latency-round-trips.md) — a category page
    sequential D1 queries for one 400-row page (9 id-chunks × 4 query
    families). Not caused by any recent change; nobody had timed prod. The fix
    is `batch()`/`Promise.all` over work that is already independent, then
-   caching `catMeta`'s 5 round trips. Measured 2026-07-25.
+   caching `catMeta`'s 5 round trips. Measured 2026-07-25. Paste-ready prompt:
+   [FIX-ROWSFOR-PROMPT.md](FIX-ROWSFOR-PROMPT.md) — its own, not an `<ITEM>` in
+   IMPLEMENT-PROMPT.md, because none of that prompt's crawl/promotion/migration
+   framing applies.
 
 Not a backlog item, but read it before any performance change:
 [api-read-path-performance](api-read-path-performance.md) — where

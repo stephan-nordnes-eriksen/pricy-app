@@ -56,6 +56,10 @@ The whole page fits one model: **prod ms ≈ sequential D1 round trips × ~20 ms
 | 245 KB transfer | — | 23 ms |
 | | | **≈ 880 ms** (observed 954) |
 
+To work this in a fresh session, paste
+[FIX-ROWSFOR-PROMPT.md](FIX-ROWSFOR-PROMPT.md) — it carries the traps below
+plus the ones that live in the test harness rather than in this file.
+
 ## What "done" looks like
 
 A category page under ~300 ms, by cutting sequential round trips — no schema
