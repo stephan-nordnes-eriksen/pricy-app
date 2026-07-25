@@ -46,7 +46,8 @@ Two Claude Design projects feed this repo:
   offer count, `&limit=&offset=` for the rest; `meta.cats[cat]` /
   `meta.products` is the total. Upstream Results reveals 60 rows at a time.
   **The whole query is server-side** (2026-07-25): `&sort=<SORT_FIELDS id
-  |facet:key>&dir=&brand=a,b&min=&max=&rating=&sale=1&instock=1&facets=<json>`
+  |facet:key>&dir=&brand=a,b&min=&max=&rating=&sale=1&instock=1&facets=<json>
+  &name=<free text>`
   — sorting/filtering only the loaded page meant "cheapest first" on Toys was
   the cheapest of 400 of 1,387 rows (kr 19 vs kr 2). `listIds` shapes the
   WHOLE category in JS (facet values are derived, SQL can't see them: `type`
@@ -63,6 +64,12 @@ Two Claude Design projects feed this repo:
   calls it debounced on every query change and for "Load more", and reads
   `total`/`fcounts` off the resolved value — they must NOT be read off
   `CATALOG.meta`, which the next `ids=`/`q=` fetch replaces wholesale. The
+  `name=` is the rail's refine-within-results box (2026-07-26, `filters.q`
+  upstream): every whitespace token must be a substring of the product NAME,
+  no diacritic folding — it is NOT `q=`, which is the header's blob search.
+  Same reason as the rest: refining client-side would only ever see the page.
+  `meta.fcounts` stays category-wide (computed before filtering), which is why
+  Results falls back to counting its own rows while a refine is active.
   SCREEN owns the page number; never offset by rows on screen, a slice can
   hold rows from an `ids=`/`top=drop` fetch. `ensureRoute` prefetches the
   screen's own default sort (`sort=best&dir=asc`) so the mount call is a

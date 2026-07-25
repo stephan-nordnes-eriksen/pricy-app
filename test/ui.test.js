@@ -710,12 +710,18 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   assert.ok(win.api.some(c => /\?cat=Audio&dir=asc&limit=400&offset=0&sort=best$/.test(c.call)),
     'the route prefetch must ask for the screen’s own default sort, got: ' + win.api.map(c => c.call).join(' | '));
 
+  // the rail's free-text refine must travel too — client-side it would only
+  // ever narrow the loaded page, which is the bug the server query fixed
+  type(win, q(win, '.refine input'), 'wireless');
+  assert.ok(await until(() => win.api.some(c => c.call.includes('name=wireless'))),
+    'typing in the refine box must re-query the server, got: ' + win.api.map(c => c.call).join(' | '));
+
   const res = await win.onQuery({
     cat: 'Audio', sort: 'best', dir: 'desc', page: 2,
-    filters: { brands: ['Sony', 'Bose'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },
+    filters: { q: 'buds', brands: ['Sony', 'Bose'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },
   });
   const call = win.api[win.api.length - 1].call;
-  for (const part of ['cat=Audio', 'sort=best', 'dir=desc', 'offset=800', 'limit=400', 'brand=Bose%2CSony',
+  for (const part of ['cat=Audio', 'sort=best', 'dir=desc', 'offset=800', 'limit=400', 'brand=Bose%2CSony', 'name=buds',
     'min=100', 'max=900', 'rating=4', 'sale=1', 'instock=1', 'facets=' + encodeURIComponent('{"nc":true,"size":[55,65]}')]) {
     assert.ok(call.includes(part), `onQuery must send ${part}, got: ${call}`);
   }
@@ -725,7 +731,7 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   // URL, not by log length: Results runs its own debounced onQuery on mount
   const hits = () => win.api.filter(c => c.call.includes('brand=Bose%2CSony')).length;
   const before = hits();
-  await win.onQuery({ cat: 'Audio', sort: 'best', dir: 'desc', page: 2, filters: { brands: ['Bose', 'Sony'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
+  await win.onQuery({ cat: 'Audio', sort: 'best', dir: 'desc', page: 2, filters: { q: 'buds', brands: ['Bose', 'Sony'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
   assert.strictEqual(hits(), before, 'a re-ordered but identical selection must not refetch');
 });
 

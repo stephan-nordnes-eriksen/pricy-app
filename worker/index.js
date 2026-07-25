@@ -746,6 +746,7 @@ function sortRows(rows, sort, dir) {
 // Mirrors Results' own filter predicate line for line, quirks included (a row
 // with no drop passes `sale`, because `undefined < 12` is false there too).
 function matches(r, f) {
+  if (f.name.length && !f.name.every(t => String(r.m.name || '').toLowerCase().includes(t))) return false;
   if (f.brands.length && !f.brands.includes(r.m.brand)) return false;
   if ((f.min || f.max) && r.best == null) return false;
   if (f.min && r.best < f.min) return false;
@@ -770,12 +771,17 @@ function listFilters(p) {
   let facets = {};
   try { facets = JSON.parse(p.get('facets') || '{}') || {}; } catch (e) {} // a broken filter param must not 500 a listing
   const f = {
+    // `name=` is Results' refine-within-results box: every token must appear in
+    // the NAME (its refineToks/refineMatch, no diacritic folding — unlike `q=`,
+    // which is the blob search). Client-side it would only ever see the loaded
+    // page, which is the same bug sort= and the filters were moved here to fix.
+    name: String(p.get('name') || '').toLowerCase().trim().split(/\s+/).filter(Boolean).slice(0, 8),
     brands: (p.get('brand') || '').split(',').filter(Boolean).slice(0, 50),
     min: num('min'), max: num('max'), rating: num('rating'),
     sale: p.get('sale') === '1', instock: p.get('instock') === '1',
     facets: typeof facets === 'object' && facets ? facets : {},
   };
-  const on = f.brands.length || f.min || f.max || f.rating || f.sale || f.instock || Object.keys(f.facets).length;
+  const on = f.name.length || f.brands.length || f.min || f.max || f.rating || f.sale || f.instock || Object.keys(f.facets).length;
   return on ? f : null;
 }
 

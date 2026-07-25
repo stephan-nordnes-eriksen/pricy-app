@@ -377,6 +377,9 @@ const PAGE = 400; // worker PAGE_MAX
 const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
   ...(cat ? { cat } : {}),
   ...(sort ? { sort, dir: dir || 'asc' } : {}),
+  // the rail's free-text refine (name only) — `name=`, not `q=`, which is the
+  // header's blob search; without it the refine would see one 400-row page
+  ...(f.q ? { name: f.q } : {}),
   ...(f.brands && f.brands.length ? { brand: f.brands.slice().sort().join(',') } : {}),
   ...(f.min ? { min: f.min } : {}), ...(f.max ? { max: f.max } : {}),
   ...(f.rating ? { rating: f.rating } : {}),

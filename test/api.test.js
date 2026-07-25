@@ -706,6 +706,14 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   assert.deepStrictEqual(await ids('cat=Pets&min=200&max=600'), [id('7099931000002')], 'price bounds filter on the best offer');
   assert.deepStrictEqual(await ids('cat=Pets&brand=Nobody'), [], 'no match is empty, not unfiltered');
 
+  // the rail's free-text refine (`name=`): every token in the NAME, whole
+  // category — client-side it could only ever refine the loaded page
+  assert.deepStrictEqual(await ids('cat=Pets&name=hunde'), [id('7099931000001'), id('7099931000003')], 'substring of the name matches');
+  assert.deepStrictEqual(await ids('cat=Pets&name=' + encodeURIComponent('myk hundeseng')), [id('7099931000003')], 'every token must hit, order-free');
+  assert.deepStrictEqual(await ids('cat=Pets&name=Zoo'), [], 'brand is not name — the refine searches names only');
+  assert.strictEqual((await get('cat=Pets&name=hunde')).meta.total, 2, 'total counts the refined set');
+  assert.deepStrictEqual(await ids('cat=Pets&name=hunde&brand=Zoo'), [id('7099931000003')], 'refine stacks with the other filters');
+
   // totals and the rail's counts, over the whole category
   const filtered = await get('cat=Pets&brand=Zoo');
   assert.strictEqual(filtered.meta.total, 2, 'meta.total counts every matching row, not the page');
