@@ -746,7 +746,7 @@ function sortRows(rows, sort, dir) {
 // Mirrors Results' own filter predicate line for line, quirks included (a row
 // with no drop passes `sale`, because `undefined < 12` is false there too).
 function matches(r, f) {
-  if (f.name.length && !f.name.every(t => String(r.m.name || '').toLowerCase().includes(t))) return false;
+  if (f.name.length) { const n = foldJs(r.m.name || ''); if (!f.name.every(t => n.includes(t))) return false; }
   if (f.brands.length && !f.brands.includes(r.m.brand)) return false;
   if ((f.min || f.max) && r.best == null) return false;
   if (f.min && r.best < f.min) return false;
@@ -772,10 +772,13 @@ function listFilters(p) {
   try { facets = JSON.parse(p.get('facets') || '{}') || {}; } catch (e) {} // a broken filter param must not 500 a listing
   const f = {
     // `name=` is Results' refine-within-results box: every token must appear in
-    // the NAME (its refineToks/refineMatch, no diacritic folding — unlike `q=`,
-    // which is the blob search). Client-side it would only ever see the loaded
-    // page, which is the same bug sort= and the filters were moved here to fix.
-    name: String(p.get('name') || '').toLowerCase().trim().split(/\s+/).filter(Boolean).slice(0, 8),
+    // the NAME (its refineToks/refineMatch), diacritic-folded on both sides like
+    // `q=` — "hundefor" has to find "Hundefôr". Client-side it would only ever
+    // see the loaded page, the same bug sort= and the filters moved here to fix.
+    // The fold MUST match upstream's refineToks/refineMatch: the screen filters
+    // its cache with those, so a server that folds while the client doesn't
+    // serves rows the screen then drops — a count with an empty list under it.
+    name: String(p.get('name') || '').trim().split(/\s+/).filter(Boolean).slice(0, 8).map(foldJs),
     brands: (p.get('brand') || '').split(',').filter(Boolean).slice(0, 50),
     min: num('min'), max: num('max'), rating: num('rating'),
     sale: p.get('sale') === '1', instock: p.get('instock') === '1',

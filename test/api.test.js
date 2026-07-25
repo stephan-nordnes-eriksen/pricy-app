@@ -711,6 +711,8 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   assert.deepStrictEqual(await ids('cat=Pets&name=hunde'), [id('7099931000001'), id('7099931000003')], 'substring of the name matches');
   assert.deepStrictEqual(await ids('cat=Pets&name=' + encodeURIComponent('myk hundeseng')), [id('7099931000003')], 'every token must hit, order-free');
   assert.deepStrictEqual(await ids('cat=Pets&name=Zoo'), [], 'brand is not name — the refine searches names only');
+  assert.deepStrictEqual(await ids('cat=Pets&name=hundefor'), [id('7099931000001')], 'ASCII typing must find "Hundefôr" — same fold as q=');
+  assert.deepStrictEqual(await ids('cat=Pets&name=' + encodeURIComponent('hundefôr')), [id('7099931000001')], 'and the accented spelling still works');
   assert.strictEqual((await get('cat=Pets&name=hunde')).meta.total, 2, 'total counts the refined set');
   assert.deepStrictEqual(await ids('cat=Pets&name=hunde&brand=Zoo'), [id('7099931000003')], 'refine stacks with the other filters');
 
