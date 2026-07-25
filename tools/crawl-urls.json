@@ -958,5 +958,35 @@
       "limit": 400,
       "delayMs": 400
     }
+  },
+  "Obs Bygg": {
+    "$discover": {
+      "sitemap": "https://www.obsbygg.no/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Obs": {
+    "$discover": {
+      "sitemap": "https://www.obs.no/sitemap.xml",
+      "sitemapFilter": ".",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Rum21": {
+    "$discover": {
+      "sitemap": "https://www.rum21.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
+  },
+  "Tegne.no": {
+    "$discover": {
+      "sitemap": "https://www.tegne.no/sitemap_index.xml",
+      "limit": 400,
+      "delayMs": 400
+    }
   }
 }
