@@ -1666,6 +1666,15 @@ test('scrape resolves a site-relative JSON-LD image against the page URL', async
   assert.strictEqual(await at('//cdn.chilli.no/a.jpg'), 'https://cdn.chilli.no/a.jpg', 'protocol-relative too');
   assert.strictEqual(await at('https://cdn.x/a.jpg'), 'https://cdn.x/a.jpg', 'absolute is left alone');
   assert.strictEqual(await at('javascript:'), null, 'unresolvable drops rather than queueing a doomed fetch');
+
+  // Ringo's Product.image is a Yoast graph ref, so JSON-LD yields nothing
+  globalThis.fetch = async () => new Response(
+    '<meta property="og:image" content="/wp-content/a.jpg" /><meta property="og:image:width" content="1000" />'
+    + page({ '@id': 'https://www.ringo.no/produkt/x/#primaryimage' }));
+  try {
+    const [row] = await scrapeSource('Ringo', { urls: { x: 'https://www.ringo.no/produkt/x/' } });
+    assert.strictEqual(row.image, 'https://www.ringo.no/wp-content/a.jpg', 'falls back to og:image, resolved and not confused by og:image:width');
+  } finally { globalThis.fetch = realFetch; }
 });
 
 test('breadcrumbCat reads microdata breadcrumbs, and a crumb that is the product name never counts', () => {

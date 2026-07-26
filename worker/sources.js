@@ -111,6 +111,16 @@ const absUrl = (u, base) => {
   try { const x = new URL(u, base); return /^https?:$/.test(x.protocol) ? x.href : null; } catch { return null; }
 };
 
+// Fallback when the JSON-LD carries no usable image: og:image is near
+// universal on product pages. Ringo's Product.image is a Yoast graph
+// reference ({"@id": "…#primaryimage"}) rather than a URL, so imageUrl()
+// yields nothing for all 688 of its products while og:image is right there.
+// The quote after og:image keeps og:image:width/:height from matching.
+const ogImage = (html) => {
+  const tag = html.match(/<meta[^>]+og:image["'][^>]*>/i)?.[0];
+  return tag?.match(/content=["']([^"']+)["']/i)?.[1] ?? null;
+};
+
 // Shared page → row extraction (schema.org Product/Offer JSON-LD), used by
 // both the curated-URL scrapeSource() and the sitemap-driven discoverSource()
 // below. Throws on anything that isn't a usable, NOK-priced offer.
@@ -147,7 +157,7 @@ function scrapeRow(html, pageUrl) {
     // because the Worker's fetch() can't take a bare path). Resolve against
     // the page it came from; a malformed value drops to null rather than
     // queueing an URL the drain can only ever fail on.
-    image: image ? absUrl(image, pageUrl) : null,
+    image: absUrl(image ?? ogImage(html) ?? '', pageUrl),
   };
 }
 
