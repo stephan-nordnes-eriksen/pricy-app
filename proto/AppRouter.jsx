@@ -6,7 +6,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "sparklines": true,
   "animations": true,
   "plan": "free",
-  "hideAutobuy": true
+  "hideAutobuy": true,
+  "installPreview": "auto"
 }/*EDITMODE-END*/;
 
 class ErrorBoundary extends React.Component {
@@ -33,6 +34,7 @@ function App(){
   window.PLAN = t.plan;
   window.setPlan = (v)=>setTweak("plan",v);
   window.HIDE_AUTOBUY = t.hideAutobuy;
+  window.INSTALL_PREVIEW = t.installPreview;
   window.go = go;
   let view;
   if(name==="login") view=<Login onAuthed={(email,opts)=>go(opts&&opts.signup?"onboarding":"home")} go={go} layout={t.loginLayout} />;
@@ -52,6 +54,8 @@ function App(){
     <TweaksPanel>
       <TweakSection label="Preview" />
       <TweakSelect label="Screen" value={name} options={[{value:"results",label:"Search results"},{value:"product",label:"Product page"},{value:"compare",label:"Compare products"},{value:"home",label:"Signed-in home"},{value:"browse",label:"Categories browse"},{value:"alerts",label:"Alerts / watchlist"},{value:"autobuy",label:"Auto-buy orders"},{value:"account",label:"Account & settings"},{value:"onboarding",label:"Onboarding"},{value:"login",label:"Login"},{value:"landing",label:"Public landing"},{value:"about",label:"About (public)"}].filter(o=>o.value!=="autobuy"||!t.hideAutobuy)} onChange={(v)=>{ if(v==="compare") CompareStore.seed(["xm5","bose-ultra","senn-m4"]); go(v, v==="results"?{cat:"Audio"}:v==="product"?{id:"xm5"}:{}); }} />
+      <TweakSection label="Install app (PWA)" />
+      <TweakRadio label="Install bar" value={t.installPreview} options={[{value:"auto",label:"Auto"},{value:"android",label:"Android"},{value:"ios",label:"iOS"}]} onChange={(v)=>setTweak("installPreview",v)} />
       <TweakSection label="Auto-buy (beta)" />
       <TweakToggle label="Hide auto-buy features" value={t.hideAutobuy} onChange={(v)=>setTweak("hideAutobuy",v)} />
       <TweakSection label="Subscription" />

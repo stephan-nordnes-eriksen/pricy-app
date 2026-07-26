@@ -56,6 +56,7 @@ function AppHeader({ go, onLogout }) {
   const hits = WatchStore.hits();
   const submit = (e) => { e && e.preventDefault(); const query = q.trim(); if (!query) return; setFocus(false); go('results', { query }); };
   return (
+    <React.Fragment>
     <header className="app-hdr">
       <div className="page app-hdr__row">
         <div className="app-hdr__logo" onClick={() => go('home')}>
@@ -104,6 +105,8 @@ function AppHeader({ go, onLogout }) {
         </nav>
       </div>
     </header>
+    <InstallPrompt />
+    </React.Fragment>
   );
 }
 

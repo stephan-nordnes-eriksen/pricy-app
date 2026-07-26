@@ -80,11 +80,21 @@ function Delta({ pct }) {
 }
 
 // --- Button -------------------------------------------------
-function Btn({ children, variant = '', size = '', icon, onClick, style, disabled, title }) {
+function Btn({ children, variant = '', size = '', icon, onClick, style, disabled, title, href, target, rel }) {
   const cls = ['btn', variant && 'btn--' + variant, size && 'btn--' + size].filter(Boolean).join(' ');
+  const inner = <React.Fragment>{icon && <Icon name={icon} size={16} />}{children}</React.Fragment>;
+  // href + target="_blank" renders a real anchor: outbound shop links must never
+  // navigate the current tab (installed PWAs have no back button).
+  if (href && !disabled) {
+    return (
+      <a className={cls} href={href} target={target} rel={rel || (target === '_blank' ? 'noopener' : undefined)} onClick={onClick} style={style} title={title}>
+        {inner}
+      </a>
+    );
+  }
   return (
     <button className={cls} onClick={onClick} style={style} disabled={disabled} title={title}>
-      {icon && <Icon name={icon} size={16} />}{children}
+      {inner}
     </button>
   );
 }

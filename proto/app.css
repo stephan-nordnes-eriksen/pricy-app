@@ -166,6 +166,25 @@
 
 .page { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
 
+/* ---- install (PWA) bar ---------------------------------- */
+.instl { background: var(--green-300); border-bottom: var(--bw) solid var(--ink-900); animation: instl-in 0.18s var(--ease, ease-out); }
+@keyframes instl-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+#root.no-anim .instl { animation: none; }
+.instl__row { display: flex; align-items: center; gap: var(--s-3); min-height: 54px; padding: 8px var(--gutter); }
+.instl__mark { flex: 0 0 auto; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: var(--bw) solid var(--ink-900); background: var(--paper); }
+.instl__txt { margin: 0; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; font-size: 14px; line-height: 1.4; color: var(--ink-900); }
+.instl__txt b { font-family: var(--font-display); font-weight: 700; }
+.instl__step { display: inline; }
+.instl__k { display: inline-flex; align-items: center; gap: 5px; vertical-align: -4px; margin: 0 1px; padding: 2px 7px; border: 1.5px solid var(--ink-900); background: var(--paper); font-family: var(--font-mono); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.instl .btn { margin-left: auto; }
+.instl__x { flex: 0 0 auto; margin-left: auto; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: var(--bw) solid transparent; background: none; color: var(--ink-900); cursor: pointer; }
+.instl .btn + .instl__x { margin-left: 0; }
+.instl__x:hover { border-color: var(--ink-900); background: var(--paper); }
+@media (max-width: 620px) {
+  .instl__mark { display: none; }
+  .instl__txt { font-size: 13px; }
+}
+
 /* account dropdown */
 .acctmenu { position: absolute; top: calc(100% + 8px); right: 0; width: 230px; background: var(--paper); border: var(--bw) solid var(--ink-900); box-shadow: var(--shadow); z-index: 70; animation: pop-in var(--t-fast) both; }
 .acctmenu__id { display: flex; flex-direction: column; gap: 2px; padding: 12px var(--s-4); border-bottom: var(--bw) solid var(--ink-900); background: var(--canvas-2); }

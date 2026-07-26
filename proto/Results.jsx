@@ -877,7 +877,7 @@ function ProductPage({ go, id }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)', alignItems: 'stretch' }}>
                   {!window.HIDE_AUTOBUY && <Btn variant="dark" icon="zap" disabled={!best} title={best ? undefined : (v.unavailable ? 'No shop sells this combination' : 'No offers yet')} onClick={() => setBuyNow(true)}>Buy now</Btn>}
-                  <Btn variant={window.HIDE_AUTOBUY ? 'dark' : 'ghost'} icon="external-link" disabled={!shopUrl} title={shopUrl ? undefined : 'No shop link available for this product'} onClick={() => shopUrl && window.open(shopUrl, '_blank', 'noopener')}>Go to shop</Btn>
+                  <Btn variant={window.HIDE_AUTOBUY ? 'dark' : 'ghost'} icon="external-link" disabled={!shopUrl} title={shopUrl ? undefined : 'No shop link available for this product'} href={shopUrl} target="_blank" rel="noopener">Go to shop</Btn>
                 </div>
               </div>
               <div className="bestbox__bot">
@@ -936,7 +936,7 @@ function ProductPage({ go, id }) {
                 <div className="orow__ship"><StockBadge state={o.stock === undefined ? 'unknown' : o.stock ? 'in' : 'out'} label={o.stock ? o.eta : undefined} />{o.updated_at ? <div className="orow__checked">checked {relTime(o.updated_at)}</div> : null}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--s-3)' }}>
                   <Price value={o.price} size={18} />
-                  <Btn variant={i === 0 ? 'primary' : 'ghost'} size="sm" disabled={!o.url} onClick={() => o.url && window.open(o.url, '_blank', 'noopener')}>Visit</Btn>
+                  <Btn variant={i === 0 ? 'primary' : 'ghost'} size="sm" disabled={!o.url} href={o.url} target="_blank" rel="noopener">Visit</Btn>
                 </div>
               </div>
             ))}

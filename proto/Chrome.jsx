@@ -4,6 +4,77 @@
 
 // (legacy Header component removed — AppHeader / LandingHeader are the live headers)
 
+// --- Install app (PWA) bar -----------------------------------
+// Shown under the signed-in header. Chrome/Android: real beforeinstallprompt.
+// iOS Safari: static Share → Add to Home Screen instructions. Anything else: nothing.
+const INSTALL_FLAG = 'pricy_install_dismissed';
+
+function InstallPrompt() {
+  const preview = (typeof window !== 'undefined' && window.INSTALL_PREVIEW) || 'auto';
+  const forced = preview !== 'auto';
+  const evtRef = useRef(null);
+  const [canPrompt, setCanPrompt] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const onBIP = (e) => { e.preventDefault(); evtRef.current = e; setCanPrompt(true); };
+    const onInstalled = () => { evtRef.current = null; setCanPrompt(false); setHidden(true); };
+    window.addEventListener('beforeinstallprompt', onBIP);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBIP);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+  useEffect(() => { setHidden(false); }, [preview]);
+
+  if (hidden) return null;
+  const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(INSTALL_FLAG) === '1'; } catch (e) {}
+  if (!forced && (standalone || dismissed)) return null;
+
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+  const mode = forced ? preview : (canPrompt ? 'android' : (isIOS ? 'ios' : null));
+  if (!mode) return null;
+
+  const dismiss = () => {
+    if (!forced) { try { localStorage.setItem(INSTALL_FLAG, '1'); } catch (e) {} }
+    setHidden(true);
+  };
+  const install = () => {
+    const e = evtRef.current;
+    evtRef.current = null;
+    setHidden(true);
+    setCanPrompt(false);
+    if (!e) return;
+    try { e.prompt(); if (e.userChoice && e.userChoice.catch) e.userChoice.catch(() => {}); } catch (err) {}
+  };
+
+  return (
+    <div className="instl" role="region" aria-label="Install pricy">
+      <div className="page instl__row">
+        <span className="instl__mark"><Mark size={20} /></span>
+        <p className="instl__txt">
+          {mode === 'ios' ? (
+            <React.Fragment>
+              <b>Install pricy.</b>
+              <span className="instl__step">Tap <span className="instl__k"><Icon name="share" size={13} />Share</span>, then <b>Add to Home Screen</b>.</span>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <b>Install pricy.</b>
+              <span className="instl__step">Full-screen app on your home screen — price alerts arrive as notifications.</span>
+            </React.Fragment>
+          )}
+        </p>
+        {mode === 'android' && <Btn variant="dark" size="sm" icon="download" onClick={install}>Install app</Btn>}
+        <button type="button" className="instl__x" onClick={dismiss} title="Dismiss" aria-label="Dismiss install prompt"><Icon name="x" size={16} /></button>
+      </div>
+    </div>
+  );
+}
+
 function Footer({ go, authed = true }) {
   const PUB = { about: 1, landing: 1, login: 1 };
   const nav = (route, params) => go(authed || PUB[route] ? route : 'login', params);
@@ -47,4 +118,4 @@ function Footer({ go, authed = true }) {
   );
 }
 
-Object.assign(window, { Footer });
+Object.assign(window, { Footer, InstallPrompt });
