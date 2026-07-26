@@ -73,7 +73,11 @@ Two Claude Design projects feed this repo:
   those, so a server that folds while the client doesn't serves rows Results
   then drops — a non-zero count over an empty list.
   `meta.fcounts` stays category-wide (computed before filtering), which is why
-  Results falls back to counting its own rows while a refine is active.
+  Results falls back to counting its own rows while a refine is active (0.09 ms
+  over a 400-row page — measured, not a concern). Boot HOLDS refines shorter
+  than 3 chars for 400 ms past upstream's own 250 ms debounce and resolves the
+  superseded call `null`: "e" on Toys matches 1,309 of 1,387 rows and the page
+  it merges is pure cost. A deliberate 1-char refine still runs, 650 ms later.
   SCREEN owns the page number; never offset by rows on screen, a slice can
   hold rows from an `ids=`/`top=drop` fetch. `ensureRoute` prefetches the
   screen's own default sort (`sort=best&dir=asc`) so the mount call is a
