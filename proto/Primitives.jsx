@@ -15,7 +15,7 @@ function trustLine() { const m = metaOf(); return m ? fmt(m.products) + ' produc
 function ProdImg({ p, size = 18, fill, style }) {
   if (p && p.img) {
     const s = fill ? { width: '100%', height: '100%', objectFit: 'contain', display: 'block', ...style } : { width: size, height: size, objectFit: 'contain', display: 'block', ...style };
-    return <img src={p.img} alt={p.name} style={s} />;
+    return <img src={p.img} alt={p.name} loading="lazy" decoding="async" style={s} />;
   }
   return <Icon name={p.icon} size={size} style={style} />;
 }

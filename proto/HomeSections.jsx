@@ -65,7 +65,7 @@ function WatchRow({ w, go, draw }) {
   return (
     <div className={'wrow' + (w.hit ? ' is-hit' : '')} onClick={() => go('product', { id: w.id })}>
       {w.hit && <span className="wrow__flag" />}
-      <div className="wrow__img"><Icon name={w.icon} size={26} /></div>
+      <div className="wrow__img"><ProdImg p={w} fill size={26} /></div>
       <div>
         <div className="wrow__name">{w.name}</div>
         <div className="wrow__meta">

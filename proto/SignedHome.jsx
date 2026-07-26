@@ -130,7 +130,7 @@ function FeedCard({ f, go }) {
         <span className="feedcard__time">{f.time}</span>
       </div>
       <div className="feedcard__body" onClick={() => go('product', { id: f.id })}>
-        <div className="feedcard__img"><Icon name={f.prod.icon} size={30} /></div>
+        <div className="feedcard__img"><ProdImg p={f.prod} fill size={30} /></div>
         <div>
           <div className="feedcard__name">{f.title}</div>
           <div className="feedcard__sub">{f.text} · {f.prod.shops} shops tracked</div>
