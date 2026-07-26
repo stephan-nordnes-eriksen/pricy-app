@@ -4,10 +4,65 @@ The five fixes in [api-latency-round-trips](api-latency-round-trips.md) took a
 category page from 954 → 275 ms, a PDP fetch 318 → 122, a search 416 → 139.
 This file is the leftovers.
 
-**Nothing here is urgent.** It exists so the next person doesn't re-derive what
-was already measured, and doesn't trip the invariants those fixes introduced.
-The one item worth acting on soon is §4's unauthenticated `hidden=1` listing,
-and it isn't a performance problem at all.
+~~**Nothing here is urgent.**~~ **§0 is now urgent and live** (added 2026-07-26):
+`cat=` reads exceed the Worker CPU limit on about half of all requests. The rest
+of the file still exists so the next person doesn't re-derive what was already
+measured, and doesn't trip the invariants those fixes introduced.
+
+## 0. URGENT (2026-07-26): `cat=` reads exceed the Worker CPU limit ~50% of the time
+
+**This is live and user-visible.** `GET /api/products?cat=<big category>` returns
+Cloudflare 503 / `error code: 1102` on about half of all requests. Measured with
+unique cache-busters (these responses carry no cache headers at all, so real
+users are not shielded by the edge):
+
+| category | heads | failures / 8 |
+|---|---|---|
+| Projectors | 58 | 0 |
+| Watches | 351 | 1 |
+| Home | 1,239 | 3 |
+| Furniture | 1,874 | 3 |
+| Toys | 2,206 | 4 |
+
+`ids=` fetches (the PDP path) are 12/12 fine, so `catMeta` is not the term.
+`wrangler tail --status error` gives the cause outright:
+
+```
+"outcome": "exceededCpu",  "cpuTime": 43,  "wallTime": 132
+"message": "Worker exceeded CPU time limit."
+```
+
+So it is **§2's `listIds` JS shaping item, arriving early**. That item's stated
+trigger — *"one category past ~20k heads"* — was calibrated on the 275 ms
+latency budget and is wrong by roughly 10×, because neither this file nor
+[api-read-path-performance](api-read-path-performance.md) priced the **CPU
+ceiling**: pricy is on the Workers *free* plan (10 ms/invocation, evidently with
+burst slack up to ~43 ms), and CLAUDE.md's own number for a category read is
+64 ms. It has been over budget the whole time; catalog growth to 22,120 visible
+heads is what pushed the failure rate to a coin flip. The failure rate scales
+with the category's head count, exactly as the shaping cost does.
+
+Two fixes, and the first one is not code:
+
+1. **Workers Paid ($5/mo) raises the default CPU limit to 30 s** and this entire
+   class of failure disappears — including `/api/catalog.json`'s 503s, which are
+   the same ceiling. It also unblocks `SEND_EMAIL` (magic-link email is
+   console-logged in prod today). Cheapest fix available by a wide margin.
+2. **Cut `listIds`' per-row work.** Every `cat=` request JSON-parses and runs
+   `deriveFacets` over the WHOLE category to produce 60 ids, a `total` and a
+   category-wide `fcounts`. `fcounts` does not depend on the query at all
+   (computed before filtering, by design), so it is memoisable per
+   `(cat, catalog version)` the way `catMeta` already memoises per version —
+   note the memory ceiling, 31 categories of shaped rows is not free. Do NOT
+   re-derive the "push facets into SQL" trade;
+   [api-read-path-performance](api-read-path-performance.md) §3 already priced
+   and rejected it.
+
+Until one of those lands, **do not grow the largest categories**: the pending
+Gamezone refile (591 rows, Gaming → Toys, see
+[category-misclassification](category-misclassification.md)) would add 26% to
+Toys, which is the worst offender. It is held for that reason, not because the
+data is in doubt.
 
 ## 1. Invariants the fixes introduced — read before touching the query layer
 
@@ -47,7 +102,7 @@ is no test *about* the shim.
 
 | item | measured | trigger to act |
 |---|---|---|
-| `listIds` JS shaping | largest single remaining term in a 275 ms page | one category past ~20k heads (largest today: Toys, 1,387) |
+| `listIds` JS shaping | **NOW URGENT — see §0.** largest single remaining term in a 275 ms page | ~~one category past ~20k heads~~ — wrong by 10×, the real trigger was the CPU ceiling and it fired at 2,206 |
 | 245 KB response body | ~23 ms transfer, plus client parse | if the browser-side page ever gets profiled |
 | `catMeta` cold miss | 5 full-table aggregates, now in 1 round trip | if cold isolates show up in a prod measurement |
 | `search_index` storage | ~2.8 MB of a 10 MB database, one trigger write per products write | re-check at 10× the catalog |
