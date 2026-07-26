@@ -135,6 +135,17 @@ button { font-family: inherit; }
 .orow.is-best { background: var(--green-100); }
 .orow__shop { font-family: var(--font-display); font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 8px; }
 .orow__ship { font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); }
+/* collapsed offer list: top 5 + expandable rest */
+.offers__more { border-top: var(--bw-hair) solid var(--ink-300); }
+.offers__more .orow:last-child { border-bottom: var(--bw-hair) solid var(--ink-300); }
+.offers__toggle { display: flex; align-items: center; gap: 8px; padding: var(--s-3) var(--s-4); cursor: pointer; list-style: none; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--ink-700); background: var(--canvas); user-select: none; }
+.offers__toggle::-webkit-details-marker { display: none; }
+.offers__toggle:hover { background: var(--canvas-2); }
+.offers__toggle .icon { transition: transform .15s ease; flex: none; display: inline-flex; }
+.offers__more[open] .offers__toggle .icon { transform: rotate(180deg); }
+.offers__toggle-hint { margin-left: auto; font-weight: 400; color: var(--ink-400); white-space: nowrap; }
+.offers__more[open] .offers__toggle-hint, .offers__more[open] .offers__toggle-lbl--more, .offers__toggle-lbl--less { display: none; }
+.offers__more[open] .offers__toggle-lbl--less { display: inline; }
 
 /* price history chart */
 .chart { border: var(--bw) solid var(--ink-900); background: var(--paper); padding: var(--s-4); }

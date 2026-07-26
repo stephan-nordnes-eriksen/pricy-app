@@ -818,6 +818,21 @@ function ReportProblemModal({ p, onClose, onDone }) {
 // ===========================================================
 // PRODUCT COMPARISON PAGE (PDP)
 // ===========================================================
+const OFFERS_SHOWN = 5; // cheapest N shown; the rest expand on demand
+function OfferRow({ o, best }) {
+  return (
+    <div className={'orow' + (best ? ' is-best' : '')}>
+      <div className="orow__shop">{o.shop}{best && <Tag kind="best">★ Best</Tag>}</div>
+      <div className="orow__ship">{o.ship}</div>
+      <div className="orow__ship"><StockBadge state={o.stock === undefined ? 'unknown' : o.stock ? 'in' : 'out'} label={o.stock ? o.eta : undefined} />{o.updated_at ? <div className="orow__checked">checked {relTime(o.updated_at)}</div> : null}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--s-3)' }}>
+        <Price value={o.price} size={18} />
+        <Btn variant={best ? 'primary' : 'ghost'} size="sm" disabled={!o.url} href={o.url} target="_blank" rel="noopener">Visit</Btn>
+      </div>
+    </div>
+  );
+}
+
 function ProductPage({ go, id }) {
   const rv = getListing(id) ? null : resolveVariantId(id);
   const p = getListing(id) || (rv && rv.p) || CATALOG[0];
@@ -929,17 +944,18 @@ function ProductPage({ go, id }) {
           <div className="offers">
             <div className="offers__h"><span>Shop</span><span>Delivery</span><span>Stock</span><span style={{ textAlign: 'right' }}>Price</span></div>
             {!best && <div className="offers__empty">{v.unavailable ? 'No shop sells ' + v.vlabel + ' right now' : 'No offers yet — we’re tracking this product'}</div>}
-            {(v.offers || []).map((o, i) => (
-              <div key={o.shop} className={'orow' + (i === 0 ? ' is-best' : '')}>
-                <div className="orow__shop">{o.shop}{i === 0 && <Tag kind="best">★ Best</Tag>}</div>
-                <div className="orow__ship">{o.ship}</div>
-                <div className="orow__ship"><StockBadge state={o.stock === undefined ? 'unknown' : o.stock ? 'in' : 'out'} label={o.stock ? o.eta : undefined} />{o.updated_at ? <div className="orow__checked">checked {relTime(o.updated_at)}</div> : null}</div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--s-3)' }}>
-                  <Price value={o.price} size={18} />
-                  <Btn variant={i === 0 ? 'primary' : 'ghost'} size="sm" disabled={!o.url} href={o.url} target="_blank" rel="noopener">Visit</Btn>
-                </div>
-              </div>
-            ))}
+            {(v.offers || []).slice(0, OFFERS_SHOWN).map((o, i) => <OfferRow key={o.shop} o={o} best={i === 0} />)}
+            {(v.offers || []).length > OFFERS_SHOWN && (
+              <details className="offers__more">
+                <summary className="offers__toggle">
+                  <Icon name="chevron-down" size={14} />
+                  <span className="offers__toggle-lbl offers__toggle-lbl--more">Show {v.offers.length - OFFERS_SHOWN} more shops</span>
+                  <span className="offers__toggle-lbl offers__toggle-lbl--less">Show fewer shops</span>
+                  <span className="offers__toggle-hint">kr {fmt(v.offers[OFFERS_SHOWN].price)} – kr {fmt(v.offers[v.offers.length - 1].price)}</span>
+                </summary>
+                {v.offers.slice(OFFERS_SHOWN).map(o => <OfferRow key={o.shop} o={o} />)}
+              </details>
+            )}
             <div className="offers__foot">
               <button type="button" className="report-link" onClick={() => setReport(true)}><Icon name="flag" size={12} /> Report a problem</button>
             </div>
