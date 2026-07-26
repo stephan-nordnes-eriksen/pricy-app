@@ -123,12 +123,13 @@ function specsFor(p, sel) {
 }
 
 // ---- spec sheet (PDP section) -----------------------------
-function SpecRow({ r, onSel }) {
+function SpecRow({ r, onSel, p, sel }) {
+  const naOf = (oid) => !!(p && sel && r.ax && window.comboAvail && !comboAvail(p, { ...sel, [r.ax.id]: oid }));
   let val;
   if (r.selectable && r.ax.type === 'swatch') {
-    val = <span className="srow__opts">{r.ax.options.map(o => <button key={o.id} type="button" className={'vswatch vswatch--sm' + (r.value === o.id ? ' is-on' : '')} style={{ background: o.swatch }} title={o.label + (o.delta > 0 ? ' (+kr ' + fmt(o.delta) + ')' : '')} aria-label={o.label} onClick={() => onSel(r.ax.id, o.id)}></button>)}<span className="srow__cur">{r.display}</span></span>;
+    val = <span className="srow__opts">{r.ax.options.map(o => <button key={o.id} type="button" className={'vswatch vswatch--sm' + (r.value === o.id ? ' is-on' : '') + (naOf(o.id) ? ' is-na' : '')} style={{ background: o.swatch }} title={o.label + (o.delta > 0 ? ' (+kr ' + fmt(o.delta) + ')' : '') + (naOf(o.id) ? ' — no shop sells this combination' : '')} aria-label={o.label} onClick={() => onSel(r.ax.id, o.id)}></button>)}<span className="srow__cur">{r.display}</span></span>;
   } else if (r.selectable) {
-    val = <span className="srow__opts">{r.ax.options.map(o => <button key={o.id} type="button" className={'vopt vopt--sm' + (r.value === o.id ? ' is-on' : '')} onClick={() => onSel(r.ax.id, o.id)}>{o.label}{o.delta > 0 && <span className="vopt__d">+{fmt(o.delta)}</span>}</button>)}</span>;
+    val = <span className="srow__opts">{r.ax.options.map(o => <button key={o.id} type="button" className={'vopt vopt--sm' + (r.value === o.id ? ' is-on' : '') + (naOf(o.id) ? ' is-na' : '')} title={naOf(o.id) ? 'No shop sells this combination' : undefined} onClick={() => onSel(r.ax.id, o.id)}>{o.label}{o.delta > 0 && <span className="vopt__d">+{fmt(o.delta)}</span>}</button>)}</span>;
   } else {
     const na = r.display === '—';
     val = <span className={'srow__val' + (na ? ' is-na' : '') + (r.type === 'bool' && r.value === true ? ' is-yes' : '')}>{r.display}</span>;
@@ -166,7 +167,7 @@ function SpecsSection({ p, sel, onSel }) {
         {s.groups.map(g => (
           <div key={g.id} className="sgrp">
             <div className="sgrp__h">{g.label}</div>
-            {g.rows.map(r => <SpecRow key={r.id} r={r} onSel={onSel} />)}
+            {g.rows.map(r => <SpecRow key={r.id} r={r} onSel={onSel} p={p} sel={sel} />)}
           </div>
         ))}
       </div>}

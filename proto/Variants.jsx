@@ -40,14 +40,29 @@ const VARIANT_DEFS = {
   ] },
 };
 
+// combinations no shop stocks right now — greyed out in the picker, and every
+// "cheapest" shortcut skips them. Hand-picked so each single option is still
+// buyable in some other combination (and the default combo always is).
+const VARIANT_OUT = {
+  pixel8: ['256-rose'],
+  iphone: ['512-yellow', '256-green'],
+  s24: ['512-amber'],
+  mba: ['512-grey'],
+};
+
 function _vhash(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 997; return h; }
 function variantOpts(p, sel) { return p.variants.axes.map(ax => ax.options.find(o => o.id === sel[ax.id]) || ax.options[0]); }
 function defaultSel(p) { const s = {}; if (p.variants) p.variants.axes.forEach(ax => { s[ax.id] = ax.options[0].id; }); return s; }
 function variantLabel(p, sel) { return p.variants ? variantOpts(p, sel).map(o => o.label).join(' · ') : ''; }
+function comboKey(p, sel) { return variantOpts(p, sel).map(o => o.id).join('-'); }
+// does any shop sell this combination?
+function comboAvail(p, sel) { if (!p.variants) return true; const out = VARIANT_OUT[p.id]; return !out || out.indexOf(comboKey(p, sel)) < 0; }
+function allCombos(p) { let c = [{}]; p.variants.axes.forEach(ax => { c = c.flatMap(x => ax.options.map(o => ({ ...x, [ax.id]: o.id }))); }); return c; }
 
-// price-only lookup for a combo (no offer/history generation)
+// price-only lookup for a combo (no offer/history generation) — null = unsold
 function variantBest(p, sel) {
   if (!p.variants) return p.best;
+  if (!comboAvail(p, sel)) return null;
   const opts = variantOpts(p, sel);
   const key = opts.map(o => o.id).join('-');
   if (p.listings && p.listings[key]) return p.listings[key].best;
@@ -56,20 +71,18 @@ function variantBest(p, sel) {
   const h = _vhash(p.id + ':' + key);
   return p.best + delta + (h % 5) * 30; // small per-combo market variance
 }
-// cheapest option on one axis, holding the other selections
+// cheapest *sold* option on one axis, holding the other selections. null = none sold
 function cheapestOn(p, sel, axisId) {
   const ax = p.variants.axes.find(a => a.id === axisId);
-  let id = ax.options[0].id, price = Infinity;
-  ax.options.forEach(o => { const b = variantBest(p, { ...sel, [axisId]: o.id }); if (b < price) { price = b; id = o.id; } });
-  return { id, price };
+  let id = null, price = Infinity;
+  ax.options.forEach(o => { const b = variantBest(p, { ...sel, [axisId]: o.id }); if (b != null && b < price) { price = b; id = o.id; } });
+  return id ? { id, price } : null;
 }
-// cheapest combination across all axes
+// cheapest combination a shop actually sells. null = none sold
 function cheapestCombo(p) {
-  let combos = [{}];
-  p.variants.axes.forEach(ax => { combos = combos.flatMap(c => ax.options.map(o => ({ ...c, [ax.id]: o.id }))); });
-  let sel = combos[0], price = Infinity;
-  combos.forEach(c => { const b = variantBest(p, c); if (b < price) { price = b; sel = c; } });
-  return { sel, price };
+  let sel = null, price = Infinity;
+  allCombos(p).forEach(c => { const b = variantBest(p, c); if (b != null && b < price) { price = b; sel = c; } });
+  return sel ? { sel, price } : null;
 }
 
 // derived listing for a selected combination — same product id,
@@ -79,6 +92,7 @@ function variantListing(p, sel) {
   const opts = variantOpts(p, sel);
   const vlabel = opts.map(o => o.label).join(' · ');
   const key = opts.map(o => o.id).join('-');
+  if (!comboAvail(p, sel)) return { ...p, vlabel, unavailable: true, best: null, was: null, drop: 0, shops: 0, offers: [], history: [] };
   if (p.listings && p.listings[key]) return { ...p.listings[key], vlabel };
   if (opts.every((o, i) => o.id === p.variants.axes[i].options[0].id)) return { ...p, vlabel }; // default combo = base listing
   const delta = opts.reduce((n, o) => n + (o.delta || 0), 0);
@@ -111,6 +125,7 @@ function resolveVariantId(id) {
 // ---- picker (PDP) -----------------------------------------
 function VariantPicker({ p, sel, onSel, onSelAll }) {
   if (!p.variants) return null;
+  const avail = comboAvail(p, sel);
   const curBest = variantBest(p, sel);
   const cc = cheapestCombo(p);
   return (
@@ -118,7 +133,7 @@ function VariantPicker({ p, sel, onSel, onSelAll }) {
       {p.variants.axes.map(ax => {
         const cur = ax.options.find(o => o.id === sel[ax.id]) || ax.options[0];
         const cheap = cheapestOn(p, sel, ax.id);
-        const save = curBest - cheap.price;
+        const save = (avail && curBest != null && cheap) ? curBest - cheap.price : 0;
         return (
           <div key={ax.id}>
             <div className="vpick__lbl">
@@ -126,17 +141,22 @@ function VariantPicker({ p, sel, onSel, onSelAll }) {
               {save > 0 && <button type="button" className="vpick__cheap" title={'Switch to ' + (ax.options.find(o => o.id === cheap.id) || {}).label + ' — kr ' + fmt(cheap.price)} onClick={() => onSel(ax.id, cheap.id)}>▼ Cheapest · save kr {fmt(save)}</button>}
             </div>
             <div className="vpick__opts">
-              {ax.options.map(o => ax.type === 'swatch'
-                ? <button key={o.id} type="button" className={'vswatch' + (cur.id === o.id ? ' is-on' : '')} style={{ background: o.swatch }} title={o.label + (o.delta > 0 ? ' (+kr ' + fmt(o.delta) + ')' : '')} aria-label={o.label} onClick={() => onSel(ax.id, o.id)}></button>
-                : <button key={o.id} type="button" className={'vopt' + (cur.id === o.id ? ' is-on' : '')} onClick={() => onSel(ax.id, o.id)}>{o.label}{o.delta > 0 && <span className="vopt__d">+{fmt(o.delta)}</span>}</button>)}
+              {ax.options.map(o => {
+                const na = !comboAvail(p, { ...sel, [ax.id]: o.id });
+                const t = o.label + (o.delta > 0 ? ' (+kr ' + fmt(o.delta) + ')' : '') + (na ? ' — no shop sells this combination' : '');
+                return ax.type === 'swatch'
+                  ? <button key={o.id} type="button" className={'vswatch' + (cur.id === o.id ? ' is-on' : '') + (na ? ' is-na' : '')} style={{ background: o.swatch }} title={t} aria-label={t} onClick={() => onSel(ax.id, o.id)}></button>
+                  : <button key={o.id} type="button" className={'vopt' + (cur.id === o.id ? ' is-on' : '') + (na ? ' is-na' : '')} title={na ? t : undefined} onClick={() => onSel(ax.id, o.id)}>{o.label}{o.delta > 0 && <span className="vopt__d">+{fmt(o.delta)}</span>}</button>;
+              })}
             </div>
           </div>
         );
       })}
       <div className="vpick__foot">
-        {curBest > cc.price
-          ? <button type="button" className="vpick__combo" title={variantLabel(p, cc.sel)} onClick={() => onSelAll && onSelAll(cc.sel)}>▼ Cheapest combination · kr {fmt(cc.price)}</button>
-          : <span className="vpick__done">✓ Cheapest combination</span>}
+        {!avail && <span className="vpick__na">No shop sells this combination</span>}
+        {cc && (!avail || curBest > cc.price)
+          ? <button type="button" className="vpick__combo" title={variantLabel(p, cc.sel)} onClick={() => onSelAll && onSelAll(cc.sel)}>▼ {avail ? 'Cheapest combination' : 'Cheapest available'} · kr {fmt(cc.price)}</button>
+          : avail && <span className="vpick__done">✓ Cheapest combination</span>}
       </div>
     </div>
   );
@@ -155,4 +175,4 @@ function VariantHint({ p }) {
   );
 }
 
-Object.assign(window, { VARIANT_DEFS, defaultSel, variantLabel, variantListing, variantBest, cheapestOn, cheapestCombo, resolveVariantId, VariantPicker, VariantHint });
+Object.assign(window, { VARIANT_DEFS, VARIANT_OUT, defaultSel, variantLabel, comboKey, comboAvail, allCombos, variantListing, variantBest, cheapestOn, cheapestCombo, resolveVariantId, VariantPicker, VariantHint });

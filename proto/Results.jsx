@@ -862,28 +862,28 @@ function ProductPage({ go, id }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)', margin: '0 0 var(--s-4)', flexWrap: 'wrap' }}>
               <Stars rating={p.rating} reviews={p.reviews} />
               {p.nc && <span className="rrow__feat">Noise cancelling</span>}
-              <StockBadge state={p.stock ? 'in' : 'back'} />
+              <StockBadge state={v.unavailable ? 'out' : (p.stock ? 'in' : 'back')} />
               {specsFor(p) && <a className="pdp__speclink" onClick={scrollToSpecs}>Specifications ↓</a>}
               <CompareBtn p={p} variant="pill" />
             </div>
 
             <VariantPicker p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))} onSelAll={(s) => setSel(s)} />
 
-            <div className="bestbox">
+            <div className={'bestbox' + (v.unavailable ? ' is-na' : '')}>
               <div className="bestbox__top">
                 <div>
                   <div className="label">{best ? 'Best price · ' + best.shop : 'Best price'}</div>
-                  {best ? <div className="bestbox__price"><span className="cur">kr</span><span className="t-price-lg">{fmt(best.price)}</span></div> : <div className="no-offers" style={{ fontSize: 15, padding: '10px 0' }}>No offers yet</div>}
+                  {best ? <div className="bestbox__price"><span className="cur">kr</span><span className="t-price-lg">{fmt(best.price)}</span></div> : <div className="no-offers" style={{ fontSize: 15, padding: '10px 0' }}>{v.unavailable ? 'Not sold in this combination' : 'No offers yet'}</div>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)', alignItems: 'stretch' }}>
-                  {!window.HIDE_AUTOBUY && <Btn variant="dark" icon="zap" disabled={!best} title={best ? undefined : 'No offers yet'} onClick={() => setBuyNow(true)}>Buy now</Btn>}
+                  {!window.HIDE_AUTOBUY && <Btn variant="dark" icon="zap" disabled={!best} title={best ? undefined : (v.unavailable ? 'No shop sells this combination' : 'No offers yet')} onClick={() => setBuyNow(true)}>Buy now</Btn>}
                   <Btn variant={window.HIDE_AUTOBUY ? 'dark' : 'ghost'} icon="external-link" disabled={!shopUrl} title={shopUrl ? undefined : 'No shop link available for this product'} onClick={() => shopUrl && window.open(shopUrl, '_blank', 'noopener')}>Go to shop</Btn>
                 </div>
               </div>
               <div className="bestbox__bot">
                 {best ? (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>{v.was != null && <span className="strike">was kr {fmt(v.was)}</span>}{v.drop > 0 && <span className="delta delta--down" style={{ whiteSpace: 'nowrap' }}>▼ −{v.drop}%</span>}<span className="muted">· {v.shops} shops</span></span>
-                ) : <span className="muted">We’ll show prices as soon as a shop lists it</span>}
+                ) : <span className="muted">{v.unavailable ? 'No shop lists ' + v.vlabel + ' — pick another combination' : 'We’ll show prices as soon as a shop lists it'}</span>}
                 {low != null && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--green-700)', whiteSpace: 'nowrap' }}>All-time low kr {fmt(low)}</span>}
               </div>
             </div>
@@ -898,7 +898,7 @@ function ProductPage({ go, id }) {
                   </div>
                 </div>
                 {!watching ? (
-                  <Btn variant="primary" icon="bell" onClick={() => { WatchStore.add(v.id, +target || v.best || 0); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || v.best || 0)); }}>
+                  <Btn variant="primary" icon="bell" disabled={!v.best || !(+target > 0)} title={v.unavailable ? 'Pick a combination a shop sells' : (!v.best ? 'No prices to watch yet' : undefined)} onClick={() => { WatchStore.add(v.id, +target || v.best || 0); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || v.best || 0)); }}>
                     Watch price
                   </Btn>
                 ) : (
@@ -928,7 +928,7 @@ function ProductPage({ go, id }) {
         <div className="pdp__grid">
           <div className="offers">
             <div className="offers__h"><span>Shop</span><span>Delivery</span><span>Stock</span><span style={{ textAlign: 'right' }}>Price</span></div>
-            {!best && <div className="offers__empty">No offers yet — we’re tracking this product</div>}
+            {!best && <div className="offers__empty">{v.unavailable ? 'No shop sells ' + v.vlabel + ' right now' : 'No offers yet — we’re tracking this product'}</div>}
             {(v.offers || []).map((o, i) => (
               <div key={o.shop} className={'orow' + (i === 0 ? ' is-best' : '')}>
                 <div className="orow__shop">{o.shop}{i === 0 && <Tag kind="best">★ Best</Tag>}</div>

@@ -122,6 +122,9 @@ button { font-family: inherit; }
 .bestbox__price { display: flex; align-items: baseline; gap: 4px; }
 .bestbox__price .cur { font-family: var(--font-mono); font-weight: 700; font-size: 20px; }
 .bestbox__bot { padding: var(--s-3) var(--s-4); display: flex; align-items: center; justify-content: space-between; background: var(--paper); font-size: 14px; flex-wrap: wrap; gap: 6px 14px; }
+/* nothing sold in this variant — neutral band, readable message */
+.bestbox.is-na .bestbox__top { background: var(--canvas); }
+.bestbox__top .no-offers { color: var(--ink-900); font-weight: 600; }
 
 /* offer table */
 .offers { border: var(--bw) solid var(--ink-900); background: var(--paper); }

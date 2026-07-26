@@ -28,6 +28,8 @@
 }
 .btn:hover { transform: translate(-1px, -1px); box-shadow: var(--shadow); }
 .btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink-900); }
+.btn:disabled, .btn[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.btn:disabled:hover, .btn[disabled]:hover, .btn:disabled:active, .btn[disabled]:active { transform: none; box-shadow: none; }
 
 .btn--primary { background: var(--green-500); color: var(--ink-900); }
 .btn--dark    { background: var(--ink-900); color: var(--paper); }
