@@ -363,6 +363,33 @@ Three deliberate calls, each smaller than what the plan proposed:
   Without it, leaf-first hits the gender crumb in `Smykker > Herre > Armbånd`
   before the department and answers Fashion for a bracelet.
 
+### What the first production crawl actually did (2026-07-26)
+
+Deployed, then `node tools/crawl.mjs --no-images` — 14,164 rows ingested, exit 0.
+
+- **Visible catalog 14,118 → 21,353 products.** The 7,235 new rows are backlog
+  rows that promoted because the *full path* now resolves where the bare leaf
+  didn't ("Personlig pleie > Hårfjerning…" → Beauty, "Datakomponenter >
+  Prosessorer > Intel…" → Computers). That is step 2 paying off, and it is the
+  largest single effect of this work — bigger than the re-categorisation.
+- **366 net category moves, every one driven by a real label**, and **0 rows
+  dropped out of the catalog** (re-classification never un-promotes).
+- The reported row serves as **Toys / Figures & dolls**.
+
+**One defect shipped and was fixed the same day.** The first crawl produced 644
+moves, not 366: 278 of them were a shop `"*"` floor re-filing a *live* row. With
+`cat` no longer frozen, a product carried by two shops took the category of
+whichever shop's row landed last in the batch — `Jenga Brettspill` (no `srcCat`
+anywhere) flipped Toys→Gaming because Outland and Gamezone both stock it. The
+floor is now allowed to promote a hidden row but never to re-file a live one
+(`worker/index.js`, plus a regression test). The 278 rows were reverted to their
+pre-crawl categories with `man: null`, so they stay eligible for future rule
+improvements rather than being pinned — 0 rows in the catalog carry `man: 1`.
+
+The lesson generalises: **unfreezing a value makes every weak input a recurring
+writer, not a one-time guess.** Anything that was "good enough to seed with"
+needs re-checking before it is allowed to run on every crawl.
+
 ### Open
 
 1. **The other 44 `"*"` floors.** ~60% of the catalog is still categorized by
@@ -376,3 +403,9 @@ Three deliberate calls, each smaller than what the plan proposed:
 4. `meta.types` (Browse's type chips) still counts stored values only, so the
    +1,222 newly-derived types don't show there — pre-existing, noted in
    CLAUDE.md.
+5. **`/api/catalog.json` now 503s intermittently** (1 in ~3 requests). The dump
+   is 11.5 MB at 21,353 rows, up from 7.2 MB at 14k — it outgrew what one
+   Worker response can reliably build. Ops-only endpoint, so nothing user-facing
+   is affected, but `tools/` and any catalog replay need a retry or the endpoint
+   needs paging. Pre-existing scale problem, newly load-bearing because a
+   catalog replay is now the standard way to score a rule change.
