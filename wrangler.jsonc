@@ -164,8 +164,21 @@
     // genuinely is one category — a general retailer must stay unmapped so the
     // rules decide per product. Measured on a 451-page sample across 47 shops:
     // 45% of rows promoted on rules alone, 93% with these floors.
+    //
+    // "Is the whole shop one category?" is measurable, and `node
+    // tools/score-cats.mjs` measures it: of the shop's rows whose OWN label the
+    // vocabulary can read, how many land on the floor's category anyway. Every
+    // floor below sits at 61–100% (2026-07-26). Eight shops that sat under 50%
+    // on a sample of 60+ readable labels lost theirs — see the note further down.
+    // Re-run it before adding a floor, and after any CAT_RULES edit: three of the
+    // apparent "general retailers" in the first pass were really the vocabulary
+    // misreading an art shop's labels.
     "Bikeshop": { "*": "Bikes" },
-    "Gamezone": { "*": "Gaming" },
+    // Gamezone's floor said Gaming until 2026-07-26. It sends no category at all,
+    // and its catalog is board games, Warhammer miniatures, dice, RPG books and
+    // TCG singles — Gaming (consoles and video games) was wrong for ~580 of its
+    // 651 rows, which is what made the Gaming category 92% shop-floor-filed.
+    "Gamezone": { "*": "Toys" },
     "Shark Gaming": { "*": "Gaming" },
     "Hi-Fi Klubben": { "*": "Audio" },
     "Mestergull": { "*": "Jewelry" },
@@ -178,12 +191,8 @@
     "Japan Photo": { "*": "Photo" },
     "Bergans": { "*": "Outdoor" },
     "Fjellsport": { "*": "Outdoor" },
-    "Widforss": { "*": "Outdoor" },
-    "Milrab": { "*": "Outdoor" },
     "Foss Sport": { "*": "Sport" },
     "Sporttema": { "*": "Sport" },
-    "Sport 1": { "*": "Sport" },
-    "Intersport": { "*": "Sport" },
     "Hobbii": { "*": "Hobby" },
     "Panduro": { "*": "Hobby" },
     "Zooservice": { "*": "Pets" },
@@ -207,12 +216,19 @@
     "Møbelringen": { "*": "Furniture" },
     "Chilli": { "*": "Furniture" },
     "Trademax": { "*": "Furniture" },
-    "JYSK": { "*": "Home" },
-    "Kid Interiør": { "*": "Home" },
     "Christiania Belysning": { "*": "Lighting" },
-    "Vitusapotek": { "*": "Health" },
-    "Rum21": { "*": "Furniture" },
     "Tegne.no": { "*": "Hobby" }
+    // Eight shops lost a floor on 2026-07-26, measured with tools/score-cats.mjs:
+    // their own readable labels back the floor up less than half the time, because
+    // the shop is not one category. Milrab (Outdoor, 10% — its labels say
+    // Jakker/Gensere/Løpesko/Sportsklokker), Widforss (Outdoor, 22% — plus a whole
+    // dog department), Vitusapotek (Health, 25% — a pharmacy sells skincare and
+    // baby formula), Rum21 (Furniture, 38% — 84 rows of lighting), JYSK (Home,
+    // 42%), Kid Interiør (Home, 45% — furniture, kitchen, lighting, garden),
+    // Sport 1 (12%) and Intersport (15%). Dropping a floor costs no live product:
+    // ingest never un-promotes, so their existing rows keep the category they
+    // have — only NEW rows whose label says nothing now wait in the hidden
+    // backlog (?hidden=1) instead of being filed by shop.
     // Obs and Obs Bygg are deliberately floor-less: general retailers, so the
     // vocabulary rules have to decide per product
   } }
