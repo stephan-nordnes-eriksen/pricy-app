@@ -27,6 +27,26 @@ Two Claude Design projects feed this repo:
   signed-in screen.
 - CDN dev React/Babel/lucide are swapped for vendored production UMDs
   (`vendor/`)
+- **Installable as a home-screen app** (PWA, 2026-07-26): `pwa/` is copied to
+  the dist ROOT — `manifest.json` (`display: standalone`), `icon-512.png`
+  (rasterised from `assets/logo-mark.svg`; iOS won't take an SVG
+  `apple-touch-icon`) and `sw.js`, which must be served from `/` to claim `/`
+  as its scope. build.js injects the `<link rel="manifest">` /
+  `apple-touch-icon` / `apple-mobile-web-app-*` / `theme-color` tags, since
+  the prototype's `<head>` is sync-owned. The service worker exists because
+  Chrome/Android won't offer "Install app" without one that has a non-empty
+  fetch handler; it is network-first and skips `/api/*` (sessions, personal
+  data) and `/img/*` — so a deploy always wins while online and the cache is
+  only the offline fallback. boot.jsx registers it in one line. Upstream
+  renders the in-app bar (`InstallPrompt` in Chrome.jsx, inside AppHeader):
+  real `beforeinstallprompt` button on Android, static Share → Add to Home
+  Screen instructions on iOS (which never fires that event), nothing
+  elsewhere; dismissal persists in `pricy_install_dismissed`. The
+  `installPreview` tweak is preview-only — boot.jsx deliberately does NOT
+  mirror it, so prod is always `auto`. Outbound shop links are real
+  `<a target="_blank">` anchors now (Btn takes `href`), not `window.open`:
+  installed there is no back button, so a same-tab navigation to a shop
+  strands the user outside the app.
 - the prototype's enriched CATALOG is extracted to `worker/seed.json`
   (gitignored). D1 `products`/`offers`/`price_points`, seeded from that
   file on first use, offers refreshed by the hourly cron `scheduled`

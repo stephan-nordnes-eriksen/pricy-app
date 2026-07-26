@@ -376,27 +376,29 @@ test('PDP: Buy now buys at the current best price', async () => {
   assert.strictEqual(order.exec.ref, 'PY-4711', 'order ref must come from the server order id');
 });
 
-test('PDP: Go to shop opens the best offer url; disabled when no offer has one', async () => {
+// Outbound shop links are real <a target="_blank"> anchors, not window.open
+// calls: installed as a home-screen app there is no browser back button, so a
+// same-tab navigation to a shop strands the user outside the app.
+test('PDP: Go to shop links out to the best offer url; disabled when no offer has one', async () => {
   const win = boot('http://pricy.test/product/xm5', { session: true });
-  const opened = [];
-  win.open = (...args) => { opened.push(args); return null; };
   const goBtn = await until(() => qa(win, '.btn').find(b => /go to shop/i.test(b.textContent)));
   assert.ok(goBtn, 'Go to shop button missing on PDP');
   const offers = CATALOG_JSON.find(p => p.id === 'xm5').offers;
   const expected = offers[0].url || offers.find(o => o.url)?.url;
   assert.ok(expected, 'seed must give xm5 an offer url for this test');
-  goBtn.click();
-  assert.deepStrictEqual(opened, [[expected, '_blank', 'noopener']], 'must open the best offer url in a new tab');
-  const visit = qa(win, '.btn').find(b => /^visit$/i.test(b.textContent.trim()) && !b.disabled);
-  assert.ok(visit, 'at least one per-offer Visit button must be enabled when offers have urls');
-  visit.click();
-  assert.strictEqual(opened.length, 2, 'Visit must open the offer url');
-  assert.ok(offers.some(o => o.url === opened[1][0]), 'Visit must open one of the offer urls');
+  assert.strictEqual(goBtn.tagName, 'A', 'Go to shop must be an anchor, not a scripted button');
+  assert.strictEqual(goBtn.getAttribute('href'), expected, 'must link to the best offer url');
+  assert.strictEqual(goBtn.getAttribute('target'), '_blank', 'must open in a new tab');
+  assert.match(goBtn.getAttribute('rel') || '', /noopener/, 'outbound links need rel=noopener');
+  const visit = qa(win, '.btn').find(b => /^visit$/i.test(b.textContent.trim()) && b.tagName === 'A');
+  assert.ok(visit, 'at least one per-offer Visit must be a link when offers have urls');
+  assert.ok(offers.some(o => o.url === visit.getAttribute('href')), 'Visit must link to one of the offer urls');
 
   // no urls anywhere (prod state before real ingest) → disabled, not broken
   const bare = CATALOG_JSON.map(p => ({ ...p, offers: p.offers.map(({ url, ...o }) => o) }));
   const win2 = boot('http://pricy.test/product/xm5', { session: true, catalog: bare });
   const goBtn2 = await until(() => qa(win2, '.btn').find(b => /go to shop/i.test(b.textContent)));
+  assert.strictEqual(goBtn2.tagName, 'BUTTON', 'a url-less Go to shop must not be a link at all');
   assert.ok(goBtn2.disabled, 'Go to shop must be disabled when no offer has a url');
 });
 
@@ -940,12 +942,11 @@ test('offer rows: Visit opens the offer url, url-less offers are disabled', asyn
   });
   const win = boot('http://pricy.test/product/xm5', { session: true, catalog: served });
   assert.ok(await until(() => qa(win, '.orow').length > 1), 'offer rows missing');
-  const opened = [];
-  win.open = u => { opened.push(u); return null; };
   const visits = qa(win, '.orow .btn').filter(b => /visit/i.test(b.textContent));
-  visits[0].click();
-  assert.deepStrictEqual(opened, ['https://shop.example/xm5'], 'Visit must open the offer url');
-  assert.ok(visits.slice(1).every(b => b.disabled), 'offers without a url must render a disabled Visit');
+  assert.strictEqual(visits[0].getAttribute('href'), 'https://shop.example/xm5', 'Visit must link to the offer url');
+  assert.strictEqual(visits[0].getAttribute('target'), '_blank', 'Visit must open in a new tab');
+  assert.ok(visits.slice(1).every(b => b.tagName === 'BUTTON' && b.disabled),
+    'offers without a url must render a disabled Visit, never a dead link');
 });
 
 test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise', async () => {
@@ -1302,4 +1303,42 @@ test('dist is installable as a home-screen app', () => {
   assert.match(sw, /respondWith/);
   assert.match(fs.readFileSync(path.join(__dirname, '..', 'boot.jsx'), 'utf8'),
     /serviceWorker\?\.register\('\/sw\.js'\)/);
+});
+
+// The install bar is the only in-app surface for this: Android gets a real
+// button, iOS Safari (which never fires beforeinstallprompt) gets the Share
+// gesture spelled out, everything else gets nothing.
+test('install bar: Android prompts, iOS instructs, dismissal sticks', async () => {
+  const win = boot('http://pricy.test/', { session: true });
+  await until(() => q(win, '.app-hdr'));
+  assert.strictEqual(q(win, '.instl'), null, 'no install bar before the browser offers one');
+
+  let prompted = 0;
+  const e = new win.Event('beforeinstallprompt');
+  e.prompt = () => { prompted++; };
+  win.dispatchEvent(e);
+  const bar = await until(() => q(win, '.instl'));
+  assert.ok(bar, 'beforeinstallprompt must reveal the install bar');
+  const btn = qa(win, '.instl .btn').find(b => /install app/i.test(b.textContent));
+  assert.ok(btn, 'Android install bar must offer an Install app button');
+  btn.click();
+  assert.strictEqual(prompted, 1, 'Install app must fire the browser install prompt');
+  assert.ok(await until(() => q(win, '.instl') === null), 'bar must go away once prompted');
+
+  // iOS: no event ever fires, so the bar has to appear off the user agent alone
+  const ios = boot('http://pricy.test/', { session: true });
+  Object.defineProperty(ios.navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari', configurable: true });
+  const iosBar = await until(() => q(ios, '.instl'));
+  assert.ok(iosBar, 'iOS must get the install bar with no beforeinstallprompt');
+  assert.match(iosBar.textContent, /Add to Home Screen/i, 'iOS needs the Share-sheet gesture spelled out');
+  assert.strictEqual(qa(ios, '.instl .btn').length, 0, 'iOS has no programmatic install — offer no button');
+  q(ios, '.instl__x').click();
+  assert.ok(await until(() => q(ios, '.instl') === null), 'dismiss must hide the bar');
+  assert.strictEqual(ios.localStorage.getItem('pricy_install_dismissed'), '1', 'dismissal must persist');
+
+  // next visit in the same browser
+  const again = boot('http://pricy.test/', { session: true, storage: { pricy_install_dismissed: '1' } });
+  Object.defineProperty(again.navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari', configurable: true });
+  await until(() => q(again, '.app-hdr'));
+  assert.strictEqual(q(again, '.instl'), null, 'a dismissed install bar must stay dismissed');
 });
