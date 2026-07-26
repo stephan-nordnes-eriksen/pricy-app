@@ -1031,6 +1031,24 @@ test('recently viewed: a visited variant PDP resolves its child id on the home r
   assert.ok(/iPhone 15/.test(qa(home, '.rcard')[0].textContent), 'rail must resolve the child id to its product');
 });
 
+test('PDP: a combination no shop sells is greyed out, priced as unsold, and offers the cheapest available', async () => {
+  const win = boot('http://pricy.test/product/iphone', { session: true });
+  assert.ok(await until(() => q(win, '.vpick')), 'variant picker missing');
+  qa(win, '.vpick .vopt').find(b => /512 GB/.test(b.textContent)).click();
+  // yellow is unsold at 512 GB — the picker must mark it before it's picked
+  const yellow = await until(() => qa(win, '.vpick .vswatch').find(b => /^Yellow/.test(b.getAttribute('aria-label') || '')));
+  assert.ok(yellow.className.includes('is-na'), 'unsold combo must be marked in the picker');
+  yellow.click();
+  assert.ok(await until(() => q(win, '.vpick__na')), 'unsold banner missing');
+  assert.ok(/Not sold in this combination/.test(q(win, '.bestbox').textContent), 'bestbox must say the combo is unsold');
+  assert.strictEqual(qa(win, '.orow').length, 0, 'unsold combo must list no offers');
+  assert.ok(qa(win, '.watchbox .btn').find(b => /watch price/i.test(b.textContent)).disabled, 'watch must be disabled with no price');
+  // escape hatch: cheapest available jumps to a combination a shop does sell
+  q(win, '.vpick__combo').click();
+  assert.ok(await until(() => !q(win, '.vpick__na')), 'cheapest available must land on a sold combination');
+  assert.ok(q(win, '.bestbox .t-price-lg'), 'sold combination must show a price');
+});
+
 // ---------- per-user hydration + watch persistence (Phase 4b) ----------
 
 test('identity and watchlist hydrate from /api/me, not the baked USER/WATCHED', async () => {
