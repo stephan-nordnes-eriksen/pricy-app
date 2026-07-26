@@ -5,6 +5,9 @@
 //   node tools/score-cats.mjs --labels 80     # …plus the top unread labels
 //   node tools/score-cats.mjs --moves         # …plus every category move, by cat
 //   node tools/score-cats.mjs --shop JYSK     # what one shop's floor disagrees with
+//   node tools/score-cats.mjs --refile Gamezone=Toys [--apply]
+//                                             # re-file the live rows a CORRECTED
+//                                             # floor already mis-filed (dry by default)
 //
 // Why this exists: three separate category-rule changes have been tuned on a
 // sample and been wrong (see plans/category-misclassification.md). A rule edit's
@@ -107,4 +110,45 @@ if (has('--labels')) {
   for (const [l, v] of top.slice(0, Number(arg('--labels', 60))))
     console.log(`${String(v.n).padStart(4)}  ${l.padEnd(46).slice(0, 46)} [${v.cat}] ${v.ex.slice(0, 40)}`);
   console.log(`top ${Math.min(100, top.length)} labels = ${top.slice(0, 100).reduce((a, b) => a + b[1].n, 0)} of those rows`);
+}
+
+// Correcting a floor's VALUE does not reach the rows it already filed: a floor
+// may promote a new row but never re-file a live one (that rule exists because
+// two shops' floors otherwise fought over a board game between crawls), and
+// re-classification only runs on rows with real label evidence. So the rows a
+// wrong floor filed are the one population no crawl will ever revisit — hence
+// this pass. Only touches rows where the shop's floor is the ONLY signal: no
+// label anywhere resolves, so there is nothing better to disagree with.
+// `man: null` hands the row back to the rules instead of pinning it, so a future
+// vocabulary win can still move it.
+const refile = arg('--refile');
+if (typeof refile === 'string') {
+  const [shop, cat] = refile.split('=');
+  if (!shop || !cat) { console.error('--refile <shop>=<Cat>'); process.exit(1); }
+  const targets = auto.filter(r => !real(r) && r.cat !== cat && shopsOf(r).includes(shop));
+  const from = {};
+  for (const r of targets) (from[r.cat] ??= []).push(r);
+  console.log(`\n--refile ${shop}=${cat}: ${targets.length} live rows whose only signal is ${shop}'s floor`);
+  for (const [c, v] of Object.entries(from).sort((a, b) => b[1].length - a[1].length)) {
+    console.log(`  ${String(v.length).padStart(4)}  ${c} → ${cat}`);
+    for (const r of v.slice(0, 6)) console.log(`          ${r.name.slice(0, 66)}`);
+  }
+  // rows also stocked elsewhere are the risky ones — another shop may know better
+  const shared = targets.filter(r => shopsOf(r).length > 1);
+  if (shared.length) console.log(`  ${shared.length} of them are stocked by another shop too (which has no readable label either)`);
+  if (!has('--apply')) console.log('\ndry run — pass --apply to PATCH these');
+  else {
+    const token = readFileSync(new URL('.ingest-token', import.meta.url), 'utf8').trim();
+    const icons = JSON.parse(readFileSync(new URL('../worker/cats.json', import.meta.url), 'utf8'));
+    // same shape ingest writes on promotion: cat, its icon, and the keyword blob
+    const kwOf = (...p) => [...new Set(p.join(' ').toLowerCase().match(/[\p{L}\d]+/gu) || [])].filter(t => t.length > 1).join(' ');
+    let ok = 0, failed = 0;
+    for (const r of targets) {
+      const body = { cat, icon: icons[cat], kw: kwOf(r.name, r.brand ?? '', cat), man: null };
+      const res = await fetch(`https://pricy.no/api/admin/products/${encodeURIComponent(r.id)}`,
+        { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+      if (res.ok) ok++; else { failed++; console.error(`  ${r.id}: HTTP ${res.status} ${(await res.text()).slice(0, 120)}`); }
+    }
+    console.log(`\npatched ${ok}, failed ${failed}`);
+  }
 }
