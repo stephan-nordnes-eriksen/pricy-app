@@ -49,6 +49,15 @@ G. ~~api-latency-round-trips~~ — **done 2026-07-26**, five fixes, all still
    invariants those fixes introduced, each of which fails silently. Read that
    before touching the query layer.
 
+H. ~~category-misclassification~~ — **done 2026-07-26**, record kept in
+   [category-misclassification](category-misclassification.md) (diagnosis,
+   prior-art survey, and what shipped). The shop's breadcrumb is kept whole and
+   read leaf→root, `cat` re-classifies on every crawl instead of freezing at
+   first promotion, and `deriveFacets` reads `srcCat`. 216 products change
+   category, 206 gain one, facet `type` coverage +1,222 rows. **Still open:**
+   44 of the 47 `CATMAP["*"]` shop floors, which are why ~60% of the catalog is
+   still categorized by shop-of-origin.
+
 Not backlog items, but read them before any performance change:
 - [api-latency-round-trips](api-latency-round-trips.md) — what each of the
   five actually turned out to be (none matched the standing estimate), and

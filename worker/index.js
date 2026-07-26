@@ -294,44 +294,76 @@ const kwOf = (...parts) => [...new Set(parts.join(' ').toLowerCase().match(/[\p{
 // specific → generic. Only cats.json cats may appear here (asserted below).
 const CAT_SKIP = /tilbehør|deksel|etui|reservedel|reservedeler|\bdeler\b|gavekort|frakt|tjeneste|outlet|kampanje/i;
 const CAT_RULES = [
-  [/projektor|prosjektor|lerret/i, 'Projectors'],
-  [/lesebrett|e-?bok|kindle|kobo/i, 'E-readers'],
+  // `lerret` alone is BOTH a projection screen and an artist's canvas — bare, it
+  // put 43 canvas prints in Projectors (1 of the 53 rows was a projector)
+  [/projektor|prosjektor|projeksjonslerret/i, 'Projectors'],
+  // \b-anchor `bok`: unanchored `e-?bok` matched the "ebok" inside Klokkebokser,
+  // Kakeboks and Plantebokser
+  [/lesebrett|läsplatt|\be-?bok|kindle|kobo/i, 'E-readers'],
   [/playstation|xbox|nintendo|konsoll|gamepad|tv-?spill|dataspill|videospill|pc-?spill|gaming/i, 'Gaming'],
-  [/\btv\b|fjernsyn|television/i, 'TV'],
+  // A televison crumb says `tv` on its own; every other `TV-<noun>` is furniture
+  // (TV-benk/bord/møbel — 30 rows) or merchandise ("TV- og filmkarakterer" — 14
+  // Pokémon figures). The lookahead is a list because the ambiguity is lexical.
+  [/\btv-?apparat|fjernsyn|television|\b[oq]led\b|\btv\b(?![\s-]*(og\s+(film|media)|benk|bord|møb|skap|hylle|karakter))/i, 'TV'],
   [/hodetelefon|høyttaler|ørepropp|øretelefon|headset|soundbar|lydplanke|hi-?fi|forsterker|platespiller|lydanlegg|høretelefon/i, 'Audio'],
-  [/kamera|objektiv|fotoapparat|systemkamera|speilrefleks|\bdrone|blits|stativ.*foto|foto/i, 'Photo'],
+  // bare `foto` swallowed "Fototapeter" (photo wallpaper, 22 rows) — anchor it
+  [/kamera|objektiv|fotoapparat|systemkamera|speilrefleks|\bdrone|blits|stativ.*foto|\bfoto\b|fotoutstyr|fotografi|fotoramm/i, 'Photo'],
   [/laptop|bærbar|datamaskin|nettbrett|\bipad\b|macbook|chromebook|tastatur|harddisk|\bssd\b|grafikkort|prosessor|stasjonær|dataskjerm|\bpc\b|data\b/i, 'Computers'],
   [/mobiltelefon|smarttelefon|\biphone\b|mobil\b/i, 'Phones'],
   [/vaskemaskin|tørketrommel|oppvaskmaskin|kjøleskap|fryser|komfyr|stekeovn|platetopp|ventilator|hvitevare/i, 'Appliances'],
-  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp\b|servering/i, 'Kitchen'],
+  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken(?!bord|stol)|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp(er)?\b|\bkrus\b|servering/i, 'Kitchen'],
   [/lampe|belysning|lyspære|lyskilde|pendel|lysestake|utelys|\blys\b/i, 'Lighting'],
-  [/møbler|møbel|\bsofa|\bstol\b|\bbord\b|\bseng\b|madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|vitrine|nattbord|romdeler/i, 'Furniture'],
+  // tv-benk/mediabenk explicitly: the TV rule above now declines them, and a
+  // bare `benk` here would steal Garden's benches from the leaf-first walk
+  [/møbler|møbel|\bsofa|\bstol\b|\bbord\b|\bseng\b|madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|mediamøb/i, 'Furniture'],
   [/\bhage|utemøbl|plante|gressklipper|\bgrill\b|terrasse|blomst|\bfrø\b|uterom/i, 'Garden'],
   // hobby paint/craft before Tools, or Panduro's craft paints read as housepaint
-  [/hobby|\bgarn\b|strikk|hekle|håndarbeid|scrapbook|\bperler\b|modellbygg|\bsying|stoff\b|oljemaling|akrylmaling|spraymaling|fargeblyant|broderi|klistremerk|kunstner/i, 'Hobby'],
+  [/hobby|\bgarn\b|strikk|hekle|håndarbeid|scrapbook|\bperler\b|modellbygg|\bsying|stoff\b|oljemaling|akrylmaling|spraymaling|akvarell|vannmaling|\blerret|fargeblyant|broderi|klistremerk|kunstner/i, 'Hobby'],
   [/verktøy|\bdrill\b|bormaskin|skrutrekker|\bsag\b|maling|byggevare|jernvare|festemid|skruer|elektriker|rørlegger|\bstige\b|gardintrapp|vinkelsliper|\bspiker\b/i, 'Tools'],
   [/bildel|\bdekk\b|\bfelg|bilpleie|bilbatteri|motorolje|bilrekvisita|\bbil\b/i, 'Auto'],
   [/sykkel|sykling|elsykkel|landevei|terrengsykkel/i, 'Bikes'],
   [/\bbaby|spedbarn|barnevogn|bleie|smokk|barnestol|graviditet|amming|smekke/i, 'Baby'],
-  [/\bsko\b|\bskor\b|støvler|sandaler|joggesko|sneakers|\bboots\b|tøfler|fottøy|\bsko[a-zæøå]*\b/i, 'Shoes'],
+  // NOT \bsko[a-zæøå]*\b: `ø` is not a word char, so JS puts a \b inside
+  // "Løskort" and 30 Pokémon singles became Shoes. Same for Skole/Skogstad.
+  [/\bsko\b|\bskor\b|\bskoene\b|støvler|støvletter|sandaler|joggesko|sneakers|\bboots\b|tøfler|fottøy|skotøy/i, 'Shoes'],
   [/klokke|armbåndsur|smartklokke|lommeur|\bur\b/i, 'Watches'],
-  [/smykk|øredobb|halskjede|anheng|\bcharm|gullsmed|diamant|\bperle|\bring(er)?\b|sølv|\bgull|sølje|bunadsølv|ørepynt|\bkjede\b|forlovelse/i, 'Jewelry'],
+  [/smykk|øredobb|halskjede|anheng|\bcharm|gullsmed|diamant|\bperle|\bring(er)?\b|sølv|\bgull|sølje|bunadsølv|ørepynt|\bkjede\b|armbånd|forlovelse/i, 'Jewelry'],
   [/sminke|make-?up|hudpleie|parfyme|\bdufter\b|hårpleie|shampo|neglelakk|kosmetikk|skjønnhet|barbering|solkrem|\bpleie\b|leppe|øyenskygge|øyenbryn|maskara|mascara|gellack|\bnegle|bodylotion|kroppspleie|hår(skum|farge|produkt)|foundation|concealer|highlighter|\bserum\b|ansikt|deodorant|selvbruning|\bprimer\b/i, 'Beauty'],
   [/apotek|\bhelse|kosttilskudd|vitamin|protein|medisin|førstehjelp|munnpleie|tannbørste|\bkosthold|legemid|reseptfri|\bplaster\b|tannkrem|munnskyll/i, 'Health'],
   [/\bhund|\bkatt|kjæledyr|dyrefôr|fôr|akvari|smådyr|\bhest\b|kanin|dyrebutikk|valp\b|kattesand|dyremat/i, 'Pets'],
-  [/\bbok\b|bøker|roman|skjønnlitteratur|lydbok|tegneserie|litteratur|pocket/i, 'Books'],
+  [/\bbok\b|bøker|roman|skjønnlitteratur|lydbok|tegneserie|\bmanga\b|litteratur|pocket/i, 'Books'],
   [/kontor|\bpapir|skriver|blekk|\btoner\b|\bpenn|notatbok|skolesaker|emballasje|kalkulator|konvolutt/i, 'Office'],
-  [/\bleke|\bleker\b|lego|brettspill|puslespill|kosedyr|\bbamse|\bdukke|actionfigur|byggesett|\bspill\b|squishmallow|plysj|samlekort|løskort|\bbrio\b|barbie|playmobil/i, 'Toys'],
-  [/sport|trening|fitness|løping|\bski\b|langrenn|slalåm|fotball|\bgolf\b|svømming|\byoga\b|styrke|vekter|boksing/i, 'Sport'],
+  // `figur`/`karakter`: the shop's own leaf for the reported Pokémon row is
+  // "TV- og filmkarakterer" — it says "figure" and we had no word for it
+  [/\bleke|\bleker\b|lego|brettspill|puslespill|kosedyr|\bbamse|\bdukke|\bfigur|actionfigur|samlefigur|karakter|byggesett|\bspill\b|squishmallow|plysj|samlekort|løskort|\bbrio\b|barbie|playmobil/i, 'Toys'],
+  [/sport|trening|fitness|løping|\bski\b|langrenn|slalåm|fotball|\bgolf\b|svømming|\byoga\b|styrke|vekter|boksing|boksehansk/i, 'Sport'],
   [/friluft|\btur\b|\btelt\b|sovepose|ryggsekk|\bjakt\b|\bfiske|camping|klatring|villmark|\bagn\b|\bsluk\b|anorakk|hengekøye/i, 'Outdoor'],
-  [/klær|jakke|bukse|genser|skjorte|kjole|t-skjorte|undertøy|sokker|\blue\b|hansker|\bbelte\b|\bdress\b|shorts|strømpe|badetøy|badedrakt|\bcaps\b|mote\b|dame\b|herre\b|barneklær|pyjamas|\bvest\b|skjørt|\bjeans\b|\bkåpe|frakk/i, 'Fashion'],
-  [/støvsuger|smarthus|smart hjem|luftrenser|\bvifte|varmepumpe|strykejern|interiør|\bpynt|tekstil|gardin|\bpute\b|\bteppe|oppbevaring|baderom|håndkl|rengjøring|vaskemiddel|sengetøy|\bdyne\b|oppvask/i, 'Home'],
+  [/klær|jakke|bukse|genser|skjorte|kjole|t-skjorte|undertøy|sokker|\blue(r)?\b|pannebånd|hansker|\bbelte\b|\bdress\b|shorts|strømpe|badetøy|badedrakt|\bcaps\b|mote\b|dame\b|herre\b|barneklær|pyjamas|\bvest\b|skjørt|\bjeans\b|\bkåpe|frakk/i, 'Fashion'],
+  [/støvsuger|smarthus|smart hjem|luftrenser|\bvifte|varmepumpe|strykejern|interiør|\bpynt|tekstil|gardin|tapet|\bpute\b|\bteppe|oppbevaring|baderom|håndkl|rengjøring|vaskemiddel|sengetøy|\bdyne\b|oppvask/i, 'Home'],
 ];
 for (const [, c] of CAT_RULES) if (!CATS[c]) throw new Error(`CAT_RULES references unknown category "${c}" — add it to worker/cats.json`);
+// A shop category is a PATH ("Leker > Figurer > TV- og filmkarakterer"), so read
+// it as one: leaf first, falling back outward to the parents. Leaf-first is the
+// direction that matters — "Dame / Sko / Komfortsko" is Shoes, not Fashion — and
+// the parents only speak when the leaf says nothing ("Leker > … > Nyankomne").
+// CAT_SKIP still applies to the WHOLE label, not per crumb: "Tilbehør /
+// Skolisser / Brune skolisser" is an accessory no matter how specific the leaf.
+const CRUMB = /\s*(?:>|›|»|\||::|\/)\s*/;
+// Crumbs that are an audience or a navigation slot, never a department. They sit
+// in the MIDDLE of a path ("Smykker > Herre > Armbånd") where leaf-first reaches
+// them before the root, and `herre` would answer Fashion for a bracelet. Skipped
+// entirely, so the walk carries on outward to the crumb that means something.
+const CAT_WEAK = /^(dame|herre|barn|barne|jente|gutt|unisex|kvinne|mann|junior|voksen|home|hjem|forside|start|produkter|nyheter|nyankomne|nyhet|alle produkter|tilbud|merker|brands?)$/i;
 export const classify = (label) => {
   const s = String(label || '');
   if (!s || CAT_SKIP.test(s)) return undefined;
-  return CAT_RULES.find(([re]) => re.test(s))?.[1];
+  const crumbs = s.split(CRUMB).map(c => c.trim()).filter(Boolean);
+  for (let i = crumbs.length - 1; i >= 0; i--) {
+    if (CAT_WEAK.test(crumbs[i])) continue;
+    const cat = CAT_RULES.find(([re]) => re.test(crumbs[i]))?.[1];
+    if (cat) return cat;
+  }
+  return undefined;
 };
 
 async function ingest(db, rows, env) {
@@ -352,7 +384,11 @@ async function ingest(db, rows, env) {
   const prods = (await db.prepare(`SELECT id, meta, json_extract(meta, '$.hidden') AS hidden FROM products`).all()).results;
   const known = new Set(prods.map(p => p.id));
   const stillHidden = new Set(prods.filter(p => p.hidden === 1).map(p => p.id));
-  const metaOf = Object.fromEntries(prods.filter(p => p.hidden === 1).map(p => [p.id, JSON.parse(p.meta)]));
+  // meta for the ids in THIS batch only — promotion needs live rows too now
+  // (re-classification, below), and parsing all 14k blobs per 500-row chunk to
+  // get them would cost more than the whole rest of ingest.
+  const inBatch = new Set(rows.map(r => r.product_id));
+  const metaOf = Object.fromEntries(prods.filter(p => inBatch.has(p.id)).map(p => [p.id, JSON.parse(p.meta)]));
   const creates = {};
   for (const r of rows) {
     if (known.has(r.product_id) || !autoAdd(r)) continue;
@@ -370,6 +406,14 @@ async function ingest(db, rows, env) {
   // { "<shop>": { "<raw srcCat>": "<cat>" } }) maps to one of ours. meta.auto
   // marks it machine-promoted; auto + still hidden = a human demoted it,
   // never re-promote. Unmapped or blocklisted rows just stay hidden.
+  // …and it RE-classifies rows that are already live and still machine-owned
+  // (2026-07-26). The category used to be frozen at first promotion, so a
+  // vocabulary fix reached new rows only — which is how TV ended up holding 106
+  // products of which 2 were televisions. Facet values already self-heal at read
+  // time (facetrules.js); this gives `cat` the same property, one crawl behind.
+  // Re-classification only ever CHANGES a category, never un-promotes: a row
+  // whose label stops resolving keeps the cat it has rather than vanishing from
+  // under a live PDP and its watches.
   // Brand is best-effort, not a gate: plenty of real shops (Lekeverden) never
   // send one in their JSON-LD at all — promote anyway with a placeholder
   // rather than leave a real, correctly-categorized product hidden forever.
@@ -377,7 +421,12 @@ async function ingest(db, rows, env) {
   const promoted = {};
   for (const r of rows) {
     const meta = metaOf[r.product_id];
-    if (!meta || !stillHidden.has(r.product_id) || meta.family || meta.auto) continue;
+    if (!meta || meta.family) continue;
+    const hidden = stillHidden.has(r.product_id);
+    // hidden + auto = a human demoted it; never re-promote. live + !auto = a
+    // seeded or hand-written row, not ours to touch. meta.man = a human set the
+    // category by hand (admin PATCH), which outranks any rule forever.
+    if (meta.man || (meta.auto ? hidden : !hidden)) continue;
     const brand = meta.brand ?? (r.brand ? String(r.brand) : null) ?? 'Unspecified';
     const srcCat = r.srcCat ?? meta.srcCat;
     // CATMAP's exact per-shop mapping wins; the shared vocabulary rules cover
@@ -392,8 +441,10 @@ async function ingest(db, rows, env) {
     // that curation, which is worse than leaving 0.8% hidden.
     const cat = catmap[r.shop]?.[srcCat] ?? classify(srcCat) ?? catmap[r.shop]?.['*'];
     if (!meta.name || !CATS[cat] || (JUNK_RE.test(meta.name) && !JUNK_OK.has(cat))) continue;
-    const { hidden, ...rest } = meta;
-    promoted[r.product_id] = { ...rest, brand, cat, icon: CATS[cat], kw: kwOf(meta.name, brand, cat), auto: 1 };
+    // Already live and already right — don't rewrite 14k rows per crawl
+    if (!hidden && meta.cat === cat && meta.srcCat === srcCat) continue;
+    const { hidden: _, ...rest } = meta;
+    promoted[r.product_id] = { ...rest, brand, cat, icon: CATS[cat], ...(srcCat ? { srcCat } : {}), kw: kwOf(meta.name, brand, cat), auto: 1 };
     stillHidden.delete(r.product_id);
   }
   if (Object.keys(promoted).length) {
@@ -1432,12 +1483,16 @@ export default {
           (v === null && k !== 'name') // null deletes a key; a product always keeps a name
           || (STR.includes(k) && typeof v === 'string' && v.trim())
           || (k === 'was' && Number.isInteger(v) && v > 0)
-          || ((k === 'hidden' || k === 'auto') && v === 1)
+          || ((k === 'hidden' || k === 'auto' || k === 'man') && v === 1)
           || ((k === 'variants' || k === 'facets' || k === 'specs') && typeof v === 'object' && !Array.isArray(v)));
       if (!ok) return json({ error: 'bad patch' }, 400);
       if (typeof patch.cat === 'string' && !CATS[patch.cat]) return json({ error: 'unknown cat', cats: Object.keys(CATS).sort() }, 400);
       const meta = JSON.parse(cur.meta);
       for (const [k, v] of Object.entries(patch)) v === null ? delete meta[k] : meta[k] = typeof v === 'string' ? v.trim() : v;
+      // A hand-set category is a human decision — pin it, or the next crawl's
+      // re-classification would quietly overwrite the triage that fixed it.
+      // `man: null` in the patch hands the row back to the rules.
+      if (typeof patch.cat === 'string' && !('man' in patch)) meta.man = 1;
       await db.batch([db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id), bumpVer(db)]);
       return json({ ok: true, id, meta });
     }

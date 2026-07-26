@@ -171,8 +171,7 @@ Two Claude Design projects feed this repo:
   NEW shop go live with no config):** the `CATMAP` var (wrangler.jsonc,
   per-shop `{raw srcCat → our cat}`) → `CAT_RULES` in worker/index.js, one
   shared Norwegian retail vocabulary matched on the shop's own category label
-  → the same rules against the product **name** (shops whose pages carry no
-  breadcrumb at all) → `CATMAP[shop]["*"]`, a reserved key giving a
+  → `CATMAP[shop]["*"]`, a reserved key giving a
   single-category shop a floor. Only set `"*"` where the WHOLE shop is one
   category; a general retailer must stay unmapped so the rules decide per
   product. `classify` is exported from worker/index.js so a crawl sample can
@@ -181,6 +180,27 @@ Two Claude Design projects feed this repo:
   row and look at the misses; that loop took promotion 45% → 93%).
   Growing the vocabulary beats adding CATMAP entries: rules help every shop,
   a CATMAP entry helps one.
+  **`srcCat` is a PATH, and the category is NOT frozen** (2026-07-26,
+  plans/category-misclassification.md): `breadcrumbCat` keeps the shop's whole
+  breadcrumb (`"Leker > Figurer > TV- og filmkarakterer"`), and `classify`
+  splits it and walks **leaf → root**, taking the first crumb that resolves —
+  leaf-first because `Dame / Sko / Komfortsko` is Shoes, parents only speak
+  when the leaf is silent. `CAT_WEAK` crumbs (`Dame`, `Herre`, `Home`,
+  `Produkter`, `Nyankomne`…) are skipped entirely: they sit mid-path where
+  leaf-first reaches them before the department. `CAT_SKIP` still tests the
+  WHOLE label — an accessory anywhere in the path is an accessory.
+  Ingest **re-classifies live `auto` rows on every crawl**, so a vocabulary fix
+  reaches the whole catalog one crawl later instead of new rows only (keeping
+  the leaf and freezing `cat` is how TV came to hold 106 products of which 2
+  were televisions). `meta.man` — set automatically when an admin PATCH sets
+  `cat` — pins a row against the rules forever; demoted rows still never
+  re-promote; and re-classification only ever CHANGES a category, never
+  un-promotes, so a label that stops resolving can't yank a live PDP.
+  `deriveFacets` reads `name` **and** `srcCat` (the ablation in arXiv
+  1812.05774 found name+breadcrumb the best feature set; measured here it lifts
+  rows with a derived `type` 7,099 → 8,321).
+  The 27-label regression check in test/api.test.js is the guard on all of it —
+  extend it, never weaken it, when touching CAT_RULES.
   manual triage is deploy-free via the admin API (bearer = INGEST_TOKEN):
   `PATCH /api/admin/products/:id` (meta merge, `hidden: null` promotes,
   `hidden: 1` demotes — demoted auto rows never re-promote) and

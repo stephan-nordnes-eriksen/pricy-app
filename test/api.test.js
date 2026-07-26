@@ -1595,6 +1595,99 @@ test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free 
   assert.deepStrictEqual(merged.offers.map(o => o.shop).sort(), ['Bergans', 'Milrab']);
 });
 
+// Real shop labels pulled from a live /api/catalog.json, one per failure mode
+// that plans/category-misclassification.md found. This is the only thing between
+// a vocabulary edit and TV holding 106 products of which 2 are televisions.
+test('classify reads a category PATH leaf-first, and the ambiguous tokens stay fixed', async () => {
+  const { classify } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')));
+  const cases = [
+    // the reported bug: "TV" inside a toy-merchandise label
+    ['TV- og filmkarakterer', 'Toys'],
+    ['Leker > Figurer > TV- og filmkarakterer', 'Toys'],
+    // …while real televisions still classify
+    ['OLED TV', 'TV'],
+    ['TV-apparater', 'TV'],
+    ['Hjem > TV og lyd > TV', 'TV'],
+    // TV-<noun> compounds are furniture, not televisions
+    ['TV-benk & mediabenk', 'Furniture'],
+    ['TV-benk, TV bord og mediamøbler', 'Furniture'],
+    // leaf beats parent: a shoe under a gender crumb is a shoe
+    ['Dame / Sko / Komfortsko', 'Shoes'],
+    ['Herre / Sneakers / Lave sneakers', 'Shoes'],
+    // …and a bare audience crumb never decides — this is Jewelry, not Fashion
+    ['Smykker > Herre > Armbånd', 'Jewelry'],
+    // parent speaks only when the leaf says nothing
+    ['Leker > Figurer > Nyankomne', 'Toys'],
+    ['Utemøbler > Utestoler > Hagestoler', 'Garden'],
+    // `ø` is not a word char, so \bsko[a-zæøå]*\b matched "skort" in "Løskort"
+    ['Singles (Løskort)', 'Toys'],
+    ['Skolesekker', undefined],
+    // `lerret` is a projection screen AND an artist's canvas
+    ['Lerretsbilder', 'Hobby'],
+    ['Projektorer', 'Projectors'],
+    // unanchored e-?bok matched the "ebok" inside these
+    ['Klokkebokser', 'Watches'],
+    ['Kakeboks', undefined],
+    ['Läsplattor', 'E-readers'],
+    // bare `foto` swallowed photo wallpaper
+    ['Fototapeter', 'Home'],
+    ['Digitale fotorammer', 'Photo'],
+    // vocabulary the catalog proved missing
+    ['Manga', 'Books'],
+    ['Luer og pannebånd', 'Fashion'],
+    ['Kopper og krus', 'Kitchen'],
+    ['Akvarell- & vannmaling', 'Hobby'],
+    ['Spisebord & kjøkkenbord', 'Furniture'],
+    // an accessory anywhere in the path is still an accessory
+    ['Tilbehør / Skolisser / Brune skolisser', undefined],
+  ];
+  for (const [label, want] of cases) {
+    assert.strictEqual(classify(label), want, `classify(${JSON.stringify(label)})`);
+  }
+});
+
+// The category used to be frozen at first promotion (meta.auto), so every rule
+// fix reached new rows only. Re-classification is what makes the fix above worth
+// anything to the 13,705 rows already in the catalog.
+test('a live auto row re-classifies on the next crawl; a hand-set cat is pinned; a demoted row stays down', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const push = (rows) => admin(env)('/api/ingest', 'POST', rows);
+  const of = async (id) => (await (await call(`/api/products?ids=${id}`, { token: call.token })).json()).products.find(p => p.id === id);
+
+  // lands in Toys off its leaf crumb
+  await push([{ product_id: 'ean-7099999999801', shop: 'Lekia', price: 299, name: 'Battle Figure Mewtwo', brand: 'Jazwares', srcCat: 'TV- og filmkarakterer' }]);
+  assert.strictEqual((await of('ean-7099999999801'))?.cat, 'Toys');
+
+  // the shop re-files it: the next crawl moves the live row, and refreshes the
+  // stored srcCat so the shop's own path stays current
+  await push([{ product_id: 'ean-7099999999801', shop: 'Lekia', price: 289, name: 'Battle Figure Mewtwo', brand: 'Jazwares', srcCat: 'Samlekort > Enkeltkort' }]);
+  const moved = await of('ean-7099999999801');
+  assert.strictEqual(moved.cat, 'Toys');
+  assert.strictEqual(moved.srcCat, 'Samlekort > Enkeltkort', 'the fresh path replaces the stale one');
+
+  // a hand-set category outranks the rules from then on
+  await push([{ product_id: 'ean-7099999999802', shop: 'Lekia', price: 99, name: 'Ukjent ting', brand: 'Acme', srcCat: 'Bøker' }]);
+  assert.strictEqual((await of('ean-7099999999802'))?.cat, 'Books');
+  await admin(env)('/api/admin/products/ean-7099999999802', 'PATCH', { cat: 'Hobby' });
+  assert.strictEqual((await of('ean-7099999999802'))?.man, 1, 'PATCHing cat pins the row');
+  await push([{ product_id: 'ean-7099999999802', shop: 'Lekia', price: 89, name: 'Ukjent ting', brand: 'Acme', srcCat: 'Bøker' }]);
+  assert.strictEqual((await of('ean-7099999999802'))?.cat, 'Hobby', 'a crawl must not overwrite human triage');
+
+  // a demoted row never comes back, re-classification or not
+  await admin(env)('/api/admin/products/ean-7099999999801', 'PATCH', { hidden: 1 });
+  await push([{ product_id: 'ean-7099999999801', shop: 'Lekia', price: 279, name: 'Battle Figure Mewtwo', brand: 'Jazwares', srcCat: 'Leker' }]);
+  assert.strictEqual((await of('ean-7099999999801'))?.hidden, 1, 'demote still sticks');
+
+  // and a row whose label stops resolving keeps its category rather than
+  // vanishing from under a live PDP
+  await push([{ product_id: 'ean-7099999999803', shop: 'Lekia', price: 199, name: 'Bamse', brand: 'Acme', srcCat: 'Kosedyr' }]);
+  assert.strictEqual((await of('ean-7099999999803'))?.cat, 'Toys');
+  await push([{ product_id: 'ean-7099999999803', shop: 'Lekia', price: 189, name: 'Bamse', brand: 'Acme', srcCat: 'Diverse' }]);
+  assert.strictEqual((await of('ean-7099999999803'))?.cat, 'Toys', 'an unresolvable label never un-promotes a live row');
+});
+
 // OPEN-CATALOG-PLAN C: alias can create a variant child on the fly (group.mjs)
 test('alias with meta creates a variant child: data re-homed, child rides its head', async () => {
   const DB = d1();

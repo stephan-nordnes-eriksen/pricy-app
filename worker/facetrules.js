@@ -546,8 +546,12 @@ const RULES = {
       [/\blego\b|byggesett|building|technic|\bduplo\b|creator|ninjago|\bcity\b|\bbricks?\b/, 'Building sets'],
       [/brettspill|board game|kortspill|puslespill|\bpuzzle\b|\bjigsaw\b|\bspill\b/, 'Games & puzzles'],
       [/squishmallows|kosedyr|\bplush\b|\bbamse\b|\bmyke\b|\btøydyr\b/, 'Soft toys'],
+      // figures BEFORE cards: `pokemon` alone does not mean trading cards, and a
+      // "Pokemon Battle Feature Figure" typed as Trading cards was half of the
+      // reported bug (plans/category-misclassification.md). A booster pack has
+      // no figure word, so it still falls through to the card rule below.
+      [/\bfigur|\bfigure\b|karakter|\bdukke\b|\bdoll\b|barbie|action figure|\bsamlefigur\b/, 'Figures & dolls'],
       [/enkeltkort|samlekort|booster|\bpokemon\b|trading card|\btcg\b/, 'Trading cards'],
-      [/\bfigur|\bfigure\b|\bdukke\b|\bdoll\b|barbie|action figure|\bsamlefigur\b/, 'Figures & dolls'],
       [/\bbil\b|racerbane|\brc\b|fjernstyrt|\bdrone\b|\btog\b|\btraktor\b/, 'Vehicles'],
       [/\bperler\b|\bslim\b|kreativ|\btegne|\bmale\b|\bpysselarbeid\b|\bhobby\b/, 'Creative'],
       [/utendørs|\bhusker?\b|sandkasse|\bbasseng\b|trampoline|\bvannpistol\b|\bsparkesykkel\b/, 'Outdoor toys'],
@@ -622,12 +626,16 @@ const RULES = {
 // Facets a category's rules can produce, for build.js's registry check.
 export const RULE_KEYS = Object.fromEntries(Object.entries(RULES).map(([cat, r]) => [cat, Object.keys(r)]));
 
-// Facet values readable off `name` for products in `cat` — undefined when the
-// category has no rules or nothing matched.
-export function deriveFacets({ name, cat }) {
+// Facet values readable off `name` — plus `srcCat`, the shop's own category path
+// for the product. Both, not either: the ablation in "Don't Classify, Translate"
+// (arXiv 1812.05774, 94M items) found name unigrams COMBINED with navigational
+// breadcrumbs the best feature set, and measured here srcCat lifts rows with a
+// derived `type` from 7,099 to 8,319 (+17%) — Sport 169 → 386 — for no new data.
+// Values stay undefined when the category has no rules or nothing matched.
+export function deriveFacets({ name, cat, srcCat }) {
   const rules = RULES[cat];
   if (!rules || !name) return undefined;
-  const s = ` ${String(name).toLowerCase()} `;
+  const s = ` ${String(name).toLowerCase()} ${srcCat ? String(srcCat).toLowerCase() + ' ' : ''}`;
   const out = {};
   for (const [k, f] of Object.entries(rules)) {
     const v = f(s);

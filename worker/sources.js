@@ -251,17 +251,21 @@ export async function discoverSource(shop, cfg) {
   return rows;
 }
 
-// BreadcrumbList → the shop's category label for the page: the last crumb,
-// or the one before it when the last is the product itself
+// BreadcrumbList → the shop's category PATH for the page, "a > b > c", minus a
+// trailing crumb that's the product itself (Power ends its crumbs with the
+// product name). The whole path, not just the leaf: classify() walks it
+// leaf→root, and "Leker > Figurer > TV- og filmkarakterer" only reads as Toys
+// if the parent survives the scrape. Keeping the leaf alone put 14 Pokémon
+// figures in TV — see plans/category-misclassification.md.
 function breadcrumbCat(html, productName) {
   for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     let doc;
     try { doc = JSON.parse(body.trim()); } catch { continue; }
     for (const n of [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])]) {
       if (n?.['@type'] !== 'BreadcrumbList' || !Array.isArray(n.itemListElement)) continue;
-      const names = n.itemListElement.map(i => i?.name ?? i?.item?.name).filter(n => typeof n === 'string');
-      const cat = names.at(-1) === productName ? names.at(-2) : names.at(-1);
-      if (cat) return cat;
+      let names = n.itemListElement.map(i => i?.name ?? i?.item?.name).filter(n => typeof n === 'string' && n.trim());
+      if (names.at(-1) === productName) names = names.slice(0, -1);
+      if (names.length) return names.join(' > ');
     }
   }
   return null;

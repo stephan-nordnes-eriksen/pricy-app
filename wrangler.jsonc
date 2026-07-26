@@ -193,7 +193,12 @@
     "Kidsdreamstore": { "*": "Toys" },
     "Lekia": { "*": "Toys" },
     "Ringo": { "*": "Toys" },
-    "Outland": { "*": "Toys" },
+    // Outland/Rusta/Jernia had a floor until 2026-07-26 and are NOT one-category
+    // shops: Outland sells manga, books, board games and figures (its floor put
+    // 55 Manga rows in Toys), Rusta is a general discount retailer, Jernia sells
+    // kitchenware and homeware next to the hardware. Floor-less, so the shared
+    // vocabulary decides per product and the rest stays in the hidden backlog —
+    // see plans/category-misclassification.md.
     "Guttelus": { "*": "Fashion" },
     "Junior Barneklær": { "*": "Fashion" },
     "KappAhl": { "*": "Fashion" },
@@ -204,10 +209,8 @@
     "Trademax": { "*": "Furniture" },
     "JYSK": { "*": "Home" },
     "Kid Interiør": { "*": "Home" },
-    "Rusta": { "*": "Home" },
     "Christiania Belysning": { "*": "Lighting" },
     "Vitusapotek": { "*": "Health" },
-    "Jernia": { "*": "Tools" },
     "Rum21": { "*": "Furniture" },
     "Tegne.no": { "*": "Hobby" }
     // Obs and Obs Bygg are deliberately floor-less: general retailers, so the
