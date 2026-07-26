@@ -439,8 +439,17 @@ async function ingest(db, rows, env) {
     // screen protectors under "Tilbehør", "Refurbished" iPhones, Hue
     // lightstrips whose names end in "tv". A name fallback silently overrides
     // that curation, which is worse than leaving 0.8% hidden.
-    const cat = catmap[r.shop]?.[srcCat] ?? classify(srcCat) ?? catmap[r.shop]?.['*'];
+    // `real` = the row's own evidence (the shop's mapped label, or the shared
+    // vocabulary reading its category path). The floor is not evidence.
+    const real = catmap[r.shop]?.[srcCat] ?? classify(srcCat);
+    const cat = real ?? catmap[r.shop]?.['*'];
     if (!meta.name || !CATS[cat] || (JUNK_RE.test(meta.name) && !JUNK_OK.has(cat))) continue;
+    // A shop floor may guess for a NEW row; it must never RE-FILE a live one.
+    // Without this, a product carried by two shops takes the category of
+    // whichever shop's row happens to land last in the batch — a board game
+    // stocked by both a toy shop and a game shop flipped Toys↔Gaming between
+    // crawls, and a floor silently outranked another shop's real label.
+    if (!hidden && !real) continue;
     // Already live and already right — don't rewrite 14k rows per crawl
     if (!hidden && meta.cat === cat && meta.srcCat === srcCat) continue;
     const { hidden: _, ...rest } = meta;

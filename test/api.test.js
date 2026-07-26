@@ -1688,6 +1688,32 @@ test('a live auto row re-classifies on the next crawl; a hand-set cat is pinned;
   assert.strictEqual((await of('ean-7099999999803'))?.cat, 'Toys', 'an unresolvable label never un-promotes a live row');
 });
 
+// Caught on the first production crawl of the re-classification change: a board
+// game carried by both a toy shop and a game shop flipped Toys↔Gaming depending
+// on which shop's row landed last in the batch.
+test('a shop floor may promote a new row but must never re-file a live one', async () => {
+  const DB = d1();
+  const env = {
+    DB, INGEST_TOKEN: 'sekrit-token',
+    CATMAP: { Outland: { '*': 'Toys' }, Gamezone: { '*': 'Gaming' } },
+  };
+  const call = api(env);
+  const push = (rows) => admin(env)('/api/ingest', 'POST', rows);
+  const of = async (id) => (await (await call(`/api/products?ids=${id}`, { token: call.token })).json()).products.find(p => p.id === id);
+
+  // no srcCat anywhere: the toy shop's floor is the only signal, and it promotes
+  await push([{ product_id: 'ean-7099999999810', shop: 'Outland', price: 399, name: 'Jenga Brettspill', brand: 'Hasbro' }]);
+  assert.strictEqual((await of('ean-7099999999810'))?.cat, 'Toys', 'a floor still promotes a new row');
+
+  // the same product turns up at a shop with a different floor — it must not move
+  await push([{ product_id: 'ean-7099999999810', shop: 'Gamezone', price: 379, name: 'Jenga Brettspill', brand: 'Hasbro' }]);
+  assert.strictEqual((await of('ean-7099999999810'))?.cat, 'Toys', "another shop's floor must not re-file a live row");
+
+  // …but a real label from any shop still outranks what the floor guessed
+  await push([{ product_id: 'ean-7099999999810', shop: 'Gamezone', price: 369, name: 'Jenga Brettspill', brand: 'Hasbro', srcCat: 'Playstation 5 > Konsoll' }]);
+  assert.strictEqual((await of('ean-7099999999810'))?.cat, 'Gaming', 'a real category label still re-files');
+});
+
 // OPEN-CATALOG-PLAN C: alias can create a variant child on the fly (group.mjs)
 test('alias with meta creates a variant child: data re-homed, child rides its head', async () => {
   const DB = d1();
