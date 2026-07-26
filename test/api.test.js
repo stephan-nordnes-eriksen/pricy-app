@@ -1864,8 +1864,9 @@ test('alias with meta creates a variant child: data re-homed, child rides its he
   assert.strictEqual(again.offers.find(o => o.shop === 'CDON').price, 11790);
 });
 
-// product images: downloaded to R2 on ingest, only when the source URL changes
-test('ingest images: one download per source URL, served at /img/:id with etag revalidation', async () => {
+// product images: ingest QUEUES the URL, POST /api/admin/images downloads it
+// to R2 — one download per source URL, and none at all inside the ingest POST
+test('ingest images: queued on ingest, drained on demand, served at /img/:id with etag revalidation', async () => {
   const store = new Map();
   const r2 = {
     put: async (key, body, opts) => store.set(key, { body, type: opts?.httpMetadata?.contentType }),
@@ -1880,22 +1881,44 @@ test('ingest images: one download per source URL, served at /img/:id with etag r
   const env = { DB: d1(), INGEST_TOKEN: 't', IMAGES: r2 };
   const fetched = [];
   const realFetch = globalThis.fetch;
-  globalThis.fetch = async (url) => { fetched.push(url); return new Response(new Uint8Array([1, 2, 3]), { headers: { 'content-type': 'image/jpeg' } }); };
+  globalThis.fetch = async (url) => {
+    fetched.push(url);
+    if (url.includes('/gone.jpg')) return new Response('nope', { status: 404 });
+    return new Response(new Uint8Array([1, 2, 3]), { headers: { 'content-type': 'image/jpeg' } });
+  };
   const push = (rows) => worker.fetch(new Request('http://pricy.test/api/ingest', {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: 'Bearer t' },
     body: JSON.stringify(rows),
   }), env);
+  const drain = async () => (await worker.fetch(new Request('http://pricy.test/api/admin/images', {
+    method: 'POST', headers: { authorization: 'Bearer t' },
+  }), env)).json();
   try {
     const row = { product_id: 'airpods', shop: 'Elkjøp', price: 1999, image: 'https://cdn.example/a.jpg' };
     assert.strictEqual((await push([{ ...row, image: 42 }])).status, 400, 'non-string image rejected');
     assert.strictEqual((await push([row])).status, 200);
-    assert.deepStrictEqual(fetched, ['https://cdn.example/a.jpg'], 'first sight of a URL downloads it');
+    // the whole point: ingest must not spend its subrequest budget on images,
+    // or a 500-row crawl POST silently drops every image past the cap
+    assert.deepStrictEqual(fetched, [], 'ingest queues, it does not download');
+    assert.strictEqual((await catBody(api(env))).find(p => p.id === 'airpods').img, undefined, 'queued but unfetched = no img link');
+
+    assert.deepStrictEqual(await drain(), { done: 1, failed: 0, remaining: 0 });
+    assert.deepStrictEqual(fetched, ['https://cdn.example/a.jpg'], 'the drain downloads it');
     assert.ok(store.has('products/airpods'), 'image landed in the bucket');
+
     await push([row]);
+    assert.deepStrictEqual(await drain(), { done: 0, failed: 0, remaining: 0 }, 'same URL again = nothing queued');
     assert.strictEqual(fetched.length, 1, 'same URL again = no re-download');
+
     await push([{ ...row, image: 'https://cdn.example/b.jpg' }]);
+    assert.strictEqual((await drain()).done, 1, 'changed URL = re-queued and fetched');
     assert.strictEqual(fetched.length, 2, 'changed URL = fresh download');
+
+    // a dead URL must leave the queue, or the drain loop in crawl.mjs spins
+    await push([{ product_id: 'xm5', shop: 'Elkjøp', price: 999, image: 'https://cdn.example/gone.jpg' }]);
+    assert.deepStrictEqual(await drain(), { done: 0, failed: 1, remaining: 0 }, 'a failed download stops blocking the queue');
+    assert.strictEqual((await catBody(api(env))).find(p => p.id === 'xm5').img, undefined, 'failed download = no img link');
   } finally {
     globalThis.fetch = realFetch;
   }
@@ -1911,7 +1934,7 @@ test('ingest images: one download per source URL, served at /img/:id with etag r
 
   const airpods = (await catBody(call)).find(p => p.id === 'airpods');
   assert.strictEqual(airpods.img, '/img/airpods', 'catalog advertises the stored image');
-  assert.strictEqual((await catBody(call)).find(p => p.id === 'xm5').img, undefined, 'no image row = no img field');
+  assert.strictEqual((await catBody(call)).find(p => p.id === 'switch').img, undefined, 'no image row = no img field');
 });
 
 // price-drop alerts: the hook in ingest() fires on target crossings

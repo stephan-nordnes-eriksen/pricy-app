@@ -530,23 +530,48 @@ async function ingest(db, rows, env) {
   // one bump covers this whole ingest — creates, promotions, offers, points
   await bumpVer(db).run();
   await fireAlerts(db, env, before);
-  // hidden rows skip image sync — no UI shows them; the download happens on
-  // the first ingest after enrichment unhides the product
-  await syncImages(db, env, rows.filter(r => !stillHidden.has(r.product_id))).catch(e => console.error(`image sync failed: ${e.message}`));
+  // hidden rows skip images — no UI shows them; the URL is queued on the
+  // first ingest after enrichment unhides the product
+  await queueImages(db, rows.filter(r => !stillHidden.has(r.product_id))).catch(e => console.error(`image queue failed: ${e.message}`));
 }
 
 // Product images live in R2 (IMAGES bucket), served at GET /img/:id. The
 // images row pins the source URL last stored — a product's image only
 // downloads when its source URL is new or changed (shop CDNs version image
-// URLs, so same URL = same bytes). A failed fetch keeps the old object and
-// retries naturally on the next ingest.
-async function syncImages(db, env, rows) {
-  if (!env.IMAGES) return; // no bucket bound (tests/local) — prices still land
+// URLs, so same URL = same bytes). fetched_at is the state machine:
+//   0 = queued (src known, bytes not fetched)   >0 = stored   -1 = failed
+//
+// Ingest only QUEUES. Downloading inline is what capped a crawl POST at 40
+// rows (one external fetch per image against the free plan's ~50-subrequest
+// budget), which is why every full-catalog shop was crawled --no-images and
+// ended up with none at all — 21.5k of 22.1k products on 2026-07-26.
+// drainImages() does the fetching, from the cron and POST /api/admin/images.
+async function queueImages(db, rows) {
   const want = {};
   for (const r of rows) if (r.image) want[r.product_id] ??= r.image;
-  for (const [pid, src] of Object.entries(want)) {
-    const cur = await db.prepare('SELECT src FROM images WHERE product_id = ?').bind(pid).first();
-    if (cur?.src === src) continue;
+  const ids = Object.keys(want);
+  if (!ids.length) return;
+  const have = new Map((await chunked(ids, async c =>
+    (await db.prepare(`SELECT product_id, src FROM images WHERE product_id IN (${ph(c)})`).bind(...c).all()).results))
+    .map(r => [r.product_id, r.src]));
+  // same src = same bytes: leave stored rows alone, and leave an already
+  // queued row queued (re-upserting would just reset it to the same 0)
+  const todo = ids.filter(id => have.get(id) !== want[id]);
+  for (let i = 0; i < todo.length; i += 200) await db.batch(todo.slice(i, i + 200).map(id =>
+    db.prepare('INSERT INTO images (product_id, src, fetched_at) VALUES (?, ?, 0) ON CONFLICT(product_id) DO UPDATE SET src = excluded.src, fetched_at = 0').bind(id, want[id])));
+}
+
+// Drain the queue: queued (0) before previously failed (-1), so a permanently
+// broken URL still retries but never starves fresh work. `n` is the free
+// plan's subrequest budget — one external fetch each, so it stays under ~50.
+// ponytail: 8 at a time, matching CRAWL_CONC — the queue is written in crawl
+// order, so a batch is often one shop's CDN and 40-wide would be rude.
+async function drainImages(db, env, n = 40) {
+  const remaining = async () => (await db.prepare('SELECT COUNT(*) AS n FROM images WHERE fetched_at = 0').first())?.n ?? 0;
+  if (!env.IMAGES) return { done: 0, failed: 0, remaining: await remaining() }; // no bucket bound (tests/local)
+  const { results } = await db.prepare('SELECT product_id, src FROM images WHERE fetched_at < 1 ORDER BY fetched_at DESC LIMIT ?').bind(n).all();
+  const marks = [];
+  const one = async ({ product_id: pid, src }) => {
     try {
       const res = await fetch(src, { headers: { 'user-agent': BROWSER_UA, accept: 'image/*' } });
       const type = res.headers.get('content-type') || '';
@@ -554,12 +579,17 @@ async function syncImages(db, env, rows) {
       const body = await res.arrayBuffer();
       if (body.byteLength > 5 << 20) throw new Error(`too big: ${body.byteLength} bytes`);
       await env.IMAGES.put(`products/${pid}`, body, { httpMetadata: { contentType: type } });
-      await db.prepare('INSERT INTO images (product_id, src, fetched_at) VALUES (?, ?, ?) ON CONFLICT(product_id) DO UPDATE SET src = excluded.src, fetched_at = excluded.fetched_at')
-        .bind(pid, src, Date.now()).run();
+      marks.push([pid, Date.now()]);
     } catch (e) {
       console.warn(`image ${pid}: ${e.message}`);
+      marks.push([pid, -1]);
     }
-  }
+  };
+  for (let i = 0; i < results.length; i += 8) await Promise.all(results.slice(i, i + 8).map(one));
+  if (marks.length) await db.batch(marks.map(([pid, at]) =>
+    db.prepare('UPDATE images SET fetched_at = ? WHERE product_id = ?').bind(at, pid)));
+  const done = marks.filter(([, at]) => at > 0).length;
+  return { done, failed: marks.length - done, remaining: await remaining() };
 }
 
 // Price-drop alerts, fired from ingest() — the single choke point both the
@@ -643,7 +673,9 @@ async function catalogBody(db) {
   const prods = await db.prepare(`SELECT id, meta FROM products WHERE ${visible()} ORDER BY rowid`).all();
   const offs = await db.prepare(`SELECT o.product_id, o.shop, o.price, o.ship, o.stock, o.eta, o.url, o.updated_at FROM offers o JOIN products p ON p.id = o.product_id WHERE ${visible('p.meta')} ORDER BY o.price`).all();
   const pts = await db.prepare(`SELECT t.product_id, t.price FROM price_points t JOIN products p ON p.id = t.product_id WHERE ${visible('p.meta')} ORDER BY t.day`).all();
-  const withImg = new Set((await db.prepare('SELECT product_id FROM images').all()).results.map(r => r.product_id));
+  // fetched_at > 0 only: a queued row has a src but no bytes in R2 yet, and
+  // advertising /img/<id> for it serves a 404 to every card that renders it
+  const withImg = new Set((await db.prepare('SELECT product_id FROM images WHERE fetched_at > 0').all()).results.map(r => r.product_id));
   return shapeRows(prods.results, offs.results, pts.results, withImg);
 }
 
@@ -708,7 +740,7 @@ async function rowsFor(db, ids, { expand = true, hidden = false } = {}) {
   const [offs, pts, imgs] = await Promise.all([
     chunked(all, async c => (await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(c)}) ORDER BY price`).bind(...c).all()).results),
     chunked(all, async c => (await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(c)}) ORDER BY day`).bind(...c).all()).results),
-    chunked(all, async c => (await db.prepare(`SELECT product_id FROM images WHERE product_id IN (${ph(c)})`).bind(...c).all()).results),
+    chunked(all, async c => (await db.prepare(`SELECT product_id FROM images WHERE fetched_at > 0 AND product_id IN (${ph(c)})`).bind(...c).all()).results),
   ]);
   const withImg = new Set(imgs.map(r => r.product_id));
   const rows = shapeRows(prods, offs, pts, withImg);
@@ -1523,6 +1555,18 @@ export default {
       return json({ ok: true, ingested: rows.length });
     }
 
+    // Drain the image queue (see queueImages). The cron drains ~40/hour on
+    // its own; this is how a backfill after a full-catalog crawl gets done in
+    // minutes instead of weeks — tools/crawl.mjs loops it until remaining = 0.
+    if (route === 'POST /api/admin/images') {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      const n = Math.min(Math.max(Number(url.searchParams.get('n')) || 40, 1), 40);
+      const res = await drainImages(db, env, n);
+      if (res.done) await bumpVer(db).run(); // stored bytes = new img: links in the catalog
+      return json(res);
+    }
+
     // Admin surface (OPEN-CATALOG-PLAN A3, bearer = INGEST_TOKEN, same trust
     // as /api/ingest): enrichment/triage writes land in D1 directly — no
     // extra.json row, no deploy. tools/enrich.mjs and tools/group.mjs print
@@ -1831,5 +1875,9 @@ export default {
     await seedCatalog(db);
     const rows = await collectRows(env);
     if (rows.length) await ingest(db, rows, env);
+    // and work off whatever image URLs are queued — the cron alone is slow
+    // (~40/hour), POST /api/admin/images is the fast lane after a big crawl
+    const drained = await drainImages(db, env).catch(e => console.error(`image drain failed: ${e.message}`));
+    if (drained?.done) await bumpVer(db).run();
   },
 };

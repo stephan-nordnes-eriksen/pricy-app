@@ -9,8 +9,8 @@
 //   --shop <name>  only crawl this shop (validate one crawler before going all in)
 //   --limit <n>    at most n products per shop
 //   --out <file>   also write the scraped rows as JSON to <file>
-//   --no-images    drop the image field (POSTs 500 rows at a time instead of
-//                  40 — a full-catalog run is 12× fewer requests that way)
+//   --no-images    drop the image field and skip the post-crawl image drain
+//                  (a price-only refresh; images are cheap now, see below)
 // Env:
 //   CRAWL_CONC     shops crawled concurrently (default 8)
 // Env:
@@ -70,14 +70,10 @@ if (dry) process.exit(0);
 
 const token = process.env.INGEST_TOKEN
   || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim();
-// ponytail: 40-row chunks — the Worker gets ~50 external fetches per request
-// (free plan), and syncImages downloads one image per new/changed URL; a
-// bigger POST silently drops every image past the cap. --no-images strips the
-// image field, which lifts that cap: a full-catalog run then POSTs at the
-// route's own 500-row limit instead of 12× as many requests. Images land on
-// the next ordinary crawl of the same shop.
+// Ingest only queues image URLs (no downloads inside the POST), so a full
+// catalog run POSTs at the route's own 500-row limit AND keeps its images.
 const payload = noImages ? rows.map(({ image, ...r }) => r) : rows;
-const CHUNK = noImages ? 500 : 40;
+const CHUNK = 500;
 let ok = true;
 for (let i = 0; i < payload.length; i += CHUNK) {
   const res = await fetch(`${base}/api/ingest`, {
@@ -87,5 +83,16 @@ for (let i = 0; i < payload.length; i += CHUNK) {
   });
   console.log(`POST ${base}/api/ingest [${i}–${Math.min(i + CHUNK, payload.length)}] → ${res.status} ${(await res.text()).slice(0, 200)}`);
   ok &&= res.ok;
+}
+
+// Then work the image queue down. 40 downloads per call is the Worker's
+// subrequest budget; the loop is what turns a 22k-image backlog into ~10
+// minutes instead of the cron's ~40/hour. Stops on the first failed call.
+if (!noImages) for (let left = 1; left > 0;) {
+  const res = await fetch(`${base}/api/admin/images?n=40`, { method: 'POST', headers: { authorization: `Bearer ${token}` } });
+  if (!res.ok) { console.error(`drain → ${res.status} ${(await res.text()).slice(0, 200)}`); ok = false; break; }
+  const r = await res.json();
+  console.log(`images: +${r.done} stored, ${r.failed} failed, ${r.remaining} queued`);
+  left = r.done + r.failed ? r.remaining : 0; // no progress = every candidate failed, stop
 }
 process.exit(ok ? 0 : 1);
