@@ -117,7 +117,8 @@ Two Claude Design projects feed this repo:
   hydrated slice. build.js fails if a rule derives a key facets.json
   doesn't declare. Tune rules against a real crawl, never a sample —
   replay `/api/catalog.json` (bearer-gated) through `deriveFacets` and read
-  the misses.
+  the misses (`tools/score-cats.mjs` does exactly that for `classify` — copy it
+  for facets rather than hand-rolling a replay again).
   Per-product `specs` ride the same
   meta-merge PATCH (bulk: `node tools/apply-specs.mjs specs.json`) — boot
   feeds `r.specs` into the prototype's SPECS, so the PDP Specifications
@@ -174,10 +175,20 @@ Two Claude Design projects feed this repo:
   → `CATMAP[shop]["*"]`, a reserved key giving a
   single-category shop a floor. Only set `"*"` where the WHOLE shop is one
   category; a general retailer must stay unmapped so the rules decide per
-  product. `classify` is exported from worker/index.js so a crawl sample can
-  be scored offline before the rules change — measure, don't guess
-  (`node tools/crawl.mjs --dry --limit 12 --out s.json`, then classify each
-  row and look at the misses; that loop took promotion 45% → 93%).
+  product — and that is **measurable**, so measure it: `node
+  tools/score-cats.mjs` replays the live `/api/catalog.json` through the working
+  tree's own `classify`/`CATMAP` and prints the label/unreadable/no-label split,
+  every row that would change category on the next crawl, how much of each
+  category came from a shop floor rather than the product, and per-shop floor
+  agreement (of a shop's rows whose OWN label we can read, how many land on the
+  floor's category anyway). **Run it before and after every CAT_RULES or floor
+  edit** — never on a sample, that has been wrong three times. Low floor
+  agreement usually means the VOCABULARY is broken, not that the shop is
+  general: three apparent general retailers were really `\bpapir`/`\bpenn`/
+  `maling` misreading art shops. 36 floors as of 2026-07-26, all at 61–100%;
+  eight shops under 50% lost theirs. Dropping a floor costs no live product
+  (ingest never un-promotes) — it only sends that shop's future
+  unreadable-label rows to the hidden backlog.
   Growing the vocabulary beats adding CATMAP entries: rules help every shop,
   a CATMAP entry helps one.
   **`srcCat` is a PATH, and the category is NOT frozen** (2026-07-26,
@@ -187,8 +198,15 @@ Two Claude Design projects feed this repo:
   leaf-first because `Dame / Sko / Komfortsko` is Shoes, parents only speak
   when the leaf is silent. `CAT_WEAK` crumbs (`Dame`, `Herre`, `Home`,
   `Produkter`, `Nyankomne`…) are skipped entirely: they sit mid-path where
-  leaf-first reaches them before the department. `CAT_SKIP` still tests the
-  WHOLE label — an accessory anywhere in the path is an accessory.
+  leaf-first reaches them before the department. `CAT_SKIP` tests the **leaf**,
+  not the whole path (a mid-path `Tilbehør` is only the menu the shop files it
+  under; testing the whole string lost 38 beanies under `KLÆR > Tilbehør > Luer
+  og pannebånd`) — the name-level `JUNK_RE` gate is what keeps cases out.
+  `breadcrumbCat` reads the breadcrumb as JSON-LD **or schema.org microdata**
+  (Japan Photo publishes only the latter — 638 rows arrived with no category at
+  all), and a crumb equal to the product NAME is dropped wherever it sits in the
+  path, not just at the leaf (Bergans' whole breadcrumb is `"Ally Map Pocket >
+  Black"`, and `pocket` in the Books vocabulary read it as a book).
   Ingest **re-classifies live `auto` rows on every crawl**, so a vocabulary fix
   reaches the whole catalog one crawl later instead of new rows only (keeping
   the leaf and freezing `cat` is how TV came to hold 106 products of which 2
@@ -199,8 +217,9 @@ Two Claude Design projects feed this repo:
   `deriveFacets` reads `name` **and** `srcCat` (the ablation in arXiv
   1812.05774 found name+breadcrumb the best feature set; measured here it lifts
   rows with a derived `type` 7,099 → 8,321).
-  The 27-label regression check in test/api.test.js is the guard on all of it —
-  extend it, never weaken it, when touching CAT_RULES.
+  The 63-label regression check in test/api.test.js is the guard on all of it —
+  one real shop label per failure mode and per word added. Extend it, never
+  weaken it, when touching CAT_RULES.
   manual triage is deploy-free via the admin API (bearer = INGEST_TOKEN):
   `PATCH /api/admin/products/:id` (meta merge, `hidden: null` promotes,
   `hidden: 1` demotes — demoted auto rows never re-promote) and

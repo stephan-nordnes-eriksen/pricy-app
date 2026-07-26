@@ -345,7 +345,7 @@ approach is what the incumbent leans on too.
 | 2. whole breadcrumb | done | `worker/sources.js` `breadcrumbCat` joins the path; `classify` splits it and walks leaf→root |
 | 3. `deriveFacets` reads `srcCat` | done | `worker/facetrules.js`; Toys' figure rule moved above the Pokémon/cards rule |
 | 4. ambiguous tokens | done | `tv`, `lerret`, `foto`, `e-?bok`, `sko`, `kjøkkenbord`, plus missing vocabulary (`figur`, `karakter`, `manga`, `armbånd`, `tapet`, `luer`, `kopper`) — each re-measured against the live catalog |
-| 5. retire the `"*"` floors | **partial** | only Outland, Rusta and Jernia dropped — the three the data proved general. 44 floors remain |
+| 5. retire the `"*"` floors | **done, differently** | 11 dropped (Outland/Rusta/Jernia, then Milrab/Widforss/Vitusapotek/Rum21/JYSK/Kid Interiør/Sport 1/Intersport), Gamezone's value corrected; 36 remain and the measurement says they are right — see "Item 1" below |
 | 6. regression check | done | `test/api.test.js` — 27 real shop labels, one per failure mode |
 
 Three deliberate calls, each smaller than what the plan proposed:
@@ -405,15 +405,103 @@ catches `Mobil > Tilbehør > Deksel`, so the loosening admitted only real produc
 (beanies, outdoor rugs, backpacks, knitting needles, jewellery boxes, gym bags,
 dog gates, bike lights). Not yet deployed: it needs a crawl to reach live data.
 
+### Item 1 (2026-07-26): the floors, and what the measurement actually said
+
+Worked against the 21,353-row live catalog with the new **`tools/score-cats.mjs`**
+(replays the dump through the working tree's own `classify()` + `CATMAP`; it
+exists because this was the third hand-rolled replay and the plan's own next step
+was "a few at a time"). It reports the four numbers a rule edit needs: the
+label/unreadable/no-label split, every row that would change category on the next
+crawl, **how much of each category came from a shop floor**, and per-shop floor
+agreement.
+
+**The premise of this item was wrong in two places, and the tool is what showed
+it.**
+
+**First: dropping a floor cannot fix a single existing row.** Re-classification
+never un-promotes, and since the 2026-07-26 fix a floor may not re-file a live
+row either — so a live floor-decided row keeps its category no matter what
+happens to the floor. Dropping one costs nothing today and changes nothing
+today; it only stops *new* unreadable-label rows from being filed by shop. The
+46% is not a backlog you can work off by editing config. It moves only when the
+vocabulary learns to read those labels.
+
+**Second: low floor agreement mostly meant our vocabulary was broken, not that
+the shop was general.** "Of a shop's rows whose own label we CAN read, how many
+land on the floor's category anyway" is the direct measurement of CLAUDE.md's
+existing rule ("only where the WHOLE shop is one category"). A first pass cut
+every floor under 75% — 16 shops. Reading the actual disagreements killed that:
+
+- **Tegne.no (70%), Panduro (63%)** — art shops. `\bpapir`, `\bpenn`, `blekk`
+  read Copic markers, artist ink and crepe paper as stationery; `maling` read
+  children's and textile paint as housepaint. Rule bugs, same polysemy as `tv`
+  and `lerret`. Fixed → 75% and 82%.
+- **Trademax (58%), Chilli (66%), Fagmøbler (72%)** — furniture shops. Home's
+  `oppbevaring` took 178 highboards and sideboards because Furniture had no word
+  for a cabinet, and Lighting's `lampe` took the side tables out of "Lampebord &
+  sidebord". Fixed → 61%, 72%, 76%.
+- **Hi-Fi Klubben (71%), Bjørklund (74%)** — not disagreement at all. Their
+  labels say `TV > Lydplanke` and `Analoge klokker`, which is *correct*, and the
+  label already outranks the floor. The floor only ever speaks for their
+  SKU-code rows, where it is right.
+
+What survived as genuinely multi-department, on ≥60 readable labels: **Milrab**
+(Outdoor, 10% — its own labels say Jakker/Gensere/Løpesko/Sportsklokker),
+**Widforss** (Outdoor, 22%, plus a whole dog department), **Vitusapotek**
+(Health, 25% — a pharmacy sells skincare and baby formula), **Rum21**
+(Furniture, 38%, 84 rows of lighting), **JYSK** (42%), **Kid Interiør** (Home,
+45% — furniture, kitchen, lighting, garden, office), **Sport 1** (12%) and
+**Intersport** (15%). Those eight floors are gone; 36 remain, all at 61–100%.
+
+**And one floor was simply the wrong value.** Gamezone sends no category at all
+and its catalog is board games, Warhammer miniatures, dice, RPG books and TCG
+singles — `Gaming` (consoles and video games) was wrong for ~580 of its 651
+rows, which is most of why the Gaming category is 92% floor-decided. Now `Toys`.
+
+**Where the 4,258 label-less rows actually come from.** Probing one product page
+per shop: Gamezone, Nettdyret, Bikeshop, Foss Sport, Zooservice, Kicks and
+Hobbii publish no category and no breadcrumb in any form — floor-or-nothing, and
+for those specialists the floor is right. But **Japan Photo publishes
+`Home > Kamera > Systemkamera` as schema.org *microdata*** and `breadcrumbCat`
+only read JSON-LD, which is the whole reason Photo is 94% floor-decided.
+`breadcrumbCat` now reads microdata crumbs too. Bergans publishes one as well and
+it is the product name plus a colour — so a crumb equal to the product name is
+now dropped wherever it sits in the path, not only at the leaf (left in,
+`pocket` in the Books vocabulary read "Ally Map Pocket" as a book).
+
+Net over the live catalog: rows decided by the product's own label 11,619 →
+**12,152** (+533), floor share 44.5% → **42.0%**, and 739 rows change category
+on the next crawl — every one traced to a real shop label. Two first-pass
+additions measured badly and were re-placed rather than kept: sunglasses are an
+accessory, not cosmetics, and a water bottle is kitchenware wherever it is sold
+(as Outdoor it pulled ceramic mugs and a baby's drinking bottle along). The
+regression check is 36 → **63** real shop labels.
+
+The per-category floor share is now reported, which "Done looks like" asked for.
+Worst: Photo 94% (fixed by the microdata reader on the next crawl), Gaming 92%,
+Bikes 88%, Pets 80%, Outdoor 78%. The last three are single-specialist
+categories where the floor is the shop's actual specialty — that number will
+never go to zero, and it shouldn't.
+
 ### Open
 
-1. **The other 44 `"*"` floors.** ~60% of the catalog is still categorized by
-   shop-of-origin; this change only stops three shops from adding to it. Work
-   them off against a fresh crawl, a few at a time, watching what falls hidden.
-2. **The 2,981 rows with no `srcCat` at all** are untouched by any of this —
-   they need the shop to publish a breadcrumb, or a name-based fallback that
-   the earlier measurement showed is worth +0.8% and costs curation accuracy.
-3. **A crawl has to run** for any of this to reach production data. Existing
+1. **Gamezone's existing ~580 rows are still in Gaming.** A floor may not
+   re-file a live row, so changing its value only helps new rows. These need a
+   one-off admin PATCH with `man: null` (the same shape the 278 reverted rows
+   used), and their names are readable — "Monikers Brettspill", "Aeldari
+   Corsairs Dice". This is the one place a `tools/reclassify.mjs` would earn
+   itself.
+2. **The remaining 36 floors still decide 8,788 rows**, but per the measurement
+   above that is mostly *correct* — specialist shops that publish nothing. Only
+   the vocabulary moves that number now. `tools/score-cats.mjs --labels` ranks
+   what to read next; the tail is flat (top 100 labels = 1,192 of 3,920 content
+   rows), and ~850 of the unread rows are pure navigation crumbs
+   (`Home`, `Hjem > Produkter`, `Varemerker > Fjällräven`) that can never be read.
+3. **The 4,258 rows with no `srcCat` at all**: seven shops publish no category
+   in any form (probed 2026-07-26), so for them the floor is the only signal
+   there will ever be. Item 2's "they need the shop to publish a breadcrumb" is
+   answered — they don't, except Japan Photo, which is now handled.
+4. **A crawl has to run** for any of this to reach production data. Existing
    rows keep their current category until re-ingested.
 4. `meta.types` (Browse's type chips) still counts stored values only, so the
    +1,222 newly-derived types don't show there — pre-existing, noted in
