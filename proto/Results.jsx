@@ -528,7 +528,7 @@ function SortMenu({ fields, field, dir, onPick }) {
 const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} });
 function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
-  const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} window.scrollTo(0, 0); };
+  const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} };
   const baseSel = { query, cat };
   // `n` bumps when the host merges server rows into CATALOG in place (same pattern as SearchSuggest)
   const [n, bump] = useState(0);
@@ -606,7 +606,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   ], [query, cat, facetBase]);
   const sortField = sortFields.find(s => s.id === sort) || SORT_FIELDS[0];
   const sortDir = sortFields.some(s => s.id === sort) ? dir : sortField.dir;
-  const pickSort = (id, d) => { setSort(id); setDir(d); window.scrollTo(0, 0); };
+  const pickSort = (id, d) => { setSort(id); setDir(d); };
   // a spec sort that doesn't exist in the new category falls back to price
   useEffect(() => { if (!sortFields.some(s => s.id === sort)) { setSort('best'); setDir('asc'); } }, [sortFields, sort]);
   const badgeOf = sortField.badge ? (p) => sortField.badge(p, sortDir) : null;
