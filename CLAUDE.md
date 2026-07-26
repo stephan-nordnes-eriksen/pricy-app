@@ -306,8 +306,14 @@ Two Claude Design projects feed this repo:
   products that queued an URL the drain could only fail on), and the drain
   fetches this third-party value server-side. `og:image` is the fallback
   when the JSON-LD has no usable one — Ringo's `Product.image` is a Yoast
-  `{"@id": "…#primaryimage"}` graph ref, not a URL. The UI doesn't render
-  `img` yet — that's an upstream prototype change.
+  `{"@id": "…#primaryimage"}` graph ref, not a URL. **The UI does render
+  `img`** (corrected 2026-07-27 — this said it didn't): upstream's `ProdImg`
+  primitive (Primitives.jsx) takes a product and renders `<img src={p.img}>`,
+  falling back to the lucide `Icon` when there is none, and the PDP gallery's
+  `productViews` (Gallery.jsx) reads `p.imgs` then `p.img` the same way.
+  Nothing filters `img` out of a hydrated row, so it just works. Two call
+  sites still render `Icon` directly instead of `ProdImg` —
+  `HomeSections.jsx`'s `WatchRow` and `SignedHome.jsx`'s alert feed card.
 
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
