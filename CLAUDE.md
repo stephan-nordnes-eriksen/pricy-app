@@ -289,8 +289,16 @@ Two Claude Design projects feed this repo:
   `--no-images` and got none at all: 593 of 22,120 products had an image on
   2026-07-26, every `$discover` shop at exactly 0%. Re-fetch only when the
   source URL changes (shop CDNs version image URLs, so same URL = same
-  bytes). The UI doesn't render `img` yet — that's an upstream prototype
-  change.
+  bytes). The drain STREAMS `res.body` into R2 — buffering 40 arrayBuffers
+  is per-byte isolate CPU and 503'd (`exceededCpu`) mid-backfill.
+  `scrapeRow` resolves the image against the page URL and accepts http(s)
+  only: schema.org says `Product.image` is absolute, but Obs/Obs Bygg/
+  Trademax/Chilli/Kid Interiør/Zooservice all publish a bare path (3,814
+  products that queued an URL the drain could only fail on), and the drain
+  fetches this third-party value server-side. `og:image` is the fallback
+  when the JSON-LD has no usable one — Ringo's `Product.image` is a Yoast
+  `{"@id": "…#primaryimage"}` graph ref, not a URL. The UI doesn't render
+  `img` yet — that's an upstream prototype change.
 
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
