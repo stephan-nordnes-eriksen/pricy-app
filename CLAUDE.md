@@ -246,22 +246,31 @@ Two Claude Design projects feed this repo:
   `{product_id: url}` map or a `"$discover": { sitemap, pathFilter?,
   sitemapFilter?, limit?, ua?, delayMs? }` block that walks the shop's own
   sitemap for its whole catalog (`limit` strides across the sitemap rather
-  than taking the head). `--no-images` drops the image field, which lifts
-  the 40-row POST chunk (syncImages' subrequest budget) to the route's own
-  500 — use it for full-catalog runs; images land on the next ordinary
-  crawl. 50 shops wired as of 2026-07-25, 47 of them sitemap-discovered.
+  than taking the head). Every run POSTs 500 rows at a time WITH images and
+  then drains the image queue to empty; `--no-images` skips both (price-only
+  refresh). 50 shops wired as of 2026-07-25, 47 of them sitemap-discovered.
   (`npm run test:crawlers` live-checks one page per shop,
   on demand only) (bearer =
   `INGEST_TOKEN` secret; token also in untracked `tools/.ingest-token`).
   `eans.json` arrays hold confirmed variants only — extend them as real
   feeds reveal missed colors/SKUs. Rollout checklist: PLAN.md 4d.
-  Product images: source rows may carry `image` (JSON-LD `Product.image` /
-  Adtraction `imageurl`); ingest's `syncImages` downloads to the R2 bucket
-  `pricy-images` (binding `IMAGES`, key `products/<id>`) only when the
-  source URL is new or changed (D1 `images` table pins the last URL),
-  serves at `GET /img/<id>` (etag + max-age, in `run_worker_first`), and
-  `catalogBody` advertises `img: "/img/<id>"` when stored. The UI doesn't
-  render `img` yet — that's an upstream prototype change.
+  **Product images are queued at ingest, fetched by a drain** (2026-07-26):
+  source rows may carry `image` (JSON-LD `Product.image` / Adtraction
+  `imageurl`); ingest's `queueImages` only WRITES the URL to the D1 `images`
+  table, where `fetched_at` is the state — `0` queued, `>0` stored, `-1`
+  failed. `drainImages` (hourly cron, and `POST /api/admin/images?n=` bearer-
+  gated, ≤40 per call, 8 concurrent, queued before previously-failed)
+  downloads to the R2 bucket `pricy-images` (binding `IMAGES`, key
+  `products/<id>`) and serves at `GET /img/<id>` (etag + max-age, in
+  `run_worker_first`). `catalogBody`/`rowsFor` advertise `img: "/img/<id>"`
+  only for `fetched_at > 0` — a queued row has no bytes to serve.
+  Downloading inline is what capped an ingest POST at 40 rows (~50
+  subrequests on the free plan), so full-catalog shops were crawled
+  `--no-images` and got none at all: 593 of 22,120 products had an image on
+  2026-07-26, every `$discover` shop at exactly 0%. Re-fetch only when the
+  source URL changes (shop CDNs version image URLs, so same URL = same
+  bytes). The UI doesn't render `img` yet — that's an upstream prototype
+  change.
 
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
