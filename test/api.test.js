@@ -43,10 +43,10 @@ function d1() {
   };
 }
 
-let worker, parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource;
+let worker, parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource, discoverSource;
 before(async () => {
   worker = (await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')))).default;
-  ({ parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
+  ({ parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource, discoverSource } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
 });
 
 // Ops routes (ingest, admin, the catalog.json dump) are bearer-gated, so
@@ -1646,6 +1646,30 @@ test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free 
 // floor. Bergans publishes one too — but its crumbs are the product name and a
 // colour, and left in, `pocket` in the Books vocabulary read "Ally Map Pocket"
 // as a book. See plans/category-misclassification.md.
+// Crawling a shop's WHOLE catalog is opt-in: without a recorded approval a
+// shop gets a development sample, however its entry was written.
+test('discover samples by default and only crawls in full when approved', async () => {
+  const urls = Array.from({ length: 1000 }, (_, i) => `https://s.no/p/${i}`);
+  const realFetch = globalThis.fetch;
+  const pages = (cfg) => {
+    globalThis.fetch = async (u) => new Response(String(u).endsWith('.xml')
+      ? `<urlset>${urls.map(l => `<url><loc>${l}</loc></url>`).join('')}</urlset>`
+      : '<html>no json-ld</html>'); // every page fails to parse; we only count visits
+    let seen = 0;
+    const f = globalThis.fetch;
+    globalThis.fetch = async (u) => { if (!String(u).endsWith('.xml')) seen++; return f(u); };
+    return discoverSource('S', { sitemap: 'https://s.no/s.xml', delayMs: 0, ...cfg }).then(() => seen);
+  };
+  try {
+    // an integer stride only approximates the cap — what matters is that it
+    // caps at all, and that a shop with no policy never gets crawled in full
+    const sampled = await pages({});
+    assert.ok(sampled > 0 && sampled <= 400, `no limit and no approval = a capped sample, got ${sampled} of 1000`);
+    assert.strictEqual(await pages({ approved: 'operator, 2026-07-27' }), 1000, 'approved lifts the cap');
+    assert.ok(await pages({ approved: 'x', limit: 10 }) <= 10, 'an explicit limit still wins (--limit on any shop)');
+  } finally { globalThis.fetch = realFetch; }
+});
+
 // A site-relative JSON-LD image is not fetchable, and queueing one only ever
 // produces a failed drain — Obs/Trademax/Chilli/Kid Interiør/Zooservice ship
 // exactly that, and it left 3,814 products image-less.

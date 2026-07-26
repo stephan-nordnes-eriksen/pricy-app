@@ -10,6 +10,10 @@
 // Never scrape competing comparison services (Prisjakt etc.) — first-party
 // shop pages and licensed feeds only.
 
+// Pages per sitemap-discovered shop when we have no scraping agreement with
+// them — a development sample, not their catalog. Lifted only by `approved`.
+export const SAMPLE_LIMIT = 400;
+
 export const UA = 'pricy.no price watcher (kontakt@pricy.no)';
 // Some shops (NetOnNet) 403 every non-browser UA, honest or not. Opt in per
 // shop with cfg.ua = 'browser'; the honest UA stays the default everywhere.
@@ -238,8 +242,8 @@ async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|va
 // convention adtractionSource() uses. ingest() already auto-creates/
 // auto-promotes ean-* rows regardless of which source emitted them, so this
 // needs no Worker-side change. cfg: { sitemap, pathFilter?, sitemapFilter?,
-// limit?, ua?, delayMs? } — pathFilter/sitemapFilter are regex source
-// strings (JSON can't hold a RegExp literal).
+// limit?, approved?, ua?, delayMs? } — pathFilter/sitemapFilter are regex
+// source strings (JSON can't hold a RegExp literal).
 export async function discoverSource(shop, cfg) {
   const pathFilter = cfg.pathFilter ? new RegExp(cfg.pathFilter, 'i') : undefined;
   const sitemapFilter = cfg.sitemapFilter ? new RegExp(cfg.sitemapFilter, 'i') : undefined;
@@ -247,7 +251,14 @@ export async function discoverSource(shop, cfg) {
   // when capped, spread the pick evenly over the whole sitemap instead of
   // taking the head — sitemaps are usually sorted, so the first N URLs are one
   // alphabetical corner of one category, which is the worst possible sample
-  const stride = Math.max(1, Math.ceil(all.length / (cfg.limit ?? Infinity)));
+  // Sampling is the DEFAULT, and a full catalog crawl is opt-in per shop:
+  // `approved` (a note saying who cleared it and when) is the only thing that
+  // lifts the cap. A shop nobody has a policy for gets SAMPLE_LIMIT pages —
+  // including a newly added one whose author never thought about `limit`.
+  // An explicit limit still wins either way, so `--limit 2` works on any shop.
+  // Ceiling: a sampled shop's other products keep a frozen price and no image
+  // (8,937 of them on 2026-07-27); the upgrade path is per-shop approval.
+  const stride = Math.max(1, Math.ceil(all.length / (cfg.limit ?? (cfg.approved ? Infinity : SAMPLE_LIMIT))));
   const urls = stride > 1 ? all.filter((_, i) => i % stride === 0) : all;
   const rows = [];
   for (const url of urls) {

@@ -266,7 +266,16 @@ Two Claude Design projects feed this repo:
   `{product_id: url}` map or a `"$discover": { sitemap, pathFilter?,
   sitemapFilter?, limit?, ua?, delayMs? }` block that walks the shop's own
   sitemap for its whole catalog (`limit` strides across the sitemap rather
-  than taking the head). Every run POSTs 500 rows at a time WITH images and
+  than taking the head). **A full-catalog crawl is opt-in per shop**
+  (2026-07-27): `SAMPLE_LIMIT` (400 pages) applies unless the shop's
+  `$discover` carries `approved: "<who cleared it, when>"`, so a shop we have
+  no scraping agreement with is only ever *sampled* during development — and
+  a newly added entry whose author never set `limit` is sampled too, rather
+  than silently crawled in full. An explicit `limit` still wins either way,
+  so `--limit 2` works on any shop. No shop is approved as of 2026-07-27;
+  the cost is that a sampled shop's other products keep a frozen price and no
+  image (8,937 of them), and the only upgrade path is real approval.
+  Every run POSTs 500 rows at a time WITH images and
   then drains the image queue to empty; `--no-images` skips both (price-only
   refresh). 50 shops wired as of 2026-07-25, 47 of them sitemap-discovered.
   (`npm run test:crawlers` live-checks one page per shop,
