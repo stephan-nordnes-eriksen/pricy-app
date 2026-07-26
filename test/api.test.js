@@ -43,10 +43,10 @@ function d1() {
   };
 }
 
-let worker, parsePrice, parseSitemapXml, breadcrumbCat;
+let worker, parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource;
 before(async () => {
   worker = (await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')))).default;
-  ({ parsePrice, parseSitemapXml, breadcrumbCat } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
+  ({ parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
 });
 
 // Ops routes (ingest, admin, the catalog.json dump) are bearer-gated, so
@@ -1646,6 +1646,28 @@ test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free 
 // floor. Bergans publishes one too — but its crumbs are the product name and a
 // colour, and left in, `pocket` in the Books vocabulary read "Ally Map Pocket"
 // as a book. See plans/category-misclassification.md.
+// A site-relative JSON-LD image is not fetchable, and queueing one only ever
+// produces a failed drain — Obs/Trademax/Chilli/Kid Interiør/Zooservice ship
+// exactly that, and it left 3,814 products image-less.
+test('scrape resolves a site-relative JSON-LD image against the page URL', async () => {
+  const page = (img) => `<script type="application/ld+json">${JSON.stringify({
+    '@type': 'Product', name: 'Stol', image: img,
+    offers: { '@type': 'Offer', price: '1499', priceCurrency: 'NOK' },
+  })}</script>`;
+  const realFetch = globalThis.fetch;
+  const at = async (img) => {
+    globalThis.fetch = async () => new Response(page(img));
+    try {
+      const [row] = await scrapeSource('Chilli', { urls: { stol: 'https://www.chilli.no/mobler/stol-x' } });
+      return row.image;
+    } finally { globalThis.fetch = realFetch; }
+  };
+  assert.strictEqual(await at('/assets/blobs/a.jpg'), 'https://www.chilli.no/assets/blobs/a.jpg');
+  assert.strictEqual(await at('//cdn.chilli.no/a.jpg'), 'https://cdn.chilli.no/a.jpg', 'protocol-relative too');
+  assert.strictEqual(await at('https://cdn.x/a.jpg'), 'https://cdn.x/a.jpg', 'absolute is left alone');
+  assert.strictEqual(await at('javascript:'), null, 'unresolvable drops rather than queueing a doomed fetch');
+});
+
 test('breadcrumbCat reads microdata breadcrumbs, and a crumb that is the product name never counts', () => {
   const ld = (crumbs) => `<script type="application/ld+json">${JSON.stringify(
     { '@type': 'BreadcrumbList', itemListElement: crumbs.map((name, i) => ({ name, position: i + 1 })) })}</script>`;

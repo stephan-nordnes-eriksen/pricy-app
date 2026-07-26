@@ -105,10 +105,16 @@ export async function adtractionSource(shop, _cfg, env) {
   return rows;
 }
 
+// http(s) only: the drain fetches whatever lands here, and the value comes
+// from a third party's page — a javascript:/data: image parses fine as a URL
+const absUrl = (u, base) => {
+  try { const x = new URL(u, base); return /^https?:$/.test(x.protocol) ? x.href : null; } catch { return null; }
+};
+
 // Shared page → row extraction (schema.org Product/Offer JSON-LD), used by
 // both the curated-URL scrapeSource() and the sitemap-driven discoverSource()
 // below. Throws on anything that isn't a usable, NOK-priced offer.
-function scrapeRow(html) {
+function scrapeRow(html, pageUrl) {
   const { offer, image, name, brand, category, ean } = productOffer(html) ?? {};
   // no Product.category (Power, NetOnNet): the page's BreadcrumbList leaf is
   // the shop's own category label — unless it's the product itself (Power
@@ -135,7 +141,13 @@ function scrapeRow(html) {
     ship: sd?.ship ?? null,
     stock: offer.availability ? (/instock|limitedavailability/i.test(String(offer.availability)) ? 1 : 0) : 2,
     eta: sd?.eta ?? null,
-    image,
+    // schema.org says image is an absolute URL; plenty of shops publish a
+    // site-relative one anyway (Obs, Trademax, Chilli, Kid Interiør,
+    // Zooservice — 3,814 products, every one of them image-less until now,
+    // because the Worker's fetch() can't take a bare path). Resolve against
+    // the page it came from; a malformed value drops to null rather than
+    // queueing an URL the drain can only ever fail on.
+    image: image ? absUrl(image, pageUrl) : null,
   };
 }
 
@@ -149,7 +161,7 @@ export async function scrapeSource(shop, cfg) {
       // already rejects genuinely empty/error pages
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       const html = await res.text();
-      const { ean: _ean, ...row } = scrapeRow(html);
+      const { ean: _ean, ...row } = scrapeRow(html, url);
       return { product_id, shop, url, ...row };
     } catch (e) {
       console.warn(`ingest: ${shop}/${product_id} scrape failed: ${e.message}`);
@@ -232,7 +244,7 @@ export async function discoverSource(shop, cfg) {
     try {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       const html = await res.text();
-      const { ean, ...row } = scrapeRow(html);
+      const { ean, ...row } = scrapeRow(html, url);
       // a name is mandatory on the slug path: some shops publish priced
       // brand/landing pages whose Product node carries a brand but no name,
       // which would key on the brand alone (p-aiaiai) and can never become a
