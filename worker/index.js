@@ -396,16 +396,38 @@ async function ingest(db, rows, env) {
   // id derived from a feed/JSON-LD EAN, plus a name) creates the product on the
   // spot, hidden until enriched — by auto-promotion below, or manually via
   // PATCH /api/admin/products/:id. Unknown rows without identity drop.
-  // ponytail: full id scan per ingest, fine to ~50k products; index a discovery
-  // column when it isn't
-  const prods = (await db.prepare(`SELECT id, meta, json_extract(meta, '$.hidden') AS hidden FROM products`).all()).results;
-  const known = new Set(prods.map(p => p.id));
-  const stillHidden = new Set(prods.filter(p => p.hidden === 1).map(p => p.id));
-  // meta for the ids in THIS batch only — promotion needs live rows too now
-  // (re-classification, below), and parsing all 14k blobs per 500-row chunk to
-  // get them would cost more than the whole rest of ingest.
-  const inBatch = new Set(rows.map(r => r.product_id));
-  const metaOf = Object.fromEntries(prods.filter(p => inBatch.has(p.id)).map(p => [p.id, JSON.parse(p.meta)]));
+  // Everything ingest needs to know about existing products, fetched BY THE
+  // BATCH'S OWN IDS — existence (`known`), the meta blob (`metaOf`, promotion
+  // and re-classification read it) and the hidden flag, in one round trip.
+  //
+  // This used to be `SELECT id, meta, json_extract(meta,'$.hidden') FROM
+  // products` — the WHOLE table, on EVERY chunk. It only parsed the batch's
+  // share of the blobs, but D1 still transferred all of them: ~5 MB at 22k
+  // products. Measured in process (2026-07-26) that cost ~55 ms of CPU per
+  // chunk **flat in chunk size** — 50 rows cost the same as 500 — which is what
+  // put 12 of a 29-chunk crawl over the free plan's CPU ceiling and silently
+  // dropped 5,700 rows. A fixed per-chunk cost is immune to smaller chunks and
+  // to running them in parallel (the limit is per invocation): the only fix is
+  // not to read what the chunk does not need. Every use of `known` and
+  // `stillHidden` below is a lookup of a row that IS in the batch, so nothing
+  // outside it was ever needed.
+  const wanted = [...new Set(rows.map(r => r.product_id))];
+  const slices = [];
+  // 100 is D1's bound-parameter cap; one db.batch() is one round trip
+  for (let i = 0; i < wanted.length; i += 100) slices.push(wanted.slice(i, i + 100));
+  const metaOf = {};
+  const stillHidden = new Set();
+  if (slices.length) {
+    for (const res of await db.batch(slices.map(s =>
+      db.prepare(`SELECT id, meta FROM products WHERE id IN (${s.map(() => '?').join(',')})`).bind(...s)))) {
+      for (const p of res.results) {
+        const m = JSON.parse(p.meta);
+        metaOf[p.id] = m;
+        if (m.hidden === 1) stillHidden.add(p.id);
+      }
+    }
+  }
+  const known = new Set(Object.keys(metaOf));
   const creates = {};
   for (const r of rows) {
     if (known.has(r.product_id) || !autoAdd(r)) continue;
@@ -1481,7 +1503,17 @@ export default {
         || (r.srcCat != null && typeof r.srcCat !== 'string'));
       if (bad) return json({ error: 'bad rows' }, 400);
       await seedCatalog(db);
-      const known = new Set((await db.prepare('SELECT id FROM products').all()).results.map(p => p.id));
+      // by the batch's own ids, not the whole products table: this check only
+      // ever asks about rows that are IN the batch, and a full id read is a
+      // fixed per-chunk cost that smaller or parallel chunks cannot dilute
+      // (see the note in ingest()).
+      const ids = [...new Set(rows.map(r => r.product_id))];
+      const idSlices = [];
+      for (let i = 0; i < ids.length; i += 100) idSlices.push(ids.slice(i, i + 100));
+      const known = new Set();
+      for (const res of await db.batch(idSlices.map(s =>
+        db.prepare(`SELECT id FROM products WHERE id IN (${s.map(() => '?').join(',')})`).bind(...s))))
+        for (const p of res.results) known.add(p.id);
       // aliased EANs resolve inside ingest(); their derived ids are known here
       for (const r of (await db.prepare('SELECT ean FROM eans').all()).results) known.add('ean-' + r.ean);
       // discovery rows (ean-derived id + name) pass through — ingest creates them hidden

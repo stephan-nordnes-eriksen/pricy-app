@@ -1318,6 +1318,49 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(airpods.history.length, baseline.history.length, 'still one point per day');
 });
 
+// An ingest chunk used to read the WHOLE products table — id, the meta blob and
+// a hidden flag — so its cost was FIXED per chunk (~55 ms of CPU at 22k
+// products, the same for 50 rows as for 500). That is the shape that cannot be
+// chunked or parallelised out of trouble, and it put 12 of a 29-chunk crawl over
+// the Worker CPU ceiling, silently dropping 5,700 rows. This pins the property
+// rather than the timing: what ingest reads must depend on the BATCH, not on how
+// many products exist. See plans/read-path-whats-left.md §0.
+test('POST /api/ingest reads by the batch\'s ids, not the whole products table', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'tok' };
+  const call = api(env);
+  await call('/api/products'); // let seedCatalog build the schema + seed
+
+  // 400 extra products the batch never mentions
+  for (let i = 0; i < 400; i++) {
+    await DB.prepare('INSERT OR IGNORE INTO products (id, meta) VALUES (?, ?)')
+      .bind(`filler-${i}`, JSON.stringify({ name: `Filler ${i}`, brand: 'Acme', cat: 'Toys', icon: 'toy-brick', kw: 'toys acme', auto: 1 })).run();
+  }
+
+  // count rows returned by every read of `products` during ONE ingest
+  let productRowsRead = 0;
+  const realPrepare = DB.prepare.bind(DB);
+  DB.prepare = (sql) => {
+    const st = realPrepare(sql);
+    if (!/\bfrom products\b/i.test(sql) || /count\(/i.test(sql)) return st;
+    const wrap = (o) => ({ ...o, all: async () => { const r = await o.all(); productRowsRead += r.results.length; return r; } });
+    return { ...wrap(st), bind: (...a) => wrap(st.bind(...a)) };
+  };
+
+  const res = await worker.fetch(new Request('http://pricy.test/api/ingest', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer tok' },
+    body: JSON.stringify([{ product_id: 'airpods', shop: 'Power', price: 2599 }]),
+  }), env);
+  assert.strictEqual(res.status, 200);
+  DB.prepare = realPrepare;
+
+  // a 1-row batch may legitimately read a handful of rows (the row itself, the
+  // eans table); it must NOT read anything proportional to the 400 fillers
+  assert.ok(productRowsRead < 50,
+    `ingest read ${productRowsRead} product rows for a 1-row batch — it is scanning the table again`);
+});
+
 // Discovery: an unknown `ean-<digits>` row carrying a name auto-creates a
 // hidden product — invisible in every user-facing query until enriched
 // (extra.json + deploy), listed for triage via ?hidden=1
