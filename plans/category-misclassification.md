@@ -390,6 +390,21 @@ The lesson generalises: **unfreezing a value makes every weak input a recurring
 writer, not a one-time guess.** Anything that was "good enough to seed with"
 needs re-checking before it is allowed to run on every crawl.
 
+### Item 3 (2026-07-26): CAT_SKIP reads the leaf, plus three missing words
+
+`CAT_SKIP` tested the WHOLE label, so any `Tilbehør` in the path killed it —
+`KLÆR > Tilbehør > Luer og pannebånd` lost 38 beanies with a perfectly readable
+leaf. It now tests the **leaf** (what the product IS) and skips accessory crumbs
+during the walk. A single-crumb label is its own leaf, so those are byte-for-byte
+unchanged; only multi-crumb paths move. Plus `spisestue`, `spisegruppe`,
+`sengeramme|sengestamme` → Furniture.
+
+Measured over the 21,353-row live catalog: **387 rows newly classify, 8 move,
+and 0 of the 387 have a name that `JUNK_RE` would block** — the leaf test still
+catches `Mobil > Tilbehør > Deksel`, so the loosening admitted only real products
+(beanies, outdoor rugs, backpacks, knitting needles, jewellery boxes, gym bags,
+dog gates, bike lights). Not yet deployed: it needs a crawl to reach live data.
+
 ### Open
 
 1. **The other 44 `"*"` floors.** ~60% of the catalog is still categorized by

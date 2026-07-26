@@ -315,7 +315,7 @@ const CAT_RULES = [
   [/lampe|belysning|lyspære|lyskilde|pendel|lysestake|utelys|\blys\b/i, 'Lighting'],
   // tv-benk/mediabenk explicitly: the TV rule above now declines them, and a
   // bare `benk` here would steal Garden's benches from the leaf-first walk
-  [/møbler|møbel|\bsofa|\bstol\b|\bbord\b|\bseng\b|madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|mediamøb/i, 'Furniture'],
+  [/møbler|møbel|\bsofa|\bstol\b|\bbord\b|\bseng\b|madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|spisestue|spisegruppe|sengeramme|sengestamme|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|mediamøb/i, 'Furniture'],
   [/\bhage|utemøbl|plante|gressklipper|\bgrill\b|terrasse|blomst|\bfrø\b|uterom/i, 'Garden'],
   // hobby paint/craft before Tools, or Panduro's craft paints read as housepaint
   [/hobby|\bgarn\b|strikk|hekle|håndarbeid|scrapbook|\bperler\b|modellbygg|\bsying|stoff\b|oljemaling|akrylmaling|spraymaling|akvarell|vannmaling|\blerret|fargeblyant|broderi|klistremerk|kunstner/i, 'Hobby'],
@@ -356,10 +356,17 @@ const CRUMB = /\s*(?:>|›|»|\||::|\/)\s*/;
 const CAT_WEAK = /^(dame|herre|barn|barne|jente|gutt|unisex|kvinne|mann|junior|voksen|home|hjem|forside|start|produkter|nyheter|nyankomne|nyhet|alle produkter|tilbud|merker|brands?)$/i;
 export const classify = (label) => {
   const s = String(label || '');
-  if (!s || CAT_SKIP.test(s)) return undefined;
+  if (!s) return undefined;
   const crumbs = s.split(CRUMB).map(c => c.trim()).filter(Boolean);
+  // CAT_SKIP applies to the LEAF, not the whole path: the leaf is what the
+  // product IS, and a mid-path "Tilbehør" only says the shop files it under an
+  // accessories menu. Testing the whole string cost "KLÆR > Tilbehør > Luer og
+  // pannebånd" — 38 beanies with a perfectly readable leaf. A single-crumb label
+  // is its own leaf, so those behave exactly as before. The name-level JUNK_RE
+  // gate at promotion is what actually keeps chargers and cases out.
+  if (!crumbs.length || CAT_SKIP.test(crumbs.at(-1))) return undefined;
   for (let i = crumbs.length - 1; i >= 0; i--) {
-    if (CAT_WEAK.test(crumbs[i])) continue;
+    if (CAT_WEAK.test(crumbs[i]) || CAT_SKIP.test(crumbs[i])) continue;
     const cat = CAT_RULES.find(([re]) => re.test(crumbs[i]))?.[1];
     if (cat) return cat;
   }

@@ -1638,8 +1638,18 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     ['Kopper og krus', 'Kitchen'],
     ['Akvarell- & vannmaling', 'Hobby'],
     ['Spisebord & kjøkkenbord', 'Furniture'],
-    // an accessory anywhere in the path is still an accessory
+    // CAT_SKIP tests the LEAF, not the whole path: the leaf is what the product
+    // IS, a mid-path "Tilbehør" is just the menu the shop files it under
     ['Tilbehør / Skolisser / Brune skolisser', undefined],
+    ['Tilbehør', undefined],
+    ['Annen / Reservedeler', undefined],
+    ['Sykkel tilbehør', undefined], // single crumb = its own leaf, unchanged
+    ['Mobil > Tilbehør > Deksel', undefined],
+    ['KLÆR > Tilbehør > Luer og pannebånd', 'Fashion'], // 38 beanies were lost here
+    // vocabulary the catalog proved missing (item 3)
+    ['Spisestue', 'Furniture'],
+    ['Spisegruppe', 'Furniture'],
+    ['Sengeramme & sengestamme', 'Furniture'],
   ];
   for (const [label, want] of cases) {
     assert.strictEqual(classify(label), want, `classify(${JSON.stringify(label)})`);
