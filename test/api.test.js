@@ -43,10 +43,10 @@ function d1() {
   };
 }
 
-let worker, parsePrice, parseSitemapXml;
+let worker, parsePrice, parseSitemapXml, breadcrumbCat;
 before(async () => {
   worker = (await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')))).default;
-  ({ parsePrice, parseSitemapXml } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
+  ({ parsePrice, parseSitemapXml, breadcrumbCat } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
 });
 
 // Ops routes (ingest, admin, the catalog.json dump) are bearer-gated, so
@@ -1598,6 +1598,30 @@ test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free 
 // Real shop labels pulled from a live /api/catalog.json, one per failure mode
 // that plans/category-misclassification.md found. This is the only thing between
 // a vocabulary edit and TV holding 106 products of which 2 are televisions.
+// Japan Photo publishes its breadcrumb as schema.org MICRODATA and nothing else,
+// so all 638 of its rows arrived with no category and were filed by its shop
+// floor. Bergans publishes one too — but its crumbs are the product name and a
+// colour, and left in, `pocket` in the Books vocabulary read "Ally Map Pocket"
+// as a book. See plans/category-misclassification.md.
+test('breadcrumbCat reads microdata breadcrumbs, and a crumb that is the product name never counts', () => {
+  const ld = (crumbs) => `<script type="application/ld+json">${JSON.stringify(
+    { '@type': 'BreadcrumbList', itemListElement: crumbs.map((name, i) => ({ name, position: i + 1 })) })}</script>`;
+  const micro = (inner) => `<ol itemscope itemtype="https://schema.org/BreadcrumbList">${inner}</ol>`;
+  const span = (n) => `<li itemprop="itemListElement" itemtype="https://schema.org/ListItem"><a itemprop="item"><span itemprop="name"> ${n} </span></a></li>`;
+  const meta = (n) => `<li itemprop="itemListElement" itemtype="https://schema.org/ListItem"><link itemprop="name" content="${n}" /></li>`;
+
+  // JSON-LD still wins when present, and still drops a product-name leaf
+  assert.strictEqual(breadcrumbCat(ld(['Hjem', 'Mobil', 'iPhone 15']), 'iPhone 15'), 'Hjem > Mobil');
+  // microdata, both name markups, product-name leaf dropped → "Kamera" resolves
+  const jp = micro(meta('Home') + span('Kamera') + span('Systemkamera') + span('Fujifilm X-H2 Hus Sort'));
+  assert.strictEqual(breadcrumbCat(jp, 'Fujifilm X-H2 Hus Sort'), 'Home > Kamera > Systemkamera');
+  // a product name MID-path counts for nothing either — this is the Bergans case
+  assert.strictEqual(breadcrumbCat(micro(span('Ally Map Pocket') + span('Black')), 'Ally Map Pocket'), 'Black');
+  // nothing to read at all
+  assert.strictEqual(breadcrumbCat('<html><body>no crumbs</body></html>', 'X'), null);
+  assert.strictEqual(breadcrumbCat(micro(span('Ally Map Pocket')), 'Ally Map Pocket'), null);
+});
+
 test('classify reads a category PATH leaf-first, and the ambiguous tokens stay fixed', async () => {
   const { classify } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')));
   const cases = [
@@ -1650,6 +1674,50 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     ['Spisestue', 'Furniture'],
     ['Spisegruppe', 'Furniture'],
     ['Sengeramme & sengestamme', 'Furniture'],
+    // Home's `oppbevaring` beat a Furniture rule that had no word for a cabinet
+    // (178 highboards across Trademax/Chilli), while Lighting's `lampe` took the
+    // side tables — but a bathroom cabinet really is Home
+    ['Oppbevaring > Skap > Oppbevaringsskap', 'Furniture'],
+    ['Oppbevaringsskap', 'Furniture'],
+    ['Hjem > Rom > Stue > Oppbevaring > Skjenk', 'Furniture'],
+    ['Lampebord & sidebord', 'Furniture'],
+    ['Baderomsskap', 'Home'],
+    ['Belysning > Lamper > Lampeskjermer', 'Lighting'],
+    ['Hjem > Rom > Spiseplassen > Spisestoler', 'Furniture'],
+    ['Lenestoler', 'Furniture'],
+    ['Kontinentalsenger', 'Furniture'],
+    // art supplies vs stationery: `\bpapir`/`\bpenn`/`maling` read Copic markers,
+    // crepe paper and children's paint as Office/Tools at Tegne.no and Panduro
+    ['Mal & tegn > Penner & kritt > Tusjer & markers', 'Hobby'],
+    ['Krepp-papir', 'Hobby'],
+    ['Barnemaling', 'Hobby'],
+    ['Barn & junior > Barneselskap & karneval > Ansiktsmaling', 'Hobby'],
+    ['Miniatyrspill', 'Hobby'],
+    ['Kontor > Papir', 'Office'],          // a stationer's plain paper still lands
+    ['Tilbehør > Skrivesaker > Penner', 'Office'],
+    // the rest of the measured tail, one label per word added
+    ['Capser', 'Fashion'],
+    ['Votter', 'Fashion'],
+    ['Skjerf', 'Fashion'],
+    ['Dame / Tilbehør / Skuldervesker', 'Fashion'],
+    ['Solbriller', 'Fashion'],            // an accessory, NOT cosmetics
+    ['Utstyr > Briller og goggles > Goggles', 'Sport'],
+    ['Kondisjon / Romaskin', 'Sport'],
+    ['Tursko', 'Shoes'],
+    ['FRILUFT > Turutstyr > Termos og drikkeflasker', 'Kitchen'], // not Outdoor:
+    ['Termokopper', 'Kitchen'],           // as Outdoor it took ceramic mugs too
+    ['Utstyr > Sekker og bagger > Dagstursekker', 'Outdoor'],
+    ['Rollespill', 'Toys'],
+    ['Vann- og badelek', 'Toys'],
+    ['Sateng sengesett', 'Home'],
+    ['Innredning > Dekorasjon > Vaser', 'Home'],
+    ['Posters', 'Home'],
+    ['Dagkrem', 'Beauty'],
+    ['Hår > Hårspray', 'Beauty'],
+    // brand-only and navigation-only paths stay unreadable on purpose — that is
+    // what the hidden backlog is for, not something for a shop floor to guess at
+    ['Varemerker > Fjällräven', undefined],
+    ['Hjem > Produkter', undefined],
   ];
   for (const [label, want] of cases) {
     assert.strictEqual(classify(label), want, `classify(${JSON.stringify(label)})`);

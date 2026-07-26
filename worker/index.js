@@ -311,35 +311,45 @@ const CAT_RULES = [
   [/laptop|bærbar|datamaskin|nettbrett|\bipad\b|macbook|chromebook|tastatur|harddisk|\bssd\b|grafikkort|prosessor|stasjonær|dataskjerm|\bpc\b|data\b/i, 'Computers'],
   [/mobiltelefon|smarttelefon|\biphone\b|mobil\b/i, 'Phones'],
   [/vaskemaskin|tørketrommel|oppvaskmaskin|kjøleskap|fryser|komfyr|stekeovn|platetopp|ventilator|hvitevare/i, 'Appliances'],
-  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken(?!bord|stol)|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp(er)?\b|\bkrus\b|servering/i, 'Kitchen'],
-  [/lampe|belysning|lyspære|lyskilde|pendel|lysestake|utelys|\blys\b/i, 'Lighting'],
+  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken(?!bord|stol)|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp(er)?\b|\bkrus\b|servering|matboks|matbeholder|drikkeflaske|vannflaske|termokopp|termoflaske/i, 'Kitchen'],
+  // `lampebord`/`lampeskjerm`: a side table is furniture and a shade is a spare
+  // part, but Lighting is read first — "Lampebord & sidebord" put 70 side tables
+  // in Lighting at Chilli alone
+  [/lampe(?!bord)|belysning|lyspære|lyskilde|pendel|lysestake|utelys|\blys\b/i, 'Lighting'],
   // tv-benk/mediabenk explicitly: the TV rule above now declines them, and a
-  // bare `benk` here would steal Garden's benches from the leaf-first walk
-  [/møbler|møbel|\bsofa|\bstol\b|\bbord\b|\bseng\b|madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|spisestue|spisegruppe|sengeramme|sengestamme|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|mediamøb/i, 'Furniture'],
+  // bare `benk` here would steal Garden's benches from the leaf-first walk.
+  // `skap`/`highboard`/`skjenk` are spelled out rather than a bare `\bskap\b`:
+  // Home's `oppbevaring` was reading 178 cabinets and highboards across
+  // Trademax/Chilli as storage, but `baderomsskap` really is Home.
+  [/møbler|møbel|\bsofa|\bstol\b|\bbord\b|\bseng\b|madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|spisestue|spisegruppe|spisestol|lenestol|barstol|sengeramme|sengestamme|kontinentalseng|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|mediamøb|oppbevaringsskap|klesskap|garderobeskap|vitrineskap|highboard|\bskjenk|sideboard|lampebord|sittepuff|fotskammel|veggspeil/i, 'Furniture'],
   [/\bhage|utemøbl|plante|gressklipper|\bgrill\b|terrasse|blomst|\bfrø\b|uterom/i, 'Garden'],
-  // hobby paint/craft before Tools, or Panduro's craft paints read as housepaint
-  [/hobby|\bgarn\b|strikk|hekle|håndarbeid|scrapbook|\bperler\b|modellbygg|\bsying|stoff\b|oljemaling|akrylmaling|spraymaling|akvarell|vannmaling|\blerret|fargeblyant|broderi|klistremerk|kunstner/i, 'Hobby'],
+  // hobby paint/craft before Tools, or Panduro's craft paints read as housepaint.
+  // Art supplies are polysemous with Office the same way: measured at Tegne.no
+  // and Panduro, `\bpapir`/`blekk`/`\bpenn` read 54 rows of Copic markers,
+  // artist ink and drawing paper as stationery. The art words win here because
+  // Hobby is read first; a stationer's plain "Papir" still reaches Office.
+  [/hobby|\bgarn\b|strikk|hekle|håndarbeid|scrapbook|\bperler\b|modellbygg|\bsying|stoff\b|oljemaling|akrylmaling|spraymaling|akvarell|vannmaling|\blerret|fargeblyant|broderi|klistremerk|kunstner|\btusj|markers|barnemaling|tekstilmaling|ansiktsmaling|linoleum|fargepigment|tegnepapir|kreppapir|krepp-papir|silkepapir|\bkritt\b|miniatyrspill|\bmalings?ett/i, 'Hobby'],
   [/verktøy|\bdrill\b|bormaskin|skrutrekker|\bsag\b|maling|byggevare|jernvare|festemid|skruer|elektriker|rørlegger|\bstige\b|gardintrapp|vinkelsliper|\bspiker\b/i, 'Tools'],
   [/bildel|\bdekk\b|\bfelg|bilpleie|bilbatteri|motorolje|bilrekvisita|\bbil\b/i, 'Auto'],
   [/sykkel|sykling|elsykkel|landevei|terrengsykkel/i, 'Bikes'],
   [/\bbaby|spedbarn|barnevogn|bleie|smokk|barnestol|graviditet|amming|smekke/i, 'Baby'],
   // NOT \bsko[a-zæøå]*\b: `ø` is not a word char, so JS puts a \b inside
   // "Løskort" and 30 Pokémon singles became Shoes. Same for Skole/Skogstad.
-  [/\bsko\b|\bskor\b|\bskoene\b|støvler|støvletter|sandaler|joggesko|sneakers|\bboots\b|tøfler|fottøy|skotøy/i, 'Shoes'],
+  [/\bsko\b|\bskor\b|\bskoene\b|støvler|støvletter|sandaler|joggesko|sneakers|\bboots\b|tøfler|fottøy|skotøy|tursko|vandresko/i, 'Shoes'],
   [/klokke|armbåndsur|smartklokke|lommeur|\bur\b/i, 'Watches'],
   [/smykk|øredobb|halskjede|anheng|\bcharm|gullsmed|diamant|\bperle|\bring(er)?\b|sølv|\bgull|sølje|bunadsølv|ørepynt|\bkjede\b|armbånd|forlovelse/i, 'Jewelry'],
-  [/sminke|make-?up|hudpleie|parfyme|\bdufter\b|hårpleie|shampo|neglelakk|kosmetikk|skjønnhet|barbering|solkrem|\bpleie\b|leppe|øyenskygge|øyenbryn|maskara|mascara|gellack|\bnegle|bodylotion|kroppspleie|hår(skum|farge|produkt)|foundation|concealer|highlighter|\bserum\b|ansikt|deodorant|selvbruning|\bprimer\b/i, 'Beauty'],
+  [/sminke|make-?up|hudpleie|parfyme|\bdufter\b|hårpleie|shampo|neglelakk|kosmetikk|skjønnhet|barbering|solkrem|\bpleie\b|leppe|øyenskygge|øyenbryn|maskara|mascara|gellack|\bnegle|bodylotion|kroppspleie|hår(skum|farge|produkt)|foundation|concealer|highlighter|\bserum\b|ansikt|deodorant|selvbruning|\bprimer\b|dagkrem|nattkrem|\bbalsam\b|eyeliner|hårspray|\brouge\b|leppestift/i, 'Beauty'],
   [/apotek|\bhelse|kosttilskudd|vitamin|protein|medisin|førstehjelp|munnpleie|tannbørste|\bkosthold|legemid|reseptfri|\bplaster\b|tannkrem|munnskyll/i, 'Health'],
   [/\bhund|\bkatt|kjæledyr|dyrefôr|fôr|akvari|smådyr|\bhest\b|kanin|dyrebutikk|valp\b|kattesand|dyremat/i, 'Pets'],
   [/\bbok\b|bøker|roman|skjønnlitteratur|lydbok|tegneserie|\bmanga\b|litteratur|pocket/i, 'Books'],
   [/kontor|\bpapir|skriver|blekk|\btoner\b|\bpenn|notatbok|skolesaker|emballasje|kalkulator|konvolutt/i, 'Office'],
   // `figur`/`karakter`: the shop's own leaf for the reported Pokémon row is
   // "TV- og filmkarakterer" — it says "figure" and we had no word for it
-  [/\bleke|\bleker\b|lego|brettspill|puslespill|kosedyr|\bbamse|\bdukke|\bfigur|actionfigur|samlefigur|karakter|byggesett|\bspill\b|squishmallow|plysj|samlekort|løskort|\bbrio\b|barbie|playmobil/i, 'Toys'],
-  [/sport|trening|fitness|løping|\bski\b|langrenn|slalåm|fotball|\bgolf\b|svømming|\byoga\b|styrke|vekter|boksing|boksehansk/i, 'Sport'],
-  [/friluft|\btur\b|\btelt\b|sovepose|ryggsekk|\bjakt\b|\bfiske|camping|klatring|villmark|\bagn\b|\bsluk\b|anorakk|hengekøye/i, 'Outdoor'],
-  [/klær|jakke|bukse|genser|skjorte|kjole|t-skjorte|undertøy|sokker|\blue(r)?\b|pannebånd|hansker|\bbelte\b|\bdress\b|shorts|strømpe|badetøy|badedrakt|\bcaps\b|mote\b|dame\b|herre\b|barneklær|pyjamas|\bvest\b|skjørt|\bjeans\b|\bkåpe|frakk/i, 'Fashion'],
-  [/støvsuger|smarthus|smart hjem|luftrenser|\bvifte|varmepumpe|strykejern|interiør|\bpynt|tekstil|gardin|tapet|\bpute\b|\bteppe|oppbevaring|baderom|håndkl|rengjøring|vaskemiddel|sengetøy|\bdyne\b|oppvask/i, 'Home'],
+  [/\bleke|\bleker\b|lego|brettspill|puslespill|kosedyr|\bbamse|\bdukke|\bfigur|actionfigur|samlefigur|karakter|byggesett|\bspill\b|squishmallow|plysj|samlekort|løskort|\bbrio\b|barbie|playmobil|rollespill|barnespill|aktivitetsleker|\bklosser\b|badelek|warhammer|terningsett|\bterninger\b/i, 'Toys'],
+  [/sport|trening|fitness|løping|\bski\b|langrenn|slalåm|fotball|\bgolf\b|svømming|\byoga\b|styrke|vekter|boksing|boksehansk|romaskin|crosstrainer|tredemølle|kondisjon|\bgoggles\b|skibrille|snøbrille|sportsbrille/i, 'Sport'],
+  [/friluft|\btur\b|\btelt\b|sovepose|ryggsekk|\bjakt\b|\bfiske|camping|klatring|villmark|\bagn\b|\bsluk\b|anorakk|hengekøye|tursekk|dagstursekk/i, 'Outdoor'],
+  [/klær|jakke|bukse|genser|skjorte|kjole|t-skjorte|undertøy|sokker|\blue(r)?\b|pannebånd|hansker|\bbelte\b|\bdress\b|shorts|strømpe|badetøy|badedrakt|\bcaps(er)?\b|mote\b|dame\b|herre\b|barneklær|pyjamas|\bvest\b|skjørt|\bjeans\b|\bkåpe|frakk|solbrille|\bvotter\b|\bskjerf|heldress|håndveske|skulderveske/i, 'Fashion'],
+  [/støvsuger|smarthus|smart hjem|luftrenser|\bvifte|varmepumpe|strykejern|interiør|\bpynt|tekstil|gardin|tapet|\bpute\b|\bteppe|oppbevaring|baderom|håndkl|rengjøring|vaskemiddel|sengetøy|\bdyne\b|oppvask|sengesett|\blaken\b|\bvase(r)?\b|\bposter(e|s)?\b|\bplakat|bordbrikke|\bduk(er)?\b/i, 'Home'],
 ];
 for (const [, c] of CAT_RULES) if (!CATS[c]) throw new Error(`CAT_RULES references unknown category "${c}" — add it to worker/cats.json`);
 // A shop category is a PATH ("Leker > Figurer > TV- og filmkarakterer"), so read
@@ -353,7 +363,7 @@ const CRUMB = /\s*(?:>|›|»|\||::|\/)\s*/;
 // in the MIDDLE of a path ("Smykker > Herre > Armbånd") where leaf-first reaches
 // them before the root, and `herre` would answer Fashion for a bracelet. Skipped
 // entirely, so the walk carries on outward to the crumb that means something.
-const CAT_WEAK = /^(dame|herre|barn|barne|jente|gutt|unisex|kvinne|mann|junior|voksen|home|hjem|forside|start|produkter|nyheter|nyankomne|nyhet|alle produkter|tilbud|merker|brands?)$/i;
+export const CAT_WEAK = /^(dame|herre|barn|barne|jente|gutt|unisex|kvinne|mann|junior|voksen|home|hjem|forside|start|produkter|nyheter|nyankomne|nyhet|alle produkter|tilbud|merker|brands?)$/i;
 export const classify = (label) => {
   const s = String(label || '');
   if (!s) return undefined;

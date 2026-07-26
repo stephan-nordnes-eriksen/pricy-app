@@ -257,18 +257,46 @@ export async function discoverSource(shop, cfg) {
 // leaf→root, and "Leker > Figurer > TV- og filmkarakterer" only reads as Toys
 // if the parent survives the scrape. Keeping the leaf alone put 14 Pokémon
 // figures in TV — see plans/category-misclassification.md.
-function breadcrumbCat(html, productName) {
+export function breadcrumbCat(html, productName) {
   for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     let doc;
     try { doc = JSON.parse(body.trim()); } catch { continue; }
     for (const n of [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])]) {
       if (n?.['@type'] !== 'BreadcrumbList' || !Array.isArray(n.itemListElement)) continue;
-      let names = n.itemListElement.map(i => i?.name ?? i?.item?.name).filter(n => typeof n === 'string' && n.trim());
-      if (names.at(-1) === productName) names = names.slice(0, -1);
-      if (names.length) return names.join(' > ');
+      const names = n.itemListElement.map(i => i?.name ?? i?.item?.name).filter(n => typeof n === 'string' && n.trim());
+      const path = crumbPath(names, productName);
+      if (path) return path;
     }
   }
-  return null;
+  return microCrumbs(html, productName);
+}
+
+// A crumb that IS the product name carries no category signal, wherever it sits
+// in the path — Bergans' whole breadcrumb is "Ally Map Pocket > Black", and left
+// in, `pocket` in the Books vocabulary would have read 384 rows of outdoor gear
+// as books. Only the trailing one used to be dropped (Power ends its crumbs with
+// the product); mid-path ones show up once you read microdata crumbs too.
+const crumbPath = (names, productName) => {
+  const keep = names.map(n => n.trim()).filter(n => n && n !== productName);
+  return keep.length ? keep.join(' > ') : null;
+};
+
+// Same BreadcrumbList, marked up as schema.org MICRODATA instead of JSON-LD.
+// Measured 2026-07-26: Japan Photo publishes "Home > Kamera > Systemkamera" this
+// way and nothing else — so all 638 of its rows reached us with no category at
+// all and were filed by its shop floor. A crumb name is a <span>text</span> or a
+// content= attribute (<meta>/<link>), so take either.
+function microCrumbs(html, productName) {
+  const i = html.search(/itemtype\s*=\s*["'][^"']*\/BreadcrumbList/i);
+  if (i < 0) return null;
+  // itemscope regions aren't parseable with a regex; the list is small and the
+  // crumb names come in document order, so read a bounded window after it.
+  // ponytail: window, not a parser — a shop whose crumbs need 8 KB of markup
+  // gets the first few, which is the part classify() walks to anyway.
+  const seg = html.slice(i, i + 8000);
+  const names = [...seg.matchAll(/itemprop\s*=\s*["']name["'][^>]*\scontent\s*=\s*["']([^"']+)["']|itemprop\s*=\s*["']name["'][^>]*>([^<]+)</gi)]
+    .map(m => (m[1] ?? m[2]).replace(/\s+/g, ' ').trim());
+  return crumbPath(names, productName);
 }
 
 // schema.org image: string | [string] | ImageObject | [ImageObject]
