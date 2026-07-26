@@ -1,0 +1,12 @@
+{
+  "name": "pricy.no — Never overpay",
+  "short_name": "pricy",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#F3F1E9",
+  "background_color": "#F3F1E9",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

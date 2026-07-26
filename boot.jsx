@@ -667,6 +667,11 @@ function hydrateCatalog(data) {
   return data;
 }
 
+// Add-to-home-screen: registering the SW is what makes Chrome/Android offer
+// "Install app" (iOS installs off the manifest alone). Fire-and-forget —
+// nothing in the app depends on it, and jsdom/file:// have no serviceWorker.
+navigator.serviceWorker?.register('/sw.js').catch(() => {});
+
 // Boot: who am I + alert history first (cheap), then ONE ids= batch for
 // everything the session references plus the initial route's slice — no
 // full-catalog fetch anywhere. fetch failure at any step falls back to the

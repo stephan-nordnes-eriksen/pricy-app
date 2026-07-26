@@ -1275,3 +1275,31 @@ test('lucide icons render as inline svg', async () => {
   const ok = await until(() => qa(win, '#root .icon svg, #root svg.lucide').length > 0 && qa(win, '#root i[data-lucide]').length === 0);
   assert.ok(ok, 'expected every <i data-lucide> replaced by svg');
 });
+
+// Add-to-home-screen. Everything below is what an install actually reads:
+// break any one link and the site silently stops being installable.
+test('dist is installable as a home-screen app', () => {
+  const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+  assert.match(html, /<link rel="manifest" href="\/manifest\.json">/);
+  // iOS ignores manifest icons and SVG touch icons — it needs this PNG
+  assert.match(html, /<link rel="apple-touch-icon" href="\/icon-512\.png">/);
+  assert.match(html, /<meta name="apple-mobile-web-app-capable" content="yes">/);
+
+  const m = JSON.parse(fs.readFileSync(path.join(DIST, 'manifest.json'), 'utf8'));
+  assert.strictEqual(m.display, 'standalone'); // "browser" = no install offer
+  for (const k of ['name', 'short_name', 'start_url', 'theme_color', 'background_color']) {
+    assert.ok(m[k], `manifest is missing ${k}`);
+  }
+  // Chrome wants a 512 icon and it has to be a file that exists in dist
+  const icon = m.icons.find(i => i.sizes === '512x512');
+  assert.ok(icon, 'manifest declares no 512x512 icon');
+  assert.ok(fs.existsSync(path.join(DIST, icon.src.slice(1))), `${icon.src} is not in dist/`);
+
+  // sw.js must sit at the dist root to claim '/' as its scope, and Chrome
+  // ignores a service worker whose fetch handler is empty
+  const sw = fs.readFileSync(path.join(DIST, 'sw.js'), 'utf8');
+  assert.match(sw, /addEventListener\('fetch'/);
+  assert.match(sw, /respondWith/);
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'boot.jsx'), 'utf8'),
+    /serviceWorker\?\.register\('\/sw\.js'\)/);
+});

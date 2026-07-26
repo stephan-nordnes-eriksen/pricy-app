@@ -88,9 +88,17 @@ for (let i = 0; i < payload.length; i += CHUNK) {
 // Then work the image queue down. 40 downloads per call is the Worker's
 // subrequest budget; the loop is what turns a 22k-image backlog into ~10
 // minutes instead of the cron's ~40/hour. Stops on the first failed call.
-if (!noImages) for (let left = 1; left > 0;) {
-  const res = await fetch(`${base}/api/admin/images?n=40`, { method: 'POST', headers: { authorization: `Bearer ${token}` } });
-  if (!res.ok) { console.error(`drain → ${res.status} ${(await res.text()).slice(0, 200)}`); ok = false; break; }
+// A transient 503 (Worker resource limit) must not strand the rest of the
+// queue — the work is durable in D1, so back off and pick it right back up.
+if (!noImages) for (let left = 1, misses = 0; left > 0 && misses < 5;) {
+  const res = await fetch(`${base}/api/admin/images?n=40`, { method: 'POST', headers: { authorization: `Bearer ${token}` } })
+    .catch(e => ({ ok: false, status: 0, text: async () => e.message }));
+  if (!res.ok) {
+    console.error(`drain → ${res.status} (retry ${++misses}/5)`);
+    await new Promise(r => setTimeout(r, 5000 * misses));
+    continue;
+  }
+  misses = 0;
   const r = await res.json();
   console.log(`images: +${r.done} stored, ${r.failed} failed, ${r.remaining} queued`);
   left = r.done + r.failed ? r.remaining : 0; // no progress = every candidate failed, stop

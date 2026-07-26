@@ -141,7 +141,11 @@ html = html
   .replace(/<script src="https:\/\/unpkg\.com\/react-dom@[^"]*"[^>]*><\/script>/, '<script src="vendor/react-dom.production.min.js"></script>')
   .replace(/<script src="https:\/\/unpkg\.com\/lucide@[^"]*"[^>]*><\/script>/, '<script src="vendor/lucide.min.js"></script>')
   .replace(/[ \t]*<script src="https:\/\/unpkg\.com\/@babel\/standalone[^"]*"[^>]*><\/script>\n?/, '')
-  .replace(/<title>[^<]*<\/title>/, '<title>pricy.no — Never overpay</title>\n<base href="/">\n<link rel="icon" href="assets/logo-mark.svg">')
+  // Add-to-home-screen: the manifest is what Android/Chrome installs from;
+  // iOS Safari needs the apple-* tags (it won't take an SVG touch icon, hence
+  // the rasterised pwa/icon-512.png). The prototype's head is sync-owned, so
+  // these live here.
+  .replace(/<title>[^<]*<\/title>/, '<title>pricy.no — Never overpay</title>\n<base href="/">\n<link rel="icon" href="assets/logo-mark.svg">\n<link rel="manifest" href="/manifest.json">\n<link rel="apple-touch-icon" href="/icon-512.png">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="pricy">\n<meta name="theme-color" content="#F3F1E9">')
   .trimEnd();
 // closing tags are optional HTML5 and the prototype has dropped them before —
 // inject app.js against either shape
@@ -178,5 +182,8 @@ for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));
 }
 fs.cpSync(path.join(REPO, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// pwa/ lands at the dist ROOT: sw.js must be served from / to claim / as its
+// scope, and manifest.json's start_url/icon paths are written against it
+fs.cpSync(path.join(REPO, 'pwa'), DIST, { recursive: true });
 for (const f of localCss) fs.copyFileSync(path.join(REPO, 'proto', f), path.join(DIST, f));
 console.log(`built dist/: app.js ${Math.round(compiled.length / 1024)}KB from ${blocks.length} prototype blocks + boot.jsx`);

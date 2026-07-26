@@ -576,9 +576,12 @@ async function drainImages(db, env, n = 40) {
       const res = await fetch(src, { headers: { 'user-agent': BROWSER_UA, accept: 'image/*' } });
       const type = res.headers.get('content-type') || '';
       if (!res.ok || !type.startsWith('image/')) throw new Error(`http ${res.status} ${type}`);
-      const body = await res.arrayBuffer();
-      if (body.byteLength > 5 << 20) throw new Error(`too big: ${body.byteLength} bytes`);
-      await env.IMAGES.put(`products/${pid}`, body, { httpMetadata: { contentType: type } });
+      // stream body → R2: pulling 40 images through the isolate as
+      // arrayBuffers is per-byte CPU, and it tripped the free plan's ceiling
+      // (503) 115 drains into the 2026-07-26 backfill. Missing content-length
+      // just means no guard — R2's own limit backstops it.
+      if (Number(res.headers.get('content-length')) > 5 << 20) throw new Error(`too big: ${res.headers.get('content-length')} bytes`);
+      await env.IMAGES.put(`products/${pid}`, res.body, { httpMetadata: { contentType: type } });
       marks.push([pid, Date.now()]);
     } catch (e) {
       console.warn(`image ${pid}: ${e.message}`);
