@@ -25,6 +25,8 @@ users are not shielded by the edge):
 | Toys | 2,206 | 4 |
 
 `ids=` fetches (the PDP path) are 12/12 fine, so `catMeta` is not the term.
+(The ingest half of this ceiling is **fixed** — see "Can you parallelise around
+it?" below. The `cat=` read half is still open.)
 `wrangler tail --status error` gives the cause outright:
 
 ```
@@ -42,19 +44,57 @@ burst slack up to ~43 ms), and CLAUDE.md's own number for a category read is
 heads is what pushed the failure rate to a coin flip. The failure rate scales
 with the category's head count, exactly as the shaping cost does.
 
+### Can you parallelise around it? Write path no, read path yes-but-don't
+
+The CPU limit is **per invocation**, so splitting work across invocations really
+does multiply the budget. Whether that helps depends on the shape of the cost,
+and the two halves of this system have opposite shapes. Priced in process
+against the real 22k-product catalog (`process.cpuUsage()` around
+`worker.fetch`, the one thing the in-process harness is actually good at):
+
+**Ingest — parallelising was impossible, and that was the bug.** A chunk cost
+~55 ms **flat in chunk size**: 50 rows cost the same as 500, because two
+full-table reads ran per chunk (`SELECT id, meta, json_extract(meta,'$.hidden')
+FROM products` inside `ingest()`, plus the route's own `SELECT id FROM
+products`). Smaller chunks would have multiplied the number of invocations that
+each still blew the limit; concurrency would not have moved per-invocation CPU at
+all. **Fixed 2026-07-26** — both reads are now `WHERE id IN (…)` over the batch's
+own ids in one `db.batch()`, since every use of them was a lookup of a row in the
+batch. Now **1.6 ms / 50 rows, 6.6 / 200, 13.1 / 500**: 4× cheaper and, more to
+the point, *linear*, so chunking is a real lever again. Guarded by a test that
+counts product rows read for a one-row batch against a padded table (497 before,
+under 50 after) rather than by a timing assertion.
+
+**Reads — you could, but the work is redundant, not big.** A Worker can fan out
+to sub-requests (a service binding to itself; the free plan allows 50
+subrequests), each shard shaping 1/N of the category with its own CPU budget,
+parent merging ids and summing `fcounts`. It would work. It also costs N× the D1
+reads, a self-binding, a fan-out protocol, and the parent still pays to merge —
+all to divide by N a cost that is mostly *the same answer computed again*:
+
+| | Toys (2,206 heads) | Home (1,239) |
+|---|---|---|
+| full `cat=` read | 22.2 ms | 15.9 ms |
+| same, minus `deriveFacets` + `fcounts` | 9.3 ms | 6.3 ms |
+| **share that is facet derivation** | **58%** | **60%** |
+
+`fcounts` is category-wide and computed *before* filtering by design, so it is
+byte-identical for every request until the catalog version changes. Caching takes
+~60% of the cost to zero for essentially all requests; sharding divides 100% of
+it by N and adds moving parts. Cache first, and only reach for fan-out if the
+remaining 40% still does not fit.
+
 Two fixes, and the first one is not code:
 
 1. **Workers Paid ($5/mo) raises the default CPU limit to 30 s** and this entire
    class of failure disappears — including `/api/catalog.json`'s 503s, which are
    the same ceiling. It also unblocks `SEND_EMAIL` (magic-link email is
    console-logged in prod today). Cheapest fix available by a wide margin.
-2. **Cut `listIds`' per-row work.** Every `cat=` request JSON-parses and runs
-   `deriveFacets` over the WHOLE category to produce 60 ids, a `total` and a
-   category-wide `fcounts`. `fcounts` does not depend on the query at all
-   (computed before filtering, by design), so it is memoisable per
-   `(cat, catalog version)` the way `catMeta` already memoises per version —
-   note the memory ceiling, 31 categories of shaped rows is not free. Do NOT
-   re-derive the "push facets into SQL" trade;
+2. **Cut `listIds`' per-row work** — memoise the derived facets / `fcounts` per
+   `(cat, catalog version)` the way `catMeta` already memoises per version.
+   Measured above at 58–60% of a category read, and query-independent, so this is
+   the whole ball game; note the memory ceiling, 31 categories of shaped rows is
+   not free. Do NOT re-derive the "push facets into SQL" trade;
    [api-read-path-performance](api-read-path-performance.md) §3 already priced
    and rejected it.
 
