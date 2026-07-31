@@ -1,8 +1,12 @@
 # GPC departments ("Departments II") — implement the 2026-07-31 sync
 
-Status: **planned, not started.** The sync itself is DONE — `proto/` holds the
-pulled files (13 modified, 2 new: `GpcData.jsx`, `BrickData.jsx`), uncommitted.
-Do NOT re-pull unless upstream changed again.
+Status: **DONE and deployed (2026-07-31).** Steps 0–6 all landed (commits
+693181b…499997f), including the step-5 upstream fix (Results passes GPC scopes
+through `onQuery`; boot's `scopeCat` translates brick/dept → `cat=`, re-synced
+in ca0767d/499997f). Live smoke-tested: `meta.depts` serves 14 departments over
+all 31 cats, Pets lists 1,169 real rows, brick URLs deep-link. Remaining
+degradation (multi-cat "All <dept>" pages stay client-side) and the parked
+items below are documented in CLAUDE.md. Only the "Parked" section is open.
 
 ## What upstream changed
 
