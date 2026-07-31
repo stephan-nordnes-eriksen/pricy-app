@@ -237,7 +237,10 @@ const RULES = {
   },
   Furniture: {
     type: opt(
-      [/sofabord|spisebord|skrivebord|sidebord|nattbord|salongbord|konsollbord|\bbord\b/, 'Tables'],
+      // TV units first: `benk` alone read every TV-benk as seating, and the
+      // TV-bord crumb as a table — they are storage furniture
+      [/tv-?\s?benk|mediabenk|tv-?skap|mediamøb/, 'Storage'],
+      [/sofabord|spisebord|skrivebord(?!s?stol)|sidebord|nattbord|salongbord|konsollbord|\bbord\b/, 'Tables'],
       [/sofa|hjørnesofa|sovesofa|sjeselong|\bdivan\b/, 'Sofas'],
       [/spisestol|lenestol|hvilestol|recliner|barstol|kontorstol|\bstol\b|\bstoler\b|\bkrakk\b|\bpuff\b|benk\b/, 'Chairs'],
       [/kontinentalseng|sengeramme|sengegavl|hodegavl|\bseng\b|køyeseng|sengepakke/, 'Beds'],
@@ -257,7 +260,9 @@ const RULES = {
       [/\bglass\b|marmor/, 'Glass & stone'],
     ),
     dim: (s) => /\b(\d{2,3})\s?x\s?(\d{2,3})\b/.exec(s)?.slice(1).join('x'),
-    seats: num(/(\d)[\s-]?(?:seter|seters|sits)\b/),
+    // (?<!\d[,.]): a "2,5-seter" must not read as 5 seats — the half-seat
+    // sofas simply carry no seat count rather than a wrong one
+    seats: num(/(?<!\d[,.])(\d)[\s-]?(?:seter|seters|sits)\b/),
     color: COLOR,
   },
   Lighting: {
@@ -355,14 +360,21 @@ const RULES = {
   },
   Outdoor: {
     type: opt(
-      [/\bjakke\b|jacket|anorakk|windbreaker|\bshell\b|\bparkas\b|\bdunjakke\b/, 'Jackets'],
-      [/\bbukse|\bpants\b|\btights\b|shorts|\bknicker/, 'Trousers'],
-      [/ryggsekk|backpack|\bsekk\b|\bbag\b|duffel|\bpack\b/, 'Backpacks & bags'],
-      [/\btelt\b|\btent\b|tarp\b|\bpresenning\b/, 'Tents'],
+      // trousers before jackets: "Shell Pants"/"Bib Pants" are trousers, the
+      // `shell` fabric word only speaks when no pant/bukse noun does. pants?
+      // (singular too): "Zip-Off Pant" derived nothing.
+      [/\bbukse|\bpants?\b|\btights\b|shorts?\b(?![ -]?sleeve)|\bknicker/, 'Trousers'],
+      [/jakker?\b|jacket|anorakk|windbreaker|\bshell\b|\bparkas\b/, 'Jackets'],
+      // sleeping before bags: "Sleeping Bag" is not a bag. (?<!\d[- ])pack\b:
+      // a "3-pack" of socks or carabiners is not a backpack either.
       [/sovepose|sleeping bag|liggeunderlag/, 'Sleeping'],
-      [/\bsko\b|\bboots\b|støvel|\bshoe\b|sandal/, 'Footwear'],
-      [/genser|fleece|midlayer|hoodie|\btee\b|\bshirt\b|singlet|\bull\b|\bwool\b|baselayer|undertøy/, 'Tops & baselayers'],
-      [/\blue\b|beanie|\bcap\b|\bhat\b|hansker|gloves|\bvotter\b|\bbelte\b|sokker|socks|skjerf|\bbuff\b/, 'Accessories'],
+      [/ryggsekk|backpack(?!er)|\bsekk\b|\bbag\b|duffel|(?<!\d[- ])\bpack\b/, 'Backpacks & bags'],
+      [/\btelt\b|\btent\b|tarp\b|\bpresenning\b/, 'Tents'],
+      [/sko\b|\bboots\b|støvl|\bshoe\b|sandal/, 'Footwear'],
+      // headwear before the material words: a wool beanie is Accessories, not
+      // a baselayer
+      [/lue(r)?\b|beanie|balaclava|\bcap\b|\bhat\b|headband|pannebånd|\bgaiter\b|hansker|gloves|\bvotter\b|\bbelte\b|sokker|socks|skjerf|\bbuff\b/, 'Accessories'],
+      [/genser|fleece|midlayer|hoodie|\btee\b|\bshirt\b|singlet|\bull|\bwool\b|baselayer|undertøy/, 'Tops & baselayers'],
       [/fiskestang|\bsluk\b|\bagn\b|\bfluer?\b|rapala|\bsnelle\b|\bfiske/, 'Fishing'],
       [/\bkniv\b|\bøks\b|\bhodelykt\b|kokeapparat|\btermos\b|\bstormkjøkken\b|\bkompass\b|\blighter\b/, 'Camping gear'],
       [/\bstaver\b|\bstav\b|\btrekking\b|\bmeis\b/, 'Hiking gear'],
@@ -380,23 +392,28 @@ const RULES = {
   },
   Fashion: {
     type: opt(
+      // garment nouns before fabric words: "Joggebukse Lou Sweat" is trousers,
+      // "Shorts … Loose Sweat" is shorts — `sweat`/`strikk` only speak when no
+      // garment noun does. jakker?\b (suffix): dunjakke/skalljakke/fleecejakke.
       [/t-skjorte|t-shirt|\btee\b|\btopp\b|singlet/, 'T-shirts & tops'],
-      [/\bjakke\b|jacket|anorakk|\bkåpe\b|\bfrakk\b|\bvest\b|\bparkas\b/, 'Jackets'],
-      [/genser|sweater|hoodie|\bsweat\b|collegegenser|\btrøye\b|cardigan|\bstrikk/, 'Knitwear & hoodies'],
-      [/\bbukse|\bpants\b|\bjeans\b|joggebukse|\btights\b|leggings|\bchinos\b/, 'Trousers'],
       [/\bshorts\b/, 'Shorts'],
+      [/jakker?\b|jacket|anorakk|\bkåpe\b|\bfrakk\b|\bvest\b|\bparkas\b/, 'Jackets'],
+      [/\bbukse|\bpants\b|\bjeans\b|joggebukse|\btights\b|leggings|\bchinos\b/, 'Trousers'],
       [/\bskjorte\b|\bshirt\b|\bbluse\b/, 'Shirts & blouses'],
       [/\bkjole\b|\bdress\b|\bskjørt\b|festdrakt|\bbunad\b|\bjumpsuit\b/, 'Dresses & skirts'],
+      [/lue(r)?\b|beanie|balaclava|\bcaps\b|\bhatt\b|skjerf|hansker|\bvotter\b|\bbelte\b|\bveske\b|lommebok|solbriller|pannebånd|headband/, 'Accessories'],
+      [/genser|sweater|hoodie|\bsweat\b|collegegenser|\btrøye\b|cardigan|\bstrikk/, 'Knitwear & hoodies'],
       [/sokker|\bsock\b|strømpe|strømpebukse|\bleggings\b/, 'Socks & hosiery'],
       [/undertøy|\bbody\b|\btruse\b|\bbh\b|\bboxer\b|\bpysjamas\b|nattøy/, 'Underwear & nightwear'],
-      [/\blue\b|beanie|\bcaps\b|\bhatt\b|skjerf|hansker|\bvotter\b|\bbelte\b|\bveske\b|lommebok|solbriller|pannebånd/, 'Accessories'],
       [/badetøy|badedrakt|bikini|badeshorts/, 'Swimwear'],
       [/\bdress\b|\bblazer\b|\bslips\b/, 'Suits'],
     ),
     audience: AUDIENCE,
     size: SIZE,
     material: opt(
-      [/merino|\bull\b|\bwool\b|\balpakka\b/, 'Wool'],
+      // \bull (prefix): ullsokker/ullgenser/ulldress carry no \b after "ull" —
+      // but NOT ull\b, which would read the "ull" inside bomull as wool
+      [/merino|\bull|\bwool\b|\balpakka\b/, 'Wool'],
       [/bomull|\bcotton\b|\bbambus\b|\blin\b/, 'Cotton & linen'],
       [/\bdun\b|\bdown\b/, 'Down'],
       [/fleece/, 'Fleece'],
@@ -421,7 +438,7 @@ const RULES = {
   },
   Watches: {
     type: opt(
-      [/smartklokke|smartwatch|\bgarmin\b|galaxy watch|apple watch|\bfenix\b|vivoactive|forerunner|\bgps\b/, 'Smartwatches'],
+      [/smartklokke|smartwatch|\bgarmin\b|galaxy watch|apple watch|pixel watch|\bfenix\b|vivoactive|forerunner|\bgps\b/, 'Smartwatches'],
       [/herreklokke|dameklokke|barneklokke|armbåndsur|\bklokke\b|\bwatch\b|\bur\b/, 'Wristwatches'],
       [/vekkerklokke|\balarm\b/, 'Alarm clocks'],
       [/veggur|wall clock|bordur/, 'Clocks'],
@@ -557,7 +574,9 @@ const RULES = {
       [/utendørs|\bhusker?\b|sandkasse|\bbasseng\b|trampoline|\bvannpistol\b|\bsparkesykkel\b/, 'Outdoor toys'],
       [/\bbaby\b|\brangle\b|aktivitetsleke|\bbitering\b/, 'Baby toys'],
     ),
-    pieces: num(/\b(\d{2,5})\s?(?:deler|brikker|pieces|klosser)\b/),
+    // biter/brikkene/stk/pcs: the eval measured 0 of 300 puzzle rows carrying a
+    // count because the commonest Norwegian words weren't here
+    pieces: num(/\b(\d{2,5})\s?(?:deler|brikker|brikkene|biter|pieces|klosser|stk|pcs)\b/),
     age: num(/\b(\d{1,2})\s?(?:år|\+)\b/),
     color: COLOR,
   },
@@ -632,13 +651,28 @@ export const RULE_KEYS = Object.fromEntries(Object.entries(RULES).map(([cat, r])
 // breadcrumbs the best feature set, and measured here srcCat lifts rows with a
 // derived `type` from 7,099 to 8,319 (+17%) — Sport 169 → 386 — for no new data.
 // Values stay undefined when the category has no rules or nothing matched.
-export function deriveFacets({ name, cat, srcCat }) {
+export function deriveFacets({ name, cat, srcCat, brand }) {
   const rules = RULES[cat];
   if (!rules || !name) return undefined;
-  const s = ` ${String(name).toLowerCase()} ${srcCat ? String(srcCat).toLowerCase() + ' ' : ''}`;
+  // Segments in priority order: name, then the srcCat LEAF, then its parents —
+  // the same leaf-first walk classify() does. One concatenated blob let a
+  // parent crumb ("Bukser, shorts og skjørt > Shorts") answer Trousers before
+  // the leaf, and having srcCat after the name broke every $-anchored rule
+  // (SIZE derived on ~1% of rows that had a srcCat).
+  const b = brand ? String(brand).toLowerCase() : '';
+  const nm = String(name).toLowerCase();
+  const crumbs = srcCat
+    ? String(srcCat).toLowerCase().split(/\s*(?:>|›|»|\||::|\/)\s*/).map(c => c.trim()).filter(Boolean).reverse()
+    : [];
+  const texts = [nm, ...crumbs].map(t => ` ${t} `);
+  // COLOUR only reads brand-free text: "Black Diamond" is a brand on a parka,
+  // not the parka's colour (18 wrong values in one eval shard). Every other
+  // facet keeps the brand — LEGO → Building sets is the brand ON PURPOSE.
+  const colorTexts = b ? [nm.split(b).join(' '), ...crumbs.filter(c => c !== b)].map(t => ` ${t} `) : texts;
   const out = {};
   for (const [k, f] of Object.entries(rules)) {
-    const v = f(s);
+    let v;
+    for (const t of k === 'color' ? colorTexts : texts) { v = f(t); if (v !== undefined) break; }
     if (v !== undefined && v === v) out[k] = v; // NaN guard: a bad number is no value
   }
   return Object.keys(out).length ? out : undefined;

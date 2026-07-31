@@ -1785,8 +1785,12 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     // `ø` is not a word char, so \bsko[a-zæøå]*\b matched "skort" in "Løskort"
     ['Singles (Løskort)', 'Toys'],
     ['Skolesekker', undefined],
-    // `lerret` is a projection screen AND an artist's canvas
-    ['Lerretsbilder', 'Hobby'],
+    // `lerret` is a projection screen AND an artist's canvas — and a
+    // `lerretsbilde` is neither: it's a printed canvas hung on a wall (the
+    // 2026-07-27 eval read all 42 rows: Trademax/Chilli wall art, zero blanks)
+    ['Lerretsbilder', 'Home'],
+    ['Innredning > Bilder & kunst > Lerretsbilder', 'Home'],
+    ['Kunstnerlerret', 'Hobby'],
     ['Projektorer', 'Projectors'],
     // unanchored e-?bok matched the "ebok" inside these
     ['Klokkebokser', 'Watches'],
@@ -1857,6 +1861,88 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     // what the hidden backlog is for, not something for a shop floor to guess at
     ['Varemerker > Fjällräven', undefined],
     ['Hjem > Produkter', undefined],
+    // ——— 2026-07-31, from the product-eval audit (one real label per fix) ———
+    // Fashion's unanchored `klær` read towels, aprons and workwear as clothing
+    ['Baderom > Håndklær og kluter > Håndklær', 'Home'],
+    ['Håndklær og kluter', 'Home'],
+    ['Forklær', 'Kitchen'],
+    ['Verneutstyr og arbeidsklær', 'Tools'],
+    // `\bring`/`sølv` fired inside Skismøring/Rengjøring/Sølvkroken
+    ['VINTERSPORT > Skismøring > Glideprodukter', 'Sport'],
+    ['Kjøkkenutstyr > Rengjøring', 'Home'],
+    ['Varemerker > Sølvkroken', undefined],
+    ['Ringer', 'Jewelry'],
+    ['Øreringer', 'Jewelry'],
+    ['Hjem > Smykker > Til herre > Mansjettknapper', 'Jewelry'], // "Til herre" is audience, not Fashion
+    // exercise bikes are gym gear, not bicycles
+    ['Kondisjon / Treningssykkel', 'Sport'],
+    ['Spinningsykkel', 'Sport'],
+    ['Terrengsykler', 'Bikes'],
+    // a pet-department crumb owns its whole path
+    ['Hjem > Katt > Leker', 'Pets'],
+    ['Start > Hund > Trening og Lek > Hundeleker > Myke Leker', 'Pets'],
+    ['Hjem > Hund > Hundepleie > Shampoo og balsam', 'Pets'],
+    ['Kobbel', 'Pets'],
+    ['Halsbånd', 'Pets'], // every halsbånd label in the live catalog is a dog collar (jewellers say halskjede)
+    // baby gear that sat in Fashion
+    ['Stelle', 'Baby'],
+    ['Tåteflasker', 'Baby'],
+    ['Bæresjal / Bæresele', 'Baby'],
+    ['Ammeputer/Gravidputer', 'Baby'],
+    // -sko/-støvel suffix compounds (the whole Skoringen shop sat in Fashion)
+    ['Badesko', 'Shoes'],
+    ['Sko > Sko dame > Fjellsko dame', 'Shoes'],
+    ['Gummistøvler', 'Shoes'],
+    ['Hverdagssko', 'Shoes'],
+    // garden structures that Furniture's `møbler` swallowed
+    ['Hagemøbler', 'Garden'],
+    ['Utemøbler', 'Garden'],
+    ['Hagemøbler > Paviljonger og parasoller', 'Garden'],
+    ['Start > Outdoor > Utstyr og Tilbehør > Turmøbler', 'Outdoor'],
+    ['Uterom > Strandmadrasser', 'Outdoor'],
+    ['Hjem, rengjøring og hvitevarer > Møbelbeslag > Bordben', 'Tools'],
+    ['Hjem > Rom > Møbelpleie > Hud', 'Home'],
+    // suffix-compound bedroom textiles fell to Furniture's Soverom
+    ['Soverom > Sengetepper', 'Home'],
+    ['Soverom > Putetrekk > Sateng putevar', 'Home'],
+    ['Soverom > Dyner > Dundyner', 'Home'],
+    ['Kappelaken', 'Home'],
+    ['Wiltontepper', 'Home'],
+    // …while real bedroom furniture stays Furniture
+    ['Modulsofa Isa', 'Furniture'],
+    ['Møbler > Senger > Senger med oppbevaring', 'Furniture'],
+    ['Sengegavler og sengebenker', 'Furniture'],
+    ['Sminkebord & toalettbord', 'Furniture'],
+    // home fragrance sold by perfume shops is decor, not cosmetics
+    ['Hjem > Parfyme > Duftlys', 'Home'],
+    ['Hjem > Dufter til hjemmet', 'Home'],
+    ['Innredning > Duft & Kroppspleie > Duftpinner', 'Home'],
+    ['Romspray', 'Home'],
+    ['Hjem > Renhold > Klesvask', 'Home'],
+    ['Innredning > Dekorasjon > Trefigurer', 'Home'],
+    // `strikk` (knitting) read hair ties, resistance bands and knitted sweaters
+    ['Hårstrikk', 'Beauty'],
+    ['Strikkede gensere', 'Fashion'],
+    ['Treningsstrikk', 'Sport'],
+    ['Strikkegarn', 'Hobby'],
+    // the measured tail, one label per word
+    ['SPORT & BALLSPILL > Leker og spill > Frisbee', 'Sport'],
+    ['Leker > Samleobjekter og merchandise > Fotballkort', 'Toys'],
+    ['PS5 spill', 'Gaming'],
+    ['Boxere', 'Fashion'],
+    ['Vesker', undefined], // deliberately unread: a bare bag shelf is camera pouches at Japan Photo and daypacks at Sport 1
+    ['Grilltrekk', 'Garden'],
+    ['Magnesium', 'Health'],
+    ['Dukker og Tilbehør', 'Toys'], // "og tilbehør" tail must not kill the doll shelf
+    ['Sminke > Verktøy og tilbehør > Vippetang', 'Beauty'], // …but only at the LEAF: mid-path accessory menus still skip
+    ['Reisehåndklær', 'Outdoor'],
+    ['Termoser', 'Kitchen'],
+    ['Termostøvler', 'Shoes'], // termos must not eat thermo boots
+    ['Produkter > Elektro og verktøy > Verktøy > Lodding > Kabelsko', 'Tools'], // kabelsko = cable lugs, not shoes
+    ['FRILUFT > Sekker og bagger > Fritidssekker og vesker', 'Outdoor'], // a `vesker` leaf must not pull daypacks to Fashion
+    ['Kakepynt', 'Kitchen'],
+    ['Skåler og tallerker', 'Kitchen'],
+    ['Herre / Tilbehør / Lommebøker', undefined], // a wallet is not bøker
   ];
   for (const [label, want] of cases) {
     assert.strictEqual(classify(label), want, `classify(${JSON.stringify(label)})`);

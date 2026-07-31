@@ -190,7 +190,17 @@
     "Blivakker": { "*": "Beauty" },
     "Japan Photo": { "*": "Photo" },
     "Bergans": { "*": "Outdoor" },
-    "Fjellsport": { "*": "Outdoor" },
+    // Brand-only labels the shared vocabulary must never read globally (a brand
+    // is not a category), pinned per shop where the brand's aisle IS uniform —
+    // sampled in the 2026-07-27 product-eval, every row checked:
+    // Sølvkroken = fishing tackle, Garmin at Fjellsport = sports watches.
+    "Fjellsport": {
+      "Sølvkroken": "Outdoor",
+      "Varemerker > Sølvkroken": "Outdoor",
+      "Garmin": "Watches",
+      "Varemerker > Garmin": "Watches",
+      "*": "Outdoor"
+    },
     "Foss Sport": { "*": "Sport" },
     "Sporttema": { "*": "Sport" },
     "Hobbii": { "*": "Hobby" },
@@ -208,6 +218,11 @@
     // kitchenware and homeware next to the hardware. Floor-less, so the shared
     // vocabulary decides per product and the rest stays in the hidden backlog —
     // see plans/category-misclassification.md.
+    // Outland has no floor, but two labels of its are uniform shelves the
+    // vocabulary can't read (checked row by row, 2026-07-27): Merchandise is
+    // all figures/keychains/statues, Spill at Proshop is all console games.
+    "Outland": { "Merchandise": "Toys" },
+    "Proshop": { "Spill": "Gaming" },
     "Guttelus": { "*": "Fashion" },
     "Junior Barneklær": { "*": "Fashion" },
     "KappAhl": { "*": "Fashion" },

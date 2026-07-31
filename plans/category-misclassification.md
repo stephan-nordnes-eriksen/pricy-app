@@ -490,7 +490,10 @@ never go to zero, and it shouldn't.
    one-off admin PATCH with `man: null` (the same shape the 278 reverted rows
    used), and their names are readable — "Monikers Brettspill", "Aeldari
    Corsairs Dice". This is the one place a `tools/reclassify.mjs` would earn
-   itself.
+   itself. **Held as of 2026-07-26** — not for data reasons: it adds 26% to
+   Toys, the worst offender on the live CPU-ceiling failure
+   ([read-path-whats-left](read-path-whats-left.md) §0). Refile after that
+   lands.
 2. **The remaining 36 floors still decide 8,788 rows**, but per the measurement
    above that is mostly *correct* — specialist shops that publish nothing. Only
    the vocabulary moves that number now. `tools/score-cats.mjs --labels` ranks
@@ -512,3 +515,112 @@ never go to zero, and it shouldn't.
    is affected, but `tools/` and any catalog replay need a retry or the endpoint
    needs paging. Pre-existing scale problem, newly load-bearing because a
    catalog replay is now the standard way to score a rule change.
+
+## 2026-07-31: the product-eval vocabulary pass
+
+The 29-shard LLM audit (`product-eval/`, 8,049 rows read, 797 category
+findings) was replayed through the working tree: only 152 of its category
+findings were already fixed by the shipped rules. The rest were rule-shaped,
+so the fixes went into code per the eval's own guidance, each measured over
+the live catalog (25,583 rows, `tools/score-cats.mjs`), not applied per-row.
+The GPC layer raises the stakes on all of this: a brick page IS `cat=`
+(+ `type` facet pin), so classifier and `type` correctness are now nav-visible.
+
+**CAT_RULES / classify()** — the systematic regex defects, each with a
+regression label in test/api.test.js (now ~120 cases):
+
+- Fashion's unanchored `klær` read **Håndklær/Forklær/arbeidsklær** as
+  clothing (~40 towels); Jewelry's `\bring` fired after æ/ø/å (**Skismøring,
+  Rengjøring** — ø is not a JS word char) and bare `sølv` ate the fishing
+  brand **Sølvkroken**; `sykkel` ate **Treningssykkel** (29 exercise bikes).
+- Suffix compounds never matched `\bword\b`: `sko\b` (with `(?<!kabel)` —
+  Kabelsko are cable lugs), `støvl`, `seng(er)?\b`, `sofa`, `dyne`, `teppe`,
+  `puter?\b` (`(?<!com)` — Sykkelcomputer), `laken\b`, putevar/putetrekk/
+  sengetepp → Home; møbel gained `(?<!hage|ute|tur)` + `(?!pleie|beslag…)`
+  so garden furniture reaches Garden and furniture-care reaches Home/Tools.
+- **A pet-department crumb now owns its whole path** (`Hjem > Katt > Leker`
+  was Toys, `Hund > … > Shampoo og balsam` was Beauty) — animal words only,
+  so a jewellery `halsbånd` path would still walk normally (measured: every
+  live `halsbånd` label is a dog collar).
+- The "og/& tilbehør" tail is stripped from the LEAF crumb only ("Dukker og
+  Tilbehør" is a doll shelf) — mid-path accessory menus still skip, or
+  eyelash curlers land in Tools.
+- New vocabulary, one live label each: stelle/tåteflask/bæresele/ammepute →
+  Baby, duftlys/romspray/dufter-til-hjem → Home (Beauty declines them),
+  lerretsbilde → Home (they are printed wall art — fixture changed from the
+  2026-07-26 Hobby call, all 42 live rows are Trademax/Chilli pictures),
+  strikk guarded (Hårstrikk → Beauty, Strikkede gensere → Fashion,
+  Treningsstrikk → Sport), parasoll/paviljong/basseng → Garden, frisbee/
+  skismøring/spinning → Sport, fotballkort → Toys, `\bps[45]\b` → Gaming,
+  mansjettknapp/slipsnål → Jewelry, mange flere.
+- CAT_WEAK gained the `Til dame/herre/han/henne` audience forms (Bjørklund's
+  cufflinks were Fashion via "Til herre").
+- CATMAP exact entries for uniform shelves the vocabulary must never read
+  globally (sampled row-by-row first): Fjellsport Sølvkroken → Outdoor,
+  Garmin → Watches; Outland Merchandise → Toys; Proshop Spill → Gaming.
+  **Measured and rejected:** Mestergull "Hjem > Produkter" → Kitchen — the
+  eval's 36 cutlery rows share that label with 120+ real jewellery rows.
+
+Net over the live catalog: **1,214 rows re-file on the next crawl** (was 0
+pending), every top bucket a real label — 120 Furniture→Home garden/textile,
+65+39 canvas prints → Home, 54 Manga → Books, 54+33 footwear → Shoes, 50
+Furniture→Garden, 30 Løskort→Toys, 29 exercise bikes → Sport. Eval findings
+fixed by rules: 152 → **622**. Floor share 37.1%.
+
+**deriveFacets** (worker/facetrules.js) — the type facet is the GPC slice
+dimension, so its two structural defects mattered most:
+
+- **Segment priority: name → srcCat leaf → parents** (was one concatenated
+  blob). Fixes the whole "parent crumb beats leaf AND name" class: 339
+  card singles Games & puzzles → Trading cards, 45 Shorts-typed-Trousers,
+  cushion covers typed Rugs, mugs typed Coffee makers. Also un-broke every
+  `$`-anchored rule — **size derived 250 → 686 rows** (srcCat appended after
+  the name had killed the end-anchor for any row with a label).
+- **Colour no longer reads the brand** (color-only text strips it): Black
+  Diamond → Black, Moccamaster → Brown, Gullkorn → Gold all gone (−60
+  values, every removal checked). Type deliberately keeps the brand — LEGO →
+  Building sets is the brand on purpose.
+- Vocabulary/order: garment noun beats fabric word (Fashion + Outdoor:
+  Shorts/Trousers/Jackets before sweat/strikk/shell), `jakker?\b` reads the
+  Norwegian -jakke compounds (+111 typed rows), `\bull` prefix reads
+  ull-compounds, headwear beats material (wool beanie ≠ baselayer),
+  sleeping bag ≠ bag, `3-pack` ≠ backpack, TV-benk → Storage (was Chairs),
+  `2,5-seter` no longer reads as 5 seats, pieces reads biter/stk/pcs
+  (19 → 60 rows).
+
+Type coverage 15,668 → **15,965**; every facet key not named above is
+byte-identical across the 25k-row A/B replay.
+
+**Not done, in order of value:** (1) deploy + a crawl — nothing above
+reaches live data until then; (2) `score-cats --refile Kidsdreamstore=Toys`
+and `--refile Skoringen=Shoes` for the label-less rows stuck on historical
+mis-files (their floors are right, the rows predate them); (3) the eval's
+non-rule fixes (`product-eval/fixes.jsonl`): brand hygiene (shop shelf
+labels stored as brand — 78 rows/shard at Gamezone/Kidsdreamstore, an
+ingest-level fix), scraper name defects (Ringo 40-char ALL-CAPS truncation,
+Lekeverden SEO titles, Kicks doubled variant suffix), variant families;
+(4) the remaining 945 eval rows that need a name-level signal classify
+deliberately doesn't read (JYSK "Soverom" baby bedsets, Mestergull
+silverware) — per-row PATCH territory, not vocabulary.
+
+## GPC departments shipped 2026-07-31 — and does not touch any of this
+
+[plans-implemented/gpc-departments.md](../plans-implemented/gpc-departments.md)
+put a GS1 GPC *navigation* layer over Browse/rail/suggest. Read it as
+consistent with, not contradicting, this file's verdicts:
+
+- The "**Leave**: adopting GS1 GPC wholesale" call **stands**. `cat` is still
+  the one stored classification dimension and `classify()`/`CATMAP` still own
+  it; a GPC brick is an alias in `worker/depts.json` that *translates to* a
+  backing `cat=` (+ optional facet pin). EAN→brick as a stored dimension
+  remains parked. Nothing about the classifier, the vocabulary, the floors or
+  the regression test moved.
+- The "no real sub-categories" verdict **stands too** — a sliced dept rule
+  (Headphones = Audio + `{type: ["Headphones"]}`) is exactly "a sub-category
+  *is* the `type` facet", now with a nav surface. Which raises the stakes on
+  facet vocabulary: a slice's `type` values must match `worker/facetrules.js`
+  output exactly (build.js checks the keys, only measurement checks the
+  values — replay like `tools/score-cats.mjs`).
+- Practical coupling for future category work: build.js requires every
+  `cats.json` cat to be reachable from a whole-cat rule in `depts.json`. **A
+  new category now needs a dept rule too or the build fails.**
