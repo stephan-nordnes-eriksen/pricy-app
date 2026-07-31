@@ -1939,6 +1939,7 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     ['Termoser', 'Kitchen'],
     ['Termostøvler', 'Shoes'], // termos must not eat thermo boots
     ['Produkter > Elektro og verktøy > Verktøy > Lodding > Kabelsko', 'Tools'], // kabelsko = cable lugs, not shoes
+    ['Søylesko', undefined], // post shoes are construction hardware, not footwear
     ['FRILUFT > Sekker og bagger > Fritidssekker og vesker', 'Outdoor'], // a `vesker` leaf must not pull daypacks to Fashion
     ['Kakepynt', 'Kitchen'],
     ['Skåler og tallerker', 'Kitchen'],

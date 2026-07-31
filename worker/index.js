@@ -340,7 +340,7 @@ const CAT_RULES = [
   // "Løskort" and 30 Pokémon singles became Shoes. Same for Skole/Skogstad.
   // sko\b (suffix, not prefix) is safe from both AND reads every -sko compound
   // the shops actually use: løpesko, badesko, vintersko, hverdagssko, piggsko…
-  [/(?<!kabel)sko(r|ene)?\b|støvl|sandal|sneaker|\bboots\b|tøfler|fottøy|skotøy/i, 'Shoes'],
+  [/(?<!kabel)(?<!søyle)(?<!stolpe)sko(r|ene)?\b|støvl|sandal|sneaker|\bboots\b|tøfler|fottøy|skotøy/i, 'Shoes'],
   [/klokke|armbåndsur|smartklokke|lommeur|\bur\b/i, 'Watches'],
   // `\bring` fires after æ/ø/å (not JS word chars): "Skismøring" and
   // "Rengjøring" were Jewelry. `sølv\b` (not bare `sølv`): the fishing brand

@@ -591,17 +591,33 @@ dimension, so its two structural defects mattered most:
 Type coverage 15,668 → **15,965**; every facet key not named above is
 byte-identical across the 25k-row A/B replay.
 
-**Not done, in order of value:** (1) deploy + a crawl — nothing above
-reaches live data until then; (2) `score-cats --refile Kidsdreamstore=Toys`
-and `--refile Skoringen=Shoes` for the label-less rows stuck on historical
-mis-files (their floors are right, the rows predate them); (3) the eval's
-non-rule fixes (`product-eval/fixes.jsonl`): brand hygiene (shop shelf
-labels stored as brand — 78 rows/shard at Gamezone/Kidsdreamstore, an
-ingest-level fix), scraper name defects (Ringo 40-char ALL-CAPS truncation,
-Lekeverden SEO titles, Kicks doubled variant suffix), variant families;
-(4) the remaining 945 eval rows that need a name-level signal classify
-deliberately doesn't read (JYSK "Soverom" baby bedsets, Mestergull
-silverware) — per-row PATCH territory, not vocabulary.
+**Landed the same day (deploy + crawl + reclassify, 2026-07-31 evening):**
+committed d62d479, deployed, refiled Kidsdreamstore=Toys (37) and
+Skoringen=Shoes (18) via `score-cats --refile`, then a full
+`crawl.mjs --no-images` (14,135 rows, exit 0). The crawl promoted **8,391
+backlog rows** — catalog 25,405 → **33,796** — but re-filed only 281 of the
+1,214 measured moves: every unapproved shop is SAMPLED at 400 pages, so a
+vocabulary fix only reaches rows whose page is in the sample. That is what
+finally earned **`tools/reclassify.mjs`** (the tool step 1 proposed and
+2026-07-26 declined): a PATCH loop over the catalog cache for rows whose
+STORED label resolves elsewhere — honest where re-ingesting would be not
+(a synthetic ingest bumps offers.updated_at on prices nobody re-verified).
+1,043 patched, 0 failed, `man: null` so the rows stay rule-owned. One false
+positive found in the flow (`søylesko` = post shoe → Shoes) got a guard, a
+fixture line, a redeploy and its 2 rows swept. **Pending moves now 0**;
+label-decided 62.9 → 64.4%, floor share 35.6%. Three shops 429'd the crawl
+(Guttelus/Hobbii/Christiania Belysning — concurrent duplicate crawls, self-
+inflicted) — their rows are covered by the reclassify pass anyway.
+
+**Still open, in order of value:** (1) the eval's non-rule fixes
+(`product-eval/fixes.jsonl`): brand hygiene (shop shelf labels stored as
+brand — 78 rows/shard at Gamezone/Kidsdreamstore, an ingest-level fix),
+scraper name defects (Ringo 40-char ALL-CAPS truncation, Lekeverden SEO
+titles, Kicks doubled variant suffix), variant families; (2) the remaining
+~945 eval rows that need a name-level signal classify deliberately doesn't
+read (JYSK "Soverom" baby bedsets, Mestergull silverware) — per-row PATCH
+territory, not vocabulary; (3) the 72 unaudited eval shards
+(`product-eval/REMAINING.txt`).
 
 ## GPC departments shipped 2026-07-31 — and does not touch any of this
 
