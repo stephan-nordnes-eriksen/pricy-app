@@ -25,10 +25,10 @@ function SearchSuggest({ q, onPick, onClose }) {
       {cats.length > 0 && <>
         <div className="suggest__grp">Categories</div>
         {cats.map(c => (
-          <div key={c} className="suggest__item" onClick={() => onPick(c)}>
-            <span className="ic"><Icon name={CAT_ICONS[c] || 'tag'} size={18} /></span>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{c}</div>
-            <span className="sub" style={{ marginLeft: 'auto' }}>{catCount(c)} products</span>
+          <div key={c.key} className="suggest__item" onClick={() => onPick(c.label, c.nav)}>
+            <span className="ic"><Icon name={c.icon || 'tag'} size={18} /></span>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{c.label}</div>
+            <span className="sub" style={{ marginLeft: 'auto' }}>{c.sub}</span>
           </div>
         ))}
       </>}
@@ -77,7 +77,7 @@ function AppHeader({ go, onLogout }) {
               {q && <button type="button" className="pw-toggle" onMouseDown={() => setQ('')} aria-label="Clear"><Icon name="x" size={16} /></button>}
             </div>
           </form>
-          {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : CATEGORIES.includes(v) ? go('results', { cat: v }) : go('results', { query: v }); }} />}
+          {focus && <SearchSuggest q={q} onPick={(v, nav) => { setFocus(false); if (nav) { go('results', nav); return; } const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : go('results', { query: v }); }} />}
         </div>
         <nav className="app-hdr__nav">
           <div className="app-hdr__icon" title="Browse" onClick={() => go('home')}><Icon name="layout-grid" size={19} /></div>

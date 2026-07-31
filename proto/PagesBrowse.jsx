@@ -1,36 +1,73 @@
 // ===========================================================
-// Pricy.no — Categories browse page (signed in)
+// Pricy.no — Browse departments (signed in) — "Departments II"
+// Shopper-facing departments over the GS1 GPC standard (GpcData.jsx):
+// each department is an editorial set of GPC bricks, served from the
+// server in production. Card grid; the open card expands a full-width
+// panel below its own row (grid-auto-flow: dense backfills the row).
 // ===========================================================
 
-// distinct fval(p,'type') values for a category, most-populous first,
-// capped at 4 — only when the category defines a 'type' facet and has 2+ values
-function typesForCat(all, c) {
-  const defs = (window.FACETS || {})[c] || [];
-  if (!defs.some(d => d.key === 'type')) return [];
-  const served = metaOf()?.types?.[c];
-  let entries;
-  if (served) {
-    entries = Object.entries(served);
-  } else {
-    const counts = new Map();
-    all.forEach(p => {
-      if (p.cat !== c) return;
-      const v = fval(p, 'type');
-      if (v === undefined) return;
-      if (Array.isArray(v)) v.forEach(x => counts.set(x, (counts.get(x) || 0) + 1));
-      else counts.set(v, (counts.get(v) || 0) + 1);
-    });
-    entries = [...counts.entries()];
-  }
-  if (entries.length < 2) return [];
-  return entries.sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => e[0]);
+// results scope for a department rule: the brick, plus the shopper-facing
+// label + count when the rule slices the brick by an attribute
+const navOfRule = (r) => ({ brick: r.b, ...(r.label ? { label: r.label } : {}), ...(r.n != null ? { count: r.n } : {}) });
+
+function DeptCard({ d, open, onClick, go }) {
+  return (
+    <div className={'dcard' + (open ? ' is-x' : '')} onClick={onClick}>
+      <div className="dcard__top">
+        <span className="dcard__ic"><Icon name={d.icon} size={18} /></span>
+        <div>
+          <h3>{d.name}</h3>
+          <div className="dcard__n">{fmt(d.n)} products · {d.rules.length} sub-categories</div>
+        </div>
+        <span className="dcard__chev"><Icon name="chevron-down" size={16} /></span>
+      </div>
+      <div className="dcard__chips">
+        {d.rules.slice(0, 4).map((r, i) => <a key={i} className="mchip" onClick={(e) => { e.stopPropagation(); go('results', navOfRule(r)); }}>{r.label || brickBy[r.b].name}</a>)}
+        {d.rules.length > 4 && <span className="mchip mchip--more">+{d.rules.length - 4}</span>}
+      </div>
+    </div>
+  );
+}
+
+function DeptXp({ d, go }) {
+  return (
+    <div className="dxp">
+      <div className="dxp__hd">
+        <span className="dcard__ic"><Icon name={d.icon} size={18} /></span>
+        <h3>{d.name}</h3>
+        <span className="dcard__n">{d.rules.length} sub-categories</span>
+        <Btn variant="primary" size="sm" icon="arrow-right" style={{ marginLeft: 'auto' }} onClick={() => go('results', { dept: d.id })}>All {d.name}</Btn>
+      </div>
+      <div className="subgrid">
+        {d.rules.map((r, i) => {
+          const bk = brickBy[r.b];
+          return (
+            <a key={i} className="subtile" onClick={() => go('results', navOfRule(r))}>
+              <Icon name={bk.icon} size={16} />
+              <span className="subtile__tx">
+                <span className="nm">{r.label || bk.name}</span>
+                <span className="sub">{r.label ? bk.name : bk.cls.name}</span>
+              </span>
+              <span className="ct">{fmt(r.n != null ? r.n : bk.n)}</span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function BrowsePage({ go }) {
+  const [openId, setOpenId] = useState(null);
   const ALL = window.CATALOG || PRODUCTS;
-  const topOf = (c) => ALL.filter(p => p.cat === c).sort((a, b) => b.drop - a.drop)[0];
   const drops = ALL.slice().sort((a, b) => b.drop - a.drop).slice(0, 4);
   const m = metaOf() || {};
+  const items = [];
+  DEPTS.forEach(d => {
+    const open = d.id === openId;
+    items.push(<DeptCard key={d.id} d={d} open={open} go={go} onClick={() => setOpenId(open ? null : d.id)} />);
+    if (open) items.push(<DeptXp key={d.id + '-xp'} d={d} go={go} />);
+  });
   return (
     <div className="screen" data-screen-label="Browse categories">
       <AppHeader go={go} active="browse" onLogout={() => go('landing')} />
@@ -39,31 +76,7 @@ function BrowsePage({ go }) {
           <h1>Browse categories</h1>
           <div className="sub">{fmt(m.products || 0)} products · {fmt(m.shops || 0)} shops · prices updated {relTime(m.freshest)}</div>
         </div>
-
-        <div className="bigcats">
-          {realCats().map(c => {
-            const top = topOf(c);
-            const types = typesForCat(ALL, c);
-            return (
-              <div key={c} className="bigcat" onClick={() => go('results', { cat: c })}>
-                <div className="bigcat__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={20} /></div>
-                <h3>{c}</h3>
-                <div className="bigcat__count">{catCount(c)} products</div>
-                <div className="bigcat__drop">
-                  {top
-                    ? <React.Fragment><Delta pct={-top.drop}></Delta><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{top.name}</span></React.Fragment>
-                    : <span style={{ color: 'var(--ink-400)' }}>No drops</span>}
-                </div>
-                {types.length > 0 && (
-                  <div className="bigcat__types">
-                    {types.map(v => <a key={String(v)} className="typechip" onClick={(e) => { e.stopPropagation(); go('results', { cat: c, facets: { type: [v] } }); }}>{v}</a>)}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
+        <div className="dgrid">{items}</div>
         <div className="sec">
           <div className="sec__head">
             <h2><span className="ico"><Icon name="flame" size={20} /></span>Biggest drops right now</h2>
@@ -73,7 +86,6 @@ function BrowsePage({ go }) {
             {drops.map(p => <ResultCard key={p.id} p={p} go={go} />)}
           </div>
         </div>
-
         <div className="sec">
           <div className="sec__head"><h2><span className="ico"><Icon name="search" size={20} /></span>Popular right now</h2></div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -87,4 +99,4 @@ function BrowsePage({ go }) {
   );
 }
 
-Object.assign(window, { BrowsePage });
+Object.assign(window, { BrowsePage, navOfRule });

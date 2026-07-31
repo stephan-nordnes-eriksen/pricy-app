@@ -33,38 +33,70 @@ function genHist(idn, base) {
 // real PRODUCTS get reused (they already carry offers/history);
 // new listings are generated. rating/stock/nc metadata for all.
 const _META = {
-  airpods: { rating: 4.6, reviews: 2140, nc: true },
-  xm5:     { rating: 4.7, reviews: 3380, nc: true },
-  switch:  { rating: 4.8, reviews: 5120, nc: false },
-  dyson:   { rating: 4.5, reviews: 1890, nc: false },
-  iphone:  { rating: 4.7, reviews: 6210, nc: false },
-  tv:      { rating: 4.6, reviews: 940,  nc: false },
-  kindle:  { rating: 4.5, reviews: 2030, nc: false },
-  lego:    { rating: 4.9, reviews: 880,  nc: false },
+  airpods: { rating: 4.6, reviews: 2140, nc: true,  facets: { battery: 6, wireless: true } },
+  xm5:     { rating: 4.7, reviews: 3380, nc: true,  facets: { battery: 30, wireless: true } },
+  switch:  { rating: 4.8, reviews: 5120, nc: false, facets: { type: 'Hybrid console', storage: 64, maxres: 1080 } },
+  dyson:   { rating: 4.5, reviews: 1890, nc: false, facets: { type: 'Stick vacuum', runtime: 60, mop: false } },
+  iphone:  { rating: 4.7, reviews: 6210, nc: false, facets: { scr: 6.1, refresh: 60, ram: 6, os: 'iOS', g5: true } },
+  tv:      { rating: 4.6, reviews: 940,  nc: false, facets: { size: 55, panel: 'QD-OLED', refresh: 144, res: 4, os: 'Tizen', dv: false } },
+  kindle:  { rating: 4.5, reviews: 2030, nc: false, facets: { scr: 6.8, storage: 16, ipx: true, pen: false } },
+  lego:    { rating: 4.9, reviews: 880,  nc: false, facets: { age: 18, pieces: 608, theme: 'Icons' } },
 };
 const _NEW = [
   // AUDIO — the canonical results set
-  { id: 'bose-ultra', name: 'Bose QuietComfort Ultra', brand: 'Bose', cat: 'Audio', icon: 'headphones', best: 3490, was: 3990, shops: 8, rating: 4.7, reviews: 1620, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling' },
-  { id: 'senn-m4', name: 'Sennheiser Momentum 4', brand: 'Sennheiser', cat: 'Audio', icon: 'headphones', best: 2790, was: 3490, shops: 7, rating: 4.6, reviews: 980, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling' },
-  { id: 'sonos-ace', name: 'Sonos Ace', brand: 'Sonos', cat: 'Audio', icon: 'headphones', best: 4290, was: 4990, shops: 5, rating: 4.5, reviews: 410, stock: false, nc: true, kw: 'headphones wireless over-ear noise cancelling' },
-  { id: 'jbl-tour2', name: 'JBL Tour One M2', brand: 'JBL', cat: 'Audio', icon: 'headphones', best: 1990, was: 2790, shops: 6, rating: 4.3, reviews: 720, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling' },
-  { id: 'airpods4', name: 'AirPods 4 (ANC)', brand: 'Apple', cat: 'Audio', icon: 'headphones', best: 1690, was: 1990, shops: 10, rating: 4.6, reviews: 1340, stock: true, nc: true, kw: 'headphones wireless earbuds noise cancelling' },
-  { id: 'beats-pro', name: 'Beats Studio Pro', brand: 'Beats', cat: 'Audio', icon: 'headphones', best: 2290, was: 2990, shops: 7, rating: 4.2, reviews: 560, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling' },
+  { id: 'bose-ultra', name: 'Bose QuietComfort Ultra', brand: 'Bose', cat: 'Audio', icon: 'headphones', best: 3490, was: 3990, shops: 8, rating: 4.7, reviews: 1620, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling', facets: { battery: 24, wireless: true } },
+  { id: 'senn-m4', name: 'Sennheiser Momentum 4', brand: 'Sennheiser', cat: 'Audio', icon: 'headphones', best: 2790, was: 3490, shops: 7, rating: 4.6, reviews: 980, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling', facets: { battery: 60, wireless: true } },
+  { id: 'sonos-ace', name: 'Sonos Ace', brand: 'Sonos', cat: 'Audio', icon: 'headphones', best: 4290, was: 4990, shops: 5, rating: 4.5, reviews: 410, stock: false, nc: true, kw: 'headphones wireless over-ear noise cancelling', facets: { battery: 30, wireless: true } },
+  { id: 'jbl-tour2', name: 'JBL Tour One M2', brand: 'JBL', cat: 'Audio', icon: 'headphones', best: 1990, was: 2790, shops: 6, rating: 4.3, reviews: 720, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling', facets: { battery: 30, wireless: true } },
+  { id: 'airpods4', name: 'AirPods 4 (ANC)', brand: 'Apple', cat: 'Audio', icon: 'headphones', best: 1690, was: 1990, shops: 10, rating: 4.6, reviews: 1340, stock: true, nc: true, kw: 'headphones wireless earbuds noise cancelling', facets: { battery: 4, wireless: true } },
+  { id: 'beats-pro', name: 'Beats Studio Pro', brand: 'Beats', cat: 'Audio', icon: 'headphones', best: 2290, was: 2990, shops: 7, rating: 4.2, reviews: 560, stock: true, nc: true, kw: 'headphones wireless over-ear noise cancelling', facets: { battery: 24, wireless: true } },
   // GAMING
-  { id: 'ps5', name: 'PlayStation 5 Slim', brand: 'Sony', cat: 'Gaming', icon: 'gamepad-2', best: 5990, was: 6990, shops: 9, rating: 4.8, reviews: 4100, stock: true, nc: false, kw: 'console gaming ps5' },
-  { id: 'xbox', name: 'Xbox Series X', brand: 'Microsoft', cat: 'Gaming', icon: 'gamepad-2', best: 5490, was: 6490, shops: 7, rating: 4.7, reviews: 2300, stock: true, nc: false, kw: 'console gaming xbox' },
-  { id: 'steamdeck', name: 'Steam Deck OLED', brand: 'Valve', cat: 'Gaming', icon: 'gamepad-2', best: 6490, was: 6990, shops: 4, rating: 4.6, reviews: 880, stock: false, nc: false, kw: 'handheld gaming steam deck 512gb 1tb' },
+  { id: 'ps5', name: 'PlayStation 5 Slim', brand: 'Sony', cat: 'Gaming', icon: 'gamepad-2', best: 5990, was: 6990, shops: 9, rating: 4.8, reviews: 4100, stock: true, nc: false, kw: 'console gaming ps5', facets: { type: 'Home console', storage: 1000, maxres: 2160, disc: true } },
+  { id: 'xbox', name: 'Xbox Series X', brand: 'Microsoft', cat: 'Gaming', icon: 'gamepad-2', best: 5490, was: 6490, shops: 7, rating: 4.7, reviews: 2300, stock: true, nc: false, kw: 'console gaming xbox', facets: { type: 'Home console', storage: 1000, maxres: 2160, disc: true } },
+  { id: 'steamdeck', name: 'Steam Deck OLED', brand: 'Valve', cat: 'Gaming', icon: 'gamepad-2', best: 6490, was: 6990, shops: 4, rating: 4.6, reviews: 880, stock: false, nc: false, kw: 'handheld gaming steam deck 512gb 1tb', facets: { type: 'Handheld', storage: [512, 1024], maxres: 800, disc: false } },
+  { id: 'switchlite', name: 'Nintendo Switch Lite', brand: 'Nintendo', cat: 'Gaming', icon: 'gamepad-2', best: 2290, was: 2690, shops: 9, rating: 4.6, reviews: 1830, stock: true, nc: false, kw: 'handheld gaming nintendo switch lite', facets: { type: 'Handheld', storage: 32, maxres: 720, disc: false } },
+  { id: 'rogally', name: 'ASUS ROG Ally X', brand: 'ASUS', cat: 'Gaming', icon: 'gamepad-2', best: 9990, was: 10990, shops: 5, rating: 4.5, reviews: 240, stock: true, nc: false, kw: 'handheld gaming pc rog ally windows', facets: { type: 'Handheld', storage: 1024, maxres: 1080, disc: false } },
   // PHONES
-  { id: 's24', name: 'Samsung Galaxy S24', brand: 'Samsung', cat: 'Phones', icon: 'smartphone', best: 8490, was: 10990, shops: 11, rating: 4.6, reviews: 1980, stock: true, nc: false, kw: 'phone android samsung 128gb 256gb 512gb' },
-  { id: 'pixel8', name: 'Google Pixel 8', brand: 'Google', cat: 'Phones', icon: 'smartphone', best: 6490, was: 7990, shops: 7, rating: 4.5, reviews: 1120, stock: true, nc: false, kw: 'phone android pixel 128gb 256gb' },
+  { id: 's24', name: 'Samsung Galaxy S24', brand: 'Samsung', cat: 'Phones', icon: 'smartphone', best: 8490, was: 10990, shops: 11, rating: 4.6, reviews: 1980, stock: true, nc: false, kw: 'phone android samsung 128gb 256gb 512gb', facets: { scr: 6.2, refresh: 120, ram: 8, os: 'Android', g5: true } },
+  { id: 'pixel8', name: 'Google Pixel 8', brand: 'Google', cat: 'Phones', icon: 'smartphone', best: 6490, was: 7990, shops: 7, rating: 4.5, reviews: 1120, stock: true, nc: false, kw: 'phone android pixel 128gb 256gb', facets: { scr: 6.2, refresh: 120, ram: 8, os: 'Android', g5: true } },
+  { id: 'ip15pm', name: 'iPhone 15 Pro Max', brand: 'Apple', cat: 'Phones', icon: 'smartphone', best: 13490, was: 15990, shops: 10, rating: 4.8, reviews: 2100, stock: true, nc: false, kw: 'phone iphone apple pro max 256gb 512gb', facets: { storage: [256, 512, 1024], scr: 6.7, refresh: 120, ram: 8, os: 'iOS', g5: true } },
+  { id: 'a55', name: 'Samsung Galaxy A55', brand: 'Samsung', cat: 'Phones', icon: 'smartphone', best: 4290, was: 5490, shops: 11, rating: 4.4, reviews: 860, stock: true, nc: false, kw: 'phone android samsung billig mobil 128gb', facets: { storage: [128, 256], scr: 6.6, refresh: 120, ram: 8, os: 'Android', g5: true } },
   // TV
-  { id: 'lgc3', name: 'LG OLED C3 65"', brand: 'LG', cat: 'TV', icon: 'tv', best: 13990, was: 18990, shops: 6, rating: 4.8, reviews: 760, stock: true, nc: false, kw: 'tv oled lg' },
-  { id: 'bravia', name: 'Sony Bravia 9 65"', brand: 'Sony', cat: 'TV', icon: 'tv', best: 19990, was: 23990, shops: 5, rating: 4.7, reviews: 230, stock: true, nc: false, kw: 'tv mini-led sony' },
+  { id: 'lgc3', name: 'LG OLED C3 65"', brand: 'LG', cat: 'TV', icon: 'tv', best: 13990, was: 18990, shops: 6, rating: 4.8, reviews: 760, stock: true, nc: false, kw: 'tv oled lg', facets: { size: 65, panel: 'OLED', refresh: 120, res: 4, os: 'webOS', dv: true } },
+  { id: 'bravia', name: 'Sony Bravia 9 65"', brand: 'Sony', cat: 'TV', icon: 'tv', best: 19990, was: 23990, shops: 5, rating: 4.7, reviews: 230, stock: true, nc: false, kw: 'tv mini-led sony', facets: { size: 65, panel: 'Mini-LED', refresh: 120, res: 4, os: 'Google TV', dv: true } },
+  { id: 'lgc4', name: 'LG OLED C4 48"', brand: 'LG', cat: 'TV', icon: 'tv', best: 11490, was: 14990, shops: 7, rating: 4.8, reviews: 410, stock: true, nc: false, kw: 'tv oled lg gaming', facets: { size: 48, panel: 'OLED', refresh: 144, res: 4, os: 'webOS', dv: true } },
+  { id: 'qn90d', name: 'Samsung QN90D 75"', brand: 'Samsung', cat: 'TV', icon: 'tv', best: 19990, was: 27990, shops: 6, rating: 4.6, reviews: 290, stock: true, nc: false, kw: 'tv neo qled mini-led samsung', facets: { size: 75, panel: 'Mini-LED', refresh: 144, res: 4, os: 'Tizen', dv: false } },
+  { id: 'qn900d', name: 'Samsung QN900D 75" 8K', brand: 'Samsung', cat: 'TV', icon: 'tv', best: 34990, was: 44990, shops: 4, rating: 4.5, reviews: 90, stock: true, nc: false, kw: 'tv 8k neo qled samsung', facets: { size: 75, panel: 'Mini-LED', refresh: 144, res: 8, os: 'Tizen', dv: false } },
+  { id: 'tcl805', name: 'TCL C805 55"', brand: 'TCL', cat: 'TV', icon: 'tv', best: 6490, was: 8990, shops: 5, rating: 4.4, reviews: 380, stock: true, nc: false, kw: 'tv mini-led qled tcl budget', facets: { size: 55, panel: 'Mini-LED', refresh: 144, res: 4, os: 'Google TV', dv: true } },
   // HOME
-  { id: 'roborock', name: 'Roborock S8 Pro Ultra', brand: 'Roborock', cat: 'Home', icon: 'wind', best: 7990, was: 9990, shops: 6, rating: 4.6, reviews: 540, stock: true, nc: false, kw: 'robot vacuum home' },
-  { id: 'hue', name: 'Philips Hue Starter Kit', brand: 'Philips', cat: 'Home', icon: 'wind', best: 1290, was: 1690, shops: 8, rating: 4.4, reviews: 1310, stock: true, nc: false, kw: 'smart home lighting' },
+  { id: 'roborock', name: 'Roborock S8 Pro Ultra', brand: 'Roborock', cat: 'Home', icon: 'wind', best: 7990, was: 9990, shops: 6, rating: 4.6, reviews: 540, stock: true, nc: false, kw: 'robot vacuum home robotstøvsuger', facets: { type: 'Robot vacuum', runtime: 180, mop: true } },
+  { id: 'hue', name: 'Philips Hue Starter Kit', brand: 'Philips', cat: 'Home', icon: 'wind', best: 1290, was: 1690, shops: 8, rating: 4.4, reviews: 1310, stock: true, nc: false, kw: 'smart home lighting lys', facets: { type: 'Smart lighting', mop: false } },
+  { id: 'eufy', name: 'Eufy X10 Pro Omni', brand: 'Eufy', cat: 'Home', icon: 'wind', best: 7490, was: 8990, shops: 5, rating: 4.5, reviews: 310, stock: true, nc: false, kw: 'robot vacuum robotstøvsuger mopp', facets: { type: 'Robot vacuum', runtime: 180, mop: true } },
+  { id: 'jet85', name: 'Samsung Jet 85', brand: 'Samsung', cat: 'Home', icon: 'wind', best: 4490, was: 5990, shops: 6, rating: 4.3, reviews: 270, stock: true, nc: false, kw: 'stick vacuum støvsuger trådløs', facets: { type: 'Stick vacuum', runtime: 60, mop: false } },
+  { id: 'philips-air', name: 'Philips 3000i Air Purifier', brand: 'Philips', cat: 'Home', icon: 'wind', best: 3990, was: 4790, shops: 7, rating: 4.6, reviews: 520, stock: true, nc: false, kw: 'luftrenser air purifier allergi', facets: { type: 'Air purifier', mop: false, area: 135, app: true } },
   // COMPUTERS
-  { id: 'mba', name: 'MacBook Air 13" M3', brand: 'Apple', cat: 'Computers', icon: 'laptop', best: 12990, was: 14990, shops: 9, rating: 4.8, reviews: 1640, stock: true, nc: false, kw: 'laptop computer apple macbook' },
+  { id: 'mba', name: 'MacBook Air 13" M3', brand: 'Apple', cat: 'Computers', icon: 'laptop', best: 12990, was: 14990, shops: 9, rating: 4.8, reviews: 1640, stock: true, nc: false, kw: 'laptop computer apple macbook', facets: { ram: 8, scr: 13.6, chip: 'Apple M3', type: 'Laptop' } },
+  { id: 'mbp14', name: 'MacBook Pro 14" M4', brand: 'Apple', cat: 'Computers', icon: 'laptop', best: 21990, was: 24490, shops: 8, rating: 4.9, reviews: 720, stock: true, nc: false, kw: 'laptop computer apple macbook pro', facets: { ram: 16, storage: 512, scr: 14.2, chip: 'Apple M4', type: 'Laptop' } },
+  { id: 'xps13', name: 'Dell XPS 13', brand: 'Dell', cat: 'Computers', icon: 'laptop', best: 15490, was: 18990, shops: 6, rating: 4.5, reviews: 430, stock: true, nc: false, kw: 'laptop pc windows ultrabook', facets: { ram: 16, storage: 512, scr: 13.4, chip: 'Intel Core Ultra', type: 'Laptop' } },
+  { id: 'yoga7x', name: 'Lenovo Yoga Slim 7x', brand: 'Lenovo', cat: 'Computers', icon: 'laptop', best: 13990, was: 16490, shops: 5, rating: 4.4, reviews: 210, stock: true, nc: false, kw: 'laptop pc windows arm copilot', facets: { ram: 16, storage: 512, scr: 14.5, chip: 'Snapdragon X', type: 'Laptop' } },
+  { id: 'g14', name: 'ASUS ROG Zephyrus G14', brand: 'ASUS', cat: 'Computers', icon: 'laptop', best: 19990, was: 22990, shops: 6, rating: 4.7, reviews: 380, stock: true, nc: false, kw: 'laptop gaming pc windows rog', facets: { ram: 32, storage: 1024, scr: 14, chip: 'AMD Ryzen', type: 'Gaming laptop' } },
+  { id: 'spectre', name: 'HP Spectre x360 14', brand: 'HP', cat: 'Computers', icon: 'laptop', best: 16990, was: 19990, shops: 5, rating: 4.4, reviews: 290, stock: false, nc: false, kw: 'laptop pc windows 2-in-1 convertible', facets: { ram: 16, storage: 1024, scr: 14, chip: 'Intel Core Ultra', type: 'Convertible (2-in-1)' } },
+  // TOYS
+  { id: 'lego-porsche', name: 'LEGO Technic Porsche 911', brand: 'LEGO', cat: 'Toys', icon: 'blocks', best: 1499, was: 1999, shops: 7, rating: 4.8, reviews: 640, stock: true, nc: false, kw: 'lego technic byggesett bil porsche', facets: { age: 18, pieces: 1458, theme: 'Technic' } },
+  { id: 'lego-xwing', name: 'LEGO Star Wars X-Wing Starfighter', brand: 'LEGO', cat: 'Toys', icon: 'blocks', best: 449, was: 599, shops: 8, rating: 4.7, reviews: 510, stock: true, nc: false, kw: 'lego star wars byggesett x-wing', facets: { age: 9, pieces: 474, theme: 'Star Wars' } },
+  { id: 'lego-fire', name: 'LEGO City Fire Station', brand: 'LEGO', cat: 'Toys', icon: 'blocks', best: 899, was: 1149, shops: 6, rating: 4.6, reviews: 330, stock: true, nc: false, kw: 'lego city byggesett brannstasjon', facets: { age: 6, pieces: 540, theme: 'City' } },
+  { id: 'brio', name: 'BRIO World Railway Starter Set', brand: 'BRIO', cat: 'Toys', icon: 'blocks', best: 649, was: 799, shops: 9, rating: 4.8, reviews: 920, stock: true, nc: false, kw: 'brio togbane tog barn wooden railway', facets: { age: 3, pieces: 33, theme: 'Wooden railway' } },
+  // E-READERS
+  { id: 'kobo-libra', name: 'Kobo Libra Colour', brand: 'Kobo', cat: 'E-readers', icon: 'book-open', best: 2490, was: 2790, shops: 4, rating: 4.5, reviews: 340, stock: true, nc: false, kw: 'ebok leser ereader kobo farge', facets: { scr: 7, storage: 32, ipx: true, pen: true } },
+  { id: 'scribe', name: 'Kindle Scribe', brand: 'Amazon', cat: 'E-readers', icon: 'book-open', best: 3990, was: 4490, shops: 4, rating: 4.4, reviews: 280, stock: true, nc: false, kw: 'ebok leser ereader kindle notater penn', facets: { scr: 10.2, storage: 64, ipx: false, pen: true } },
+  { id: 'kobo-clara', name: 'Kobo Clara BW', brand: 'Kobo', cat: 'E-readers', icon: 'book-open', best: 1590, was: 1790, shops: 4, rating: 4.4, reviews: 450, stock: true, nc: false, kw: 'ebok leser ereader kobo', facets: { scr: 6, storage: 16, ipx: true, pen: false } },
+  // KITCHEN
+  { id: 'specialista', name: "De'Longhi La Specialista Arte", brand: "De'Longhi", cat: 'Kitchen', icon: 'utensils-crossed', best: 5490, was: 6490, shops: 7, rating: 4.5, reviews: 380, stock: true, nc: false, kw: 'kaffemaskin espresso kaffe', facets: { type: 'Espresso machine', capacity: 1.1, power: 1450, milk: true } },
+  { id: 'barista', name: 'Sage Barista Express', brand: 'Sage', cat: 'Kitchen', icon: 'utensils-crossed', best: 5990, was: 7490, shops: 6, rating: 4.7, reviews: 890, stock: true, nc: false, kw: 'kaffemaskin espresso kaffe kvern', facets: { type: 'Espresso machine', capacity: 2, power: 1850, milk: true } },
+  { id: 'mocca', name: 'Moccamaster KBG 741 AO', brand: 'Moccamaster', cat: 'Kitchen', icon: 'utensils-crossed', best: 2290, was: 2690, shops: 9, rating: 4.8, reviews: 1240, stock: true, nc: false, kw: 'kaffetrakter filterkaffe kaffe', facets: { type: 'Filter coffee', capacity: 1.25, power: 1520, milk: false } },
+  { id: 'ninja', name: 'Ninja Foodi MAX Dual Air Fryer', brand: 'Ninja', cat: 'Kitchen', icon: 'utensils-crossed', best: 1990, was: 2490, shops: 8, rating: 4.7, reviews: 1560, stock: true, nc: false, kw: 'airfryer luftfrityr frityrkoker', facets: { type: 'Air fryer', capacity: 9.5, power: 2470, drawers: 2 } },
+  { id: 'wilfa-kettle', name: 'Wilfa Classic+ Kettle', brand: 'Wilfa', cat: 'Kitchen', icon: 'utensils-crossed', best: 549, was: 699, shops: 10, rating: 4.3, reviews: 680, stock: true, nc: false, kw: 'vannkoker kjøkken', facets: { type: 'Kettle', capacity: 1.7, power: 2200, temp: false } },
+  { id: 'kitchenaid', name: 'KitchenAid Artisan 185', brand: 'KitchenAid', cat: 'Kitchen', icon: 'utensils-crossed', best: 5290, was: 6490, shops: 8, rating: 4.8, reviews: 1080, stock: true, nc: false, kw: 'kjøkkenmaskin mikser baking', facets: { type: 'Stand mixer', capacity: 4.8, power: 300 } },
 ];
 
 let _idn = 1;
@@ -72,7 +104,7 @@ const CATALOG = [
   // reused real products, enriched
   ...PRODUCTS.filter(p => _META[p.id]).map(p => ({ ...p, ...(_META[p.id]), stock: true, kw: (p.cat + ' ' + p.brand).toLowerCase() })),
   // new generated listings
-  ..._NEW.map(p => {
+  ..._NEW.concat(window.BRICK_ROWS || []).map(p => {
     const drop = Math.round(((p.was - p.best) / p.was) * 100);
     const o = { ...p, drop, idn: _idn++ };
     o.offers = genOffers(o);
@@ -89,7 +121,10 @@ CATALOG.meta = { products: CATALOG.length, shops: [...new Set(CATALOG.flatMap(p 
 const ALL_BRANDS = (cat) => [...new Set(CATALOG.filter(p => !cat || p.cat === cat).map(p => p.brand))].sort();
 function getListing(id) { return CATALOG.find(p => p.id === id); }
 
-function searchCatalog({ query, cat }) {
+function searchCatalog({ query, cat, brick, dept }) {
+  // GPC scopes (Departments II): PRODMAP-mapped rows first, legacy-cat fallback — see GpcData.jsx
+  if (brick && window.brickProducts) return brickProducts(brick);
+  if (dept && window.deptProducts) return deptProducts(dept);
   if (cat) return CATALOG.filter(p => p.cat === cat);
   const q = (query || '').toLowerCase().trim();
   if (!q) return CATALOG.slice();
@@ -269,7 +304,47 @@ function FList({ entries, cap = 6, scrollAt = 12, searching = false, listClass =
 // price fields hold strings ('' = unset); the slider works in numbers
 const numOr = (v, d) => (v !== '' && v != null && isFinite(+v) ? +v : d);
 
-function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBoolFacet }) {
+// ---- category nav model (GPC departments — Departments II) ----
+// The Category group mirrors Browse: root = curated departments (DEPTS);
+// a scoped view shows its owner department with sibling sub-categories.
+// Owner of a brick scope = dept whose rule matches brick+label (BRICK_DEPT
+// fallback); bricks outside every dept fall back to their GPC class.
+// Legacy p.cat scopes resolve through the brickToCat bridge.
+const ruleNav = (r) => ({ brick: r.b, ...(r.label ? { label: r.label } : {}), ...(r.n != null ? { count: r.n } : {}) }); // = navOfRule (PagesBrowse), inlined for load order
+function catNavModel({ cat, brick, dept, label }) {
+  const DS = window.DEPTS || [], bb = window.brickBy || {};
+  const ruleOn = (r) => !!brick && r.b === brick && (label ? r.label === label : !r.label);
+  const d = dept ? DS.find(x => x.id === dept)
+    : brick ? ((label && DS.find(x => x.rules.some(ruleOn))) || (window.BRICK_DEPT || {})[brick])
+    : cat ? DS.find(x => x.rules.some(r => !r.where && brickToCat(r.b) === cat))
+    : null;
+  if (!d && brick && bb[brick]) { // not in any department → GPC class siblings
+    const bk = bb[brick];
+    return {
+      head: { name: bk.cls.name, icon: bk.seg.icon, n: bk.cls.bricks.reduce((s, b) => s + b.n, 0), on: false, nav: null },
+      subs: bk.cls.bricks.map(b => ({ key: b.code, label: b.name, icon: b.icon, n: b.n, on: b.code === brick, nav: { brick: b.code } })),
+      gpc: bk,
+    };
+  }
+  if (!d) return { depts: DS.map(x => ({ key: x.id, label: x.name, icon: x.icon, n: x.n, on: false, nav: { dept: x.id } })) };
+  // a legacy cat that maps to exactly one sub-category highlights it (e.g. E-readers)
+  const catSubs = cat ? d.rules.filter(r => !r.where && brickToCat(r.b) === cat) : [];
+  const subs = d.rules.map(r => {
+    const bk = bb[r.b];
+    return { key: r.b + '|' + (r.label || ''), label: r.label || bk.name, icon: bk.icon, n: r.n != null ? r.n : bk.n, on: ruleOn(r) || (catSubs.length === 1 && catSubs[0] === r), nav: ruleNav(r) };
+  });
+  return { head: { name: d.name, icon: d.icon, n: d.n, on: !subs.some(s => s.on), nav: { dept: d.id } }, subs, gpc: brick ? bb[brick] : null };
+}
+function GpcTrail({ bk }) {
+  return (
+    <div className="catgpc" title={'GS1 GPC classification of this sub-category'}>
+      <span className="catgpc__k">GS1 GPC<span className="catgpc__c">#{bk.code}</span></span>
+      <span className="catgpc__p">{bk.seg.name} › {bk.fam.name} › {bk.cls.name} › <b>{bk.name}</b></span>
+    </div>
+  );
+}
+
+function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet, setBoolFacet }) {
   const brands = base.brands; // brands present in the active result set
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
   // filter search: every token must hit the group title or an entry label;
@@ -284,11 +359,12 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
     const pred = (l) => { const s = String(l).toLowerCase(); return rest.every(tok => s.includes(tok)); };
     return labels.some(pred) ? pred : null;
   };
-  const cats = CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : CAT_OF[c]);
+  const cnav = catNavModel(baseSel || {});
+  const crows = cnav.depts || cnav.subs;
   const optionDefs = facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2);
   const boolDefs = facetDefs.filter(d => d.type === 'bool');
   const ratingLbl = (r) => r.toFixed(1) + ' & up';
-  const pCat = grpPred('Category', cats);
+  const pCat = grpPred('Category', crows.map(s => s.label).concat(cnav.head ? [cnav.head.name] : []));
   const pBrand = grpPred('Brand', brands);
   const pPrice = grpPred('Price (kr)', []);
   const pRating = grpPred('Rating', [4.5, 4, 3.5].map(ratingLbl));
@@ -305,16 +381,24 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Find a filter" aria-label="Find a filter" />
         {!!q && <button className="filters__sclear" onClick={() => setQ('')} aria-label="Clear filter search"><Icon name="x" size={13} /></button>}
       </div>
-      {pCat && <FGroup id="cat" title="Category" nSel={base.cat ? 1 : 0} forceOpen={searching}>
-        <FList listClass="catlist" cap={8} searching={searching} entries={cats.filter(pCat).map(c => ({
-          on: base.cat === c,
+      {pCat && <FGroup id="cat" title="Category" nSel={cnav.head ? 1 : 0} forceOpen={searching}>
+        {cnav.head && <>
+          {!searching && <div className="catback" onClick={() => go('results', { query: '' })}><Icon name="chevron-left" size={13} /><span>All categories</span></div>}
+          {pCat(cnav.head.name) && <div className={'catlink catlink--hd' + (cnav.head.on ? ' is-on' : '') + (cnav.head.nav ? '' : ' catlink--nohov')} onClick={() => cnav.head.nav && go('results', cnav.head.nav)}>
+            <span className="catlink__ic"><Icon name={cnav.head.icon} size={15} /></span>
+            <span>{cnav.head.name}</span><span className="ct">{fmt(cnav.head.n)}</span>
+          </div>}
+        </>}
+        <FList listClass={'catlist' + (cnav.head ? ' catlist--sub' : '')} cap={cnav.head ? 12 : 9} searching={searching} entries={crows.filter(s => pCat(s.label)).map(s => ({
+          on: s.on,
           node: (
-            <div key={c} className={'catlink' + (base.cat === c ? ' is-on' : '')} onClick={() => go('results', { cat: c })}>
-              <span className="catlink__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={15} /></span>
-              <span>{c}</span><span className="ct">{(metaOf()?.cats?.[c]) ?? CAT_OF[c].length}</span>
+            <div key={s.key} className={'catlink' + (s.on ? ' is-on' : '')} onClick={() => go('results', s.nav)}>
+              <span className="catlink__ic"><Icon name={s.icon} size={15} /></span>
+              <span>{s.label}</span><span className="ct">{fmt(s.n)}</span>
             </div>
           ),
         }))} />
+        {cnav.gpc && !searching && <GpcTrail bk={cnav.gpc} />}
       </FGroup>}
       {pBrand && brands.length > 0 && <FGroup id="brand" title="Brand" nSel={f.brands.length} forceOpen={searching}>
         <FList searching={searching} entries={brands.filter(pBrand).map(b => ({ on: f.brands.includes(b), node: <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} /> }))} />
@@ -343,7 +427,7 @@ function FiltersBody({ f, set, base, go, facetDefs, facetBase, setFacet, setBool
         {pShow('In stock') && <Check on={f.instock} label="In stock" onClick={() => set('instock', !f.instock)} />}
         {boolDefs.filter(d => pShow(d.label)).map(def => <Check key={def.key} on={!!f.facets[def.key]} label={def.label} onClick={() => setBoolFacet(def.key)} />)}
       </FGroup>}
-      {specVisible && <div className="filters__cluster">{(base.cat || 'Product') + ' specs'}</div>}
+      {specVisible && <div className="filters__cluster">{(((window.brickBy || {})[(baseSel || {}).brick] || {}).name || base.cat || 'Product') + ' specs'}</div>}
       {optionDefs.map((def, i) => optPreds[i] && (
         <FGroup key={def.key} id={'facet.' + def.key} title={def.label} nSel={(f.facets[def.key] || []).length} defOpen={i < 2} forceOpen={searching}>
           <FList searching={searching} entries={facetBase[def.key].vals.filter(v => optPreds[i](fdisp(v, def))).map(v => ({ on: (f.facets[def.key] || []).includes(v), node: <Check key={String(v)} on={(f.facets[def.key] || []).includes(v)} label={fdisp(v, def)} count={facetBase[def.key].counts.get(v)} onClick={() => setFacet(def.key, v)} /> }))} />
@@ -375,14 +459,24 @@ function Dropdown({ label, active, children }) {
 function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, setBoolFacet }) {
   const brands = base.brands;
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
+  const cnav = catNavModel(baseSel);
+  const crows = cnav.depts || cnav.subs;
+  const cscope = cnav.head ? ((crows.find(s => s.on) || {}).label || cnav.head.name) : null;
   return (
     <div className="filterbar">
-      <Dropdown label={baseSel.cat ? 'Category · ' + baseSel.cat : 'Category'} active={!!baseSel.cat}>
-        {CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : CAT_OF[c]).map(c => (
-          <div key={c} className={'fmenu__item' + (baseSel.cat === c ? ' is-on' : '')} onClick={() => go('results', { cat: c })}>
-            <Icon name={CAT_ICONS[c] || 'tag'} size={15} /><span>{c}</span><span className="ct">{(metaOf()?.cats?.[c]) ?? CAT_OF[c].length}</span>
+      <Dropdown label={cscope ? 'Category · ' + cscope : 'Category'} active={!!cscope}>
+        {cnav.head && <>
+          <div className="fmenu__item fmenu__item--back" onClick={() => go('results', { query: '' })}><Icon name="chevron-left" size={14} /><span>All categories</span></div>
+          <div className={'fmenu__item fmenu__item--hd' + (cnav.head.on ? ' is-on' : '')} onClick={() => cnav.head.nav && go('results', cnav.head.nav)}>
+            <Icon name={cnav.head.icon} size={15} /><span>{cnav.head.name}</span><span className="ct">{fmt(cnav.head.n)}</span>
+          </div>
+        </>}
+        {crows.map(s => (
+          <div key={s.key} className={'fmenu__item' + (s.on ? ' is-on' : '') + (cnav.head ? ' fmenu__item--sub' : '')} onClick={() => go('results', s.nav)}>
+            <Icon name={s.icon} size={15} /><span>{s.label}</span><span className="ct">{fmt(s.n)}</span>
           </div>
         ))}
+        {cnav.gpc && <GpcTrail bk={cnav.gpc} />}
       </Dropdown>
       <Dropdown label={f.brands.length ? 'Brand · ' + f.brands.length : 'Brand'} active={!!f.brands.length}>
         {brands.map(b => <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} />)}
@@ -526,13 +620,17 @@ function SortMenu({ fields, field, dir, onPick }) {
 // RESULTS SCREEN
 // ===========================================================
 const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} });
-function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
+function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} };
-  const baseSel = { query, cat };
+  // GPC scopes (Departments II): brick = one GPC sub-category, dept = curated department
+  const gb = brick ? (window.brickBy || {})[brick] : null;
+  const gd = dept ? (window.DEPTS || []).find(d => d.id === dept) : null;
+  const catF = cat || (gb ? brickToCat(brick) : undefined); // legacy cat that drives facet defs
+  const baseSel = { query, cat, brick, dept, label }; // label: catNavModel matches labeled slices; searchCatalog ignores it
   // `n` bumps when the host merges server rows into CATALOG in place (same pattern as SearchSuggest)
   const [n, bump] = useState(0);
-  const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat, n]);
+  const baseResults = useMemo(() => searchCatalog(baseSel), [query, cat, brick, dept, n]);
   const [shown, setShown] = useState(60);
   const [loadingMore, setLoadingMore] = useState(false);
   // what the host served for the current query: real category-wide total + facet counts
@@ -551,7 +649,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   useEffect(() => { try { window.history.replaceState({ ...window.history.state, rfilters: f, rsort: sort, rdir: dir }, ''); } catch (e) {} }, [f, sort, dir]);
   // reset filters when the search changes (skip the mount that restored them)
   const _fInit = useRef(true);
-  useEffect(() => { if (_fInit.current) { _fInit.current = false; return; } setF(emptyFilters()); setShown(60); }, [query, cat]);
+  useEffect(() => { if (_fInit.current) { _fInit.current = false; return; } setF(emptyFilters()); setShown(60); }, [query, cat, brick, dept]);
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
   // the free-text refine narrows the base set first, so brand counts, the price range
   // and every filter below it read from what's actually matching — but a text that
@@ -559,8 +657,9 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const rToks = refineToks(f.q);
   const pool = useMemo(() => rToks.length ? baseResults.filter(p => refineMatch(p, rToks)) : baseResults, [baseResults, f.q]);
   const countPool = pool.length ? pool : baseResults;
-  // data-driven per-category facets (window.FACETS is replaced by the boot layer)
-  const facetDefs = cat ? ((window.FACETS || {})[cat] || []) : [];
+  // data-driven facets: brick-specific defs win (BrickData.jsx), else the
+  // legacy category defs (window.FACETS — replaced by the boot layer)
+  const facetDefs = (brick && (window.BRICK_FACETS || {})[brick]) || (catF ? ((window.FACETS || {})[catF] || []) : []);
   // counts come from the host when it served this key (every value in the category,
   // including ones no loaded row has); otherwise from the rows we hold
   const facetBase = useMemo(() => {
@@ -586,7 +685,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   // A search (q=) is capped at 100 rows the client already holds \u2014 never ask.
   const fKey = JSON.stringify(f);
   useEffect(() => {
-    if (!window.onQuery || query) { setServed({ total: null, fcounts: null }); return; }
+    if (!window.onQuery || query || brick || dept) { setServed({ total: null, fcounts: null }); return; }
     let dead = false;
     const t = setTimeout(() => {
       Promise.resolve(window.onQuery({ cat, sort, dir, filters: f, page: 0 })).then(r => {
@@ -602,7 +701,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   const sortFields = useMemo(() => [
     ...(query ? [REL_FIELD] : []),
     ...SORT_FIELDS,
-    ...specSorts(facetDefs, facetBase, (cat || 'Product') + ' specs'),
+    ...specSorts(facetDefs, facetBase, ((gb && gb.name) || catF || 'Product') + ' specs'),
   ], [query, cat, facetBase]);
   const sortField = sortFields.find(s => s.id === sort) || SORT_FIELDS[0];
   const sortDir = sortFields.some(s => s.id === sort) ? dir : sortField.dir;
@@ -619,7 +718,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     byBrand: countPool.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
   };
   base.brands = Object.keys(base.byBrand).sort();
-  base.cat = baseSel.cat;
+  base.cat = cat || catF;
 
   let list = pool.filter(p => {
     if (f.brands.length && !f.brands.includes(p.brand)) return false;
@@ -643,7 +742,8 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
   // paging: reveal 60 at a time; when the host serves a category it owns which rows
   // are in the cache and how many exist — we still sort/filter the cache locally
   const total = served.total;
-  const catTotal = query ? undefined : (total != null ? total : (cat ? metaOf()?.cats?.[cat] : undefined));
+  // brick/dept scopes show the category-wide count from GpcData ("N of M products")
+  const catTotal = query ? undefined : (total != null ? total : gb ? (count != null ? count : gb.n) : gd ? gd.n : (cat ? metaOf()?.cats?.[cat] : undefined));
   const serverMore = total != null && total > list.length;
   const localMore = list.length > shown;
   const loadMore = async () => {
@@ -660,8 +760,8 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
     setLoadingMore(false);
   };
 
-  const scope = cat ? cat : query ? 'these results' : 'all products';
-  const title = cat ? cat : query ? <>Results for <span className="q">“{query}”</span></> : 'All products';
+  const scope = cat ? cat : gb ? (label || gb.name) : gd ? gd.name : query ? 'these results' : 'all products';
+  const title = cat ? cat : gb ? (label || gb.name) : gd ? gd.name : query ? <>Results for <span className="q">“{query}”</span></> : 'All products';
   const activeChips = [
     ...(f.q ? [{ k: 'q', label: 'name: “' + f.q + '”', clear: () => set('q', '') }] : []),
     ...f.brands.map(b => ({ k: 'brand:' + b, label: b, clear: () => set('brands', f.brands.filter(x => x !== b)) })),
@@ -685,7 +785,7 @@ function Results({ go, query, cat, filterLayout = 'rail', density = 'comfy', spa
         {filterLayout === 'rail' && (
           <aside className="filterscol">
             <div className="filters">
-              <FiltersBody f={f} set={set} base={base} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />
+              <FiltersBody f={f} set={set} base={base} baseSel={baseSel} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />
             </div>
           </aside>
         )}

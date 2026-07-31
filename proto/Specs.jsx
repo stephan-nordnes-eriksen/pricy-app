@@ -61,10 +61,15 @@ const SPEC_KINDS = {
     _G('set', 'Set', [_R('pieces', 'Pieces'), _R('age', 'Age'), _R('theme', 'Theme'), _R('item', 'Item number')]),
     _G('build', 'Built model', [_R('dims', 'Dimensions'), _R('released', 'Released')]),
   ] },
+  kitchen: { label: 'Kitchen', groups: [
+    _G('format', 'Format', [_R('type', 'Type')]),
+    _G('capacity', 'Capacity', [_R('capacity', 'Capacity'), _R('power', 'Power')]),
+    _G('body', 'Body', [_R('weight', 'Weight')]),
+  ] },
 };
 
-const SPEC_KIND_BY_CAT = { Audio: 'headphones', Phones: 'phone', Computers: 'laptop', Gaming: 'gaming', TV: 'tv', 'E-readers': 'ereader', Toys: 'toy' };
-const SPEC_KIND_OVERRIDE = { dyson: 'vacuum', roborock: 'vacuum', hue: 'lighting' };
+const SPEC_KIND_BY_CAT = { Audio: 'headphones', Phones: 'phone', Computers: 'laptop', Gaming: 'gaming', TV: 'tv', 'E-readers': 'ereader', Toys: 'toy', Kitchen: 'kitchen' };
+const SPEC_KIND_OVERRIDE = { dyson: 'vacuum', roborock: 'vacuum', hue: 'lighting', eufy: 'vacuum', jet85: 'vacuum' };
 function specKindOf(p) { return SPEC_KIND_OVERRIDE[p.id] || SPEC_KIND_BY_CAT[p.cat] || null; }
 
 // values are display strings; booleans typed; axis rows resolve
@@ -94,6 +99,34 @@ const SPECS = {
   hue: { contents: '3× E27 White & Color + Hue Bridge', socket: 'E27', lumen: '1 100 lm per bulb', colors: '16 M colours + white 2 000 – 6 500 K', life: '25 000 h', protocol: 'Zigbee (Bridge), Bluetooth', works: 'Apple Home, Google, Alexa, Matter', power: '9 W (≈ 75 W equivalent)' },
   kindle: { screen: '6.8″ E Ink, 300 ppi', light: '17 LED, adjustable warm light', storage: '16 GB', battery: 'Up to 10 weeks', ip: 'IPX8', weight: '205 g', conn: 'USB-C, Wi-Fi' },
   lego: { pieces: '608', age: '18+', theme: 'Icons — Botanical Collection', item: '10311', dims: '39 cm tall', released: '2022' },
+  mbp14:   { size: '14.2″ Liquid Retina XDR', res: '3024 × 1964', nits: '1000 nits (1600 peak)', chip: 'Apple M4 (10-core CPU / 10-core GPU)', ram: '16 GB unified', storage: '512 GB', life: 'Up to 24 h', charge: '70 W USB-C', weight: '1.55 kg', ports: '3× Thunderbolt 4, HDMI, SDXC, MagSafe 3', wifi: 'Wi-Fi 6E' },
+  xps13:   { size: '13.4″ InfinityEdge', res: '1920 × 1200', nits: '500 nits', chip: 'Intel Core Ultra 7 155H', ram: '16 GB', storage: '512 GB SSD', life: 'Up to 18 h', charge: '60 W USB-C', weight: '1.19 kg', ports: '2× Thunderbolt 4', wifi: 'Wi-Fi 7' },
+  yoga7x:  { size: '14.5″ OLED touch', res: '2944 × 1840', nits: '500 nits (1000 HDR)', chip: 'Snapdragon X Elite', ram: '16 GB', storage: '512 GB SSD', life: 'Up to 23 h', charge: '65 W USB-C', weight: '1.28 kg', ports: '3× USB-C 4.0', wifi: 'Wi-Fi 7' },
+  g14:     { size: '14″ OLED, 120 Hz', res: '2880 × 1800', nits: '500 nits', chip: 'AMD Ryzen 9 + GeForce RTX 4060', ram: '32 GB', storage: '1 TB SSD', life: 'Up to 10 h', charge: '180 W', weight: '1.5 kg', ports: 'USB 4, 2× USB-A, HDMI 2.1, SD', wifi: 'Wi-Fi 6E' },
+  spectre: { size: '14″ OLED touch', res: '2880 × 1800', nits: '400 nits', chip: 'Intel Core Ultra 7 155H', ram: '16 GB', storage: '1 TB SSD', life: 'Up to 15 h', charge: '65 W USB-C', weight: '1.44 kg', ports: '2× Thunderbolt 4, USB-A, 3.5 mm', wifi: 'Wi-Fi 6E' },
+  lgc4:    { size: '48″', panel: 'OLED evo', res: '3840 × 2160', refresh: '144 Hz', hdr: 'Dolby Vision, HDR10, HLG', os: 'webOS', hdmi: '4 of 4', earc: true, weight: '10.2 kg' },
+  qn90d:   { size: '75″', panel: 'Neo QLED (Mini-LED)', res: '3840 × 2160', refresh: '144 Hz', hdr: 'HDR10+, HLG', os: 'Tizen', hdmi: '4 of 4', earc: true, weight: '31.6 kg' },
+  qn900d:  { size: '75″', panel: 'Neo QLED (Mini-LED)', res: '7680 × 4320', refresh: '144 Hz', hdr: 'HDR10+, HLG', os: 'Tizen', hdmi: '4 of 4', earc: true, weight: '33.2 kg' },
+  tcl805:  { size: '55″', panel: 'Mini-LED QLED', res: '3840 × 2160', refresh: '144 Hz', hdr: 'Dolby Vision, HDR10+, HLG', os: 'Google TV', hdmi: '2 of 4', earc: true, weight: '13.5 kg' },
+  ip15pm:  { size: '6.7″ OLED ProMotion', res: '2796 × 1290', refresh: '120 Hz', chip: 'Apple A17 Pro', ram: '8 GB', main: '48 MP ƒ/1.8', front: '12 MP ƒ/1.9', capacity: '4 441 mAh', charge: '27 W (MagSafe 15 W)', weight: '221 g', ip: 'IP68', g5: true, esim: true, usb: 'USB-C (USB 3)' },
+  a55:     { size: '6.6″ AMOLED', res: '2340 × 1080', refresh: '120 Hz', chip: 'Exynos 1480', ram: '8 GB', main: '50 MP ƒ/1.8', front: '32 MP ƒ/2.2', capacity: '5 000 mAh', charge: '25 W', weight: '213 g', ip: 'IP67', g5: true, esim: true, usb: 'USB-C (USB 2)' },
+  switchlite: { type: 'Handheld console', disc: false, res: '720p handheld', storage: '32 GB', expand: 'microSD', screen: '5.5″ LCD', battery: '3 – 7 h', weight: '275 g' },
+  rogally: { type: 'Handheld PC', disc: false, res: '1080p @ 120 Hz', storage: '1 TB SSD', expand: 'microSD', screen: '7″ IPS, 120 Hz', battery: '2 – 8 h', weight: '678 g' },
+  'kobo-libra': { screen: '7″ E Ink Kaleido 3', light: 'ComfortLight PRO, warm light', storage: '32 GB', battery: 'Up to 6 weeks', ip: 'IPX8', weight: '199.5 g', conn: 'USB-C, Wi-Fi, Bluetooth' },
+  scribe:  { screen: '10.2″ E Ink, 300 ppi', light: '35 LED, warm light', storage: '64 GB', battery: 'Up to 12 weeks', weight: '433 g', conn: 'USB-C, Wi-Fi' },
+  'kobo-clara': { screen: '6″ E Ink Carta 1300', light: 'ComfortLight PRO', storage: '16 GB', battery: 'Up to 5 weeks', ip: 'IPX8', weight: '174 g', conn: 'USB-C, Wi-Fi' },
+  'lego-porsche': { pieces: '1458', age: '18+', theme: 'Technic', item: '42096', dims: '45 cm long', released: '2021' },
+  'lego-xwing': { pieces: '474', age: '9+', theme: 'Star Wars', item: '75301', dims: '31 cm long', released: '2021' },
+  'lego-fire': { pieces: '540', age: '6+', theme: 'City', item: '60320', dims: '3 floors, fire truck included', released: '2022' },
+  brio:    { pieces: '33', age: '3+', theme: 'Wooden railway', item: '33512', dims: 'Figure-eight track, beech wood', released: '2020' },
+  eufy:    { type: 'Robot (with dock)', mop: true, suction: '8 000 Pa', nav: 'LiDAR + AI camera', bin: '0.4 L (+ 2.5 L dock bag)', runtime: 'Up to 180 min', dock: 'Self-empty, mop wash & dry', noise: '65 dB', weight: '4.4 kg' },
+  jet85:   { type: 'Cordless stick', mop: false, suction: '210 AW', nav: 'Swivel head', bin: '0.5 L', runtime: 'Up to 60 min', noise: '78 dB', weight: '2.8 kg' },
+  specialista: { type: 'Manual espresso machine', capacity: '1.1 L water tank', power: '1450 W', weight: '9.3 kg' },
+  barista: { type: 'Manual espresso machine with grinder', capacity: '2.0 L water tank', power: '1850 W', weight: '6.4 kg' },
+  mocca:   { type: 'Filter coffee maker', capacity: '1.25 L (10 cups)', power: '1520 W', weight: '2.9 kg' },
+  ninja:   { type: 'Dual-zone air fryer', capacity: '9.5 L (two zones)', power: '2470 W', weight: '8.8 kg' },
+  'wilfa-kettle': { type: 'Kettle', capacity: '1.7 L', power: '2200 W', weight: '1.0 kg' },
+  kitchenaid: { type: 'Tilt-head stand mixer', capacity: '4.8 L bowl', power: '300 W', weight: '11.3 kg' },
 };
 
 // resolver — one row shape for the spec sheet and (later) comparison.

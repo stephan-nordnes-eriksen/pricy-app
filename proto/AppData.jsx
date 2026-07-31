@@ -35,14 +35,45 @@ const FEED = [
 const FACETS = {
   TV:     [ { key: 'size', label: 'Screen size', type: 'options', unit: '\u2033' },
             { key: 'panel', label: 'Panel', type: 'options' },
-            { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' } ],
-  Audio:  [ { key: 'anc', label: 'Noise cancelling', type: 'bool' },
-            { key: 'fit', label: 'Fit', type: 'options' } ],
-  Phones: [ { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' } ],
-  Gaming: [ { key: 'type', label: 'Type', type: 'options' } ],
-  Home:   [ { key: 'type', label: 'Type', type: 'options' } ],
+            { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' },
+            { key: 'res', label: 'Resolution', type: 'options', unit: 'K' },
+            { key: 'os', label: 'Smart TV', type: 'options' },
+            { key: 'dv', label: 'Dolby Vision', type: 'bool' } ],
+  Audio:  [ { key: 'fit', label: 'Type', type: 'options' },
+            { key: 'battery', label: 'Battery', type: 'options', unit: 'h' },
+            { key: 'anc', label: 'Noise cancelling', type: 'bool' },
+            { key: 'multi', label: 'Multipoint', type: 'bool' },
+            { key: 'wireless', label: 'Wireless', type: 'bool' } ],
+  Phones: [ { key: 'storage', label: 'Storage', type: 'options', unit: 'GB' },
+            { key: 'scr', label: 'Screen size', type: 'options', unit: '\u2033' },
+            { key: 'refresh', label: 'Refresh rate', type: 'options', unit: 'Hz' },
+            { key: 'ram', label: 'RAM', type: 'options', unit: 'GB' },
+            { key: 'os', label: 'OS', type: 'options' },
+            { key: 'g5', label: '5G', type: 'bool' } ],
+  Gaming: [ { key: 'type', label: 'Type', type: 'options' },
+            { key: 'storage', label: 'Storage', type: 'options', unit: 'GB' },
+            { key: 'maxres', label: 'Max output', type: 'options', unit: 'p' },
+            { key: 'disc', label: 'Disc drive', type: 'bool' } ],
+  Home:   [ { key: 'type', label: 'Type', type: 'options' },
+            { key: 'runtime', label: 'Runtime', type: 'options', unit: 'min' },
+            { key: 'mop', label: 'Mopping', type: 'bool' } ],
+  Computers: [ { key: 'type', label: 'Type', type: 'options' },
+            { key: 'chip', label: 'Chip', type: 'options' },
+            { key: 'ram', label: 'RAM', type: 'options', unit: 'GB' },
+            { key: 'storage', label: 'Storage', type: 'options', unit: 'GB' },
+            { key: 'scr', label: 'Screen size', type: 'options', unit: '\u2033' } ],
+  Toys:   [ { key: 'theme', label: 'Theme', type: 'options' },
+            { key: 'age', label: 'Age', type: 'options', unit: '+' },
+            { key: 'pieces', label: 'Pieces', type: 'options' } ],
+  'E-readers': [ { key: 'scr', label: 'Screen size', type: 'options', unit: '\u2033' },
+            { key: 'storage', label: 'Storage', type: 'options', unit: 'GB' },
+            { key: 'ipx', label: 'Waterproof', type: 'bool' },
+            { key: 'pen', label: 'Stylus support', type: 'bool' } ],
+  Kitchen: [ { key: 'type', label: 'Type', type: 'options' },
+            { key: 'capacity', label: 'Capacity', type: 'options', unit: 'L' },
+            { key: 'power', label: 'Power', type: 'options', unit: 'W' } ],
 };
-const facetNorm = (v) => v == null ? undefined : typeof v === 'boolean' ? v : isFinite(parseFloat(v)) ? parseFloat(v) : String(v).trim();
+const facetNorm = (v) => v == null ? undefined : Array.isArray(v) ? v.map(facetNorm) : typeof v === 'boolean' ? v : isFinite(parseFloat(v)) ? parseFloat(v) : String(v).trim();
 // facet value of product p for key k — explicit p.facets wins, else the spec sheet,
 // else (last resort) the product's own variant axis of that key: all option ids,
 // numbers where every one parses (e.g. storage ['128','256','512'] → [128,256,512])
@@ -54,10 +85,11 @@ const fval = (p, k) => {
   const ids = axis.options.map(o => o.id);
   return ids.every(id => isFinite(parseFloat(id))) ? ids.map(id => parseFloat(id)) : ids;
 };
-const fdisp = (v, def) => String(v) + (def && def.unit ? ' ' + def.unit : '');
+// units that attach without a space: 55″, 18+, 4K, 1080p
+const fdisp = (v, def) => String(v) + (def && def.unit ? ((def.unit === '\u2033' || def.unit === '+' || def.unit === 'K' || def.unit === 'p') ? '' : ' ') + def.unit : '');
 
 // SEARCH SUGGESTIONS — products + categories + properties
-const PROP_SUGGEST = ['Noise cancelling', 'Wireless', 'Over-ear', 'Under kr 3 000', 'In stock'];
+const PROP_SUGGEST = ['Noise cancelling', 'Wireless', 'Over-ear', 'OLED', '120 Hz', 'Air fryer', 'Under kr 3 000', 'In stock'];
 
 const CAT_ICONS = {
   Audio: 'headphones', Phones: 'smartphone', TV: 'tv', Gaming: 'gamepad-2',
@@ -66,13 +98,23 @@ const CAT_ICONS = {
 const catCount = (c) => fmt((metaOf()?.cats?.[c]) ?? ((window.CAT_OF || {})[c] || []).length);
 const realCats = () => CATEGORIES.filter(c => metaOf()?.cats ? metaOf().cats[c] : (!window.CAT_OF || window.CAT_OF[c]));
 
+// category suggestions come from the department layer (GpcData.jsx):
+// departments by name, GPC bricks by name + Norwegian/English synonyms.
+// Each entry carries its own results scope in `nav`.
 function searchSuggest(q) {
   const POOL = window.CATALOG || PRODUCTS;
-  const REAL_CATS = CATEGORIES.filter(c => !window.CAT_OF || window.CAT_OF[c]);
   const s = (q || '').toLowerCase().trim();
-  if (!s) return { products: POOL.slice(0, 4), cats: REAL_CATS.slice(0, 4), props: [] };
+  const D = window.DEPTS || [];
+  const deptSug = (d) => ({ key: 'd:' + d.id, label: d.name, icon: d.icon, sub: fmt(d.n) + ' products', nav: { dept: d.id } });
+  const brickSug = (b) => { const dep = (window.BRICK_DEPT || {})[b.code]; return { key: 'b:' + b.code, label: b.name, icon: b.icon, sub: (dep ? dep.name + ' · ' : '') + fmt(b.n) + ' products', nav: { brick: b.code } }; };
+  let cats;
+  if (!s) cats = D.slice(0, 4).map(deptSug);
+  else {
+    const dm = D.filter(d => d.name.toLowerCase().includes(s)).slice(0, 2).map(deptSug);
+    cats = dm.concat((window.brickSearch ? brickSearch(s) : []).slice(0, 4 - dm.length).map(brickSug));
+  }
+  if (!s) return { products: POOL.slice(0, 4), cats, props: [] };
   const products = POOL.filter(p => (p.name + ' ' + p.brand + ' ' + p.cat).toLowerCase().includes(s)).slice(0, 5);
-  const cats = REAL_CATS.filter(c => c.toLowerCase().includes(s)).slice(0, 3);
   const props = PROP_SUGGEST.filter(p => p.toLowerCase().includes(s)).slice(0, 4);
   return { products, cats, props };
 }

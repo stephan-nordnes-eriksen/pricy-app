@@ -31,27 +31,28 @@ function PriceTag({ value, size = 22, color }) {
 }
 
 // ---- METRIC STRIP -----------------------------------------
-function MetricStrip() {
+function MetricStrip({ go }) {
   const items = useWatchStore();
   const saved = useCountTo(WatchStore.saved(), true, 1000);
+  const click = (name, params) => go ? { onClick: () => go(name, params), role: 'link', tabIndex: 0 } : {};
   return (
     <div className="metrics">
-      <div className="metric">
+      <div className="metric" {...click('alerts', { tab: 'watching' })}>
         <div className="metric__k"><Icon name="bookmark" size={12} /> Watching</div>
         <div className="metric__v">{items.length}</div>
         <div className="metric__sub">products tracked</div>
       </div>
-      <div className="metric">
+      <div className="metric" {...click('alerts', { tab: 'activity' })}>
         <div className="metric__k"><Icon name="bell-ring" size={12} /> Active alerts</div>
         <div className="metric__v green">{WatchStore.hits()}</div>
         <div className="metric__sub">below target now</div>
       </div>
-      <div className="metric">
+      <div className="metric" {...click('alerts', { tab: 'watching' })}>
         <div className="metric__k"><Icon name="trending-down" size={12} /> Potential savings</div>
         <div className="metric__v green">kr {fmt(saved)}</div>
         <div className="metric__sub">on your watchlist</div>
       </div>
-      <div className="metric">
+      <div className="metric" {...click('browse')}>
         <div className="metric__k"><Icon name="store" size={12} /> Coverage</div>
         <div className="metric__v">{fmt((metaOf() || {}).shops || 0)}</div>
         <div className="metric__sub">shops tracked live</div>
@@ -117,15 +118,23 @@ function RecentRail({ go }) {
 }
 
 // ---- CATEGORY GRID ----------------------------------------
+// Same department cards as the Browse page (.dgrid/.dcard), but static:
+// no expand panel — the card goes straight to department results
 function CategoryGrid({ go }) {
   return (
-    <div className="catgrid">
-      {realCats().map(c => (
-        <div key={c} className="cat" onClick={() => go('results', { cat: c })}>
-          <div className="cat__ic"><Icon name={CAT_ICONS[c] || 'tag'} size={19} /></div>
-          <div>
-            <div className="cat__name">{c}</div>
-            <div className="cat__ct">{catCount(c)} products</div>
+    <div className="dgrid" style={{ marginBottom: 0 }}>
+      {DEPTS.map(d => (
+        <div key={d.id} className="dcard" onClick={() => go('results', { dept: d.id })}>
+          <div className="dcard__top">
+            <span className="dcard__ic"><Icon name={d.icon} size={18} /></span>
+            <div>
+              <h3>{d.name}</h3>
+              <div className="dcard__n">{fmt(d.n)} products · {d.rules.length} sub-categories</div>
+            </div>
+          </div>
+          <div className="dcard__chips">
+            {d.rules.slice(0, 4).map((r, i) => <a key={i} className="mchip" onClick={(e) => { e.stopPropagation(); go('results', navOfRule(r)); }}>{r.label || brickBy[r.b].name}</a>)}
+            {d.rules.length > 4 && <span className="mchip mchip--more">+{d.rules.length - 4}</span>}
           </div>
         </div>
       ))}
@@ -139,7 +148,7 @@ function AlertFeedCard({ go }) {
     <div className="sidecard">
       <div className="sidecard__head">
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icon name="bell-ring" size={13} className="ic" /> Recent alerts</span>
-        <span style={{ color: 'var(--green-700)', cursor: 'pointer' }} onClick={() => go('home')}>All</span>
+        <span style={{ color: 'var(--green-700)', cursor: 'pointer' }} onClick={() => go('alerts', { tab: 'activity' })}>All</span>
       </div>
       <div className="afeed">
         {FEED.length === 0 ? (

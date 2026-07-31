@@ -39,7 +39,7 @@ function App(){
   let view;
   if(name==="login") view=<Login onAuthed={(email,opts)=>go(opts&&opts.signup?"onboarding":"home")} go={go} layout={t.loginLayout} />;
   else if(name==="landing") view=<Landing go={go} />;
-  else if(name==="results") view=<Results go={go} query={params.query} cat={params.cat} filterLayout={t.filterLayout} density={t.density} sparklines={t.sparklines} />;
+  else if(name==="results") view=<Results go={go} query={params.query} cat={params.cat} brick={params.brick} dept={params.dept} label={params.label} count={params.count} filterLayout={t.filterLayout} density={t.density} sparklines={t.sparklines} />;
   else if(name==="product") view=<ProductPage go={go} id={params.id} />;
   else if(name==="compare") view=<ComparePage go={go} />;
   else if(name==="browse") view=<BrowsePage go={go} />;

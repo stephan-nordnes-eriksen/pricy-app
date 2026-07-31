@@ -245,6 +245,8 @@ input, select, textarea { min-width: 0; }
 /* metric strip */
 .metrics { display: grid; grid-template-columns: repeat(4, 1fr); border: var(--bw) solid var(--ink-900); margin-bottom: var(--s-6); background: var(--ink-900); gap: var(--bw); }
 .metric { background: var(--paper); padding: var(--s-4) var(--s-5); }
+.metric[role="link"] { cursor: pointer; transition: background 0.12s; }
+.metric[role="link"]:hover { background: var(--ink-050, #f4f2ec); }
 .metric__k { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-400); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .metric__v { font-family: var(--font-mono); font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .metric__v.green { color: var(--green-700); }
@@ -529,6 +531,18 @@ input, select, textarea { min-width: 0; }
 .catlink__ic { display: flex; color: var(--ink-600); }
 .catlink .ct { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); }
 .catlink.is-on .ct { color: var(--green-300); }
+.catlink--hd { font-weight: 700; }
+.catlink--nohov { cursor: default; }
+.catlink--nohov:hover { background: none; }
+.catlist--sub .catlink { padding-left: 27px; }
+.catback { display: flex; align-items: center; gap: 4px; margin: 0 -8px 6px; padding: 2px 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-600); cursor: pointer; }
+.catback:hover { color: var(--ink-900); text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--green-500); text-underline-offset: 3px; }
+/* GS1 GPC classification trail under a scoped Category group */
+.catgpc { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; padding: 7px 8px 8px; background: var(--canvas-2); font-size: 11px; line-height: 1.5; color: var(--ink-600); }
+.catgpc__k { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-400); }
+.catgpc__c { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.catgpc__p { text-wrap: pretty; }
+.catgpc__p b { color: var(--ink-900); }
 
 /* price fields + range slider */
 .pricefields { display: flex; align-items: center; gap: 8px; }
@@ -638,6 +652,11 @@ html { scrollbar-gutter: stable; }
 .fmenu__item .ct { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--ink-400); }
 .fmenu__item:hover { color: var(--green-700); }
 .fmenu__item.is-on { color: var(--green-700); font-weight: 600; }
+.fdrop__menu { max-height: min(480px, 70vh); overflow-y: auto; }
+.fmenu__item--back { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-600); }
+.fmenu__item--hd { font-weight: 700; }
+.fmenu__item--sub { padding-left: 23px; }
+.fdrop__menu .catgpc { margin: 6px -6px -4px; }
 .fpill { border: 2px solid var(--ink-900); background: var(--paper); padding: 8px 12px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .fpill.is-on { background: var(--green-500); }
 

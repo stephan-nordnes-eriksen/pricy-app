@@ -25,7 +25,7 @@ function SearchHero({ go }) {
             <input value={q} onChange={e => setQ(e.target.value)} onFocus={e => { setFocus(true); searchScrollTop(e); }} onBlur={() => setTimeout(() => setFocus(false), 120)} placeholder="Search any product, brand or category…" />
           </div>
           <button type="submit" className="btn btn--primary btn--lg" style={{ borderLeft: 0, height: 60 }}>Compare</button>
-          {focus && <SearchSuggest q={q} onPick={(v) => { setFocus(false); const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : CATEGORIES.includes(v) ? go('results', { cat: v }) : go('results', { query: v }); }} />}
+          {focus && <SearchSuggest q={q} onPick={(v, nav) => { setFocus(false); if (nav) { go('results', nav); return; } const prod = (window.CATALOG || []).find(p => p.name === v); prod ? go('product', { id: prod.id }) : go('results', { query: v }); }} />}
         </form>
         <div className="searchhero__chips">
           <span className="lbl">Trending</span>
@@ -41,9 +41,9 @@ function LayoutSearch({ go }) {
   return (
     <div className="home page">
       <SearchHero go={go} />
-      <MetricStrip />
+      <MetricStrip go={go} />
       <div className="sec">
-        <SectionHead icon="bookmark" title="Watching" count={WATCHED.length} moreLabel="Manage" go={go} />
+        <SectionHead icon="bookmark" title="Watching" count={WATCHED.length} moreLabel="Manage" onMore={() => go('alerts', { tab: 'watching' })} go={go} />
         <WatchedList go={go} />
       </div>
       {RECENT.length > 0 && (
@@ -53,7 +53,7 @@ function LayoutSearch({ go }) {
       </div>
       )}
       <div className="sec">
-        <SectionHead icon="layout-grid" title="Browse categories" go={go} />
+        <SectionHead icon="layout-grid" title="Browse categories" onMore={() => go('browse')} go={go} />
         <CategoryGrid go={go} />
       </div>
     </div>
@@ -72,11 +72,11 @@ function LayoutDashboard({ go }) {
         </div>
         <Btn variant="primary" icon="plus">Watch a product</Btn>
       </div>
-      <MetricStrip />
+      <MetricStrip go={go} />
       <div className="dash">
         <div>
           <div className="sec">
-            <SectionHead icon="bookmark" title="Watching" count={WATCHED.length} moreLabel="Manage" go={go} />
+            <SectionHead icon="bookmark" title="Watching" count={WATCHED.length} moreLabel="Manage" onMore={() => go('alerts', { tab: 'watching' })} go={go} />
             <WatchedList go={go} />
           </div>
           {RECENT.length > 0 && (
@@ -86,7 +86,7 @@ function LayoutDashboard({ go }) {
           </div>
           )}
           <div className="sec">
-            <SectionHead icon="layout-grid" title="Browse categories" go={go} />
+            <SectionHead icon="layout-grid" title="Browse categories" onMore={() => go('browse')} go={go} />
             <CategoryGrid go={go} />
           </div>
         </div>
@@ -159,13 +159,13 @@ function LayoutFeed({ go }) {
           </div>
         </div>
         <div className="metrics" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <div className="metric"><div className="metric__k"><Icon name="bell-ring" size={12} /> Active alerts</div><div className="metric__v green">{WatchStore.hits()}</div></div>
-          <div className="metric"><div className="metric__k"><Icon name="trending-down" size={12} /> Potential savings</div><div className="metric__v green">kr {fmt(WatchStore.saved())}</div></div>
-          <div className="metric"><div className="metric__k"><Icon name="bookmark" size={12} /> Watching</div><div className="metric__v">{items.length}</div></div>
+          <div className="metric" role="link" onClick={() => go('alerts', { tab: 'activity' })}><div className="metric__k"><Icon name="bell-ring" size={12} /> Active alerts</div><div className="metric__v green">{WatchStore.hits()}</div></div>
+          <div className="metric" role="link" onClick={() => go('alerts', { tab: 'watching' })}><div className="metric__k"><Icon name="trending-down" size={12} /> Potential savings</div><div className="metric__v green">kr {fmt(WatchStore.saved())}</div></div>
+          <div className="metric" role="link" onClick={() => go('alerts', { tab: 'watching' })}><div className="metric__k"><Icon name="bookmark" size={12} /> Watching</div><div className="metric__v">{items.length}</div></div>
         </div>
         {FEED.map((f, i) => <FeedCard key={i} f={f} go={go} />)}
         <div className="sec" style={{ marginTop: 'var(--s-7)' }}>
-          <SectionHead icon="layout-grid" title="Browse categories" go={go} />
+          <SectionHead icon="layout-grid" title="Browse categories" onMore={() => go('browse')} go={go} />
           <CategoryGrid go={go} />
         </div>
       </div>
