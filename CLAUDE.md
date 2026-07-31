@@ -77,7 +77,7 @@ Two Claude Design projects feed this repo:
   numeric axes stringify — ≤ 908 bytes) ride along — the two numbers a partial cache can't
   produce. Costs 60 → 64 ms on a category (catMeta alone is 36 ms of it);
   all heads WITH a sort parses 14k rows at 144 ms, which only Browse's "All
-  products" link hits. `matches`/`sortRows`/`fval` mirror Results' own
+  products" link hits. `failGroups`/`sortRows`/`fval` mirror Results' own
   predicate and comparator — if they drift, the screen's count and the served
   total disagree. Boot's `window.onQuery({cat, sort, dir, filters, page})` is
   the one hook (upstream synced 2026-07-25, `onLoadMore` is gone): Results
@@ -92,9 +92,17 @@ Two Claude Design projects feed this repo:
   upstream and MUST stay identical: the screen re-filters its own cache with
   those, so a server that folds while the client doesn't serves rows Results
   then drops — a non-zero count over an empty list.
-  `meta.fcounts` stays category-wide (computed before filtering), which is why
-  Results falls back to counting its own rows while a refine is active (0.09 ms
-  over a 400-row page — measured, not a concern). Boot HOLDS refines shorter
+  `meta.fcounts` is **cross-filtered** (2026-07-27): a row counts toward group
+  `k` when `failGroups` says it misses nothing but `k`, so picking a brand
+  re-counts every other group while `k` keeps its own "what if I picked this
+  too" numbers — "Over-ear 3" next to a brand carrying none was the bug. Values
+  are still emitted at 0 rather than pruned: the rail derives its option list
+  from these keys and hides a group under 2 values, so pruning would make
+  groups (and an active selection) vanish as you filter. Results still falls
+  back to counting its own rows while a refine is active (0.09 ms over a
+  400-row page — measured, not a concern), so those counts are page-local and
+  NOT cross-filtered — deliberate, since boot holds short refines and the
+  served counts would be a keystroke stale. Boot HOLDS refines shorter
   than 3 chars for 400 ms past upstream's own 250 ms debounce and resolves the
   superseded call `null`: "e" on Toys matches 1,309 of 1,387 rows and the page
   it merges is pure cost. A deliberate 1-char refine still runs, 650 ms later.

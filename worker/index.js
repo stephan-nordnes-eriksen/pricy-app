@@ -881,25 +881,31 @@ function sortRows(rows, sort, dir) {
   }).map(o => o.r);
 }
 
-// Mirrors Results' own filter predicate line for line, quirks included (a row
-// with no drop passes `sale`, because `undefined < 12` is false there too).
-function matches(r, f) {
-  if (f.name.length) { const n = foldJs(r.m.name || ''); if (!f.name.every(t => n.includes(t))) return false; }
-  if (f.brands.length && !f.brands.includes(r.m.brand)) return false;
-  if ((f.min || f.max) && r.best == null) return false;
-  if (f.min && r.best < f.min) return false;
-  if (f.max && r.best > f.max) return false;
-  if (f.rating && (r.m.rating || 0) < f.rating) return false;
-  if (f.sale && r.drop < 12) return false;
-  if (f.instock && !r.stock) return false;
+// Which filter GROUPS a row misses: `''` for the whole non-facet block
+// (name/brand/price/rating/sale/stock), plus one entry per facet key whose
+// selection it fails. Empty array = a match, so this is Results' own predicate
+// line for line, quirks included (a row with no drop passes `sale`, because
+// `undefined < 12` is false there too) — it just reports WHY instead of
+// stopping at the first no, which is what lets fcounts cross-filter.
+function failGroups(r, f) {
+  const bad = [];
+  const n = f.name.length ? foldJs(r.m.name || '') : '';
+  if ((f.name.length && !f.name.every(t => n.includes(t)))
+    || (f.brands.length && !f.brands.includes(r.m.brand))
+    || ((f.min || f.max) && r.best == null)
+    || (f.min && r.best < f.min)
+    || (f.max && r.best > f.max)
+    || (f.rating && (r.m.rating || 0) < f.rating)
+    || (f.sale && r.drop < 12)
+    || (f.instock && !r.stock)) bad.push('');
   for (const k in f.facets) {
     const sel = f.facets[k];
     const v = fval(r.m, r.f, k);
-    if (sel === true) { if (v !== true) return false; }
-    else if (v === undefined || (Array.isArray(v) ? !v.some(x => sel.includes(x)) : !sel.includes(v))) return false;
+    if (sel === true ? v !== true : (v === undefined || (Array.isArray(v) ? !v.some(x => sel.includes(x)) : !sel.includes(v)))) bad.push(k);
   }
-  return true;
+  return bad;
 }
+const NO_FAIL = []; // shared empty: no filters means nothing to miss
 
 // Results' filter state off the query string, or null when nothing is set.
 // `facets` is JSON because its values are typed (numbers for spec axes, `true`
@@ -997,16 +1003,23 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
       best: x.best ?? undefined, shops: x.shops, stock: x.stock === 1, updated: x.updated || undefined,
     };
     r.drop = m.was && r.best ? Math.round((1 - r.best / m.was) * 100) : undefined;
-    // histogram over the WHOLE category, before filtering — same values and
-    // counts the rail used to derive from the loaded page (Results.jsx's
-    // facetBase), which is what made them lie once a category outgrew 400
+    const bad = filters ? failGroups(r, filters) : NO_FAIL;
+    // Histogram over the whole category, CROSS-FILTERED: a row counts toward
+    // group k when it misses nothing else, so picking a brand re-counts every
+    // other group (the standard faceted convention — "Over-ear 3" next to a
+    // brand that has none was the bug), while group k's own counts stay the
+    // "what if I also picked this" numbers. Every value in the category is
+    // still emitted, at 0 when nothing survives: the rail derives its option
+    // list from these keys and drops a group under 2 values, so pruning them
+    // would make groups — and an active selection — vanish as you filter.
     if (fcounts) for (const k of Object.keys(r.f)) {
       const v = fval(m, r.f, k);
       if (v === undefined) continue;
-      if (!fcounts.has(k)) fcounts.set(k, new Map());
-      for (const x2 of [].concat(v)) fcounts.get(k).set(x2, (fcounts.get(k).get(x2) || 0) + 1);
+      let c = fcounts.get(k); if (!c) fcounts.set(k, c = new Map());
+      const hit = bad.length === 0 || (bad.length === 1 && bad[0] === k) ? 1 : 0;
+      for (const x2 of [].concat(v)) c.set(x2, (c.get(x2) || 0) + hit);
     }
-    if (!filters || matches(r, filters)) rows.push(r);
+    if (!bad.length) rows.push(r);
   }
   if (sort) rows = sortRows(rows, sort, dir === 'desc' ? 'desc' : 'asc');
   return {

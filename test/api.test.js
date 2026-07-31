@@ -725,6 +725,17 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   assert.ok(!(await get('cat=Audio')).meta.fcounts.animal, 'histogram is per queried category');
   assert.strictEqual((await get('')).meta.fcounts, undefined, 'no category, no rail, no histogram');
 
+  // cross-filtered: every OTHER group counts what's left, the group you picked
+  // in keeps its own "what if I picked this too" numbers. A stale "Dog 2" next
+  // to brand Zoo (which has one dog bed) was the whole complaint.
+  assert.deepStrictEqual((await get('cat=Pets&brand=Zoo')).meta.fcounts.animal, [['Dog', 1], ['Cat', 1]],
+    'a brand filter must re-count the facet groups');
+  const picked = await get('cat=Pets&facets=' + encodeURIComponent('{"animal":["Cat"]}'));
+  assert.deepStrictEqual(picked.meta.fcounts.animal, [['Dog', 2], ['Cat', 1]],
+    "a group is counted ignoring its OWN selection — else every unpicked value reads 0");
+  assert.deepStrictEqual((await get('cat=Pets&name=kattesand')).meta.fcounts.animal, [['Dog', 0], ['Cat', 1]],
+    'a value with nothing left counts 0, it does not disappear (the rail drops a group under 2 values)');
+
   // the other branches keep their own semantics
   assert.ok((await ids('ids=' + id('7099931000001') + '&sort=best')).includes(id('7099931000001')), 'ids= ignores list params');
   assert.strictEqual((await get('q=hundeseng&sort=best')).meta.total, undefined, 'q= is not a paged list branch');
