@@ -104,6 +104,26 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
     const declared = new Set((FACETS[c] || []).map(d => d.key));
     for (const k of keys) if (!declared.has(k)) throw new Error(`worker/facetrules.js derives "${k}" for ${c}, but worker/facets.json declares no such facet`);
   }
+  // depts.json (GPC departments) is a navigation alias over cats — every
+  // rule must back onto a real cat, and every cat must stay reachable from
+  // at least one whole-cat rule or it vanishes from Browse/rail/suggest
+  const DEPTS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'depts.json'), 'utf8'));
+  {
+    const bricks = new Set(), deptIds = new Set(), covered = new Set();
+    for (const d of DEPTS) {
+      if (!d.id || !d.name || !d.icon || !Array.isArray(d.rules) || !d.rules.length) throw new Error(`depts.json dept needs id/name/icon/rules: ${JSON.stringify(d.id)}`);
+      if (deptIds.has(d.id)) throw new Error(`depts.json duplicate dept id: ${d.id}`);
+      deptIds.add(d.id);
+      for (const r of d.rules) {
+        if (!r.b || !r.name || !r.icon) throw new Error(`depts.json rule needs b/name/icon: ${JSON.stringify(r)}`);
+        if (bricks.has(r.b)) throw new Error(`depts.json duplicate brick code: ${r.b}`);
+        bricks.add(r.b);
+        if (!CATS[r.cat]) throw new Error(`depts.json rule "${r.name}": unknown category "${r.cat}"`);
+        if (!r.facets && !r.label) covered.add(r.cat);
+      }
+    }
+    for (const c of Object.keys(CATS)) if (!covered.has(c)) throw new Error(`depts.json leaves category "${c}" unreachable — it needs a whole-cat rule in some department`);
+  }
   const ids = new Set([...catalog, ...children].map(p => p.id));
   for (const p of extra) {
     if (!p.id || !p.name || !p.cat) throw new Error(`extra.json row needs id/name/cat: ${JSON.stringify(p)}`);
@@ -124,13 +144,27 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
     airpods: 'Earbuds', airpods4: 'Earbuds',
     xm5: 'Headphones', 'bose-ultra': 'Headphones', 'senn-m4': 'Headphones',
     'sonos-ace': 'Headphones', 'jbl-tour2': 'Headphones', 'beats-pro': 'Headphones',
-    switch: 'Consoles', ps5: 'Consoles', xbox: 'Consoles', steamdeck: 'Handhelds',
-    mba: 'Laptops', dyson: 'Vacuums', roborock: 'Vacuums', hue: 'Smart lighting',
+    switch: 'Consoles', ps5: 'Consoles', xbox: 'Consoles',
+    steamdeck: 'Handhelds', switchlite: 'Handhelds', rogally: 'Handhelds',
+    fc25: 'Games', zeldatotk: 'Games', bo6: 'Games',
+    dualsense: 'Controllers', ultimate2c: 'Controllers', poweradv: 'Controllers',
+    mba: 'Laptops', mbp14: 'Laptops', xps13: 'Laptops', yoga7x: 'Laptops',
+    g14: 'Laptops', spectre: 'Laptops',
+    macminim4: 'Desktops', omen35l: 'Desktops', ideacentre: 'Desktops',
+    dyson: 'Vacuums', roborock: 'Vacuums', eufy: 'Vacuums', jet85: 'Vacuums',
+    'philips-air': 'Climate', hue: 'Smart lighting',
+    specialista: 'Coffee makers', barista: 'Coffee makers', mocca: 'Coffee makers',
+    vertuopop: 'Coffee makers', ninja: 'Air fryers',
+    'wilfa-kettle': 'Small appliances', kitchenaid: 'Small appliances',
+    nutribullet900: 'Small appliances', mq9: 'Small appliances',
   };
   for (const [id, type] of Object.entries(DEMO_TYPE)) {
     const p = catalog.find(p => p.id === id);
     if (!p) throw new Error(`DEMO_TYPE id "${id}" is gone from the prototype CATALOG`);
-    p.facets = { type, ...p.facets };
+    // the stamp WINS: upstream demo rows carry their own type vocabulary
+    // ('Home console', 'Stick vacuum') that must not sit beside facetrules'
+    // curated values in the rail
+    p.facets = { ...p.facets, type };
   }
 }
 

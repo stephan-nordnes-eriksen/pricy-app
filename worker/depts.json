@@ -1,0 +1,61 @@
+[
+  { "id": "audio", "name": "Audio & Headphones", "icon": "headphones", "rules": [
+    { "b": "10001085", "name": "Audio & Headphones", "icon": "headphones", "cat": "Audio", "syn": ["hodetelefoner", "ørepropper", "headset", "høyttaler", "lydplanke", "platespiller", "forsterker"], "path": "Audio Visual / Photography › Audio Visual Equipment › Audio Equipment" }
+  ] },
+  { "id": "tv", "name": "TV, Photo & Projectors", "icon": "tv", "rules": [
+    { "b": "10001585", "name": "Televisions", "icon": "tv", "cat": "TV", "syn": ["tv", "fjernsyn"], "path": "Audio Visual / Photography › Audio Visual Equipment › Visual Equipment" },
+    { "b": "10001593", "name": "Projectors", "icon": "projector", "cat": "Projectors", "syn": ["projektor", "lerret"], "path": "Audio Visual / Photography › Audio Visual Equipment › Visual Equipment" },
+    { "b": "10000601", "name": "Cameras & Photo", "icon": "camera", "cat": "Photo", "syn": ["kamera", "objektiv", "fotoutstyr", "gopro"], "path": "Audio Visual / Photography › Photography / Optics › Cameras" }
+  ] },
+  { "id": "phones", "name": "Phones & Accessories", "icon": "smartphone", "rules": [
+    { "b": "10003269", "name": "Mobile Phones", "icon": "smartphone", "cat": "Phones", "syn": ["mobil", "mobiltelefon", "smarttelefon", "iphone", "deksel", "lader"], "path": "Communications › Communication Devices › Mobile Devices" }
+  ] },
+  { "id": "computing", "name": "Computing & Office", "icon": "laptop", "rules": [
+    { "b": "10001199", "name": "Computers & Tablets", "icon": "laptop", "cat": "Computers", "syn": ["pc", "bærbar", "macbook", "nettbrett", "ipad", "skjerm", "tastatur", "mus"], "path": "Computing › Computers / Peripherals › Computers" },
+    { "b": "10001205", "name": "E-book Readers", "icon": "book-open", "cat": "E-readers", "syn": ["lesebrett", "kindle", "kobo", "ebok"], "path": "Computing › Computers / Peripherals › Computers" },
+    { "b": "10001220", "name": "Office & Printers", "icon": "printer", "cat": "Office", "syn": ["skriver", "blekk", "kontor", "penn", "papir"], "path": "Computing › Computers / Peripherals › Peripherals" }
+  ] },
+  { "id": "gaming", "name": "Gaming", "icon": "gamepad-2", "rules": [
+    { "b": "10005140", "name": "Gaming", "icon": "gamepad-2", "cat": "Gaming", "syn": ["spill", "konsoll", "playstation", "xbox", "nintendo", "brettspill", "kontroller"], "path": "Toys / Games › Toys / Games › Electronic Games" }
+  ] },
+  { "id": "toys", "name": "Toys, Baby & Hobby", "icon": "toy-brick", "rules": [
+    { "b": "10005120", "name": "Toys", "icon": "toy-brick", "cat": "Toys", "syn": ["leker", "lego", "byggesett", "dukke", "kosedyr"], "path": "Toys / Games › Toys / Games › Construction / Creative" },
+    { "b": "10005410", "name": "Baby & Kids", "icon": "baby", "cat": "Baby", "syn": ["baby", "barnevogn", "bilstol", "babyutstyr"], "path": "Baby Care › Baby Care › Baby Equipment" },
+    { "b": "10005124", "name": "Hobby & Crafts", "icon": "palette", "cat": "Hobby", "syn": ["hobby", "garn", "maling", "perler", "strikking"], "path": "Toys / Games › Toys / Games › Arts / Crafts" }
+  ] },
+  { "id": "home", "name": "Home & Interior", "icon": "lamp", "rules": [
+    { "b": "10004500", "name": "Home & Decor", "icon": "lamp", "cat": "Home", "syn": ["interiør", "pynt", "pute", "gardin", "teppe", "oppbevaring", "støvsuger"], "path": "Household / Office Furniture / Furnishings › Furnishings / Decor › Home Decor" },
+    { "b": "10005567", "name": "Furniture", "icon": "sofa", "cat": "Furniture", "syn": ["møbler", "sofa", "spisebord", "stol", "seng", "hylle"], "path": "Household / Office Furniture / Furnishings › Furniture › Household Furniture" },
+    { "b": "10004120", "name": "Lighting", "icon": "lightbulb", "cat": "Lighting", "syn": ["lampe", "taklampe", "gulvlampe", "lyspære"], "path": "Electrical Supplies › Lighting › Lamps / Light Fixtures" }
+  ] },
+  { "id": "kitchen", "name": "Kitchen & Appliances", "icon": "chef-hat", "rules": [
+    { "b": "10002510", "name": "Kitchen & Cookware", "icon": "chef-hat", "cat": "Kitchen", "syn": ["kjøkken", "kaffetrakter", "airfryer", "gryte", "stekepanne", "servise", "kniv"], "path": "Kitchenware / Tableware › Kitchenware › Cookware" },
+    { "b": "10002310", "name": "Large Appliances", "icon": "washing-machine", "cat": "Appliances", "syn": ["hvitevarer", "vaskemaskin", "oppvaskmaskin", "kjøleskap", "tørketrommel", "komfyr"], "path": "Home Appliances › Major Domestic Appliances › Laundry / Dishcare" }
+  ] },
+  { "id": "sport", "name": "Sport & Outdoor", "icon": "dumbbell", "rules": [
+    { "b": "10005702", "name": "Sports & Training", "icon": "dumbbell", "cat": "Sport", "syn": ["trening", "sport", "manualer", "treningsutstyr", "ski"], "path": "Sports Equipment › Sports Equipment › Exercise / Fitness" },
+    { "b": "10005710", "name": "Outdoor & Camping", "icon": "tent", "cat": "Outdoor", "syn": ["telt", "sovepose", "tursekk", "camping", "friluftsliv"], "path": "Sports Equipment › Sports Equipment › Camping" },
+    { "b": "10005720", "name": "Bikes & Cycling", "icon": "bike", "cat": "Bikes", "syn": ["sykkel", "elsykkel", "sykkelhjelm", "sykkelutstyr"], "path": "Sports Equipment › Sports Equipment › Cycling" }
+  ] },
+  { "id": "fashion", "name": "Fashion & Accessories", "icon": "shirt", "rules": [
+    { "b": "10005800", "name": "Clothing", "icon": "shirt", "cat": "Fashion", "syn": ["klær", "jakke", "bukse", "kjole", "genser", "skjorte"], "path": "Clothing › Clothing › Clothing Articles" },
+    { "b": "10005810", "name": "Shoes", "icon": "footprints", "cat": "Shoes", "syn": ["sko", "joggesko", "støvler", "sandaler", "sneakers"], "path": "Footwear › Footwear › Shoes" },
+    { "b": "10005820", "name": "Jewelry", "icon": "gem", "cat": "Jewelry", "syn": ["smykker", "ring", "halskjede", "øredobber", "armbånd"], "path": "Personal Accessories › Jewellery › Jewellery" },
+    { "b": "10005830", "name": "Watches", "icon": "watch", "cat": "Watches", "syn": ["klokke", "klokker", "armbåndsur", "smartklokke"], "path": "Personal Accessories › Jewellery › Timepieces" }
+  ] },
+  { "id": "beauty", "name": "Beauty & Health", "icon": "sparkles", "rules": [
+    { "b": "10005840", "name": "Beauty & Personal Care", "icon": "sparkles", "cat": "Beauty", "syn": ["sminke", "hudpleie", "parfyme", "hårpleie", "skjønnhet"], "path": "Beauty / Personal Care / Hygiene › Beauty / Personal Care › Cosmetics" },
+    { "b": "10005850", "name": "Health & Wellness", "icon": "pill", "cat": "Health", "syn": ["helse", "vitaminer", "kosttilskudd", "apotek"], "path": "Healthcare › Healthcare › Health Treatments / Aids" }
+  ] },
+  { "id": "pets", "name": "Pets", "icon": "paw-print", "rules": [
+    { "b": "10005860", "name": "Pets", "icon": "paw-print", "cat": "Pets", "syn": ["dyr", "hund", "katt", "hundefôr", "kattemat", "akvarium"], "path": "Pet Care / Food › Pet Care / Food › Pet Care Supplies" }
+  ] },
+  { "id": "garden", "name": "Garden, Tools & Auto", "icon": "flower", "rules": [
+    { "b": "10005870", "name": "Garden & Plants", "icon": "flower", "cat": "Garden", "syn": ["hage", "planter", "gressklipper", "hagemøbler", "frø"], "path": "Lawn / Garden Supplies › Lawn / Garden Supplies › Garden Care" },
+    { "b": "10005880", "name": "Tools", "icon": "wrench", "cat": "Tools", "syn": ["verktøy", "drill", "skrutrekker", "sag", "verktøysett"], "path": "Tools / General Machinery › Tools / Equipment › Power Tools" },
+    { "b": "10005890", "name": "Auto & Vehicle", "icon": "car", "cat": "Auto", "syn": ["bildeler", "bilpleie", "dekk", "motorolje", "biltilbehør"], "path": "Automotive › Automotive Supplies › Vehicle Parts / Accessories" }
+  ] },
+  { "id": "books", "name": "Books & Media", "icon": "book", "rules": [
+    { "b": "10005900", "name": "Books", "icon": "book", "cat": "Books", "syn": ["bok", "bøker", "roman", "pocket", "lydbok"], "path": "Media › Textual / Printed Materials › Books" }
+  ] }
+]

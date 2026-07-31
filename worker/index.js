@@ -7,6 +7,7 @@ import seed from './seed.json' with { type: 'json' };
 import eansFile from './eans.json' with { type: 'json' };
 import CATS from './cats.json' with { type: 'json' }; // category registry: { cat: default icon } — THE list of valid cats, served to the UI via catMeta
 import FACETS from './facets.json' with { type: 'json' }; // facet registry: { cat: [facet defs] } — served via catMeta, drives the Results filter UI (FILTERS-PLAN.md)
+import DEPTS from './depts.json' with { type: 'json' }; // GPC department registry: navigation alias over cats — served verbatim via catMeta, boot swaps the prototype's demo GPC layer and joins counts from meta.cats (plans/gpc-departments.md)
 import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 
@@ -1082,7 +1083,7 @@ async function catMeta(db, ver) {
   const tr = tRes.results;
   const types = {};
   for (const r of tr) if (r.cat) (types[r.cat] ??= {})[r.t] = r.n;
-  const val = { products, shops, freshest, icons: CATS, facets: FACETS, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  const val = { products, shops, freshest, icons: CATS, facets: FACETS, depts: DEPTS, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
   if (ver) metaCache.set(db, { ver, val });
   return val;
 }

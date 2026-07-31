@@ -80,6 +80,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         cats: heads.reduce((m, r) => ((m[r.cat] = (m[r.cat] || 0) + 1), m), {}),
         // the real worker always serves the facet registry (catMeta)
         facets: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'facets.json'), 'utf8')),
+        // ...and the GPC department registry (boot swaps the demo layer)
+        depts: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'depts.json'), 'utf8')),
         // ...and the per-cat sub-category counts (Browse type chips)
         types: heads.reduce((m, r) => { const t = r.facets?.type; if (t) ((m[r.cat] ??= {})[t] = (m[r.cat][t] || 0) + 1); return m; }, {}),
       };
@@ -581,15 +583,15 @@ test('signed in: suggestions come from the served catalog, not the demo 8', asyn
   type(win, input, fresh.name);
   assert.ok(await until(() => qa(win, '.suggest__item').some(el => el.textContent.includes(fresh.name))),
     'served-catalog product missing from suggestions: ' + fresh.name);
-  // category suggestion: real count from the served catalog, picks as a cat filter
+  // category suggestion: departments (served registry) with real counts, pick = dept scope
   type(win, input, 'audio');
   const audioCount = cat.filter(p => p.cat === 'Audio' && !p.family).length; // heads only — children stay out of CAT_OF
   const audioItem = await until(() =>
-    qa(win, '.suggest__item').find(el => /Audio/.test(el.textContent) && el.textContent.includes(audioCount + ' products')));
-  assert.ok(audioItem, 'Audio category must show the real catalog count, not the demo string');
+    qa(win, '.suggest__item').find(el => /Audio & Headphones/.test(el.textContent) && el.textContent.includes(audioCount + ' products')));
+  assert.ok(audioItem, 'Audio department must show the real catalog count, not the demo string');
   audioItem.click();
-  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?cat=Audio'),
-    'category pick should filter by category, not run a text query');
+  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?dept=audio'),
+    'department pick should open the department scope, not run a text query');
 });
 
 test('signed in: results rows open the product page', async () => {
@@ -770,34 +772,41 @@ test('lazy catalog: a PDP visit merges into the cache without evicting earlier s
 
 test('lazy catalog: browse shows FULL category counts (meta.cats) off its small drops slice', async () => {
   const win = boot('http://pricy.test/browse', { session: true });
-  assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'category tiles did not render');
+  assert.ok(await until(() => qa(win, '.dcard').length > 0), 'department cards did not render');
   assert.ok(win.api.some(c => /GET \/api\/products\?limit=4&perCat=1&top=drop/.test(c.call)),
     'browse must prefetch the per-cat drops slice, got: ' + win.api.map(c => c.call).join(' | '));
   assert.ok(!win.api.some(c => c.call === 'GET /api/products'), 'browse must not fetch all heads anymore');
   const heads = CATALOG_JSON.filter(p => !p.family);
-  const audio = qa(win, '.bigcat').find(el => /Audio/.test(el.textContent));
+  const audio = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Audio & Headphones');
   const audioTotal = heads.filter(p => p.cat === 'Audio').length;
   assert.ok(audio.textContent.includes(`${audioTotal} products`),
-    `Audio tile must show the full served count (${audioTotal}), not the cache size — got: ` + audio.textContent);
-  // every served category renders, even though the cache holds only the
-  // drops slice (the prototype's CATEGORIES list covers all seed cats now)
-  assert.strictEqual(qa(win, '.bigcat').length, new Set(heads.map(p => p.cat)).size,
-    'every served category must render even though the cache holds a slice');
-  assert.ok(qa(win, '.bigcat').some(el => /E-readers/.test(el.textContent)), 'E-readers tile must render');
+    `Audio card must show the full served count (${audioTotal}), not the cache size — got: ` + audio.textContent);
+  // every dept in the served registry renders, even though the cache holds
+  // only the drops slice — incl. non-electronics depts whose cats have no rows yet
+  const DEPTS_REG = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'depts.json'), 'utf8'));
+  assert.strictEqual(qa(win, '.dcard').length, DEPTS_REG.length,
+    'every served department must render even though the cache holds a slice');
+  // a multi-cat dept sums its backing cats' served counts
+  const kitchen = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Kitchen & Appliances');
+  const kTotal = heads.filter(p => p.cat === 'Kitchen' || p.cat === 'Appliances').length;
+  assert.ok(kitchen.textContent.includes(`${kTotal} products`),
+    `Kitchen & Appliances must sum its backing cats (${kTotal}) — got: ` + kitchen.textContent);
   assert.ok(win.CATALOG.length < heads.length, 'the cache must hold only the drops slice');
 });
 
-test('dynamic categories: a server cat the prototype does not know renders with its served icon', async () => {
+test('dynamic categories: a served dept registry the prototype does not know renders, its cats join CATEGORIES', async () => {
   const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8')).filter(p => !p.family);
   const cats = products.reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), { Wearables: 5 });
-  const meta = { products: products.length + 5, shops: 3, freshest: Date.now(), cats, icons: { Wearables: 'watch' } };
+  const depts = [{ id: 'wear', name: 'Wearables', icon: 'watch', rules: [{ b: '10009999', name: 'Smart Watches', icon: 'watch', cat: 'Wearables', syn: ['smartklokke'], path: 'Communications › Communication Devices › Mobile Devices' }] }];
+  const meta = { products: products.length + 5, shops: 3, freshest: Date.now(), cats, icons: { Wearables: 'watch' }, depts };
   const win = boot('http://pricy.test/browse', { session: true, catalog: { meta, products } });
-  assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'category tiles did not render');
+  assert.ok(await until(() => qa(win, '.dcard').length > 0), 'department cards did not render');
   assert.ok(win.CATEGORIES.includes('Wearables'), 'served cat must join CATEGORIES in place');
   assert.strictEqual(win.CAT_ICONS.Wearables, 'watch', 'served icon must land in CAT_ICONS');
-  const tile = qa(win, '.bigcat').find(el => /Wearables/.test(el.textContent));
-  assert.ok(tile, 'Wearables tile must render on browse');
-  assert.ok(tile.textContent.includes('5'), 'tile must show the served count, got: ' + tile.textContent);
+  assert.strictEqual(win.DEPTS.length, 1, 'served registry must replace the demo departments wholesale');
+  const card = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Wearables');
+  assert.ok(card, 'Wearables department card must render on browse');
+  assert.ok(card.textContent.includes('5 products'), 'card must show the served count, got: ' + card.textContent);
 });
 
 // FILTERS-PLAN: data-driven per-category facet filters on Results
@@ -811,16 +820,17 @@ test('facet filters: TV renders spec-derived option groups, clicking filters row
   const size = facetGrp(win, 'Screen size');
   assert.ok(size, 'Screen size facet group must render for cat=TV');
   const opts = [...size.querySelectorAll('.check')].map(el => el.textContent);
-  assert.ok(opts[0].startsWith('55 ″') && opts[1].startsWith('65 ″'), 'options must be parsed+unit labels, numeric ascending, got: ' + opts.join(' | '));
+  assert.ok(opts[0].startsWith('48″') && opts[1].startsWith('55″'), 'options must be parsed+unit labels, numeric ascending, got: ' + opts.join(' | '));
   assert.ok(facetGrp(win, 'Panel'), 'Panel facet group must render');
   assert.ok(!qa(win, '.check, .fpill').some(el => el.textContent.includes('Noise cancelling')), 'hardcoded NC filter must be gone outside Audio');
 
-  const before = qa(win, '.rrow, .rcard').length;
-  [...size.querySelectorAll('.check')][0].click(); // 55 ″
-  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === 1), 'selecting 55 ″ must filter to the one 55-inch TV (started with ' + before + ')');
+  const fiftyFive = [...size.querySelectorAll('.check')].find(el => el.textContent.startsWith('55″'));
+  const want = +fiftyFive.textContent.slice(3); // label '55″' + rendered count
+  fiftyFive.click();
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want), 'selecting 55″ must filter to exactly the 55-inch sets (want ' + want + ')');
   const name = win.CATALOG.find(p => p.id === 'tv').name;
-  assert.ok(qa(win, '.rrow, .rcard')[0].textContent.includes(name), 'the surviving row must be the 55″ set');
-  assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Screen size: 55 ″')), 'active facet must chip');
+  assert.ok(qa(win, '.rrow, .rcard').some(r => r.textContent.includes(name)), 'the 55″ set must survive the filter');
+  assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Screen size: 55″')), 'active facet must chip');
 });
 
 // The rail used to count the rows it happened to hold, so a value that only
@@ -834,30 +844,57 @@ test('facet filters: the rail offers category-wide values the loaded rows do not
   });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const opts = () => [...(facetGrp(win, 'Screen size')?.querySelectorAll('.check') || [])].map(el => el.textContent);
-  assert.ok(await until(() => opts().some(t => t.startsWith('98 ″'))),
+  assert.ok(await until(() => opts().some(t => t.startsWith('98″'))),
     'a value only the server knows must become selectable, got: ' + opts().join(' | '));
-  assert.ok(opts().some(t => t.startsWith('98 ″') && t.includes('42')), 'its count is the served one, got: ' + opts().join(' | '));
-  assert.ok(opts().some(t => t.startsWith('55 ″') && t.includes('3')),
+  assert.ok(opts().some(t => t.startsWith('98″') && t.includes('42')), 'its count is the served one, got: ' + opts().join(' | '));
+  assert.ok(opts().some(t => t.startsWith('55″') && t.includes('3')),
     'a value the rows DO have still shows the category count, not the loaded count, got: ' + opts().join(' | '));
 });
 
-test('sub-categories: Browse tiles show type chips, clicking one lands on pre-filtered Results', async () => {
+test('sub-categories: dept cards chip their rules, a sub-tile lands on the brick scope', async () => {
   const win = boot('http://pricy.test/browse', { session: true });
-  assert.ok(await until(() => qa(win, '.bigcat').length > 0), 'browse tiles did not render');
-  const gaming = qa(win, '.bigcat').find(t => t.querySelector('h3')?.textContent === 'Gaming');
-  assert.ok(gaming, 'Gaming tile must render');
-  // chips count the served meta.types aggregate, not the hydrated slice —
-  // offer-less types (Controllers) must chip even though browse only
-  // prefetches top-drop rows
-  const chips = [...gaming.querySelectorAll('.typechip')].map(el => el.textContent);
-  assert.deepStrictEqual(chips, ['Consoles', 'Controllers', 'Handhelds'], 'chips are the served type counts, most-populous first');
-  const toys = qa(win, '.bigcat').find(t => t.querySelector('h3')?.textContent === 'Toys');
-  assert.strictEqual(toys.querySelectorAll('.typechip').length, 0, 'no chips for a cat without a type facet');
+  assert.ok(await until(() => qa(win, '.dcard').length > 0), 'department cards did not render');
+  // a non-electronics dept is reachable with its registry sub-categories
+  const sport = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Sport & Outdoor');
+  assert.ok(sport, 'Sport & Outdoor card must render');
+  assert.deepStrictEqual([...sport.querySelectorAll('.mchip')].map(el => el.textContent),
+    ['Sports & Training', 'Outdoor & Camping', 'Bikes & Cycling'], 'card chips are the dept rules');
 
-  const want = CATALOG_JSON.filter(p => !p.family && p.cat === 'Gaming' && p.facets?.type === 'Consoles').length;
-  [...gaming.querySelectorAll('.typechip')].find(el => el.textContent === 'Consoles').click();
-  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want), 'chip must land on Results pre-filtered to consoles');
-  assert.ok(qa(win, '.fchip').some(el => el.textContent.includes('Type: Consoles')), 'the facet selection must chip');
+  // open card expands the sub-category panel; a sub-tile navigates to the brick
+  const gaming = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Gaming');
+  gaming.click();
+  assert.ok(await until(() => q(win, '.dxp')), 'expand panel must open');
+  qa(win, '.subtile').find(el => el.textContent.includes('Gaming')).click();
+  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?brick=10005140'),
+    'sub-tile must land on the brick scope URL');
+  // the brick page shows the backing category through the served bridge
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
+});
+
+test('GPC departments: brick deep-link renders backing cat, dept rail + GPC trail; Norwegian synonyms suggest', async () => {
+  const win = boot('http://pricy.test/search?brick=10001085', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
+  assert.ok(win.CATALOG.some(p => p.cat === 'Audio'), 'the backing Audio slice must be prefetched');
+  // rail: the owning department heads the Category group, GPC trail shows the served path
+  assert.ok(await until(() => qa(win, '.catlink--hd').some(el => el.textContent.includes('Audio & Headphones'))),
+    'owner dept must head the category rail');
+  const trail = q(win, '.catgpc');
+  assert.ok(trail && trail.textContent.includes('#10001085') && trail.textContent.includes('Audio Equipment'),
+    'GPC trail must render the served classification path, got: ' + (trail && trail.textContent));
+
+  // dept deep-link renders too (prefetches its biggest backing cats)
+  const win2 = boot('http://pricy.test/search?dept=computing', { session: true });
+  assert.ok(await until(() => qa(win2, '.rrow, .rcard').length > 0), 'dept results did not render');
+
+  // header suggest matches the registry's Norwegian synonyms
+  const input = q(win2, '.app-hdr__search input');
+  input.focus();
+  type(win2, input, 'hodetelefoner');
+  const item = await until(() => qa(win2, '.suggest__item').find(el => el.textContent.includes('Audio & Headphones')));
+  assert.ok(item, 'Norwegian synonym must surface the brick suggestion');
+  item.click();
+  assert.ok(await until(() => win2.location.pathname + win2.location.search === '/search?brick=10001085'),
+    'brick pick must open the brick scope');
 });
 
 test('sub-categories: the Type facet groups a category under one curated vocabulary', async () => {
@@ -885,7 +922,8 @@ test('facet filters: a variant-axis key (storage) derives options from the axes 
   assert.ok(grp, 'Storage facet group must render for cat=Phones');
   const opts = [...grp.querySelectorAll('.check')].map(el => el.textContent);
   assert.ok(opts.some(o => o.startsWith('128 GB')) && opts.some(o => o.startsWith('256 GB')), 'axis option ids must surface as numeric GB options, got: ' + opts.join(' | '));
-  const kept = products.filter(p => (p.variants?.axes || []).some(a => a.id === 'storage' && a.options.some(o => o.id === '128')));
+  // axis-derived 128s plus rows carrying an explicit storage facet array (a55)
+  const kept = products.filter(p => (p.variants?.axes || []).some(a => a.id === 'storage' && a.options.some(o => o.id === '128')) || [].concat(p.facets?.storage || []).includes(128));
   assert.ok(kept.length > 0 && kept.length < products.length, 'seed sanity: 128 GB must split the cat');
   [...grp.querySelectorAll('.check')].find(el => el.textContent.startsWith('128 GB')).click();
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length === kept.length), '128 GB must keep every phone whose storage axis offers 128, got ' + qa(win, '.rrow, .rcard').length + ' want ' + kept.length);
@@ -901,7 +939,9 @@ test('facet filters: served meta.facets replaces the baked registry; cats withou
   assert.ok(!facetGrp(win, 'Screen size'), 'baked TV defs must be replaced wholesale by the served registry');
   assert.strictEqual(win.FACETS.Audio, undefined, 'baked cats absent from the served registry must be dropped');
 
-  const toys = boot('http://pricy.test/search?cat=Toys', { session: true }); // Toys has no facets.json entry
+  // a cat absent from the SERVED registry gets no groups (every real cat
+  // declares facets since 2026-07-25, so the stub registry is the fixture)
+  const toys = boot('http://pricy.test/search?cat=Toys', { session: true, catalog: { meta, products } });
   assert.ok(await until(() => qa(toys, '.rrow, .rcard').length > 0), 'toys results did not render');
   const titles = qa(toys, '.filters__grp').map(g => { const h = g.querySelector('h4'); return h && h4Title(h); }).filter(Boolean);
   assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only'], 'no facet groups for a cat without defs, got: ' + titles.join(' | '));

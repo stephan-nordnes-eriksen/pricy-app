@@ -534,12 +534,20 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   assert.deepStrictEqual(meta.facets?.TV?.map(f => f.key), ['type', 'size', 'panel', 'res', 'refresh', 'platform'], 'meta.facets serves the facets.json registry');
   assert.ok(meta.facets?.Kitchen?.some(f => f.key === 'type'), 'Kitchen serves its sub-category type facet');
   assert.ok(Object.keys(meta.icons).every(c => meta.facets?.[c]?.length), 'every registered category declares at least one facet');
+  // GPC departments (worker/depts.json) ride catMeta verbatim — boot joins
+  // counts from meta.cats, so the registry itself must not fabricate any
+  const drules = meta.depts?.flatMap(d => d.rules) || [];
+  assert.ok(meta.depts?.length >= 10 && drules.length, 'meta.depts serves the department registry');
+  assert.ok(drules.every(r => r.b && r.name && r.icon && meta.icons[r.cat]), 'every dept rule has b/name/icon and backs a registered category');
+  assert.ok(drules.every(r => r.n === undefined), 'dept rules carry no baked counts — boot joins meta.cats');
+  const dcats = new Set(drules.filter(r => !r.facets && !r.label).map(r => r.cat));
+  assert.ok(Object.keys(meta.icons).every(c => dcats.has(c)), 'every registered category is reachable from a whole-cat dept rule');
   // SUBCATS-PLAN: every Gaming head carries a curated facets.type (build.js
   // stamps demo rows, extra.json rows bring their own) — one vocabulary, no
   // 'Home console' spec strings leaking in beside 'Consoles'
   const gtypes = new Set(seed.filter(p => !p.family && p.cat === 'Gaming').map(p => p.facets?.type));
-  assert.deepStrictEqual([...gtypes].sort(), ['Consoles', 'Controllers', 'Handhelds'], 'Gaming heads: curated sub-category vocabulary');
-  assert.deepStrictEqual(meta.types?.Gaming, { Consoles: 6, Controllers: 2, Handhelds: 1 }, 'meta.types aggregates facets.type per cat for the Browse chips');
+  assert.deepStrictEqual([...gtypes].sort(), ['Consoles', 'Controllers', 'Games', 'Handhelds'], 'Gaming heads: curated sub-category vocabulary');
+  assert.deepStrictEqual(meta.types?.Gaming, { Consoles: 6, Controllers: 5, Games: 3, Handhelds: 3 }, 'meta.types aggregates facets.type per cat for the Browse chips');
 
   const many = await call('/api/products?ids=' + Array.from({ length: 101 }, (_, i) => 'x' + i).join(','));
   assert.strictEqual(many.status, 400, '>100 ids must 400');
@@ -1480,7 +1488,7 @@ test('admin PATCH: validated meta merge — manual promote and demote without a 
   // promote: fill display meta, drop hidden
   const res = await req('/api/admin/products/ean-7099999999992', 'PATCH', { name: 'Acme Soundbar S1', cat: 'Audio', icon: 'speaker', kw: 'soundbar lydplanke acme', hidden: null });
   assert.strictEqual(res.status, 200);
-  const promoted = (await (await call('/api/products?q=soundbar')).json()).products;
+  const promoted = (await (await call('/api/products?q=acme')).json()).products;
   assert.strictEqual(promoted.length, 1, 'promoted product is searchable');
   assert.strictEqual(promoted[0].cat, 'Audio');
   assert.strictEqual(promoted[0].hidden, undefined);
@@ -1500,7 +1508,7 @@ test('admin PATCH: validated meta merge — manual promote and demote without a 
 
   // demote: hidden again
   await req('/api/admin/products/ean-7099999999992', 'PATCH', { hidden: 1 });
-  assert.strictEqual((await (await call('/api/products?q=soundbar')).json()).products.length, 0, 'demoted product disappears');
+  assert.strictEqual((await (await call('/api/products?q=acme')).json()).products.length, 0, 'demoted product disappears');
 });
 
 test('full spec sheets: detail fetches only, spec text never matches search', async () => {
@@ -1535,14 +1543,14 @@ test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed ke
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };
   const call = api(env);
   const req = admin(env);
-  // kobo-libra is a seed row (extra.json head) that ships without specs
-  await req('/api/admin/products/kobo-libra', 'PATCH', { specs: { screen: '7.0″ E Ink' }, facets: { color: 'Yes' }, name: 'Renamed By Admin' });
+  // switch2 is a seed row (extra.json head) that ships without specs
+  await req('/api/admin/products/switch2', 'PATCH', { specs: { screen: '7.9″ LCD' }, facets: { color: 'Yes' }, name: 'Renamed By Admin' });
   // stale the pinned hash so the next request re-runs the seed upsert
   await DB.prepare("UPDATE seed_meta SET hash = 'stale'").run();
-  const row = (await (await call('/api/products?ids=kobo-libra')).json()).products[0];
-  assert.deepStrictEqual(row.specs, { screen: '7.0″ E Ink' }, 'runtime specs must survive the seed re-upsert');
-  assert.deepStrictEqual(row.facets, { type: 'E-readers', color: 'Yes' }, 'runtime facets must survive the seed re-upsert');
-  assert.strictEqual(row.name, 'Kobo Libra Colour', 'seed-owned keys still win on re-upsert');
+  const row = (await (await call('/api/products?ids=switch2')).json()).products[0];
+  assert.deepStrictEqual(row.specs, { screen: '7.9″ LCD' }, 'runtime specs must survive the seed re-upsert');
+  assert.deepStrictEqual(row.facets, { type: 'Consoles', color: 'Yes' }, 'runtime facets must survive the seed re-upsert');
+  assert.strictEqual(row.name, 'Nintendo Switch 2', 'seed-owned keys still win on re-upsert');
 });
 
 // OPEN-CATALOG-PLAN B: auto-promotion — mapped source category = go live
@@ -2284,12 +2292,12 @@ test('search finds products that predate the index (the prod migration)', async 
   // rows in place before any request — no triggers exist yet, exactly like prod
   DB.exec('CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)');
   await DB.prepare('INSERT INTO products (id, meta) VALUES (?, ?)')
-    .bind('legacy-1', JSON.stringify({ name: 'Trådløs Øretelefon Legacy', brand: 'Oldco', cat: 'Audio', kw: 'legacy' })).run();
+    .bind('legacy-1', JSON.stringify({ name: 'Trådløs Grønnkål Legacy', brand: 'Oldco', cat: 'Audio', kw: 'legacy' })).run();
 
   const call = api({ DB });
   const ids = async (q) => (await (await call('/api/products?q=' + encodeURIComponent(q))).json()).products.map(p => p.id);
   assert.deepStrictEqual(await ids('legacy'), ['legacy-1'], 'a pre-existing row must be backfilled into search_index');
-  assert.deepStrictEqual(await ids('tradlos'), ['legacy-1'], 'and folded, so the ASCII-typed query still finds it');
+  assert.deepStrictEqual(await ids('gronnkal'), ['legacy-1'], 'and folded, so the ASCII-typed query still finds it');
 
   const n = await DB.prepare('SELECT COUNT(*) AS n FROM search_index').first();
   assert.ok(n.n > 0, 'search_index must be populated');

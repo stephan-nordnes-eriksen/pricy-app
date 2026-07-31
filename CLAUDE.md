@@ -127,6 +127,40 @@ Two Claude Design projects feed this repo:
   that use it. No upstream edit. 31 cats as of 2026-07-25 (the original 10
   were all electronics-ish, so a sport/pet/jewellery shop had nothing to
   promote into).
+- **GPC departments** (2026-07-31, plans/gpc-departments.md): upstream's
+  browse/rail/suggest navigate a GS1 GPC layer (`GpcData.jsx`: DEPTS,
+  bricks, `go('results', {brick|dept, label?, count?})`). Our layer is
+  `worker/depts.json` — a NAVIGATION alias over `cat=`, not a stored
+  dimension: each dept is a list of rules `{b, name, icon, cat, syn, path}`
+  where `b` is an (illustrative) GPC brick code, `cat` the backing server
+  cat, `syn` Norwegian suggest synonyms and `path` the display-only
+  `Segment › Family › Class` trail. Served VERBATIM as `meta.depts` by
+  `catMeta`; boot's `hydrateCatalog` rebuilds
+  DEPTS/brickBy/ALL_BRICKS/BRICK_CAT/BRICK_DEPT in place from it, joining
+  counts from `meta.cats`, and EMPTIES `PRODMAP`/`CLS_CAT` — the demo ids
+  are served ids, and a stale PRODMAP direct match would pin a brick page
+  to the handful of demo rows instead of the whole backing cat. All rules
+  are whole-cat in v1: nothing can apply a facet-sliced rule client-side,
+  so a slice would show a mislabeled whole-cat page (see the degradation
+  note below). build.js enforces: valid `cat`, unique brick codes/dept
+  ids, b/name/icon present, and **every cats.json cat reachable from a
+  whole-cat rule** (the no-orphan guard). New dept/sub-category = a
+  depts.json edit, no upstream change. `/search` URLs carry
+  `dept=`/`brick=`/`label=`/`count=` (boot parseUrl/toUrl; `cat=` links
+  keep working); `ensureRoute` prefetches a brick's backing cat — for a
+  dept, its 2 biggest backing cats — resolving the mapping off the cheap
+  drops slice on a cold deep-link.
+  **Known v1 degradation:** upstream's Results skips `onQuery` for
+  brick/dept scopes, so those pages sort/filter CLIENT-side over the
+  prefetched 400-row page(s); totals come from the registry join, but
+  "cheapest first" on a big brick is cheapest-of-the-page. Cat pages are
+  unaffected. Fix is upstream (paste-ready prompt at the end of
+  plans/gpc-departments.md); then boot's `onQuery` maps `{brick, dept}` →
+  `cat=`+`facets=` via the same registry.
+  Demo-row vocabulary: build.js's `DEMO_TYPE` stamp now WINS over upstream
+  facets (`{...p.facets, type}`) — the 2026-07-31 sync gave demo rows their
+  own `type` strings ('Home console', 'Stick vacuum') that must not sit
+  beside facetrules' curated values in the rail.
 - **Facet filters** (2026-07-22, FILTERS-PLAN.md): `worker/facets.json`
   is the per-cat facet registry, served as `meta.facets` by `catMeta`;
   admin PATCH accepts a `facets` object per product. Upstream Results

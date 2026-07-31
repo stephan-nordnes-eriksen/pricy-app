@@ -281,7 +281,7 @@ function parseUrl(session) {
   const q = new URLSearchParams(location.search);
   let s;
   if (p.startsWith('/product/')) s = { name: 'product', params: { id: decodeURIComponent(p.slice('/product/'.length)) } };
-  else if (p === '/search') s = { name: 'results', params: { query: q.get('q') || undefined, cat: q.get('cat') || undefined } };
+  else if (p === '/search') s = { name: 'results', params: { query: q.get('q') || undefined, cat: q.get('cat') || undefined, dept: q.get('dept') || undefined, brick: q.get('brick') || undefined, label: q.get('label') || undefined, count: q.get('count') ? Number(q.get('count')) : undefined } };
   else if (p === '/alerts') s = { name: 'alerts', params: { tab: q.get('tab') || undefined } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
   else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
@@ -320,6 +320,7 @@ function ensureRoute(name, params = {}) {
   // the list screens mirror Results' own default sort (SORT_FIELDS[0], price
   // ascending) — the screen re-queries with its sort on mount, and a prefetch
   // of a different slice would just be a second 400-row fetch per visit
+  else if (name === 'results' && (params.brick || params.dept)) return gpcRoute(params);
   else if (name === 'results') wants.push(params.query ? { q: params.query } : listQuery({ cat: params.cat, sort: 'best', dir: 'asc' }));
   else if (name === 'product') wants.push({ ids: params.id }); // server adds family + same-cat neighbors
   // browse renders per-cat top drops + global top-4 from the cache; counts
@@ -330,6 +331,20 @@ function ensureRoute(name, params = {}) {
     if (first) wants.push({ cat: first.cat }); // CmpAdd candidates are same-category
   }
   return Promise.all(wants.map(w => fetchProducts(w).catch(() => {})));
+}
+
+// GPC scopes (brick/dept) prefetch their backing category slices. The
+// brick→cat mapping lives in the served registry (meta.depts, on every
+// /api/products response) — a cold deep-link resolves it off home's cheap
+// drops slice first. Never rejects, like ensureRoute's other wants.
+// ponytail: a dept prefetches only its 2 biggest backing cats (400-row
+// pages each); the rest hydrate as the shopper narrows.
+async function gpcRoute(params) {
+  if (!CATALOG.meta?.depts) await fetchProducts({ top: 'drop', limit: 3 }).catch(() => {});
+  const counts = CATALOG.meta?.cats || {};
+  const rules = (CATALOG.meta?.depts || []).flatMap(d => params.dept ? (d.id === params.dept ? d.rules : []) : d.rules.filter(r => r.b === params.brick));
+  const cats = [...new Set(rules.map(r => r.cat).filter(Boolean))].sort((a, b) => (counts[b] || 0) - (counts[a] || 0)).slice(0, 2);
+  await Promise.all(cats.map(c => fetchProducts(listQuery({ cat: c, sort: 'best', dir: 'asc' })).catch(() => {})));
 }
 
 // Login-time hydration: hydrateMe/hydrateFeed/hydrateRecent all resolve ids
@@ -414,6 +429,10 @@ function toUrl(name, params = {}) {
     const q = new URLSearchParams();
     if (params.query) q.set('q', params.query);
     if (params.cat) q.set('cat', params.cat);
+    if (params.dept) q.set('dept', params.dept);
+    if (params.brick) q.set('brick', params.brick);
+    if (params.label) q.set('label', params.label);
+    if (params.count != null) q.set('count', params.count);
     const s = q.toString();
     return '/search' + (s ? '?' + s : '');
   }
@@ -557,7 +576,7 @@ function App() {
   let view;
   if (name === 'login') view = <Login onAuthed={onAuthed} go={go} layout={T.loginLayout} />;
   else if (name === 'landing') view = <Landing go={go} />;
-  else if (name === 'results') view = <Results go={go} query={params.query} cat={params.cat} filterLayout={T.filterLayout} density={T.density} sparklines={T.sparklines} />;
+  else if (name === 'results') view = <Results go={go} query={params.query} cat={params.cat} brick={params.brick} dept={params.dept} label={params.label} count={params.count} filterLayout={T.filterLayout} density={T.density} sparklines={T.sparklines} />;
   else if (name === 'product') view = <ProductPage go={go} id={params.id} />;
   else if (name === 'compare') view = <ComparePage go={go} />;
   else if (name === 'browse') view = <BrowsePage go={go} />;
@@ -661,6 +680,32 @@ function hydrateCatalog(data) {
   if (window.FACETS && CATALOG.meta?.facets) {
     Object.keys(window.FACETS).forEach(k => delete window.FACETS[k]);
     Object.assign(window.FACETS, CATALOG.meta.facets);
+  }
+  // GPC departments: the served registry (worker/depts.json) replaces
+  // GpcData's demo layer in place — DEPTS/brickBy/ALL_BRICKS/BRICK_CAT/
+  // BRICK_DEPT are shared top-level consts, so mutate, never reassign.
+  // Rule counts join with meta.cats (each rule backs one whole cat).
+  // PRODMAP/CLS_CAT are emptied: the demo ids ARE served ids, and a stale
+  // PRODMAP direct match would pin a brick page to the handful of demo rows
+  // instead of the whole backing category (brickProducts prefers direct).
+  if (window.DEPTS && CATALOG.meta?.depts && CATALOG.meta?.cats) {
+    const counts = CATALOG.meta.cats;
+    DEPTS.length = 0; ALL_BRICKS.length = 0;
+    for (const o of [brickBy, PRODMAP, BRICK_CAT, CLS_CAT, BRICK_DEPT]) Object.keys(o).forEach(k => delete o[k]);
+    for (const d of CATALOG.meta.depts) {
+      const dep = { id: d.id, name: d.name, icon: d.icon, rules: [], n: 0, segs: [] };
+      for (const r of d.rules) {
+        const [seg = '', fam = '', cls = ''] = String(r.path || '').split(' › ');
+        const n = counts[r.cat] || 0;
+        const bk = { code: r.b, name: r.name, icon: r.icon, n, syn: r.syn || [], seg: { code: r.b, name: seg, icon: r.icon }, fam: { name: fam }, cls: { code: r.b, name: cls, bricks: [] } };
+        brickBy[r.b] = bk; ALL_BRICKS.push(bk);
+        BRICK_CAT[r.b] = r.cat;
+        if (!BRICK_DEPT[r.b]) BRICK_DEPT[r.b] = dep;
+        dep.rules.push({ b: r.b });
+        dep.n += n;
+      }
+      DEPTS.push(dep);
+    }
   }
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
