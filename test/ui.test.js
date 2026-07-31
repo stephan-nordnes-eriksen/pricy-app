@@ -897,6 +897,25 @@ test('GPC departments: brick deep-link renders backing cat, dept rail + GPC trai
     'brick pick must open the brick scope');
 });
 
+test('GPC scopes are served: onQuery translates brick/dept to the backing cat query', async () => {
+  const win = boot('http://pricy.test/search?brick=10001085', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
+  const audioCount = CATALOG_JSON.filter(p => !p.family && p.cat === 'Audio').length;
+  const f = { q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} };
+  // a brick query rides its backing cat — total is the category-wide count,
+  // not the page length, and brick/dept never leak onto the query string
+  const r = await win.onQuery({ brick: '10001085', sort: 'best', dir: 'asc', filters: f, page: 0 });
+  assert.strictEqual(r.total, audioCount, 'brick scope must serve the backing category total');
+  assert.ok(win.api.some(c => c.call === 'GET /api/products?cat=Audio&dir=asc&limit=400&offset=0&sort=best'),
+    'brick query must translate to a plain cat= list query, got: ' + win.api.map(c => c.call).join(' | '));
+  // a single-cat dept serves the same way; a multi-cat dept resolves null
+  // (upstream contract: the screen keeps client-side sort/filter)
+  const rd = await win.onQuery({ dept: 'audio', sort: 'best', dir: 'asc', filters: f, page: 0 });
+  assert.strictEqual(rd && rd.total, audioCount, 'single-cat dept scope must be served');
+  const rm = await win.onQuery({ dept: 'computing', sort: 'best', dir: 'asc', filters: f, page: 0 });
+  assert.strictEqual(rm, null, 'multi-cat dept scope must resolve null and stay client-side');
+});
+
 test('sub-categories: the Type facet groups a category under one curated vocabulary', async () => {
   const win = boot('http://pricy.test/search?cat=Gaming', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');

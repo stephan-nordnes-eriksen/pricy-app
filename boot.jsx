@@ -414,10 +414,24 @@ const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
 // (`if (dead || !r) return`). "Load more" is a click, not a keystroke — never
 // held, or the button would stall for half a second.
 const REFINE_MIN = 3, REFINE_HOLD = 400;
+// GPC scopes translate to the backing cat= via the served registry (every
+// brick backs exactly one cat; a dept only when all its rules agree).
+// Resolving null is upstream's "host can't serve this scope" contract — the
+// screen falls back to client-side sort/filter over the cache, as before.
+// ponytail: multi-cat "All <dept>" pages stay client-side; serving them
+// needs a cat-set query the worker doesn't have.
+const scopeCat = (q) => {
+  if (!q.brick && !q.dept) return q.cat;
+  const rules = (CATALOG.meta?.depts || []).flatMap(d => q.dept ? (d.id === q.dept ? d.rules : []) : d.rules.filter(r => r.b === q.brick));
+  const cats = [...new Set(rules.map(r => r.cat).filter(Boolean))];
+  return cats.length === 1 ? cats[0] : undefined;
+};
 let held = null;
 window.onQuery = (q) => {
   if (held) { clearTimeout(held.t); held.res(null); held = null; }
-  const go = () => fetchProducts(listQuery(q)).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts }));
+  const cat = scopeCat(q);
+  if ((q.brick || q.dept) && !cat) return Promise.resolve(null);
+  const go = () => fetchProducts(listQuery({ ...q, cat })).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts }));
   const n = String((q.filters || {}).q || '').trim().length;
   if (q.page || !n || n >= REFINE_MIN) return go();
   return new Promise(res => { held = { res, t: setTimeout(() => { held = null; res(go()); }, REFINE_HOLD) }; });
@@ -691,7 +705,10 @@ function hydrateCatalog(data) {
   if (window.DEPTS && CATALOG.meta?.depts && CATALOG.meta?.cats) {
     const counts = CATALOG.meta.cats;
     DEPTS.length = 0; ALL_BRICKS.length = 0;
-    for (const o of [brickBy, PRODMAP, BRICK_CAT, CLS_CAT, BRICK_DEPT]) Object.keys(o).forEach(k => delete o[k]);
+    // BRICK_FACETS too: the registry reuses demo brick codes, and a demo
+    // per-brick def would shadow the served FACETS[cat] defs whose keys are
+    // what the served fcounts speak
+    for (const o of [brickBy, PRODMAP, BRICK_CAT, CLS_CAT, BRICK_DEPT, window.BRICK_FACETS || {}]) Object.keys(o).forEach(k => delete o[k]);
     for (const d of CATALOG.meta.depts) {
       const dep = { id: d.id, name: d.name, icon: d.icon, rules: [], n: 0, segs: [] };
       for (const r of d.rules) {

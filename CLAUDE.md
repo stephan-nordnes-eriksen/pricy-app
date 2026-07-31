@@ -150,13 +150,18 @@ Two Claude Design projects feed this repo:
   keep working); `ensureRoute` prefetches a brick's backing cat — for a
   dept, its 2 biggest backing cats — resolving the mapping off the cheap
   drops slice on a cold deep-link.
-  **Known v1 degradation:** upstream's Results skips `onQuery` for
-  brick/dept scopes, so those pages sort/filter CLIENT-side over the
-  prefetched 400-row page(s); totals come from the registry join, but
-  "cheapest first" on a big brick is cheapest-of-the-page. Cat pages are
-  unaffected. Fix is upstream (paste-ready prompt at the end of
-  plans/gpc-departments.md); then boot's `onQuery` maps `{brick, dept}` →
-  `cat=`+`facets=` via the same registry.
+  **Brick/dept pages are server-queried** (2026-07-31, upstream re-sync):
+  Results passes `{brick, dept, label}` through `onQuery`, and boot's
+  `scopeCat` translates the scope to its backing `cat=` via the registry —
+  brick pages (and single-cat depts) get the full server-side
+  sort/filter/total/fcounts pipeline; brick/dept never leak onto the query
+  string. The swap also empties the demo `BRICK_FACETS` (the registry
+  reuses demo brick codes, and a demo per-brick def would shadow the
+  served `FACETS[cat]` defs the fcounts keys speak). Remaining
+  degradation: a multi-cat "All <dept>" page resolves `null` (upstream's
+  host-can't-serve contract) and stays client-side over its prefetched 2
+  biggest cats — serving it needs a cat-set query the worker doesn't
+  have.
   Demo-row vocabulary: build.js's `DEMO_TYPE` stamp now WINS over upstream
   facets (`{...p.facets, type}`) — the 2026-07-31 sync gave demo rows their
   own `type` strings ('Home console', 'Stick vacuum') that must not sit
