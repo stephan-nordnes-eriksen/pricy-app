@@ -645,6 +645,20 @@ const RULES = {
   },
 };
 
+// Accessories outrank the host product's own words in EVERY category (the
+// Audio lesson generalized): a row the shop itself files under tilbehør /
+// reservedeler / spare parts must not type as the thing it attaches to.
+// Word-START anchors only — "sytilbehør" is Hobby's own Sewing vocabulary,
+// and \b never anchors before ø/å (ASCII), so no trailing anchor either.
+// The lookbehind drops the INCLUSION sense: "Romskip med tilbehør og lyd"
+// and "Sparkesykler og tilbehør" hold the real deal, "Sonos tilbehør" and
+// "Tilbehør til dør" hold accessories. ponytail: conjunction ≈ mixed menu —
+// misreads accessory-only "X & tilbehør" leaves, whose rows just fall
+// through to the per-cat rules instead.
+// Narrow on purpose: only words that MEAN accessory, never the accessory
+// nouns themselves (a "veske" is Fashion's real deal, a tripod is Photo's).
+const ACC_RE = /(?<!(?:\bmed|\bog|\binkl[\w.]*|\bincl[\w.]*|&|\+|\band|\bwith)\s)(?:\btilbehør|\baccessor)|\breservedel|\bspare ?parts?\b|\breplacement\b/i;
+
 // Facets a category's rules can produce, for build.js's registry check.
 export const RULE_KEYS = Object.fromEntries(Object.entries(RULES).map(([cat, r]) => [cat, Object.keys(r)]));
 
@@ -675,7 +689,14 @@ export function deriveFacets({ name, cat, srcCat, brand }) {
   const out = {};
   for (const [k, f] of Object.entries(rules)) {
     let v;
-    for (const t of k === 'color' ? colorTexts : texts) { v = f(t); if (v !== undefined) break; }
+    const ts = k === 'color' ? colorTexts : texts;
+    // ACC only reads the name and the LEAF (i < 2): a parent crumb like
+    // "Skrivere og tilbehør > Laserskrivere" is a menu that holds the
+    // printers too — only the shop's own leaf filing proves accessory.
+    for (let i = 0; i < ts.length; i++) {
+      v = k === 'type' && i < 2 && ACC_RE.test(ts[i]) ? 'Accessories' : f(ts[i]);
+      if (v !== undefined) break;
+    }
     if (v !== undefined && v === v) out[k] = v; // NaN guard: a bad number is no value
   }
   return Object.keys(out).length ? out : undefined;
