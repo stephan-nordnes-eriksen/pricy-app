@@ -131,33 +131,61 @@ Two Claude Design projects feed this repo:
   browse/rail/suggest navigate a GS1 GPC layer (`GpcData.jsx`: DEPTS,
   bricks, `go('results', {brick|dept, label?, count?})`). Our layer is
   `worker/depts.json` — a NAVIGATION alias over `cat=`, not a stored
-  dimension: each dept is a list of rules `{b, name, icon, cat, syn, path}`
-  where `b` is an (illustrative) GPC brick code, `cat` the backing server
-  cat, `syn` Norwegian suggest synonyms and `path` the display-only
-  `Segment › Family › Class` trail. Served VERBATIM as `meta.depts` by
+  dimension: each dept is a list of rules `{b, name, icon, cat, syn, path,
+  facets?}` where `b` is a REAL GS1 GPC brick code (2026-07-31, validated
+  against the published EN schema by `node tools/gpc-check.mjs`, which
+  caches the 32 MB publication at the gitignored `tools/.gpc-en.json`;
+  `99…`-prefixed codes are deliberately synthetic — GPC 2020 has no brick
+  for Earbuds/Soundbars/Projectors), `cat` the backing server cat, `syn`
+  Norwegian suggest synonyms and `path` the display-only
+  `Segment › Family › Class` trail. Served as `meta.depts` by
   `catMeta`; boot's `hydrateCatalog` rebuilds
   DEPTS/brickBy/ALL_BRICKS/BRICK_CAT/BRICK_DEPT in place from it, joining
-  counts from `meta.cats`, and EMPTIES `PRODMAP`/`CLS_CAT` — the demo ids
-  are served ids, and a stale PRODMAP direct match would pin a brick page
-  to the handful of demo rows instead of the whole backing cat. All rules
-  are whole-cat in v1: nothing can apply a facet-sliced rule client-side,
-  so a slice would show a mislabeled whole-cat page (see the degradation
-  note below). build.js enforces: valid `cat`, unique brick codes/dept
-  ids, b/name/icon present, and **every cats.json cat reachable from a
-  whole-cat rule** (the no-orphan guard). New dept/sub-category = a
-  depts.json edit, no upstream change. `/search` URLs carry
+  whole-cat counts from `meta.cats`, and EMPTIES `PRODMAP`/`CLS_CAT` — the
+  demo ids are served ids, and a stale PRODMAP direct match would pin a
+  brick page to the handful of demo rows instead of the whole backing cat.
+  **Sliced rules** (2026-07-31): a rule with `facets` (e.g. Headphones =
+  Audio sliced by `{type: ["Headphones"]}`) is a sub-category finer than a
+  cat. The pin is NOT a query dialect: boot's `gpcParams` injects it into
+  the nav's `history.state.params.facets` (the same seam Browse sub-chips
+  use — nav(), popstate and the deep-link boot path all seed it), Results
+  mounts with it as a real checked filter selection, so it filters the
+  client pool, renders in the rail, and rides `onQuery` server-side as
+  ordinary `facets=`. Clearing the checkbox on a slice page is therefore
+  just widening the filter — allowed, self-inflicted, recoverable. Sliced
+  counts can't come from `meta.cats` (derived facets are invisible to
+  SQL): `refreshDeptCounts` (hourly cron) computes each slice's total via
+  `listIds` — the exact served-page predicate — into `seed_meta` row 4,
+  `catMeta` merges it as `n` onto sliced rules only, and boot passes it
+  through (whole-cat rules stay bare so they can never disagree with
+  `meta.cats`; a fresh deploy shows 0 on sub-tiles for ≤1 h until the
+  first cron). build.js enforces: valid `cat`, unique brick codes/dept
+  ids, b/name/icon present, **every cats.json cat reachable from a
+  whole-cat rule** (the no-orphan guard), sliced facet keys declared in
+  facets.json for that cat, and **a sliced rule's cat whole-covered in the
+  SAME dept** — upstream's `deptProducts` falls back to whole cats, so a
+  cross-dept slice would silently claim its entire backing cat for the
+  dept page. Slice `type` values must match `worker/facetrules.js`
+  vocabulary EXACTLY (measured on the live catalog, not guessed — replay
+  like tools/score-cats.mjs). New dept/sub-category = a depts.json edit,
+  no upstream change. `/search` URLs carry
   `dept=`/`brick=`/`label=`/`count=` (boot parseUrl/toUrl; `cat=` links
-  keep working); `ensureRoute` prefetches a brick's backing cat — for a
-  dept, its 2 biggest backing cats — resolving the mapping off the cheap
-  drops slice on a cold deep-link.
+  keep working); `ensureRoute` prefetches a brick's backing cat WITH its
+  pin (so the mount `onQuery` is a FETCHED hit) — for a dept, its 2
+  biggest backing cats — resolving the mapping off the cheap drops slice
+  on a cold deep-link. Still parked: EAN→brick classification as a stored
+  dimension — the EAN→GPC mapping lives in GS1 Verified (member API, no
+  credentials), and while every brick ≡ cat(+facets) it would change
+  nothing user-visible.
   **Brick/dept pages are server-queried** (2026-07-31, upstream re-sync):
   Results passes `{brick, dept, label}` through `onQuery`, and boot's
   `scopeCat` translates the scope to its backing `cat=` via the registry —
   brick pages (and single-cat depts) get the full server-side
   sort/filter/total/fcounts pipeline; brick/dept never leak onto the query
-  string. The swap also empties the demo `BRICK_FACETS` (the registry
-  reuses demo brick codes, and a demo per-brick def would shadow the
-  served `FACETS[cat]` defs the fcounts keys speak). Remaining
+  string. The swap also empties the demo `BRICK_FACETS` (a demo per-brick
+  def would shadow the served `FACETS[cat]` defs the fcounts keys speak —
+  and a sliced page's pin must live in a def the rail renders, which is
+  also why a served per-brick def registry stays unbuilt). Remaining
   degradation: a multi-cat "All <dept>" page resolves `null` (upstream's
   host-can't-serve contract) and stays client-side over its prefetched 2
   biggest cats — serving it needs a cat-set query the worker doesn't

@@ -1045,6 +1045,27 @@ async function topDropIds(db, { limit = 4, perCat = false } = {}) {
   return [...new Set(ids)];
 }
 
+// Real counts for the registry's attribute-sliced dept rules (facet values are
+// derived, so SQL can't count them). Runs on the hourly cron, not the request
+// path — the free plan's ~40 ms CPU ceiling has no room for a per-request
+// derive over every sliced cat. Reuses listIds so the count is the exact
+// predicate the served brick page uses; stored in seed_meta row 4 (the same
+// marker table the seed hash and catalog version live in), read back by
+// catMeta. The version bump makes every isolate's memoised catMeta pick the
+// fresh numbers up.
+const sliceFilters = (facets) => ({ name: [], brands: [], min: 0, max: 0, rating: 0, sale: false, instock: false, facets });
+async function refreshDeptCounts(db) {
+  const counts = {};
+  for (const d of DEPTS) for (const r of d.rules) {
+    if (!r.facets) continue;
+    const { total } = await listIds(db, { cat: r.cat, limit: 0, filters: sliceFilters(r.facets) });
+    counts[r.b] = total;
+  }
+  await db.prepare('INSERT INTO seed_meta (id, hash) VALUES (4, ?) ON CONFLICT(id) DO UPDATE SET hash = excluded.hash').bind(JSON.stringify(counts)).run();
+  await bumpVer(db).run();
+  return counts;
+}
+
 // Global aggregates + per-category head counts — served as meta on every
 // /api/products response so the UI can show real totals off a partial cache.
 //
@@ -1067,7 +1088,7 @@ async function catMeta(db, ver) {
   const hit = metaCache.get(db);
   if (ver && hit?.ver === ver) return hit.val;
   const heads = `FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()}`;
-  const [nRes, sRes, fRes, cRes, tRes] = await db.batch([
+  const [nRes, sRes, fRes, cRes, tRes, dRes] = await db.batch([
     db.prepare(`SELECT COUNT(*) AS n ${heads}`),
     db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers'),
     db.prepare('SELECT MAX(updated_at) AS t FROM offers'),
@@ -1075,6 +1096,9 @@ async function catMeta(db, ver) {
     // per-cat sub-category counts (facets.type) — Browse's type chips read
     // these off CATALOG.meta so they don't depend on which rows are hydrated
     db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, json_extract(meta, '$.facets.type') AS t, COUNT(*) AS n ${heads} AND json_extract(meta, '$.facets.type') IS NOT NULL GROUP BY 1, 2`),
+    // sliced dept-rule counts, precomputed hourly by refreshDeptCounts —
+    // absent (fresh db, pre-first-cron) just means those rules ship no n
+    db.prepare('SELECT hash FROM seed_meta WHERE id = 4'),
   ]);
   const products = nRes.results[0].n;
   const shops = sRes.results[0].n;
@@ -1083,7 +1107,12 @@ async function catMeta(db, ver) {
   const tr = tRes.results;
   const types = {};
   for (const r of tr) if (r.cat) (types[r.cat] ??= {})[r.t] = r.n;
-  const val = { products, shops, freshest, icons: CATS, facets: FACETS, depts: DEPTS, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  // sliced rules get their precomputed n; whole-cat rules stay bare (boot
+  // joins those from meta.cats, so they can never disagree with it)
+  let sliceN = {};
+  try { sliceN = JSON.parse(dRes.results[0]?.hash || '{}'); } catch (e) {}
+  const depts = DEPTS.map(d => ({ ...d, rules: d.rules.map(r => r.facets && sliceN[r.b] != null ? { ...r, n: sliceN[r.b] } : r) }));
+  const val = { products, shops, freshest, icons: CATS, facets: FACETS, depts, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
   if (ver) metaCache.set(db, { ver, val });
   return val;
 }
@@ -1896,5 +1925,7 @@ export default {
     // (~40/hour), POST /api/admin/images is the fast lane after a big crawl
     const drained = await drainImages(db, env).catch(e => console.error(`image drain failed: ${e.message}`));
     if (drained?.done) await bumpVer(db).run();
+    // sliced dept-rule counts (meta.depts n) refresh hourly off the same tick
+    await refreshDeptCounts(db).catch(e => console.error(`dept count refresh failed: ${e.message}`));
   },
 };

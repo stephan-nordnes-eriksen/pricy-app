@@ -120,6 +120,18 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
         bricks.add(r.b);
         if (!CATS[r.cat]) throw new Error(`depts.json rule "${r.name}": unknown category "${r.cat}"`);
         if (!r.facets && !r.label) covered.add(r.cat);
+        // a sliced rule pins facet selections the rail must be able to render
+        // (declared defs) and the client must be able to evaluate (deptProducts
+        // falls back to whole cats, so the slice's cat must be whole-covered in
+        // the SAME dept or the dept page would silently claim the whole cat)
+        if (r.facets) {
+          const declared = new Set((FACETS[r.cat] || []).map(x => x.key));
+          for (const [k, v] of Object.entries(r.facets)) {
+            if (!declared.has(k)) throw new Error(`depts.json sliced rule "${r.name}" pins facet "${k}" that worker/facets.json doesn't declare for ${r.cat}`);
+            if (!Array.isArray(v) || !v.length) throw new Error(`depts.json sliced rule "${r.name}": facet "${k}" must pin a non-empty value array`);
+          }
+          if (!d.rules.some(o => !o.facets && !o.label && o.cat === r.cat)) throw new Error(`depts.json sliced rule "${r.name}" needs a whole-cat rule for ${r.cat} in the same department (${d.id})`);
+        }
       }
     }
     for (const c of Object.keys(CATS)) if (!covered.has(c)) throw new Error(`depts.json leaves category "${c}" unreachable — it needs a whole-cat rule in some department`);

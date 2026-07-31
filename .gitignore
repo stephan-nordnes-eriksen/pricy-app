@@ -6,3 +6,4 @@ test-e2e/__artifacts__/
 tools/.ingest-token
 tools/.catalog.json
 env
+tools/.gpc-en.json

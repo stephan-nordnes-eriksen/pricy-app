@@ -858,53 +858,54 @@ test('sub-categories: dept cards chip their rules, a sub-tile lands on the brick
   const sport = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Sport & Outdoor');
   assert.ok(sport, 'Sport & Outdoor card must render');
   assert.deepStrictEqual([...sport.querySelectorAll('.mchip')].map(el => el.textContent),
-    ['Sports & Training', 'Outdoor & Camping', 'Bikes & Cycling'], 'card chips are the dept rules');
+    ['Sports & Training', 'Strength training', 'Ski & snow', 'Sportswear', '+2'], 'card chips are the dept rules (sliced sub-categories included)');
 
   // open card expands the sub-category panel; a sub-tile navigates to the brick
   const gaming = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Gaming');
   gaming.click();
   assert.ok(await until(() => q(win, '.dxp')), 'expand panel must open');
   qa(win, '.subtile').find(el => el.textContent.includes('Gaming')).click();
-  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?brick=10005140'),
+  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?brick=10001139'),
     'sub-tile must land on the brick scope URL');
   // the brick page shows the backing category through the served bridge
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
 });
 
 test('GPC departments: brick deep-link renders backing cat, dept rail + GPC trail; Norwegian synonyms suggest', async () => {
-  const win = boot('http://pricy.test/search?brick=10001085', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001448', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
   assert.ok(win.CATALOG.some(p => p.cat === 'Audio'), 'the backing Audio slice must be prefetched');
   // rail: the owning department heads the Category group, GPC trail shows the served path
   assert.ok(await until(() => qa(win, '.catlink--hd').some(el => el.textContent.includes('Audio & Headphones'))),
     'owner dept must head the category rail');
   const trail = q(win, '.catgpc');
-  assert.ok(trail && trail.textContent.includes('#10001085') && trail.textContent.includes('Audio Equipment'),
+  assert.ok(trail && trail.textContent.includes('#10001448') && trail.textContent.includes('Home Audio Equipment'),
     'GPC trail must render the served classification path, got: ' + (trail && trail.textContent));
 
   // dept deep-link renders too (prefetches its biggest backing cats)
   const win2 = boot('http://pricy.test/search?dept=computing', { session: true });
   assert.ok(await until(() => qa(win2, '.rrow, .rcard').length > 0), 'dept results did not render');
 
-  // header suggest matches the registry's Norwegian synonyms
+  // header suggest matches the registry's Norwegian synonyms — a sliced
+  // sub-category rule (Headphones) is a first-class suggestion now
   const input = q(win2, '.app-hdr__search input');
   input.focus();
   type(win2, input, 'hodetelefoner');
-  const item = await until(() => qa(win2, '.suggest__item').find(el => el.textContent.includes('Audio & Headphones')));
-  assert.ok(item, 'Norwegian synonym must surface the brick suggestion');
+  const item = await until(() => qa(win2, '.suggest__item').find(el => el.textContent.includes('Headphones')));
+  assert.ok(item, 'Norwegian synonym must surface the sliced brick suggestion');
   item.click();
-  assert.ok(await until(() => win2.location.pathname + win2.location.search === '/search?brick=10001085'),
+  assert.ok(await until(() => win2.location.pathname + win2.location.search === '/search?brick=10001181'),
     'brick pick must open the brick scope');
 });
 
 test('GPC scopes are served: onQuery translates brick/dept to the backing cat query', async () => {
-  const win = boot('http://pricy.test/search?brick=10001085', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001448', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
   const audioCount = CATALOG_JSON.filter(p => !p.family && p.cat === 'Audio').length;
   const f = { q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} };
   // a brick query rides its backing cat — total is the category-wide count,
   // not the page length, and brick/dept never leak onto the query string
-  const r = await win.onQuery({ brick: '10001085', sort: 'best', dir: 'asc', filters: f, page: 0 });
+  const r = await win.onQuery({ brick: '10001448', sort: 'best', dir: 'asc', filters: f, page: 0 });
   assert.strictEqual(r.total, audioCount, 'brick scope must serve the backing category total');
   assert.ok(win.api.some(c => c.call === 'GET /api/products?cat=Audio&dir=asc&limit=400&offset=0&sort=best'),
     'brick query must translate to a plain cat= list query, got: ' + win.api.map(c => c.call).join(' | '));
@@ -914,6 +915,24 @@ test('GPC scopes are served: onQuery translates brick/dept to the backing cat qu
   assert.strictEqual(rd && rd.total, audioCount, 'single-cat dept scope must be served');
   const rm = await win.onQuery({ dept: 'computing', sort: 'best', dir: 'asc', filters: f, page: 0 });
   assert.strictEqual(rm, null, 'multi-cat dept scope must resolve null and stay client-side');
+});
+
+test('GPC sliced sub-category: the registry pin rides nav state as a real filter selection', async () => {
+  // Consoles = the Gaming cat sliced by facets.type — the pin must reach
+  // history.state.params.facets (Results seeds f from it), so the client pool
+  // filters to consoles, the rail shows Type checked, and the prefetch query
+  // carries facets= server-side. No GPC-specific query path anywhere.
+  const win = boot('http://pricy.test/search?brick=10003817', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'sliced brick results did not render');
+  const want = CATALOG_JSON.filter(p => !p.family && p.cat === 'Gaming' && p.facets?.type === 'Consoles').length;
+  assert.ok(want >= 2 && want < CATALOG_JSON.filter(p => !p.family && p.cat === 'Gaming').length, 'seed sanity: consoles are a strict subset of Gaming');
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want),
+    'the pool must respect the pin — consoles only, not the whole backing cat (got ' + qa(win, '.rrow, .rcard').length + ', want ' + want + ')');
+  const type = facetGrp(win, 'Type');
+  assert.ok(type && [...type.querySelectorAll('.check')].some(el => el.textContent.startsWith('Consoles') && el.classList.contains('is-on')),
+    'the pinned Type value must render checked in the rail');
+  assert.ok(win.api.some(c => c.call.startsWith('GET /api/products?cat=Gaming') && c.call.includes('facets=' + encodeURIComponent(JSON.stringify({ type: ['Consoles'] })))),
+    'the prefetched slice query must carry the pin server-side, got: ' + win.api.map(c => c.call).join(' | '));
 });
 
 test('sub-categories: the Type facet groups a category under one curated vocabulary', async () => {

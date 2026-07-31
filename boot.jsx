@@ -343,8 +343,23 @@ async function gpcRoute(params) {
   if (!CATALOG.meta?.depts) await fetchProducts({ top: 'drop', limit: 3 }).catch(() => {});
   const counts = CATALOG.meta?.cats || {};
   const rules = (CATALOG.meta?.depts || []).flatMap(d => params.dept ? (d.id === params.dept ? d.rules : []) : d.rules.filter(r => r.b === params.brick));
+  // a sliced brick prefetches its pinned slice — the same query the screen's
+  // mount onQuery sends (pin seeded via gpcParams), so it lands as a FETCHED hit
+  const pin = params.brick ? rules[0]?.facets : undefined;
   const cats = [...new Set(rules.map(r => r.cat).filter(Boolean))].sort((a, b) => (counts[b] || 0) - (counts[a] || 0)).slice(0, 2);
-  await Promise.all(cats.map(c => fetchProducts(listQuery({ cat: c, sort: 'best', dir: 'asc' })).catch(() => {})));
+  await Promise.all(cats.map(c => fetchProducts(listQuery({ cat: c, sort: 'best', dir: 'asc', filters: pin ? { facets: pin } : {} })).catch(() => {})));
+}
+
+// A sliced brick navigates with its registry pin as a real filter selection:
+// Results seeds f.facets from history.state.params.facets (the same seam
+// Browse's sub-chips use), so the pin filters the client pool, renders
+// checked in the rail, and rides onQuery to the server as ordinary facets —
+// no GPC-specific query path anywhere. Deep copy: Results must never share
+// object identity with the registry.
+function gpcParams(name, params) {
+  if (name !== 'results' || !params.brick || params.facets) return params;
+  const r = (CATALOG.meta?.depts || []).flatMap(d => d.rules).find(x => x.b === params.brick);
+  return r?.facets ? { ...params, facets: JSON.parse(JSON.stringify(r.facets)) } : params;
 }
 
 // Login-time hydration: hydrateMe/hydrateFeed/hydrateRecent all resolve ids
@@ -484,6 +499,7 @@ function App() {
     ensureRoute(name, params).then(() => {
       if (t !== navSeq) return;
       if (name === 'product') recordRecent(params.id); // after the fetch: prodOf needs the row
+      params = gpcParams(name, params); // after ensureRoute: needs the served registry
       const url = toUrl(name, params);
       // mirror upstream AppRouter: park scrollY on the outgoing entry so Back
       // restores it, and carry {name, params} on the new entry — Results seeds
@@ -576,6 +592,10 @@ function App() {
       ensureRoute(s.name, s.params).then(() => {
         if (t !== navSeq) return;
         if (s.name === 'product') recordRecent(s.params.id);
+        // an entry without params state (pre-boot deep link) gets the pin
+        // seeded here; entries pushed by nav() already carry it — and their
+        // rfilters (the user's own edits) must win, so never overwrite
+        if (!(history.state || {}).params) try { history.replaceState({ ...history.state, name: s.name, params: gpcParams(s.name, s.params) }, ''); } catch (e) {}
         setScreen(s);
         // after the async swap renders (upstream AppRouter does the same double-rAF)
         requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, scrollY)));
@@ -713,13 +733,16 @@ function hydrateCatalog(data) {
       const dep = { id: d.id, name: d.name, icon: d.icon, rules: [], n: 0, segs: [] };
       for (const r of d.rules) {
         const [seg = '', fam = '', cls = ''] = String(r.path || '').split(' › ');
-        const n = counts[r.cat] || 0;
+        // sliced rules (r.facets) carry their cron-computed n; whole-cat rules
+        // join the live cats histogram. A slice never adds to dep.n — its rows
+        // already sit inside its whole-cat sibling (build.js enforces one).
+        const n = r.facets ? (r.n ?? 0) : (counts[r.cat] || 0);
         const bk = { code: r.b, name: r.name, icon: r.icon, n, syn: r.syn || [], seg: { code: r.b, name: seg, icon: r.icon }, fam: { name: fam }, cls: { code: r.b, name: cls, bricks: [] } };
         brickBy[r.b] = bk; ALL_BRICKS.push(bk);
         BRICK_CAT[r.b] = r.cat;
         if (!BRICK_DEPT[r.b]) BRICK_DEPT[r.b] = dep;
-        dep.rules.push({ b: r.b });
-        dep.n += n;
+        dep.rules.push(r.facets && r.n != null ? { b: r.b, n: r.n } : { b: r.b });
+        if (!r.facets) dep.n += n;
       }
       DEPTS.push(dep);
     }
@@ -749,5 +772,8 @@ Promise.all([
     ensureRoute(s.name, s.params),
   ]);
   if (s.name === 'product') recordRecent(s.params.id);
+  // a deep link has no history entry state — seed it so Results can read
+  // params.facets (sliced-brick pin) exactly like a pushed nav
+  try { history.replaceState({ ...history.state, name: s.name, params: gpcParams(s.name, s.params) }, ''); } catch (e) {}
   ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
 });

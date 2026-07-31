@@ -539,9 +539,13 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   const drules = meta.depts?.flatMap(d => d.rules) || [];
   assert.ok(meta.depts?.length >= 10 && drules.length, 'meta.depts serves the department registry');
   assert.ok(drules.every(r => r.b && r.name && r.icon && meta.icons[r.cat]), 'every dept rule has b/name/icon and backs a registered category');
-  assert.ok(drules.every(r => r.n === undefined), 'dept rules carry no baked counts — boot joins meta.cats');
+  assert.ok(drules.every(r => r.n === undefined), 'dept rules carry no baked counts — whole-cat n joins meta.cats in boot, sliced n only exists after the cron');
   const dcats = new Set(drules.filter(r => !r.facets && !r.label).map(r => r.cat));
   assert.ok(Object.keys(meta.icons).every(c => dcats.has(c)), 'every registered category is reachable from a whole-cat dept rule');
+  // sliced rules pin facet selections the rail must know how to render
+  const dsliced = drules.filter(r => r.facets);
+  assert.ok(dsliced.length >= 10, 'the registry carries attribute-sliced sub-category rules');
+  assert.ok(dsliced.every(r => Object.keys(r.facets).every(k => meta.facets[r.cat]?.some(f => f.key === k))), 'every sliced facet key is declared for its cat');
   // SUBCATS-PLAN: every Gaming head carries a curated facets.type (build.js
   // stamps demo rows, extra.json rows bring their own) — one vocabulary, no
   // 'Home console' spec strings leaking in beside 'Consoles'
@@ -835,6 +839,24 @@ test('scheduled with no sources configured is a no-op — prices freeze until re
   await worker.scheduled({ cron: '0 * * * *' }, { DB }, { waitUntil() {} });
   const after = await catBody(call);
   assert.deepStrictEqual(after, before, 'no sources must mean no changes (the synthetic jiggle is gone)');
+});
+
+test('sliced dept rules serve real cron-computed counts (refreshDeptCounts → seed_meta → catMeta)', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/products?cat=Gaming&limit=1'); // seeds
+  await worker.scheduled({ cron: '0 * * * *' }, { DB }, { waitUntil() {} });
+  const { meta } = await (await call('/api/products?cat=Gaming&limit=1')).json();
+  const rules = meta.depts.flatMap(d => d.rules);
+  const sliced = rules.filter(r => r.facets);
+  assert.ok(sliced.every(r => typeof r.n === 'number'), 'every sliced rule carries a count after the cron');
+  assert.ok(rules.every(r => r.facets || r.n === undefined), 'whole-cat rules stay bare — boot joins meta.cats');
+  // the count is the exact predicate the served brick page uses, so the
+  // browse sub-tile number and the brick page's total can never disagree
+  const consoles = sliced.find(r => r.name === 'Consoles');
+  const page = await (await call('/api/products?cat=Gaming&sort=best&dir=asc&facets=' + encodeURIComponent(JSON.stringify(consoles.facets)))).json();
+  assert.ok(consoles.n > 0, 'demo Gaming rows include consoles');
+  assert.strictEqual(consoles.n, page.meta.total, 'sliced n equals the facet-filtered total');
 });
 
 // 4d: real price sources — env.SOURCES config, Adtraction XML feeds matched

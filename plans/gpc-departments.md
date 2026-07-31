@@ -199,10 +199,20 @@ departments incl. non-electronics; a Pets sub-category lists real rows; a
 brick URL deep-links. Update CLAUDE.md (browse/categories section + the
 degradation note).
 
-## Parked (deliberately, do not build now)
-- Real GS1 GPC import + EAN→brick classification of crawled rows (would make
-  brick a stored dimension; the registry format survives that change).
-- Per-brick facet-def registry (BRICK_FACETS server-side) — today brick pages
-  fall back to `FACETS[cat]` from facets.json, which is fine.
-- Real counts for attribute-sliced rules (needs facet-histogram lookups at
-  catMeta time).
+## Parked follow-up — resolved 2026-07-31 (same-day session)
+All three parked items were picked up:
+- **Real GS1 GPC**: registry codes/paths renumbered to the real published EN
+  schema (fetched from the GPC browser API; `node tools/gpc-check.mjs`
+  validates every rule, `99…` codes are marked synthetic where GPC 2020 has
+  no brick). EAN→brick classification stays parked for real: the EAN→GPC
+  mapping lives in GS1 Verified (member API we have no credentials for), and
+  while every brick ≡ cat(+facets) it changes nothing user-visible.
+- **Real counts for sliced rules**: 16 attribute-sliced rules (Headphones,
+  Consoles, Pet food, …) landed; `refreshDeptCounts` (hourly cron) computes
+  each slice via `listIds` — the served page's exact predicate — into
+  `seed_meta` row 4, `catMeta` merges as `n` on sliced rules only.
+- **Per-brick facet defs**: dissolved rather than built. The slice pin rides
+  `history.state.params.facets` (boot `gpcParams`) into Results' own filter
+  state — visible, checked in the rail, applied client-side, sent as
+  ordinary `facets=`. With the pin being real filter state, `FACETS[cat]`
+  defs are exactly right and a per-brick def registry has no job.
