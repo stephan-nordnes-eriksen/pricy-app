@@ -499,6 +499,13 @@ test('facet values derive from the product name, per category', async () => {
     [{ cat: 'TV', name: 'Samsung 55" OLED S90C' }, { type: 'TVs', size: 55, panel: 'OLED' }],
     // a TV stand is not a TV — the type facet is what separates them
     [{ cat: 'TV', name: 'Casø Birk TV-bord' }, { type: 'TV furniture' }],
+    // Audio: Accessories outranks the host product's own words — a Sonos mount
+    // is not a Speaker, and an accessory filed under "Hodetelefoner…" is not a
+    // Headphone. But "Stativ/kompakt høyttaler" is a real stand-MOUNT speaker
+    // breadcrumb, so bare "stativ" must not trip the Accessories rule.
+    [{ cat: 'Audio', name: 'Wall Mount for Sonos Beam' }, { type: 'Accessories' }],
+    [{ cat: 'Audio', name: 'Linocell Ørebøyler for modeller med stamme, 2-pk.', srcCat: 'Hodetelefoner og hodesett > Hodetelefonstativ & tilbehør' }, { type: 'Accessories' }],
+    [{ cat: 'Audio', name: '606 S3', srcCat: 'Høyttalere > Stativ/kompakt høyttaler' }, { type: 'Speakers' }],
   ];
   for (const [row, want] of cases) assert.deepStrictEqual(deriveFacets(row), want, row.name);
   assert.strictEqual(deriveFacets({ cat: 'Books', name: 'Around the Moon' }), undefined, 'no match = no facets, never an empty object');
@@ -1600,12 +1607,16 @@ test('auto-promotion: a hidden row with name+CATMAP-mapped srcCat goes live (bra
     { product_id: 'ean-7099999999994', shop: 'Power', price: 990, name: 'Nameless Phone', srcCat: 'Mobiltelefoner' },
     { product_id: 'ean-7099999999995', shop: 'Power', price: 990, name: 'Acme Grunk', brand: 'Acme', srcCat: 'Diverse' },
     { product_id: 'ean-7099999999996', shop: 'Power', price: 99, name: 'Pixel 9 deksel svart', brand: 'Google', srcCat: 'Mobiltelefoner' },
+    // spare parts: plural "Reservedeler" slipped \breservedel\b, and \b can't
+    // anchor before ø (ASCII word boundary) so ørebøyle sits outside the group
+    { product_id: 'ean-7099999999997', shop: 'Power', price: 49, name: 'Pixel Buds Reservedeler', brand: 'Google', srcCat: 'Mobiltelefoner' },
+    { product_id: 'ean-7099999999998', shop: 'Power', price: 50, name: 'Linocell Ørebøyler for modeller med stamme, 2-pk.', brand: 'Linocell', srcCat: 'Mobiltelefoner' },
   ]);
   const brandless = (await (await call('/api/products?q=nameless phone')).json()).products.find(p => p.id === 'ean-7099999999994');
   assert.ok(brandless, 'brandless-but-mapped product still auto-promotes');
   assert.strictEqual(brandless.brand, 'Unspecified');
   const hiddenIds = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products.map(p => p.id);
-  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999996'], 'unclassifiable and blocklisted rows stay hidden');
+  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999996', 'ean-7099999999997', 'ean-7099999999998'], 'unclassifiable and blocklisted rows stay hidden');
 
   // a human demotion out-ranks the machine: auto:1 + hidden:1 never re-promotes
   await req('/api/admin/products/ean-7099999999993', 'PATCH', { hidden: 1 });

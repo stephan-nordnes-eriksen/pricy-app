@@ -88,13 +88,16 @@ const SIZE = (s) => {
 const RULES = {
   Audio: {
     type: opt(
+      // Accessories first, like Phones: "Wall Mount for Sonos Beam" must not
+      // answer Soundbars off "beam". Stand terms are COMPOUND only — the bare
+      // "stativ" leaf "Stativ/kompakt høyttaler" is real stand-mount speakers.
+      [/kabel|høyttalerstativ|hodetelefonstativ|\bstand\b|\bshelf\b|\bmount|feste|bracket|adapter|deksel|\bcase\b|pads|bøyle|ørepute|tilbehør/, 'Accessories'],
       [/soundbar|\bbeam\b|\barc\b|\bsub\b|subwoofer/, 'Soundbars'],
       [/\bbuds\b|earbud|ørepropp|in-ear|airpods|true wireless|øreplugg/, 'Earbuds'],
       [/hodetelefon|headphone|headset|over-?ear|on-?ear|quietcomfort|momentum|\bwh-/, 'Headphones'],
       [/høyttaler|\bspeaker|sonos|partybox|party\b|boombox|\bera\b|\bhome\b/, 'Speakers'],
       [/forsterker|receiver|amplifier|\bdac\b|streamer|platespiller|turntable/, 'Amplifiers'],
       [/mikrofon|\bmic\b|podcast/, 'Microphones'],
-      [/kabel|stativ|\bstand\b|\bmount|feste|bracket|adapter|deksel|\bcase\b|pads/, 'Accessories'],
     ),
     wireless: flag(/trådløs|wireless|bluetooth|\btws\b/),
     color: COLOR,
