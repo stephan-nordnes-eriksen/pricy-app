@@ -685,17 +685,17 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   // A search (q=) is capped at 100 rows the client already holds \u2014 never ask.
   const fKey = JSON.stringify(f);
   useEffect(() => {
-    if (!window.onQuery || query || brick || dept) { setServed({ total: null, fcounts: null }); return; }
+    if (!window.onQuery || query) { setServed({ total: null, fcounts: null }); return; }
     let dead = false;
     const t = setTimeout(() => {
-      Promise.resolve(window.onQuery({ cat, sort, dir, filters: f, page: 0 })).then(r => {
+      Promise.resolve(window.onQuery({ cat, brick, dept, label, sort, dir, filters: f, page: 0 })).then(r => {
         if (dead || !r) return;
         setServed({ total: r.total != null ? r.total : null, fcounts: r.fcounts || null });
         setPage(0); setShown(60); bump(x => x + 1);
       }).catch(() => {});
     }, 250);
     return () => { dead = true; clearTimeout(t); };
-  }, [query, cat, sort, dir, fKey]);
+  }, [query, cat, brick, dept, sort, dir, fKey]);
 
   // sortable fields = universal ones + this category's spec axes (+ relevance on a search)
   const sortFields = useMemo(() => [
@@ -751,7 +751,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     if (!serverMore || loadingMore || !window.onQuery) return;
     setLoadingMore(true);
     try {
-      const r = await window.onQuery({ cat, sort, dir, filters: f, page: page + 1 });
+      const r = await window.onQuery({ cat, brick, dept, label, sort, dir, filters: f, page: page + 1 });
       setPage(page + 1);
       if (r) setServed(s => ({ total: r.total != null ? r.total : s.total, fcounts: r.fcounts || s.fcounts }));
       bump(x => x + 1);
