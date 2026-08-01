@@ -51,6 +51,16 @@
         "path": "Audio Visual/Photography › Audio Visual Equipment › Home Audio Equipment",
         "facets": { "type": [ "Soundbars" ]
         }
+      },
+      {
+        "b": "10001447",
+        "name": "Audio accessories",
+        "icon": "cable",
+        "cat": "Audio",
+        "syn": [ "lydtilbehør", "høyttalerkabel", "veggfeste sonos" ],
+        "path": "Audio Visual/Photography › Audio Visual Equipment › Home Audio Equipment",
+        "facets": { "type": [ "Accessories" ]
+        }
       }
     ]
   },
@@ -97,6 +107,16 @@
         "cat": "Phones",
         "syn": [ "mobil", "mobiltelefon", "smarttelefon", "iphone", "deksel", "lader" ],
         "path": "Communications › Communications › Mobile Communication Devices/Services"
+      },
+      {
+        "b": "10003779",
+        "name": "Mobile accessories",
+        "icon": "battery-charging",
+        "cat": "Phones",
+        "syn": [ "mobiltilbehør", "mobildeksel", "mobillader", "skjermbeskytter" ],
+        "path": "Communications › Communications › Mobile Communication Devices/Services",
+        "facets": { "type": [ "Accessories" ]
+        }
       }
     ]
   },
@@ -349,6 +369,36 @@
         "cat": "Bikes",
         "syn": [ "sykkel", "elsykkel", "sykkelhjelm", "sykkelutstyr" ],
         "path": "Sports Equipment › Sports Equipment › Cycle Sports Equipment"
+      },
+      {
+        "b": "10001903",
+        "name": "Sport accessories",
+        "icon": "package",
+        "cat": "Sport",
+        "syn": [ "sportstilbehør" ],
+        "path": "Sports Equipment › Sports Equipment › Sports Equipment Accessories",
+        "facets": { "type": [ "Accessories" ]
+        }
+      },
+      {
+        "b": "99000031",
+        "name": "Outdoor accessories",
+        "icon": "backpack",
+        "cat": "Outdoor",
+        "syn": [ "turtilbehør", "luer", "votter" ],
+        "path": "Camping › Camping › Camping Accessories",
+        "facets": { "type": [ "Accessories" ]
+        }
+      },
+      {
+        "b": "10001811",
+        "name": "Bike accessories",
+        "icon": "wrench",
+        "cat": "Bikes",
+        "syn": [ "sykkeltilbehør", "sykkeldeler" ],
+        "path": "Sports Equipment › Sports Equipment › Cycle Sports Equipment",
+        "facets": { "type": [ "Accessories" ]
+        }
       }
     ]
   },
@@ -388,6 +438,16 @@
         "cat": "Watches",
         "syn": [ "klokke", "klokker", "armbåndsur", "smartklokke" ],
         "path": "Personal Accessories › Personal Accessories › Watches"
+      },
+      {
+        "b": "99000030",
+        "name": "Fashion accessories",
+        "icon": "glasses",
+        "cat": "Fashion",
+        "syn": [ "motetilbehør", "solbriller", "belter", "skjerf" ],
+        "path": "Clothing › Clothing › Clothing Accessories",
+        "facets": { "type": [ "Accessories" ]
+        }
       }
     ]
   },

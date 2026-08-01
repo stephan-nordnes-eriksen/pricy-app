@@ -858,7 +858,7 @@ test('sub-categories: dept cards chip their rules, a sub-tile lands on the brick
   const sport = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Sport & Outdoor');
   assert.ok(sport, 'Sport & Outdoor card must render');
   assert.deepStrictEqual([...sport.querySelectorAll('.mchip')].map(el => el.textContent),
-    ['Sports & Training', 'Strength training', 'Ski & snow', 'Sportswear', '+2'], 'card chips are the dept rules (sliced sub-categories included)');
+    ['Sports & Training', 'Strength training', 'Ski & snow', 'Sportswear', '+5'], 'card chips are the dept rules (sliced sub-categories included)');
 
   // open card expands the sub-category panel; a sub-tile navigates to the brick
   const gaming = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Gaming');
