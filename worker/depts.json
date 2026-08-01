@@ -194,6 +194,86 @@
         }
       },
       {
+        "b": "10001153",
+        "name": "Monitors",
+        "icon": "monitor",
+        "cat": "Computers",
+        "syn": [ "skjerm", "monitor", "gamingskjerm", "pc-skjerm" ],
+        "path": "Computing › Computers/Video Games › Computer/Video Game Peripherals",
+        "facets": { "type": [ "Monitors" ]
+        }
+      },
+      {
+        "b": "10001123",
+        "name": "Motherboards",
+        "icon": "microchip",
+        "cat": "Computers",
+        "syn": [ "hovedkort", "motherboard" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Motherboards" ]
+        }
+      },
+      {
+        "b": "10001121",
+        "name": "Cooling",
+        "icon": "fan",
+        "cat": "Computers",
+        "syn": [ "cpu-kjøler", "vannkjøling", "kabinettvifte", "kjølepasta" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Cooling" ]
+        }
+      },
+      {
+        "b": "99000050",
+        "name": "PC cases",
+        "icon": "pc-case",
+        "cat": "Computers",
+        "syn": [ "kabinett", "pc-kabinett" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Cases" ]
+        }
+      },
+      {
+        "b": "10001167",
+        "name": "Network adapters",
+        "icon": "wifi",
+        "cat": "Computers",
+        "syn": [ "nettverkskort", "nettverksadapter", "wifi-adapter" ],
+        "path": "Computing › Computers/Video Games › Computer Networking Equipment",
+        "facets": { "type": [ "Network adapters" ]
+        }
+      },
+      {
+        "b": "99000051",
+        "name": "Sound cards",
+        "icon": "audio-lines",
+        "cat": "Computers",
+        "syn": [ "lydkort" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Sound cards" ]
+        }
+      },
+      {
+        "b": "10001127",
+        "name": "Optical drives",
+        "icon": "disc",
+        "cat": "Computers",
+        "syn": [ "blu-ray-brenner", "dvd-brenner", "optisk stasjon" ],
+        "path": "Computing › Computers/Video Games › Computer Drives",
+        "facets": { "type": [ "Optical drives" ]
+        }
+      },
+      {
+        "b": "99000052",
+        "name": "UPS",
+        "icon": "battery-charging",
+        "cat": "Computers",
+        "syn": [ "ups", "avbruddsfri strømforsyning", "nødstrøm" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "UPS" ]
+        }
+      },
+      {
         "b": "10006276",
         "name": "E-book Readers",
         "icon": "book-open",

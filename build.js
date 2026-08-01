@@ -166,6 +166,8 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
     pulse9070: 'Graphics cards', ssd990pro: 'Internal storage',
     sa510: 'Internal storage', t7shield: 'External storage',
     rm750e: 'Power supplies',
+    u2724de: 'Monitors', lg27gs: 'Monitors', aoc24g4: 'Monitors',
+    s65tc: 'Monitors',
     dyson: 'Vacuums', roborock: 'Vacuums', eufy: 'Vacuums', jet85: 'Vacuums',
     'philips-air': 'Climate', hue: 'Smart lighting',
     specialista: 'Coffee makers', barista: 'Coffee makers', mocca: 'Coffee makers',
