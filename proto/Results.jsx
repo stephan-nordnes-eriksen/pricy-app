@@ -710,12 +710,27 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   useEffect(() => { if (!sortFields.some(s => s.id === sort)) { setSort('best'); setDir('asc'); } }, [sortFields, sort]);
   const badgeOf = sortField.badge ? (p) => sortField.badge(p, sortDir) : null;
 
-  const prices = countPool.map(p => p.best).filter(n => n != null && isFinite(n));
+  // brand counts + price bounds cross-filter against the active facet
+  // selections (a sliced brick page's pin is one), matching the served
+  // fcounts convention; brand's own selection is deliberately NOT applied
+  // so picking a brand keeps its siblings listed
+  const brandPool = useMemo(() => {
+    if (!Object.keys(f.facets).length) return countPool;
+    return countPool.filter(p => facetDefs.every(def => {
+      const sel = f.facets[def.key];
+      if (!sel) return true;
+      const v = fval(p, def.key);
+      if (def.type === 'bool') return v === true;
+      return v !== undefined && (Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v));
+    }));
+  }, [countPool, fKey, facetDefs]);
+
+  const prices = brandPool.map(p => p.best).filter(n => n != null && isFinite(n));
   const base = {
     min: prices.length ? Math.floor(Math.min(...prices) / 100) * 100 : 0,
     max: prices.length ? Math.ceil(Math.max(...prices) / 100) * 100 : 1000,
     cat,
-    byBrand: countPool.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
+    byBrand: brandPool.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
   };
   base.brands = Object.keys(base.byBrand).sort();
   base.cat = cat || catF;
