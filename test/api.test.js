@@ -515,6 +515,17 @@ test('facet values derive from the product name, per category', async () => {
     [{ cat: 'Office', name: 'Canon iSENSYS LBP122DW Laserskriver', srcCat: 'Skrivere og tilbehør > Laserskrivere' }, undefined],
     [{ cat: 'Toys', name: 'Romskip med tilbehør og belysning og lyd, 20cm' }, undefined],
     [{ cat: 'Toys', name: 'Spiderman maske', srcCat: 'Karnevalsdrakter & Tilbehør' }, undefined],
+    // strong nouns (a deksel is never the product) beat the host product's
+    // own words; ambiguous nouns are a FALLBACK, so the per-cat vocabulary
+    // shields every "the noun IS the product" case — a Magic card named
+    // "Case of…" stays a Trading card, "Long Sleeve" is garment phrasing,
+    // and Books has no type rules so the comic "Cable" derives nothing.
+    [{ cat: 'Computers', name: 'Otterbox Defender Deksel for iPad Pro 11" (M4)' }, { type: 'Accessories', size: 11 }],
+    [{ cat: 'Gaming', name: 'Goobay HDMI 2.1 Kabel 1m' }, { type: 'Accessories' }],
+    [{ cat: 'Gaming', name: 'Case of the Trampled Garden (Enkeltkort)', srcCat: 'Magic løskort' }, { type: 'Trading cards' }],
+    [{ cat: 'Books', name: 'Cable And X-force Volume 4: Vendetta (marvel Now)' }, { format: 'Comics & graphic novels' }],
+    [{ cat: 'Fashion', name: 'Soft Texture Long Sleeve' }, undefined],
+    [{ cat: 'Toys', name: 'NEGLESETT M/ARMBÅND OG STICKE.' }, undefined],
   ];
   for (const [row, want] of cases) assert.deepStrictEqual(deriveFacets(row), want, row.name);
   assert.strictEqual(deriveFacets({ cat: 'Books', name: 'Around the Moon' }), undefined, 'no match = no facets, never an empty object');
@@ -1611,17 +1622,21 @@ test('auto-promotion: a hidden row with name+CATMAP-mapped srcCat goes live (bra
   assert.ok(live.kw.includes('google') && live.kw.includes('pixel') && live.kw.includes('phones'), `kw covers name+brand+cat: ${live.kw}`);
 
   // no brand but mapped category → still goes live, brand falls back to
-  // "Unspecified"; unmapped srcCat → stays hidden; accessory name → stays hidden
+  // "Unspecified"; unmapped srcCat → stays hidden; a FEE stays hidden — but an
+  // accessory name promotes now (2026-08-01) and types as Accessories
   await push([
     { product_id: 'ean-7099999999994', shop: 'Power', price: 990, name: 'Nameless Phone', srcCat: 'Mobiltelefoner' },
     { product_id: 'ean-7099999999995', shop: 'Power', price: 990, name: 'Acme Grunk', brand: 'Acme', srcCat: 'Diverse' },
     { product_id: 'ean-7099999999996', shop: 'Power', price: 99, name: 'Pixel 9 deksel svart', brand: 'Google', srcCat: 'Mobiltelefoner' },
+    { product_id: 'ean-7099999999997', shop: 'Power', price: 49, name: 'Gavekort 500 kr', srcCat: 'Mobiltelefoner' },
   ]);
   const brandless = (await (await call('/api/products?q=nameless phone')).json()).products.find(p => p.id === 'ean-7099999999994');
   assert.ok(brandless, 'brandless-but-mapped product still auto-promotes');
   assert.strictEqual(brandless.brand, 'Unspecified');
+  const deksel = (await (await call('/api/products?ids=ean-7099999999996')).json()).products[0];
+  assert.strictEqual(deksel?.facets?.type, 'Accessories', 'accessory names go live typed Accessories, not blocked');
   const hiddenIds = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products.map(p => p.id);
-  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999996'], 'unclassifiable and blocklisted rows stay hidden');
+  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999997'], 'unclassifiable rows and fees stay hidden');
 
   // a human demotion out-ranks the machine: auto:1 + hidden:1 never re-promotes
   await req('/api/admin/products/ean-7099999999993', 'PATCH', { hidden: 1 });

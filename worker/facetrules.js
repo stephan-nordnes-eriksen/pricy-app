@@ -91,7 +91,7 @@ const RULES = {
       // Accessories first, like Phones: "Wall Mount for Sonos Beam" must not
       // answer Soundbars off "beam". Stand terms are COMPOUND only — the bare
       // "stativ" leaf "Stativ/kompakt høyttaler" is real stand-mount speakers.
-      [/kabel|høyttalerstativ|hodetelefonstativ|\bstand\b|\bshelf\b|\bmount|feste|bracket|adapter|deksel|\bcase\b|pads|bøyle|ørepute|tilbehør/, 'Accessories'],
+      [/kabel|cable|høyttalerstativ|hodetelefonstativ|\bstand\b|\bshelf\b|\bmount|feste|bracket|adapter|deksel|\bcase\b|pads|bøyle|ørepute|tilbehør/, 'Accessories'],
       [/soundbar|\bbeam\b|\barc\b|\bsub\b|subwoofer/, 'Soundbars'],
       [/\bbuds\b|earbud|ørepropp|in-ear|airpods|true wireless|øreplugg/, 'Earbuds'],
       [/hodetelefon|headphone|headset|over-?ear|on-?ear|quietcomfort|momentum|\bwh-/, 'Headphones'],
@@ -650,14 +650,23 @@ const RULES = {
 // reservedeler / spare parts must not type as the thing it attaches to.
 // Word-START anchors only — "sytilbehør" is Hobby's own Sewing vocabulary,
 // and \b never anchors before ø/å (ASCII), so no trailing anchor either.
-// The lookbehind drops the INCLUSION sense: "Romskip med tilbehør og lyd"
-// and "Sparkesykler og tilbehør" hold the real deal, "Sonos tilbehør" and
-// "Tilbehør til dør" hold accessories. ponytail: conjunction ≈ mixed menu —
-// misreads accessory-only "X & tilbehør" leaves, whose rows just fall
-// through to the per-cat rules instead.
-// Narrow on purpose: only words that MEAN accessory, never the accessory
-// nouns themselves (a "veske" is Fashion's real deal, a tripod is Photo's).
-const ACC_RE = /(?<!(?:\bmed|\bog|\binkl[\w.]*|\bincl[\w.]*|&|\+|\band|\bwith)\s)(?:\btilbehør|\baccessor)|\breservedel|\bspare ?parts?\b|\breplacement\b/i;
+// The lookbehind drops the INCLUSION sense: "Romskip med tilbehør og lyd",
+// "Sparkesykler og tilbehør", "startsett m/lader" hold the real deal;
+// "Sonos tilbehør" and "Tilbehør til dør" hold accessories. ponytail:
+// conjunction ≈ mixed menu — misreads accessory-only "X & tilbehør" leaves,
+// whose rows just fall through to the per-cat rules instead.
+const NOT_INCL = /(?<!(?:\bmed|\bog|\bm|\bu|\binkl[\w.]*|\bincl[\w.]*|&|\+|\band|\bwith|\bw)[\s/])/.source;
+// Strong tier: words that MEAN accessory (the shop's own filing) plus nouns
+// that are accessories in every category (a deksel is never the product).
+const ACC_RE = new RegExp(NOT_INCL + String.raw`(?:\btilbehør|\baccessor|\bdeksel|skjermbeskytt|screen ?protector|panzerglass|\bhylster)|\breservedel|\bspare ?parts?\b|\breplacement\b`, 'i');
+// Fallback tier, consulted only when the category's own rules stay silent:
+// nouns that are usually an accessory but sometimes the product itself —
+// "Case of the Trampled Garden" is a Magic card (typed Trading cards by
+// Gaming's rules first), "Cable" is an X-Men comic (Books has no type
+// rules, so no ACC pass at all), a camera veske is Photo's own Bags & rigs.
+// ponytail: \bveske misses Norwegian compounds (reiseveske) — most such
+// rows carry another noun or a typed leaf; widen only against a measured miss.
+const ACC_NOUN_RE = new RegExp(NOT_INCL + String.raw`(?:\blader\b|\bcharger|kabel|\bcable\b|\badapter|\bcase\b|\bcover\b|\betui\b|\bveske\b|(?<!\blong\s|\bshort\s)\bsleeve\b|\bstrap\b|\breim\b|\barmbånd)`, 'i');
 
 // Facets a category's rules can produce, for build.js's registry check.
 export const RULE_KEYS = Object.fromEntries(Object.entries(RULES).map(([cat, r]) => [cat, Object.keys(r)]));
@@ -697,6 +706,10 @@ export function deriveFacets({ name, cat, srcCat, brand }) {
       v = k === 'type' && i < 2 && ACC_RE.test(ts[i]) ? 'Accessories' : f(ts[i]);
       if (v !== undefined) break;
     }
+    // Noun fallback LAST: only a row the category's own vocabulary can't
+    // place gets typed by its accessory noun — so the per-cat rules shield
+    // every "the noun IS the product" case for free.
+    if (v === undefined && k === 'type' && ts.slice(0, 2).some(t => ACC_NOUN_RE.test(t))) v = 'Accessories';
     if (v !== undefined && v === v) out[k] = v; // NaN guard: a bad number is no value
   }
   return Object.keys(out).length ? out : undefined;

@@ -260,9 +260,22 @@ Two Claude Design projects feed this repo:
   routing lives in the D1 `eans` table (bootstrapped from `worker/eans.json`,
   `OR IGNORE` — runtime rows win); hidden rows **auto-promote** at ingest
   when a source supplies a name + a category resolving to a
-  `worker/cats.json` cat — `meta.auto: 1`, accessory-name blocklist
-  (`JUNK_RE`, with `JUNK_OK` exempting Jewelry/Watches), still-unresolved
-  stays hidden (that IS the junk filter).
+  `worker/cats.json` cat — `meta.auto: 1`, fee/gift-card names blocked
+  (`JUNK_RE` — fees only since 2026-08-01), still-unresolved stays hidden
+  (that IS the junk filter). **Accessories are typed, not blocked**
+  (2026-08-01): facetrules' shared ACC pass runs ahead of every cat's
+  `type` rules — a row the shop files under tilbehør/reservedeler/spare
+  parts (name or breadcrumb LEAF only; parents are mixed menus, and a
+  conjunction — "med/og/& tilbehør", "m/lader" — means *included*, not
+  *is*) types as `Accessories`, so it drops out of the host product's
+  brick-slice listings while staying served and filterable. Always-
+  accessory nouns (deksel, skjermbeskytter…) ride the same strong tier;
+  ambiguous nouns (case, cable, veske, lader…) are a FALLBACK consulted
+  only when the cat's own rules stay silent, so the per-cat vocabulary
+  shields "the noun IS the product" ("Case of…" Magic cards, "Long
+  Sleeve" shirts, the comic "Cable" — all real rows the old blocklist
+  hid). Measure any term change with the same replay discipline as
+  CAT_RULES.
   **Category resolution, in order (widened 2026-07-25 — this is what makes a
   NEW shop go live with no config):** the `CATMAP` var (wrangler.jsonc,
   per-shop `{raw srcCat → our cat}`) → `CAT_RULES` in worker/index.js, one
@@ -296,7 +309,8 @@ Two Claude Design projects feed this repo:
   leaf-first reaches them before the department. `CAT_SKIP` tests the **leaf**,
   not the whole path (a mid-path `Tilbehør` is only the menu the shop files it
   under; testing the whole string lost 38 beanies under `KLÆR > Tilbehør > Luer
-  og pannebånd`) — the name-level `JUNK_RE` gate is what keeps cases out.
+  og pannebånd`) — accessory names promote too and get `type: Accessories`
+  from facetrules' ACC pass.
   `breadcrumbCat` reads the breadcrumb as JSON-LD **or schema.org microdata**
   (Japan Photo publishes only the latter — 638 rows arrived with no category at
   all), and a crumb equal to the product NAME is dropped wherever it sits in the

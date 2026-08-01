@@ -271,19 +271,19 @@ const stockVal = (s) => s == null || s === 2 ? 2 : s ? 1 : 0;
 const autoAdd = (r) => /^(ean-\d+|p-[a-z0-9-]+)$/.test(r.product_id) && typeof r.name === 'string' && !!r.name.trim();
 
 // Auto-promotion bits (OPEN-CATALOG-PLAN B3): CATS (cats.json) gates valid
-// categories + default icons, an accessory blocklist keeps junk hidden
-// regardless of category mapping, and kw = distinct name/brand/cat tokens.
-// …plus the non-products a full-catalog sitemap crawl inevitably picks up:
-// shops sell handling fees, gift cards and freight as priced "products"
-// The fee half is deliberately NOT \b-anchored: Norwegian compounds glue the
-// words together ("Håndteringsavgift", "Fraktkostnad"), so \bavgift\b misses
-// every real occurrence. Keep these terms narrow for the same reason —
-// "ekspedisjon" was in here until it ate a LEGO "ørkenekspedisjon"; the fee
-// sense of it is "ekspedisjonsgebyr", which `gebyr` already covers.
-const JUNK_RE = /\b(deksel|etui|case|cover|skjermbeskytter|screen ?protector|panzerglass|strap|reim|armbånd|refill|reservedel|spare ?part|lader|charger|kabel|cable|adapter|veske|sleeve|hylster)\b|avgift|gebyr|gavekort|frakt|service ?fee|håndtering/i;
-// …except where those words ARE the product (a jewellery bracelet, a watch strap
-// shop) — the category the shop itself assigned already proves it isn't an accessory
-const JUNK_OK = new Set(['Jewelry', 'Watches']);
+// categories + default icons, and kw = distinct name/brand/cat tokens.
+// JUNK_RE blocks only the NON-PRODUCTS a full-catalog sitemap crawl picks up:
+// shops sell handling fees, gift cards and freight as priced "products".
+// Accessory names are NOT blocked anymore (2026-08-01): they promote and
+// facetrules' ACC pass types them `Accessories` — the old accessory
+// blocklist was hiding every English "Long Sleeve" shirt and the Marvel
+// comic "Cable" along with the phone cases.
+// Deliberately NOT \b-anchored: Norwegian compounds glue the words together
+// ("Håndteringsavgift", "Fraktkostnad"), so \bavgift\b misses every real
+// occurrence. Keep these terms narrow for the same reason — "ekspedisjon"
+// was in here until it ate a LEGO "ørkenekspedisjon"; the fee sense of it
+// is "ekspedisjonsgebyr", which `gebyr` already covers.
+const JUNK_RE = /avgift|gebyr|gavekort|frakt|service ?fee|håndtering/i;
 const kwOf = (...parts) => [...new Set(parts.join(' ').toLowerCase().match(/[\p{L}\d]+/gu) || [])].filter(t => t.length > 1).join(' ');
 
 // Category classification (OPEN-CATALOG B3, widened 2026-07-25). env.CATMAP
@@ -393,8 +393,8 @@ export const classify = (label) => {
   // product IS, and a mid-path "Tilbehør" only says the shop files it under an
   // accessories menu. Testing the whole string cost "KLÆR > Tilbehør > Luer og
   // pannebånd" — 38 beanies with a perfectly readable leaf. A single-crumb label
-  // is its own leaf, so those behave exactly as before. The name-level JUNK_RE
-  // gate at promotion is what actually keeps chargers and cases out.
+  // is its own leaf, so those behave exactly as before. Chargers and cases
+  // promote too now — facetrules' ACC pass files them under `Accessories`.
   if (!crumbs.length || CAT_SKIP.test(crumbs.at(-1))) return undefined;
   // A pet-department crumb owns its whole path: under "Katt >" the leaf is
   // "Leker" or "Shampoo og balsam", and leaf-first read those as Toys/Beauty —
@@ -507,7 +507,7 @@ async function ingest(db, rows, env) {
     // vocabulary reading its category path). The floor is not evidence.
     const real = catmap[r.shop]?.[srcCat] ?? classify(srcCat);
     const cat = real ?? catmap[r.shop]?.['*'];
-    if (!meta.name || !CATS[cat] || (JUNK_RE.test(meta.name) && !JUNK_OK.has(cat))) continue;
+    if (!meta.name || !CATS[cat] || JUNK_RE.test(meta.name)) continue;
     // A shop floor may guess for a NEW row; it must never RE-FILE a live one.
     // Without this, a product carried by two shops takes the category of
     // whichever shop's row happens to land last in the batch — a board game
