@@ -134,6 +134,66 @@
         "path": "Computing › Computers/Video Games › Computers"
       },
       {
+        "b": "10001126",
+        "name": "Graphics cards",
+        "icon": "circuit-board",
+        "cat": "Computers",
+        "syn": [ "grafikkort", "skjermkort", "gpu", "geforce", "radeon" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Graphics cards" ]
+        }
+      },
+      {
+        "b": "10001125",
+        "name": "Processors",
+        "icon": "cpu",
+        "cat": "Computers",
+        "syn": [ "prosessor", "cpu", "ryzen", "intel core" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Processors" ]
+        }
+      },
+      {
+        "b": "10001122",
+        "name": "Memory",
+        "icon": "memory-stick",
+        "cat": "Computers",
+        "syn": [ "minne", "minnebrikke", "ram", "ddr5" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Memory" ]
+        }
+      },
+      {
+        "b": "10005683",
+        "name": "Internal storage",
+        "icon": "hard-drive",
+        "cat": "Computers",
+        "syn": [ "ssd", "nvme", "harddisk", "lagring" ],
+        "path": "Computing › Computers/Video Games › Computer Components",
+        "facets": { "type": [ "Internal storage" ]
+        }
+      },
+      {
+        "b": "10001133",
+        "name": "External storage",
+        "icon": "usb",
+        "cat": "Computers",
+        "syn": [ "ekstern harddisk", "usb-minne", "minnepenn", "minnekort" ],
+        "path": "Computing › Computers/Video Games › Computer Drives",
+        "facets": { "type": [ "External storage" ]
+        }
+      },
+      {
+        "b": "10001124",
+        "name": "Power supplies",
+        "icon": "zap",
+        "cat": "Computers",
+        "syn": [ "strømforsyning", "psu" ],
+        "path": "Computing › Computers/Video Games › Computer/Video Game Accessories",
+        "facets": { "type": [ "Power supplies" ]
+        }
+      },
+      {
         "b": "10006276",
         "name": "E-book Readers",
         "icon": "book-open",
