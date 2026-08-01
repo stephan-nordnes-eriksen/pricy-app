@@ -195,9 +195,12 @@ html = html
   .trimEnd();
 // closing tags are optional HTML5 and the prototype has dropped them before —
 // inject app.js against either shape
+// Cloudflare Web Analytics (free, cookie-less). The zone's auto-injection
+// doesn't touch Worker-served HTML, so the beacon ships from here.
+const beacon = `<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "30371c633b9c4a6e9e4e030c51af01a6"}'></script>`;
 html = html.includes('</body>')
-  ? html.replace('</body>', '<script src="app.js"></script>\n</body>')
-  : html + '\n<script src="app.js"></script>\n</body>\n</html>\n';
+  ? html.replace('</body>', `<script src="app.js"></script>\n${beacon}\n</body>`)
+  : html + `\n<script src="app.js"></script>\n${beacon}\n</body>\n</html>\n`;
 if (!html.includes('<script src="app.js">')) throw new Error('app.js injection failed');
 for (const cdn of ['unpkg.com', 'text/babel']) {
   if (html.includes(cdn)) throw new Error(`build output still references ${cdn}`);
