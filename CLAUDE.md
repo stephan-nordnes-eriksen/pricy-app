@@ -446,6 +446,16 @@ Two Claude Design projects feed this repo:
   `saveSettings`) — same shape as `PUT /api/watches`. `users.settings` is a
   JSON blob column; marketing emails aren't actually sent, only the
   preference persists.
+- Custom lists persist for real (2026-08-02): `PUT /api/lists` is a
+  whole-array replace of the `users.lists` JSON blob (same seam as
+  `PUT /api/autobuy`; ≤50 lists, ≤32 KB), served back as `lists` in
+  `meBody`. boot.jsx wraps `ListStore.emit` to persist every mutation,
+  hydrates `ListStore.lists` in `hydrateMe` (list item ids join the
+  `hydrateSession` ids batch), and routes `/lists?id=`. The "Overvåket"
+  system list is computed client-side off watches, never stored. Sharing
+  is still demo-only upstream (hardcoded link, fake people) — real share
+  tokens/member access need their own table and public read endpoint
+  when that lands upstream.
 - Changing password is real too: `POST /api/account/password`
   (`{currentPassword, newPassword}`) verifies the current password (skipped
   for passwordless magic-link/BankID accounts, which just set one) and

@@ -12,7 +12,7 @@ import { deriveFacets } from './facetrules.js'; // facet VALUES read off the pro
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 
 const SCHEMA = [
-  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, created_at INTEGER)',
+  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, lists TEXT, created_at INTEGER)',
   'CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
@@ -55,6 +55,7 @@ async function ensureSchema(db) {
     await db.prepare('ALTER TABLE users ADD COLUMN password_hash TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE users ADD COLUMN settings TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE users ADD COLUMN autobuy TEXT').run().catch(() => {});
+    await db.prepare('ALTER TABLE users ADD COLUMN lists TEXT').run().catch(() => {});
     // honest metrics: signup date for "Member since" (pre-existing rows stay NULL)
     await db.prepare('ALTER TABLE users ADD COLUMN created_at INTEGER').run().catch(() => {});
     // 4d: real-source offers carry a deep link and a freshness stamp
@@ -178,7 +179,7 @@ async function passwordAuth(db, action, email, password) {
 async function sessionUser(db, token) {
   if (!token) return null;
   return db.prepare(
-    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy, u.created_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
+    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy, u.lists, u.created_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
   ).bind(await sha(token), Date.now()).first();
 }
 
@@ -1172,7 +1173,7 @@ async function meBody(db, user, hideAutobuy) {
   // hideAutobuy (env.HIDE_AUTOBUY): the feature is invisible — no autobuy blob,
   // no purchase history in the me payload. The data export passes false: a
   // user's own data stays complete regardless of what the UI shows.
-  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, settings: user.settings ? JSON.parse(user.settings) : {}, ...(hideAutobuy ? {} : { autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) }) };
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, lists: user.lists ? JSON.parse(user.lists) : [], settings: user.settings ? JSON.parse(user.settings) : {}, ...(hideAutobuy ? {} : { autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) }) };
 }
 
 // ── MCP (experiment) ───────────────────────────────────────────────────────
@@ -1779,7 +1780,7 @@ export default {
         return json(await meBody(db, user, !!env.HIDE_AUTOBUY), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 
-      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, created_at FROM users WHERE email = ?').bind(email).first();
+      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, lists, created_at FROM users WHERE email = ?').bind(email).first();
       if (!user) return json({ error: 'no account for this email' }, 401);
       if (!password) return json({ error: 'enter your password' }, 400);
       if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);
@@ -1823,8 +1824,8 @@ export default {
         { 'content-disposition': 'attachment; filename="pricy-export.json"' });
     }
 
-    // GDPR delete: every row keyed to the user dies (settings/autobuy blobs
-    // live on the users row), and the session cookie is expired
+    // GDPR delete: every row keyed to the user dies (settings/autobuy/lists
+    // blobs live on the users row), and the session cookie is expired
     if (route === 'DELETE /api/account') {
       if (!user) return json({ error: 'unauthenticated' }, 401);
       await db.batch([
@@ -1895,6 +1896,26 @@ export default {
         ...list.map(w => db.prepare('INSERT INTO watches (user_id, product_id, target, paused) VALUES (?, ?, ?, ?)')
           .bind(user.id, w.id, w.target ?? null, w.paused ? 1 : 0)),
       ]);
+      return json({ ok: true });
+    }
+
+    // Custom lists (ListStore): same JSON-blob seam as PUT /api/autobuy —
+    // whole-array replace, the client owns the shape ({id, name, icon, items,
+    // shared, bought, createdAt} per list). The "Overvåket" system list is
+    // computed client-side off watches and never stored. Sharing is still
+    // demo-only upstream (fake link/people) — real share tokens and member
+    // access get their own table when that lands.
+    if (route === 'PUT /api/lists') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const lists = await request.json().catch(() => null);
+      const bad = !Array.isArray(lists) || lists.length > 50
+        || lists.some(l => !l || typeof l !== 'object' || Array.isArray(l)
+          || typeof l.id !== 'string' || typeof l.name !== 'string'
+          || !Array.isArray(l.items) || l.items.some(i => typeof i !== 'string'))
+        || new Set(lists.map(l => l.id)).size !== lists.length
+        || JSON.stringify(lists).length > 32000;
+      if (bad) return json({ error: 'bad lists' }, 400);
+      await db.prepare('UPDATE users SET lists = ? WHERE id = ?').bind(JSON.stringify(lists), user.id).run();
       return json({ ok: true });
     }
 

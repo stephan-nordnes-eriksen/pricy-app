@@ -65,6 +65,7 @@ function hydrateMe(me) {
   // at/below target (worker meBody) — not the old best-vs-target guess
   WatchStore.items = (me.watches || []).map(w =>
     ({ id: w.id, target: w.target, paused: !!w.paused, hit: !!w.hit }));
+  ListStore.lists = me.lists || []; // server lists replace the baked demo ones
   WATCHED.splice(0, WATCHED.length, ...WatchStore.items.map(w => {
     const p = WatchStore.prod(w.id);
     return p && { ...p, target: w.target, hit: w.hit, spark: (p.history || []).slice(-12) };
@@ -205,6 +206,21 @@ WatchStore.emit = function () {
   }
 };
 
+// Every list mutation (create/rename/remove/add/markBought/share/setGift)
+// funnels through ListStore.emit — persist the whole array from there, same
+// seam as WatchStore.emit above.
+const _listsEmit = ListStore.emit;
+ListStore.emit = function () {
+  _listsEmit.call(this);
+  if (ME && typeof fetch === 'function') {
+    fetch('/api/lists', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(this.lists),
+    }).catch(() => {});
+  }
+};
+
 // Every auto-buy mutation (sign/revoke/add/cancel/payment change) funnels
 // through AutobuyStore.emit — persist the fullmakt + active orders from
 // there, same seam as WatchStore.emit above. Executed orders are derived
@@ -283,6 +299,7 @@ function parseUrl(session) {
   if (p.startsWith('/product/')) s = { name: 'product', params: { id: decodeURIComponent(p.slice('/product/'.length)) } };
   else if (p === '/search') s = { name: 'results', params: { query: q.get('q') || undefined, cat: q.get('cat') || undefined, dept: q.get('dept') || undefined, brick: q.get('brick') || undefined, label: q.get('label') || undefined, count: q.get('count') ? Number(q.get('count')) : undefined } };
   else if (p === '/alerts') s = { name: 'alerts', params: { tab: q.get('tab') || undefined } };
+  else if (p === '/lists') s = { name: 'lists', params: { id: q.get('id') || undefined } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
   else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
   else if (['/login', '/browse', '/autobuy', '/onboarding', '/compare'].includes(p)) s = { name: p.slice(1), params: {} };
@@ -373,6 +390,7 @@ function hydrateSession(me, alerts) {
     ...((me.autobuy || {}).orders || []).map(o => o.id),
     ...(me.purchases || []).map(pu => pu.product_id),
     ...(alerts || []).map(a => a.product_id),
+    ...(me.lists || []).flatMap(l => l.items || []),
     ...recents,
   ])].filter(Boolean).slice(0, 100); // ponytail: server cap; page the batch if a session ever tops it
   return (ids.length ? fetchProducts({ ids: ids.join(',') }).catch(() => {}) : Promise.resolve())
@@ -466,6 +484,7 @@ function toUrl(name, params = {}) {
     return '/search' + (s ? '?' + s : '');
   }
   if (name === 'alerts') return '/alerts' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
+  if (name === 'lists') return '/lists' + (params.id ? '?id=' + encodeURIComponent(params.id) : '');
   if (name === 'account') return '/account' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
   if (name === 'about') return '/about' + (params.section ? '?section=' + encodeURIComponent(params.section) : '');
   if (name === 'home' || name === 'landing') return '/';
@@ -615,6 +634,7 @@ function App() {
   else if (name === 'compare') view = <ComparePage go={go} />;
   else if (name === 'browse') view = <BrowsePage go={go} />;
   else if (name === 'alerts') view = <AlertsPage go={go} tab={params.tab} />;
+  else if (name === 'lists') view = <ListsPage go={go} params={params} />;
   else if (name === 'account') view = <AccountPage go={go} tab={params.tab} me={ME} onSaveProfile={saveProfile} onSaveSettings={saveSettings} onChangePassword={changePassword} />;
   else if (name === 'autobuy' && !window.HIDE_AUTOBUY) view = <AutobuyPage go={go} />;
   else if (name === 'onboarding') view = <Onboarding go={go} onFinish={({ notif }) => saveSettings(notif).catch(() => {})} />;
@@ -629,7 +649,7 @@ function App() {
   // needed: without one, every non-public screen is already gated to login.
   // CompareTray mirrors the harness too: hidden on the same public screens
   // plus the compare page itself.
-  return <div key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1 })[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({ login: 1, landing: 1, about: 1, onboarding: 1, compare: 1 })[name]} /></div>;
+  return <div className="app-shell" key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1 })[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({ login: 1, landing: 1, about: 1, onboarding: 1, compare: 1 })[name]} /></div>;
 }
 
 // Catalog is served, not baked — and lazy: hydrateCatalog MERGES a

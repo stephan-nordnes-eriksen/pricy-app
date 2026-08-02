@@ -339,6 +339,34 @@ test('fullmakt + active auto-buy orders persist per user via PUT /api/autobuy', 
   assert.strictEqual((await call('/api/autobuy', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
 });
 
+test('custom lists persist per user via PUT /api/lists', async () => {
+  const call = api({ DB: d1() });
+  const lists = [
+    { id: 'hytta', name: 'Hytta 2027', icon: 'mountain-snow', items: ['xm5', 'airpods'], shared: null, bought: {}, createdAt: '2026-08-02' },
+    { id: 'gaver', name: 'Julegaver', icon: 'gift', items: ['kindle'], shared: { role: 'owner', people: [], gift: true }, bought: { kindle: { by: 'Du', at: '2026-08-02' } }, createdAt: '2026-08-02' },
+  ];
+  assert.strictEqual((await call('/api/lists', { method: 'PUT', body: lists })).status, 401, 'PUT without session must 401');
+
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).lists, [], 'a new user has no lists');
+
+  assert.strictEqual((await call('/api/lists', { method: 'PUT', body: lists, cookie: ola })).status, 200);
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).lists, lists, 'the blob must round-trip verbatim');
+
+  // deleting a list is just PUTting the shorter array
+  await call('/api/lists', { method: 'PUT', body: lists.slice(0, 1), cookie: ola });
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).lists, lists.slice(0, 1));
+
+  // another user is untouched
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: kari })).json()).lists, []);
+
+  for (const bad of ['nope', {}, [{ id: 'x' }], [{ id: 'x', name: 'X', items: [1] }], [{ id: 'x', name: 'X', items: [] }, { id: 'x', name: 'Dup', items: [] }]]) {
+    assert.strictEqual((await call('/api/lists', { method: 'PUT', body: bad, cookie: ola })).status, 400, JSON.stringify(bad));
+  }
+  assert.strictEqual((await call('/api/lists', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
+});
+
 test('GDPR: export downloads the session user\'s data; delete removes every row and kills the session', async () => {
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/account/export')).status, 401, 'export without session must 401');
