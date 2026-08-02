@@ -482,6 +482,17 @@ input, select, textarea { min-width: 0; }
 .results__title { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; margin-bottom: var(--s-3); }
 .results__title h1 { font-size: 30px; }
 .results__title .q { color: var(--green-700); }
+.results__ttl { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* GS1 GPC classification: hover chip beside the title */
+.gpcinfo { position: relative; display: inline-flex; margin-top: 4px; }
+.gpcinfo__btn { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px; border: var(--bw-hair) solid var(--ink-300); background: none; color: var(--ink-400); font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; cursor: help; }
+.gpcinfo:hover .gpcinfo__btn, .gpcinfo__btn:focus-visible { border-color: var(--ink-900); color: var(--ink-900); }
+.gpcinfo__pop { display: none; position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; flex-direction: column; gap: 4px; width: max-content; max-width: 340px; padding: 9px 11px 10px; border: var(--bw) solid var(--ink-900); background: var(--paper); box-shadow: var(--shadow); font-size: 12px; font-weight: 400; line-height: 1.5; color: var(--ink-600); }
+.gpcinfo:hover .gpcinfo__pop, .gpcinfo:focus-within .gpcinfo__pop { display: flex; }
+.gpcinfo__k { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-400); }
+.gpcinfo__c { font-weight: 400; letter-spacing: 0; }
+.gpcinfo__p { text-wrap: pretty; }
+.gpcinfo__p b { color: var(--ink-900); }
 /* refine-within-results: free text on product name, scoped to the current set */
 .refine { display: flex; align-items: center; gap: 8px; flex: 0 1 340px; min-width: 220px; height: 40px; padding: 0 10px; border: var(--bw) solid var(--ink-900); background: var(--paper); color: var(--ink-400); }
 .refine:focus-within, .refine.is-on { box-shadow: var(--shadow-sm); color: var(--ink-900); }
@@ -537,12 +548,6 @@ input, select, textarea { min-width: 0; }
 .catlist--sub .catlink { padding-left: 27px; }
 .catback { display: flex; align-items: center; gap: 4px; margin: 0 -8px 6px; padding: 2px 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-600); cursor: pointer; }
 .catback:hover { color: var(--ink-900); text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--green-500); text-underline-offset: 3px; }
-/* GS1 GPC classification trail under a scoped Category group */
-.catgpc { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; padding: 7px 8px 8px; background: var(--canvas-2); font-size: 11px; line-height: 1.5; color: var(--ink-600); }
-.catgpc__k { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-400); }
-.catgpc__c { font-weight: 400; text-transform: none; letter-spacing: 0; }
-.catgpc__p { text-wrap: pretty; }
-.catgpc__p b { color: var(--ink-900); }
 
 /* price fields + range slider */
 .pricefields { display: flex; align-items: center; gap: 8px; }
@@ -656,7 +661,6 @@ html { scrollbar-gutter: stable; }
 .fmenu__item--back { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-600); }
 .fmenu__item--hd { font-weight: 700; }
 .fmenu__item--sub { padding-left: 23px; }
-.fdrop__menu .catgpc { margin: 6px -6px -4px; }
 .fpill { border: 2px solid var(--ink-900); background: var(--paper); padding: 8px 12px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .fpill.is-on { background: var(--green-500); }
 

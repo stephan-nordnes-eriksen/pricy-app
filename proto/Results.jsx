@@ -323,7 +323,6 @@ function catNavModel({ cat, brick, dept, label }) {
     return {
       head: { name: bk.cls.name, icon: bk.seg.icon, n: bk.cls.bricks.reduce((s, b) => s + b.n, 0), on: false, nav: null },
       subs: bk.cls.bricks.map(b => ({ key: b.code, label: b.name, icon: b.icon, n: b.n, on: b.code === brick, nav: { brick: b.code } })),
-      gpc: bk,
     };
   }
   if (!d) return { depts: DS.map(x => ({ key: x.id, label: x.name, icon: x.icon, n: x.n, on: false, nav: { dept: x.id } })) };
@@ -333,14 +332,18 @@ function catNavModel({ cat, brick, dept, label }) {
     const bk = bb[r.b];
     return { key: r.b + '|' + (r.label || ''), label: r.label || bk.name, icon: bk.icon, n: r.n != null ? r.n : bk.n, on: ruleOn(r) || (catSubs.length === 1 && catSubs[0] === r), nav: ruleNav(r) };
   });
-  return { head: { name: d.name, icon: d.icon, n: d.n, on: !subs.some(s => s.on), nav: { dept: d.id } }, subs, gpc: brick ? bb[brick] : null };
+  return { head: { name: d.name, icon: d.icon, n: d.n, on: !subs.some(s => s.on), nav: { dept: d.id } }, subs };
 }
-function GpcTrail({ bk }) {
+// GS1 GPC classification: hover chip next to the results title (CSS-only popover)
+function GpcInfo({ bk }) {
   return (
-    <div className="catgpc" title={'GS1 GPC classification of this sub-category'}>
-      <span className="catgpc__k">GS1 GPC<span className="catgpc__c">#{bk.code}</span></span>
-      <span className="catgpc__p">{bk.seg.name} › {bk.fam.name} › {bk.cls.name} › <b>{bk.name}</b></span>
-    </div>
+    <span className="gpcinfo">
+      <button className="gpcinfo__btn" aria-label="GS1 GPC classification of this sub-category"><Icon name="info" size={12} />GS1 GPC</button>
+      <span className="gpcinfo__pop" role="tooltip">
+        <span className="gpcinfo__k">GS1 GPC classification<span className="gpcinfo__c">#{bk.code}</span></span>
+        <span className="gpcinfo__p">{bk.seg.name} › {bk.fam.name} › {bk.cls.name} › <b>{bk.name}</b></span>
+      </span>
+    </span>
   );
 }
 
@@ -398,7 +401,6 @@ function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet
             </div>
           ),
         }))} />
-        {cnav.gpc && !searching && <GpcTrail bk={cnav.gpc} />}
       </FGroup>}
       {pBrand && brands.length > 0 && <FGroup id="brand" title="Brand" nSel={f.brands.length} forceOpen={searching}>
         <FList searching={searching} entries={brands.filter(pBrand).map(b => ({ on: f.brands.includes(b), node: <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} /> }))} />
@@ -476,7 +478,6 @@ function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, 
             <Icon name={s.icon} size={15} /><span>{s.label}</span><span className="ct">{fmt(s.n)}</span>
           </div>
         ))}
-        {cnav.gpc && <GpcTrail bk={cnav.gpc} />}
       </Dropdown>
       <Dropdown label={f.brands.length ? 'Brand · ' + f.brands.length : 'Brand'} active={!!f.brands.length}>
         {brands.map(b => <Check key={b} on={f.brands.includes(b)} label={b} count={base.byBrand[b] || 0} onClick={() => setBrand(b)} />)}
@@ -807,7 +808,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
         <main className="results__main">
           {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />}
           <div className="results__title">
-            <h1>{title}</h1>
+            <div className="results__ttl"><h1>{title}</h1>{gb && <GpcInfo bk={gb} />}</div>
             <RefineField value={f.q} onChange={v => { set('q', v); setShown(60); }} scope={scope} n={list.length} />
           </div>
           <div className="results__bar">
