@@ -44,16 +44,17 @@ function App(){
   else if(name==="compare") view=<ComparePage go={go} />;
   else if(name==="browse") view=<BrowsePage go={go} />;
   else if(name==="alerts") view=<AlertsPage go={go} tab={params.tab} />;
+  else if(name==="lists") view=<ListsPage go={go} params={params} />;
   else if(name==="account") view=<AccountPage go={go} tab={params.tab} />;
   else if(name==="autobuy" && !window.HIDE_AUTOBUY) view=<AutobuyPage go={go} />;
   else if(name==="onboarding") view=<Onboarding go={go} />;
   else if(name==="about") view=<AboutPage go={go} section={params.section} />;
   else view=<SignedHome go={go} onLogout={()=>go("landing")} layout={t.homeLayout} />;
   return (<React.Fragment>
-    <div key={name+JSON.stringify(params)+t.loginLayout+t.homeLayout+t.filterLayout+t.density+t.sparklines+t.plan}>{view}{!({login:1,landing:1,about:1,onboarding:1})[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({login:1,landing:1,about:1,onboarding:1,compare:1})[name]} /></div>
+    <div className="app-shell" key={name+JSON.stringify(params)+t.loginLayout+t.homeLayout+t.filterLayout+t.density+t.sparklines+t.plan}>{view}{!({login:1,landing:1,about:1,onboarding:1})[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({login:1,landing:1,about:1,onboarding:1,compare:1})[name]} /></div>
     <TweaksPanel>
       <TweakSection label="Preview" />
-      <TweakSelect label="Screen" value={name} options={[{value:"results",label:"Search results"},{value:"product",label:"Product page"},{value:"compare",label:"Compare products"},{value:"home",label:"Signed-in home"},{value:"browse",label:"Categories browse"},{value:"alerts",label:"Alerts / watchlist"},{value:"autobuy",label:"Auto-buy orders"},{value:"account",label:"Account & settings"},{value:"onboarding",label:"Onboarding"},{value:"login",label:"Login"},{value:"landing",label:"Public landing"},{value:"about",label:"About (public)"}].filter(o=>o.value!=="autobuy"||!t.hideAutobuy)} onChange={(v)=>{ if(v==="compare") CompareStore.seed(["xm5","bose-ultra","senn-m4"]); go(v, v==="results"?{cat:"Audio"}:v==="product"?{id:"xm5"}:{}); }} />
+      <TweakSelect label="Screen" value={name} options={[{value:"results",label:"Search results"},{value:"product",label:"Product page"},{value:"compare",label:"Compare products"},{value:"home",label:"Signed-in home"},{value:"browse",label:"Categories browse"},{value:"alerts",label:"Alerts / watchlist"},{value:"lists",label:"Lists"},{value:"autobuy",label:"Auto-buy orders"},{value:"account",label:"Account & settings"},{value:"onboarding",label:"Onboarding"},{value:"login",label:"Login"},{value:"landing",label:"Public landing"},{value:"about",label:"About (public)"}].filter(o=>o.value!=="autobuy"||!t.hideAutobuy)} onChange={(v)=>{ if(v==="compare") CompareStore.seed(["xm5","bose-ultra","senn-m4"]); go(v, v==="results"?{cat:"Audio"}:v==="product"?{id:"xm5"}:{}); }} />
       <TweakSection label="Install app (PWA)" />
       <TweakRadio label="Install bar" value={t.installPreview} options={[{value:"auto",label:"Auto"},{value:"android",label:"Android"},{value:"ios",label:"iOS"}]} onChange={(v)=>setTweak("installPreview",v)} />
       <TweakSection label="Auto-buy (beta)" />

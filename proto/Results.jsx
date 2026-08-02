@@ -209,9 +209,12 @@ function ResultRow({ p, go, spark, saved, onSave, badge, hl }) {
         </>) : <div className="no-offers">No offers yet</div>}
       </div>
       <div className="rrow__acts">
-        <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}>
-          <Icon name="bookmark" size={17} />
-        </button>
+        <div className="saveg">
+          <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}>
+            <Icon name="bookmark" size={17} />
+          </button>
+          <SaveMenu p={p} />
+        </div>
         <CompareBtn p={p} />
       </div>
     </div>
@@ -230,18 +233,19 @@ function ResultRowCompact({ p, go, saved, onSave, badge, showBadge, hl }) {
       <span className="crow__meta">{p.shops} shops</span>
       {showBadge && <span className="crow__sv">{badge && <span className="sortval">{badge}</span>}</span>}
       <span className="crow__price"><Price value={p.best} size={15} /></span>
-      <button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}><Icon name="bookmark" size={14} /></button>
+      <span className="saveg"><button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}><Icon name="bookmark" size={14} /></button><SaveMenu p={p} /></span>
       <CompareBtn p={p} className="crow__cmp" />
     </div>
   );
 }
 
 // ---- result card (grid view) ------------------------------
-function ResultCard({ p, go, badge, hl }) {
+function ResultCard({ p, go, badge, hl, saved, onSave }) {
   return (
     <div className="pcard" onClick={() => go('product', { id: p.id })}>
       {p.drop >= 12 && <span className="pcard__tag"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
       <CompareBtn p={p} className="pcard__cmp" />
+      {onSave && <div className="saveg pcard__saveg"><button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}><Icon name="bookmark" size={15} /></button><SaveMenu p={p} /></div>}
       <div className="pcard__img"><ProdImg p={p} fill size={42} /></div>
       <div className="pcard__name"><HiName text={p.name} q={hl} /></div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}>{badge && <span className="sortval">{badge}</span>}<Stars rating={p.rating} /><VariantHint p={p} /></div>
@@ -854,7 +858,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
             </div>
           ) : view === 'grid' ? (
             <div className="pgrid">
-              {list.slice(0, shown).map(p => <ResultCard key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} hl={f.q} />)}
+              {list.slice(0, shown).map(p => <ResultCard key={p.id} p={p} go={go} badge={badgeOf && badgeOf(p)} hl={f.q} saved={WatchStore.has(p.id)} onSave={(id) => WatchStore.toggle(id, Math.round((p.best || 0) * 0.92 / 10) * 10)} />)}
             </div>
           ) : view === 'compact' ? (
             <div className={'rlist rlist--compact' + (badgeOf ? ' has-sv' : '')}>
@@ -1047,6 +1051,7 @@ function ProductPage({ go, id }) {
                   </div>
                 )}
               </div>
+              <div className="watchbox__listrow"><SaveMenu p={v} label="Lagre i liste…" align="left" /></div>
             </div>
             {toast && <Toast>{toast}</Toast>}
 

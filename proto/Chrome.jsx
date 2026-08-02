@@ -99,6 +99,7 @@ function Footer({ go, authed = true }) {
             { label: 'Biggest drops', route: 'results', params: { query: '' } },
             { label: 'Price alerts', route: 'alerts' },
             { label: 'Watchlist', route: 'alerts' },
+            { label: 'Lists', route: 'lists' },
           ])}
           {col('Company', [
             { label: 'About', route: 'about' },

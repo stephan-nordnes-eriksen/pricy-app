@@ -96,6 +96,7 @@ function AppHeader({ go, onLogout }) {
                 <div className="acctmenu__id"><b>{USER.name}</b><span>{USER.email}</span></div>
                 <div className="acctmenu__item" onClick={() => go('account')}><Icon name="settings" size={16} /> Account settings</div>
                 <div className="acctmenu__item" onClick={() => go('account', { tab: 'notifications' })}><Icon name="bell" size={16} /> Notifications</div>
+                <div className="acctmenu__item" onClick={() => go('lists')}><Icon name="list" size={16} /> My lists</div>
                 <div className="acctmenu__item" onClick={() => go('account', { tab: 'plan' })}><Icon name="credit-card" size={16} /> Plan &amp; billing</div>
                 <div className="acctmenu__sep"></div>
                 <div className="acctmenu__item" onClick={onLogout}><Icon name="log-out" size={16} /> Log out</div>

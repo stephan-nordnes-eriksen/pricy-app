@@ -172,4 +172,26 @@ function AlertFeedCard({ go }) {
   );
 }
 
-Object.assign(window, { DrawSpark, PriceTag, MetricStrip, WatchedList, WatchRow, RecentRail, CategoryGrid, AlertFeedCard });
+// ---- SHARED LIST TEASER (sidecard) ------------------------
+function ListTeaserCard({ go }) {
+  if (!window.ListStore) return null;
+  useListStore(); useWatchStore();
+  const l = ListStore.lists.find(x => x.shared && x.shared.gift) || ListStore.lists[0];
+  if (!l) return null;
+  const n = l.items.length, b = ListStore.boughtCount(l);
+  return (
+    <div className="sidecard">
+      <div className="sidecard__head">
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icon name="gift" size={13} className="ic" /> {l.name}</span>
+        <span style={{ color: 'var(--green-700)', cursor: 'pointer' }} onClick={() => go('lists')}>Alle lister</span>
+      </div>
+      <div className="listtease" onClick={() => go('lists', { id: l.id })}>
+        <div className="listtease__bar"><span style={{ width: (n ? Math.round(b / n * 100) : 0) + '%' }}></span></div>
+        <div className="listtease__meta"><b>{b} av {n} kjøpt</b><span>Delt med {(l.shared.people || []).length} · kr {fmt(ListStore.sum(l))}</span></div>
+        <div className="listtease__imgs">{l.items.slice(0, 4).map(id => { const p = WatchStore.prod(id); return p ? <span key={id} className={'listtease__img' + (l.bought && l.bought[id] ? ' is-b' : '')}><ProdImg p={p} fill size={16} /></span> : null; })}</div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { DrawSpark, PriceTag, MetricStrip, WatchedList, WatchRow, RecentRail, CategoryGrid, AlertFeedCard, ListTeaserCard });

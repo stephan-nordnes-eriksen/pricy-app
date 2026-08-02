@@ -103,7 +103,10 @@ function AlertsPage({ go, tab: tab0 }) {
             <h1>Watchlist &amp; alerts</h1>
             <div className="sub">{rows.length} watched · {hits} below target · kr {fmt(WatchStore.saved())} potential savings</div>
           </div>
-          <Btn variant="primary" icon="plus" onClick={() => go('browse')}>Watch a product</Btn>
+          <div className="al__headr">
+            <Btn variant="primary" icon="plus" onClick={() => go('browse')}>Watch a product</Btn>
+            <a className="quietlink" onClick={() => go('lists')}>Alle lister →</a>
+          </div>
         </div>
 
         <div className="seg" role="tablist">
