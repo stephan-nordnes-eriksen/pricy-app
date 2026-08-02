@@ -6,7 +6,7 @@
     "rules": [
       {
         "b": "10001448",
-        "name": "Audio & Headphones",
+        "name": "Audio",
         "icon": "headphones",
         "cat": "Audio",
         "syn": [ "lyd", "hifi", "platespiller", "forsterker", "audio" ],
