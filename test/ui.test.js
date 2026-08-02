@@ -875,10 +875,11 @@ test('GPC departments: brick deep-link renders backing cat, dept rail + GPC trai
   const win = boot('http://pricy.test/search?brick=10001448', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
   assert.ok(win.CATALOG.some(p => p.cat === 'Audio'), 'the backing Audio slice must be prefetched');
-  // rail: the owning department heads the Category group, GPC trail shows the served path
+  // rail: the owning department heads the Category group; the GPC chip beside
+  // the title shows the served classification path
   assert.ok(await until(() => qa(win, '.catlink--hd').some(el => el.textContent.includes('Audio & Headphones'))),
     'owner dept must head the category rail');
-  const trail = q(win, '.catgpc');
+  const trail = q(win, '.gpcinfo');
   assert.ok(trail && trail.textContent.includes('#10001448') && trail.textContent.includes('Home Audio Equipment'),
     'GPC trail must render the served classification path, got: ' + (trail && trail.textContent));
 
