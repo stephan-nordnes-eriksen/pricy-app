@@ -104,8 +104,8 @@ const RULES = {
   },
   Phones: {
     type: opt(
-      [/deksel|\bcase\b|cover|skjermbeskytt|panzerglass|\bskin\b|lader|kabel|powerbank|holder|\bmount|magsafe/, 'Accessories'],
-      [/telefon|\bphone\b|iphone|galaxy|pixel|redmi|xperia|\bmoto\b|nokia|\bdoro\b/, 'Phones'],
+      [/deksel|\bcase\b|cover|skjermbeskytt|panzerglass|\bskin\b|lader|kabel|power ?bank|holder|\bmount|magsafe/, 'Accessories'],
+      [/telefon|\bphone\b|iphone|galaxy|pixel|redmi|xperia|\bmoto\b|nokia|\bdoro\b|xiaomi|ulefone/, 'Phones'],
     ),
     storage: STORAGE,
     used: flag(/refurbished|\bsecond\b|brukt\b|b-vare/),
@@ -456,7 +456,9 @@ const RULES = {
   Watches: {
     type: opt(
       [/smartklokke|smartwatch|\bgarmin\b|galaxy watch|apple watch|pixel watch|\bfenix\b|vivoactive|forerunner|\bgps\b/, 'Smartwatches'],
-      [/herreklokke|dameklokke|barneklokke|armbåndsur|\bklokke\b|\bwatch\b|\bur\b/, 'Wristwatches'],
+      // the shop leaves for plain watches: "Analoge/Digitale/Multifunksjons
+      // klokker", "Dykkerklokker" — 81 real watches sat untyped without them
+      [/herreklokke|dameklokke|barneklokke|armbåndsur|\bklokke\b|\bwatch\b|\bur\b|analoge? klokker|digitale? klokker|multifunksjons ?klokker|dykkerklokke/, 'Wristwatches'],
       [/vekkerklokke|\balarm\b/, 'Alarm clocks'],
       [/veggur|wall clock|bordur/, 'Clocks'],
       [/\brem\b|klokkerem|\bstrap\b|\blenke\b|spenne/, 'Straps'],

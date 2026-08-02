@@ -111,19 +111,29 @@
     "icon": "smartphone",
     "rules": [
       {
+        "b": "99000014",
+        "name": "All mobile",
+        "icon": "smartphone",
+        "cat": "Phones",
+        "syn": [ "mobil og tilbehør" ],
+        "path": "Communications › Communications › Mobile Communication Devices/Services"
+      },
+      {
         "b": "10001198",
         "name": "Mobile Phones",
         "icon": "smartphone",
         "cat": "Phones",
-        "syn": [ "mobil", "mobiltelefon", "smarttelefon", "iphone", "deksel", "lader" ],
-        "path": "Communications › Communications › Mobile Communication Devices/Services"
+        "syn": [ "mobil", "mobiltelefon", "smarttelefon", "iphone" ],
+        "path": "Communications › Communications › Mobile Communication Devices/Services",
+        "facets": { "type": [ "Phones" ]
+        }
       },
       {
         "b": "10003779",
         "name": "Mobile accessories",
         "icon": "battery-charging",
         "cat": "Phones",
-        "syn": [ "mobiltilbehør", "mobildeksel", "mobillader", "skjermbeskytter" ],
+        "syn": [ "mobiltilbehør", "mobildeksel", "mobillader", "skjermbeskytter", "deksel", "lader" ],
         "path": "Communications › Communications › Mobile Communication Devices/Services",
         "facets": { "type": [ "Accessories" ]
         }
@@ -582,12 +592,22 @@
         "path": "Personal Accessories › Personal Accessories › Jewellery"
       },
       {
+        "b": "99000015",
+        "name": "All watches",
+        "icon": "watch",
+        "cat": "Watches",
+        "syn": [ "klokker og tilbehør", "klokkerem" ],
+        "path": "Personal Accessories › Personal Accessories › Watches"
+      },
+      {
         "b": "10001105",
         "name": "Watches",
         "icon": "watch",
         "cat": "Watches",
         "syn": [ "klokke", "klokker", "armbåndsur", "smartklokke" ],
-        "path": "Personal Accessories › Personal Accessories › Watches"
+        "path": "Personal Accessories › Personal Accessories › Watches",
+        "facets": { "type": [ "Wristwatches", "Smartwatches", "Pocket watches" ]
+        }
       },
       {
         "b": "99000030",

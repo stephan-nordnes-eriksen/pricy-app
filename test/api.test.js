@@ -530,6 +530,12 @@ test('facet values derive from the product name, per category', async () => {
     // …and the per-cat vocabulary still shields machines NAMED after their
     // cables — a kabelkryss is a Strength station, not a cable
     [{ cat: 'Sport', name: 'Abilica CrossOver-kabelkryss', srcCat: 'Styrketrening / Cable cross' }, { type: 'Strength' }],
+    // brick-slice vocabulary (the Watches/Mobile Phones tiles pin these):
+    // model-number names type off the shop's watch leaf, and a "Power Bank"
+    // with a space is an accessory, not an untyped row
+    [{ cat: 'Watches', name: 'G-shock GM-2110D-2AER', srcCat: 'Multifunksjons klokker' }, { type: 'Wristwatches' }],
+    [{ cat: 'Phones', name: 'Xiaomi 15T Pro' }, { type: 'Phones' }],
+    [{ cat: 'Phones', name: 'Anker 737 Power Bank' }, { type: 'Accessories' }],
     [{ cat: 'Gaming', name: 'Case of the Trampled Garden (Enkeltkort)', srcCat: 'Magic løskort' }, { type: 'Trading cards' }],
     [{ cat: 'Books', name: 'Cable And X-force Volume 4: Vendetta (marvel Now)' }, { format: 'Comics & graphic novels' }],
     [{ cat: 'Fashion', name: 'Soft Texture Long Sleeve' }, undefined],
