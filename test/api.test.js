@@ -522,6 +522,14 @@ test('facet values derive from the product name, per category', async () => {
     // and Books has no type rules so the comic "Cable" derives nothing.
     [{ cat: 'Computers', name: 'Otterbox Defender Deksel for iPad Pro 11" (M4)' }, { type: 'Accessories', size: 11 }],
     [{ cat: 'Gaming', name: 'Goobay HDMI 2.1 Kabel 1m' }, { type: 'Accessories' }],
+    // an accessory noun in the name/leaf caps the crumb walk at the leaf: a
+    // parent aisle names the HOST product ("Kabler til TV" holds no TV), so
+    // it must not out-type the noun — but with no noun, parents still speak
+    [{ cat: 'TV', name: 'Luxorparts Antennekabel, hvit 1,5 m', srcCat: 'Produkter > Kabler og kontakter > Kabler til TV > Antennekabler > Antennekabler' }, { type: 'Accessories' }],
+    [{ cat: 'TV', name: 'QE55Q70T', srcCat: 'Elektronikk > TV > Samsung' }, { type: 'TVs' }],
+    // …and the per-cat vocabulary still shields machines NAMED after their
+    // cables — a kabelkryss is a Strength station, not a cable
+    [{ cat: 'Sport', name: 'Abilica CrossOver-kabelkryss', srcCat: 'Styrketrening / Cable cross' }, { type: 'Strength' }],
     [{ cat: 'Gaming', name: 'Case of the Trampled Garden (Enkeltkort)', srcCat: 'Magic løskort' }, { type: 'Trading cards' }],
     [{ cat: 'Books', name: 'Cable And X-force Volume 4: Vendetta (marvel Now)' }, { format: 'Comics & graphic novels' }],
     [{ cat: 'Fashion', name: 'Soft Texture Long Sleeve' }, undefined],

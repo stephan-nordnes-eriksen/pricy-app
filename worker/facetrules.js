@@ -359,7 +359,9 @@ const RULES = {
     type: opt(
       [/\bski\b|langrenn|\balpin\b|skisko|skifeste|skistav|smøring|\bglider\b|\bklister\b|\bvoks\b|rulleski|snowboard/, 'Ski & snow'],
       [/tredemølle|treningssykkel|romaskin|crosstrainer|ellipse/, 'Cardio machines'],
-      [/\bvekt\b|manual|kettlebell|vektstang|weightvest|styrke|\bstang\b|\bbenk\b/, 'Strength'],
+      // kabelkryss/cable cross: the MACHINE, named after its cables — the
+      // per-cat word is what shields it from the ACC_NOUN_RE kabel fallback
+      [/\bvekt\b|manual|kettlebell|vektstang|weightvest|styrke|\bstang\b|\bbenk\b|kabelkryss|cable ?cross/, 'Strength'],
       [/boksesekk|boksehansk|\bboxing\b|kampsport/, 'Boxing'],
       [/\byoga\b|pilates|\bmatte\b|balanse|foam roll/, 'Yoga & recovery'],
       [/fotball|håndball|basketball|volleyball|\bball\b|\bmål\b/, 'Ball sports'],
@@ -714,14 +716,20 @@ export function deriveFacets({ name, cat, srcCat, brand }) {
     // ACC only reads the name and the LEAF (i < 2): a parent crumb like
     // "Skrivere og tilbehør > Laserskrivere" is a menu that holds the
     // printers too — only the shop's own leaf filing proves accessory.
-    for (let i = 0; i < ts.length; i++) {
+    // An accessory NOUN in the name/leaf caps the walk there (2026-08-02):
+    // a parent aisle names the HOST product ("Kabler til TV" holds no TV),
+    // so letting it answer typed an Antennekabel as TVs. Per-cat rules on
+    // the name/leaf still win, shielding "the noun IS the product" rows.
+    const accNoun = k === 'type' && ts.slice(0, 2).some(t => ACC_NOUN_RE.test(t));
+    const lim = accNoun ? Math.min(2, ts.length) : ts.length;
+    for (let i = 0; i < lim; i++) {
       v = k === 'type' && i < 2 && ACC_RE.test(ts[i]) ? 'Accessories' : f(ts[i]);
       if (v !== undefined) break;
     }
     // Noun fallback LAST: only a row the category's own vocabulary can't
     // place gets typed by its accessory noun — so the per-cat rules shield
     // every "the noun IS the product" case for free.
-    if (v === undefined && k === 'type' && ts.slice(0, 2).some(t => ACC_NOUN_RE.test(t))) v = 'Accessories';
+    if (v === undefined && accNoun) v = 'Accessories';
     if (v !== undefined && v === v) out[k] = v; // NaN guard: a bad number is no value
   }
   return Object.keys(out).length ? out : undefined;
