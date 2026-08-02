@@ -312,7 +312,10 @@ const CAT_RULES = [
   [/laptop|bærbar|datamaskin|nettbrett|\bipad\b|macbook|chromebook|tastatur|harddisk|\bssd\b|grafikkort|prosessor|stasjonær|dataskjerm|\bpc\b|data\b/i, 'Computers'],
   [/mobiltelefon|smarttelefon|\biphone\b|mobil\b/i, 'Phones'],
   [/vaskemaskin|tørketrommel|oppvaskmaskin|kjøleskap|fryser|komfyr|stekeovn|platetopp|ventilator|hvitevare/i, 'Appliances'],
-  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken(?!bord|stol)|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp(er)?\b|\bkrus\b|servering|matboks|matbeholder|drikkeflaske|vannflaske|termokopp|termoflaske|termos(er)?\b|\bforkle\b|\bforklær\b|baking|kakepynt|kakelys|tallerk/i, 'Kitchen'],
+  // (?<!sol)blender: a Solblender is a lens hood — the bare word filed 12 of
+  // them in Kitchen. kakeboks: a cake tin ("ebok" inside it once made it an
+  // E-reader; the \b fix left it stranded with no word of its own).
+  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|(?<!sol)blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken(?!bord|stol)|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp(er)?\b|\bkrus\b|servering|matboks|matbeholder|kakeboks|drikkeflaske|vannflaske|termokopp|termoflaske|termos(er)?\b|\bforkle\b|\bforklær\b|baking|kakepynt|kakelys|tallerk/i, 'Kitchen'],
   // `lampebord`/`lampeskjerm`: a side table is furniture and a shade is a spare
   // part, but Lighting is read first — "Lampebord & sidebord" put 70 side tables
   // in Lighting at Chilli alone
@@ -340,13 +343,15 @@ const CAT_RULES = [
   // "Løskort" and 30 Pokémon singles became Shoes. Same for Skole/Skogstad.
   // sko\b (suffix, not prefix) is safe from both AND reads every -sko compound
   // the shops actually use: løpesko, badesko, vintersko, hverdagssko, piggsko…
-  [/(?<!kabel)(?<!søyle)(?<!stolpe)sko(r|ene)?\b|støvl|sandal|sneaker|\bboots\b|tøfler|fottøy|skotøy/i, 'Shoes'],
+  // sko\b(?!-): a suspended hyphen ("Sko- og klesoppbevaring", "Sko-
+  // oppbevaring") means the compound's head comes later — read that instead
+  [/(?<!kabel)(?<!søyle)(?<!stolpe)sko(r|ene)?\b(?!-)|støvl|sandal|sneaker|\bboots\b|tøfler|fottøy|skotøy/i, 'Shoes'],
   [/klokke|armbåndsur|smartklokke|lommeur|\bur\b/i, 'Watches'],
   // `\bring` fires after æ/ø/å (not JS word chars): "Skismøring" and
   // "Rengjøring" were Jewelry. `sølv\b` (not bare `sølv`): the fishing brand
   // Sølvkroken pulled a whole tackle aisle in here.
   [/smykk|øredobb|halskjede|anheng|\bcharm|gullsmed|diamant|\bperle|(?<![a-zA-ZæøåÆØÅ])ring(er)?\b|ørering|giftering|sølv\b|\bgull|sølje|ørepynt|\bkjede\b|armbånd|forlovelse|mansjettknapp|slipsnål/i, 'Jewelry'],
-  [/sminke|make-?up|hudpleie|parfyme|\bdufter\b(?! til hjem)|hårpleie|shampo|neglelakk|kosmetikk|skjønnhet|barbering|solkrem|\bpleie\b|leppe|øyenskygge|øyenbryn|maskara|mascara|gellack|\bnegle|bodylotion|kroppspleie|hår(skum|farge|produkt|strikk|pynt|bøyle|spenne|access)|foundation|concealer|highlighter|\bserum\b|ansikt|deodorant|selvbruning|\bprimer\b|dagkrem|nattkrem|\bbalsam\b|eyeliner|hårspray|\brouge\b|leppestift/i, 'Beauty'],
+  [/sminke|make-?up|hudpleie|parfyme|\bdufter\b(?! til hjem)|hårpleie|shampo|neglelakk|kosmetikk|skjønnhet|barbering|solkrem|\bpleie\b|leppe|øyenskygge|øyenbryn|maskara|mascara|gellack|\bnegle|bodylotion|kroppspleie|hår(skum|farge|produkt|strikk|pynt|bøyle|spenne|access)|foundation|concealer|highlighter|\bserum\b|ansikt|deodorant|selvbruning|\bprimer\b|dagkrem|nattkrem|\bbalsam\b|eyeliner|hårspray|\brouge\b|leppestift|rettetang|krølltang/i, 'Beauty'],
   [/apotek|\bhelse|kosttilskudd|vitamin|protein|medisin|førstehjelp|munnpleie|tannbørste|\bkosthold|legemid|reseptfri|\bplaster\b|tannkrem|munnskyll|magnesium|kollagen|immunforsvar|rehabilit|restitusjon/i, 'Health'],
   [/\bhund(?!re)|\bkatt|kjæledyr|dyrefôr|fôr|akvari|smådyr|\bhest\b|kanin|dyrebutikk|valp\b|kattesand|dyremat|\bkobbel|halsbånd|vinterdekken|pelspleie|villfugl/i, 'Pets'],
   [/\bbok\b|(?<!lomme)bøker|roman|skjønnlitteratur|lydbok|tegneserie|\bmanga\b|litteratur|pocket/i, 'Books'],

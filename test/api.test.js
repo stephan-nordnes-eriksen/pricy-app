@@ -1839,7 +1839,7 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     ['Projektorer', 'Projectors'],
     // unanchored e-?bok matched the "ebok" inside these
     ['Klokkebokser', 'Watches'],
-    ['Kakeboks', undefined],
+    ['Kakeboks', 'Kitchen'], // not an E-reader — and since 2026-08-02 it has its own word
     ['Läsplattor', 'E-readers'],
     // bare `foto` swallowed photo wallpaper
     ['Fototapeter', 'Home'],
@@ -1989,6 +1989,12 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     ['Kakepynt', 'Kitchen'],
     ['Skåler og tallerker', 'Kitchen'],
     ['Herre / Tilbehør / Lommebøker', undefined], // a wallet is not bøker
+    // suspended hyphen: "Sko-" means the compound's head comes later
+    ['Sko- og klesoppbevaring', 'Home'],
+    ['Andre rom > Entré og garderobe > Sko-oppbevaring', 'Home'],
+    ['Rettetang', 'Beauty'],
+    ['Krølltang', 'Beauty'],
+    ['Home > Fototilbehør > Tilbehør til kamera og objektiv > Solblender', undefined], // a lens hood is not a blender — unread, the shop floor decides
   ];
   for (const [label, want] of cases) {
     assert.strictEqual(classify(label), want, `classify(${JSON.stringify(label)})`);
