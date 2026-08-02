@@ -70,12 +70,22 @@
     "icon": "tv",
     "rules": [
       {
+        "b": "99000013",
+        "name": "TV",
+        "icon": "tv",
+        "cat": "TV",
+        "syn": [ "tv og tilbehør" ],
+        "path": "Audio Visual/Photography › Audio Visual Equipment › Televisions"
+      },
+      {
         "b": "10001400",
         "name": "Televisions",
         "icon": "tv",
         "cat": "TV",
         "syn": [ "tv", "fjernsyn" ],
-        "path": "Audio Visual/Photography › Audio Visual Equipment › Televisions"
+        "path": "Audio Visual/Photography › Audio Visual Equipment › Televisions",
+        "facets": { "type": [ "TVs" ]
+        }
       },
       {
         "b": "99000020",
