@@ -221,6 +221,41 @@ ListStore.emit = function () {
   }
 };
 
+// Del mints a real share link, once per list — the minted url is cached in
+// the blob (shared.url, rides the emit PUT above) because reissuing replaces
+// the token server-side and would kill every previously handed-out link.
+// Upstream's ShareModal still renders its demo link until it reads
+// shared.url (upstream prompt in plans/list-sharing-backend.md).
+const _listShare = ListStore.share;
+ListStore.share = function (id) {
+  const l = this.get(id);
+  const cached = l && !l.system && l.shared && l.shared.url;
+  const demo = _listShare.call(this, id); // ensures l.shared exists (+emit)
+  if (!l || l.system) return demo;
+  if (!cached && ME && typeof fetch === 'function') {
+    fetchJson('/api/lists/' + encodeURIComponent(id) + '/share', { method: 'POST' })
+      .then(({ url }) => { l.shared = { ...l.shared, url }; this.emit(); })
+      .catch(() => {});
+  }
+  return cached || demo;
+};
+
+// Member surface bridges for the upstream shared-list screen (/l/<token>):
+// resolve a share token to its list (products hydrated into the catalog so
+// WatchStore.prod works), and toggle a bought-mark. Both reject on a dead
+// link; the screen shows its own error state.
+window.onSharedList = (token) =>
+  fetchJson('/api/l/' + encodeURIComponent(token)).then(d => {
+    hydrateCatalog({ products: d.products });
+    return d;
+  });
+window.onSharedBought = (token, productId, bought) =>
+  fetchJson('/api/l/' + encodeURIComponent(token), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ product_id: productId, bought: !!bought }),
+  });
+
 // Every auto-buy mutation (sign/revoke/add/cancel/payment change) funnels
 // through AutobuyStore.emit — persist the fullmakt + active orders from
 // there, same seam as WatchStore.emit above. Executed orders are derived
@@ -300,6 +335,7 @@ function parseUrl(session) {
   else if (p === '/search') s = { name: 'results', params: { query: q.get('q') || undefined, cat: q.get('cat') || undefined, dept: q.get('dept') || undefined, brick: q.get('brick') || undefined, label: q.get('label') || undefined, count: q.get('count') ? Number(q.get('count')) : undefined } };
   else if (p === '/alerts') s = { name: 'alerts', params: { tab: q.get('tab') || undefined } };
   else if (p === '/lists') s = { name: 'lists', params: { id: q.get('id') || undefined } };
+  else if (p.startsWith('/l/')) s = { name: 'lists', params: { token: decodeURIComponent(p.slice('/l/'.length)) } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
   else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
   else if (['/login', '/browse', '/autobuy', '/onboarding', '/compare'].includes(p)) s = { name: p.slice(1), params: {} };
@@ -484,7 +520,7 @@ function toUrl(name, params = {}) {
     return '/search' + (s ? '?' + s : '');
   }
   if (name === 'alerts') return '/alerts' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
-  if (name === 'lists') return '/lists' + (params.id ? '?id=' + encodeURIComponent(params.id) : '');
+  if (name === 'lists') return params.token ? '/l/' + encodeURIComponent(params.token) : '/lists' + (params.id ? '?id=' + encodeURIComponent(params.id) : '');
   if (name === 'account') return '/account' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
   if (name === 'about') return '/about' + (params.section ? '?section=' + encodeURIComponent(params.section) : '');
   if (name === 'home' || name === 'landing') return '/';

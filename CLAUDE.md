@@ -452,10 +452,19 @@ Two Claude Design projects feed this repo:
   `meBody`. boot.jsx wraps `ListStore.emit` to persist every mutation,
   hydrates `ListStore.lists` in `hydrateMe` (list item ids join the
   `hydrateSession` ids batch), and routes `/lists?id=`. The "Overvåket"
-  system list is computed client-side off watches, never stored. Sharing
-  is still demo-only upstream (hardcoded link, fake people) — real share
-  tokens/member access need their own table and public read endpoint
-  when that lands upstream.
+  system list is computed client-side off watches, never stored.
+  **Sharing backend is live** (2026-08-02, plans/list-sharing-backend.md):
+  `POST /api/lists/:id/share` mints a token (reissue = replace, so boot
+  caches the url in the list's `shared.url`); `GET/POST /api/l/:token`
+  is the member surface (session required — first GET joins you,
+  POST toggles a bought-mark: members their own, the owner anyone's).
+  Members and bought-marks live in `list_shares`/`list_members`/
+  `list_bought`, NOT the blob, and the owner's payload (meBody's
+  `listsBody`) strips `by` names — the gift privacy promise is enforced
+  server-side. boot routes `/l/<token>` and exposes
+  `window.onSharedList`/`onSharedBought` for the upstream member
+  screen, which does NOT exist yet — ShareModal still shows its demo
+  link until the plan file's upstream prompt is pasted.
 - Changing password is real too: `POST /api/account/password`
   (`{currentPassword, newPassword}`) verifies the current password (skipped
   for passwordless magic-link/BankID accounts, which just set one) and

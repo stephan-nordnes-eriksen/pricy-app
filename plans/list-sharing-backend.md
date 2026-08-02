@@ -4,6 +4,19 @@
 per user as the `users.lists` JSON blob via `PUT /api/lists`, CLAUDE.md
 Rules. This file is the half that did NOT ship: making "Del" real.)
 
+**Status 2026-08-02: backend + boot wiring SHIPPED (steps 1, 2, 3, 4, 6
+below — tables, endpoints, meBody privacy join, share mint cached in
+`shared.url`, `/l/<token>` route, `window.onSharedList`/`onSharedBought`
+bridges, two API tests). What remains is step 5, the upstream sync:
+ShareModal still renders its hardcoded demo link and there is no member
+screen — the prompt at the bottom is paste-ready. Deviations from the
+plan as written: `list_members` has no `name` column (joined from
+`users` at read time instead), the blob→table bought-mark migration on
+first share was skipped (only the owner's own view-as-preview marks can
+exist pre-share, and they're throwaway), and the owner's payload strips
+`by` on ALL shared lists, not just gift ones (the owner UI never renders
+names, so there is nothing to lose and one less branch to get wrong).**
+
 ## Current state
 
 The lists feature persists for real, but everything social in it is
@@ -72,6 +85,33 @@ itself (upstream's stated contract: "Bare du kan endre listen").
    bought toggle (member vs owner vs stranger), owner payload never
    contains `by` on a gift list, GDPR delete kills shares/members/
    bought rows, export includes them.
+
+## Upstream (Claude Design) prompt — paste-ready
+
+> In the pricy prototype's lists feature (PagesLists.jsx / ListsData.jsx),
+> make sharing production-wirable:
+>
+> 1. **ShareModal**: the link is hardcoded (`const link = 'pricy.no/l/h7k2f'`).
+>    Read it from the list instead: `const link = (l.shared && l.shared.url) ||
+>    'pricy.no/l/h7k2f'` (the host caches a real minted URL on `shared.url`;
+>    the constant stays as the preview fallback). Same in `ListStore.share()`:
+>    return `l.shared.url || 'pricy.no/l/h7k2f'`.
+> 2. **Member screen**: when `ListsPage` gets `params.token` (instead of
+>    `params.id`), render a shared-list member view. If `window.onSharedList`
+>    exists, await `window.onSharedList(token)` → `{ list: { id, name, icon,
+>    gift, role: 'owner'|'member', owner, items }, members: [{name,
+>    initials}], bought: { [productId]: { at, mine, by? } }, products }`
+>    (products are already in the catalog, `WatchStore.prod(id)` resolves);
+>    on rejection show a "Denne lenken er død" empty state. Without the
+>    hook (preview), fake it from the first shared demo list. The view is
+>    ListDetail's member variant: owner name in the sub line, AvStack of
+>    members, NO rename/remove/share/gift controls, gift check-off enabled —
+>    a toggle calls `await window.onSharedBought(token, productId, bought)`
+>    when the hook exists (it resolves the fresh payload — re-render from
+>    it) and falls back to local state in preview. `bought[pid].by` may be
+>    absent (the server strips it for owners) — render "Kjøpt" without a
+>    name then. When `list.role === 'owner'`, show a hint linking to the
+>    real editable list (`go('lists', { id: list.id })`).
 
 ## Decisions to make first
 

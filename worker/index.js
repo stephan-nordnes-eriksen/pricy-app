@@ -23,6 +23,13 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS oauth_codes (code_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, redirect_uri TEXT NOT NULL, code_challenge TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, prev_price INTEGER, target INTEGER NOT NULL, created_at INTEGER NOT NULL, delivered_at INTEGER)',
   'CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT, reason TEXT NOT NULL, text TEXT, created_at INTEGER NOT NULL)',
+  // List sharing (plans/list-sharing-backend.md): one active share token per
+  // (owner, list) — reissue replaces. Members and bought-marks live here, NOT
+  // in the owner's users.lists blob, so the owner's payload physically cannot
+  // carry who-bought-what on a gift list.
+  'CREATE TABLE IF NOT EXISTS list_shares (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, list_id TEXT NOT NULL, created_at INTEGER NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS list_members (owner_id INTEGER NOT NULL, list_id TEXT NOT NULL, user_id INTEGER NOT NULL, joined_at INTEGER NOT NULL, PRIMARY KEY (owner_id, list_id, user_id))',
+  'CREATE TABLE IF NOT EXISTS list_bought (owner_id INTEGER NOT NULL, list_id TEXT NOT NULL, product_id TEXT NOT NULL, user_id INTEGER NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (owner_id, list_id, product_id))',
   'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS images (product_id TEXT PRIMARY KEY, src TEXT NOT NULL, fetched_at INTEGER NOT NULL)',
   // EAN → product routing (OPEN-CATALOG-PLAN A1): bootstrapped from
@@ -141,7 +148,7 @@ async function upsertUser(db, email, passwordHash = null) {
   // the logged-in path (POST /api/account/password) instead; signup callers
   // verify the returned hash to tell "created" from "already existed".
   return db.prepare(
-    'INSERT INTO users (email, name, password_hash, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name, password_hash, settings, autobuy, created_at'
+    'INSERT INTO users (email, name, password_hash, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET email = excluded.email RETURNING id, email, name, password_hash, settings, autobuy, lists, created_at'
   ).bind(email, displayName(email), passwordHash, Date.now()).first();
 }
 
@@ -1173,7 +1180,30 @@ async function meBody(db, user, hideAutobuy) {
   // hideAutobuy (env.HIDE_AUTOBUY): the feature is invisible — no autobuy blob,
   // no purchase history in the me payload. The data export passes false: a
   // user's own data stays complete regardless of what the UI shows.
-  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, lists: user.lists ? JSON.parse(user.lists) : [], settings: user.settings ? JSON.parse(user.settings) : {}, ...(hideAutobuy ? {} : { autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) }) };
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, lists: await listsBody(db, user), settings: user.settings ? JSON.parse(user.settings) : {}, ...(hideAutobuy ? {} : { autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) }) };
+}
+
+// The owner's lists, with shared state joined from the tables: a list that
+// has a share row gets its members as shared.people and its bought-marks
+// from list_bought — with `by` names STRIPPED. The owner's payload never
+// says who bought what (gift or not); only the member surface (/api/l/)
+// names buyers, and only to non-owners. The blob's own bought/people are
+// ignored for shared lists so a crafted PUT can't smuggle names back in.
+async function listsBody(db, user) {
+  const lists = user.lists ? JSON.parse(user.lists) : [];
+  if (!lists.length) return lists;
+  const shared = new Set((await db.prepare('SELECT list_id FROM list_shares WHERE user_id = ?').bind(user.id).all()).results.map(r => r.list_id));
+  if (!shared.size) return lists;
+  const [members, marks] = await Promise.all([
+    db.prepare('SELECT m.list_id, u.name FROM list_members m JOIN users u ON u.id = m.user_id WHERE m.owner_id = ? ORDER BY m.joined_at').bind(user.id).all().then(r => r.results),
+    db.prepare('SELECT list_id, product_id, at FROM list_bought WHERE owner_id = ?').bind(user.id).all().then(r => r.results),
+  ]);
+  for (const l of lists) {
+    if (!shared.has(l.id)) continue;
+    l.shared = { role: 'owner', gift: false, ...(l.shared || {}), people: members.filter(m => m.list_id === l.id).map(m => ({ name: m.name, initials: initials(m.name) })) };
+    l.bought = Object.fromEntries(marks.filter(m => m.list_id === l.id).map(m => [m.product_id, { at: m.at }]));
+  }
+  return lists;
 }
 
 // ── MCP (experiment) ───────────────────────────────────────────────────────
@@ -1833,6 +1863,9 @@ export default {
         db.prepare('DELETE FROM reports WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM purchases WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM watches WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM list_shares WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM list_members WHERE owner_id = ? OR user_id = ?').bind(user.id, user.id),
+        db.prepare('DELETE FROM list_bought WHERE owner_id = ? OR user_id = ?').bind(user.id, user.id),
         db.prepare('DELETE FROM oauth_codes WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM login_tokens WHERE email = ?').bind(user.email),
@@ -1917,6 +1950,77 @@ export default {
       if (bad) return json({ error: 'bad lists' }, 400);
       await db.prepare('UPDATE users SET lists = ? WHERE id = ?').bind(JSON.stringify(lists), user.id).run();
       return json({ ok: true });
+    }
+
+    // Mint a share link for one of the session user's lists. Reissue =
+    // replace: a second POST kills the previous link, so boot caches the
+    // returned url in the list's shared.url and only ever POSTs once.
+    if (request.method === 'POST' && url.pathname.startsWith('/api/lists/') && url.pathname.endsWith('/share')) {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const id = decodeURIComponent(url.pathname.slice('/api/lists/'.length, -'/share'.length));
+      if (!(user.lists ? JSON.parse(user.lists) : []).some(l => l.id === id)) return json({ error: 'unknown list' }, 404);
+      const token = newToken();
+      await db.batch([
+        db.prepare('DELETE FROM list_shares WHERE user_id = ? AND list_id = ?').bind(user.id, id),
+        db.prepare('INSERT INTO list_shares (token_hash, user_id, list_id, created_at) VALUES (?, ?, ?, ?)')
+          .bind(await sha(token), user.id, id, Date.now()),
+      ]);
+      return json({ url: `${url.origin}/l/${token}` });
+    }
+
+    // Member surface for a shared list — session required (the link is a
+    // capability, but not a public one). GET returns the list with live
+    // prices; a non-owner's first request joins them as a member. POST
+    // toggles a bought-mark: members only their own, the owner anyone's.
+    // Gift privacy is enforced HERE: the owner's payload never carries who.
+    if (url.pathname.startsWith('/api/l/')) {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const share = await db.prepare('SELECT user_id, list_id FROM list_shares WHERE token_hash = ?')
+        .bind(await sha(decodeURIComponent(url.pathname.slice('/api/l/'.length)))).first();
+      if (!share) return json({ error: 'not found' }, 404);
+      const role = share.user_id === user.id ? 'owner' : 'member';
+      const owner = role === 'owner' ? user
+        : await db.prepare('SELECT id, name, lists FROM users WHERE id = ?').bind(share.user_id).first();
+      const l = owner && (owner.lists ? JSON.parse(owner.lists) : []).find(x => x.id === share.list_id);
+      if (!l) return json({ error: 'not found' }, 404); // owner or list gone — the link is dead
+      if (role === 'member') {
+        await db.prepare('INSERT OR IGNORE INTO list_members (owner_id, list_id, user_id, joined_at) VALUES (?, ?, ?, ?)')
+          .bind(share.user_id, share.list_id, user.id, Date.now()).run();
+      }
+      if (request.method === 'POST') {
+        const b = await request.json().catch(() => ({}));
+        if (typeof b.product_id !== 'string' || !(l.items || []).includes(b.product_id)) return json({ error: 'not in list' }, 400);
+        if (b.bought) {
+          // OR IGNORE: already bought by someone else is a no-op, the
+          // response below shows them who beat them to it
+          await db.prepare('INSERT OR IGNORE INTO list_bought (owner_id, list_id, product_id, user_id, at) VALUES (?, ?, ?, ?, ?)')
+            .bind(share.user_id, share.list_id, b.product_id, user.id, Date.now()).run();
+        } else {
+          await (role === 'owner'
+            ? db.prepare('DELETE FROM list_bought WHERE owner_id = ? AND list_id = ? AND product_id = ?')
+              .bind(share.user_id, share.list_id, b.product_id)
+            : db.prepare('DELETE FROM list_bought WHERE owner_id = ? AND list_id = ? AND product_id = ? AND user_id = ?')
+              .bind(share.user_id, share.list_id, b.product_id, user.id)).run();
+        }
+      }
+      await seedCatalog(db);
+      const [members, marks, products] = await Promise.all([
+        db.prepare('SELECT u.name FROM list_members m JOIN users u ON u.id = m.user_id WHERE m.owner_id = ? AND m.list_id = ? ORDER BY m.joined_at')
+          .bind(share.user_id, share.list_id).all().then(r => r.results),
+        db.prepare('SELECT b.product_id, b.user_id, b.at, u.name FROM list_bought b JOIN users u ON u.id = b.user_id WHERE b.owner_id = ? AND b.list_id = ?')
+          .bind(share.user_id, share.list_id).all().then(r => r.results),
+        rowsFor(db, l.items || [], { expand: false }),
+      ]);
+      const gift = !!(l.shared && l.shared.gift);
+      return json({
+        list: { id: l.id, name: l.name, icon: l.icon, gift, role, owner: owner.name, items: l.items || [] },
+        members: members.map(m => ({ name: m.name, initials: initials(m.name) })),
+        bought: Object.fromEntries(marks.map(m => [m.product_id, {
+          at: m.at, mine: m.user_id === user.id,
+          ...(role === 'owner' && gift ? {} : { by: m.name }),
+        }])),
+        products,
+      });
     }
 
     // "Report a problem" on a product page (plans/report-product-error.md).

@@ -367,6 +367,89 @@ test('custom lists persist per user via PUT /api/lists', async () => {
   assert.strictEqual((await call('/api/lists', { method: 'PUT', cookie: ola })).status, 400, 'missing body must 400');
 });
 
+test('list sharing: mint, member join, bought marks, gift privacy', async () => {
+  const call = api({ DB: d1() });
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  await call('/api/account', { method: 'PATCH', body: { name: 'Ola Nordmann' }, cookie: ola });
+  await call('/api/lists', {
+    method: 'PUT', cookie: ola,
+    body: [{ id: 'gaver', name: 'Julegaver', icon: 'gift', items: ['xm5', 'airpods'], shared: { role: 'owner', people: [], gift: true }, bought: {}, createdAt: '2026-08-02' }],
+  });
+
+  // mint: auth + existence gates, then a token url; reissue kills the old link
+  assert.strictEqual((await call('/api/lists/gaver/share', { method: 'POST' })).status, 401, 'mint without session must 401');
+  assert.strictEqual((await call('/api/lists/nope/share', { method: 'POST', cookie: ola })).status, 404, 'mint for a list you do not have must 404');
+  const { url } = await (await call('/api/lists/gaver/share', { method: 'POST', cookie: ola })).json();
+  const token = url.split('/l/')[1];
+  assert.match(token, /^[0-9a-f]{64}$/, 'share url must end in a token');
+
+  // member surface: session required, dead token 404s
+  assert.strictEqual((await call('/api/l/' + token)).status, 401, 'member GET without session must 401');
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  await call('/api/account', { method: 'PATCH', body: { name: 'Kari Nordmann' }, cookie: kari });
+  assert.strictEqual((await call('/api/l/' + 'f'.repeat(64), { cookie: kari })).status, 404, 'unknown token must 404');
+
+  // kari opens the link: sees the list with live rows, and joins as a member
+  const view = await (await call('/api/l/' + token, { cookie: kari })).json();
+  assert.strictEqual(view.list.name, 'Julegaver');
+  assert.deepStrictEqual([view.list.role, view.list.gift, view.list.owner], ['member', true, 'Ola Nordmann']);
+  assert.deepStrictEqual(view.products.map(p => p.id).sort(), ['airpods', 'xm5'], 'items ride as hydrated rows');
+  const olaMe = await (await call('/api/me', { cookie: ola })).json();
+  assert.deepStrictEqual(olaMe.lists[0].shared.people, [{ name: 'Kari Nordmann', initials: 'KN' }], 'first view joins the member');
+
+  // kari checks off xm5; a mark for something not in the list is refused
+  assert.strictEqual((await call('/api/l/' + token, { method: 'POST', body: { product_id: 'tv', bought: true }, cookie: kari })).status, 400);
+  const marked = await (await call('/api/l/' + token, { method: 'POST', body: { product_id: 'xm5', bought: true }, cookie: kari })).json();
+  assert.deepStrictEqual(marked.bought.xm5.by, 'Kari Nordmann', 'members see who bought');
+  assert.strictEqual(marked.bought.xm5.mine, true);
+
+  // another member cannot clear kari's mark; kari can clear her own
+  const per = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'per@example.no', password: 'correcthorse1' } }));
+  const perClear = await (await call('/api/l/' + token, { method: 'POST', body: { product_id: 'xm5', bought: false }, cookie: per })).json();
+  assert.ok(perClear.bought.xm5, 'a member clearing someone else\'s mark is a no-op');
+
+  // gift privacy: the OWNER never sees who — not via /api/me, not via the link
+  const olaMe2 = await (await call('/api/me', { cookie: ola })).json();
+  assert.ok(olaMe2.lists[0].bought.xm5.at, 'owner sees THAT it was bought');
+  assert.ok(!('by' in olaMe2.lists[0].bought.xm5), 'owner me payload must not say who');
+  const ownerView = await (await call('/api/l/' + token, { cookie: ola })).json();
+  assert.deepStrictEqual([ownerView.list.role, 'by' in ownerView.bought.xm5], ['owner', false], 'owner link view strips names too');
+
+  // a crafted PUT cannot smuggle names into the owner's payload
+  const smuggled = olaMe2.lists.map(l => ({ ...l, bought: { xm5: { by: 'Kari Nordmann', at: '2026-08-02' } } }));
+  await call('/api/lists', { method: 'PUT', body: smuggled, cookie: ola });
+  assert.ok(!('by' in (await (await call('/api/me', { cookie: ola })).json()).lists[0].bought.xm5), 'server marks win over the blob for shared lists');
+
+  // the owner can clear anyone's mark
+  const cleared = await (await call('/api/l/' + token, { method: 'POST', body: { product_id: 'xm5', bought: false }, cookie: ola })).json();
+  assert.deepStrictEqual(cleared.bought, {}, 'owner clear removes the mark');
+
+  // reissue replaces: the old link dies, the new one works
+  const { url: url2 } = await (await call('/api/lists/gaver/share', { method: 'POST', cookie: ola })).json();
+  assert.strictEqual((await call('/api/l/' + token, { cookie: kari })).status, 404, 'reissue must kill the old link');
+  assert.strictEqual((await call('/api/l/' + url2.split('/l/')[1], { cookie: kari })).status, 200);
+});
+
+test('list sharing GDPR: deleting either side removes their rows', async () => {
+  const call = api({ DB: d1() });
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  await call('/api/lists', { method: 'PUT', cookie: ola, body: [{ id: 'g', name: 'G', icon: 'gift', items: ['xm5'], shared: { role: 'owner', people: [], gift: true }, bought: {}, createdAt: '2026-08-02' }] });
+  const { url } = await (await call('/api/lists/g/share', { method: 'POST', cookie: ola })).json();
+  const token = url.split('/l/')[1];
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  await call('/api/l/' + token, { method: 'POST', body: { product_id: 'xm5', bought: true }, cookie: kari });
+
+  // member deletes: gone from people, mark gone
+  await call('/api/account', { method: 'DELETE', cookie: kari });
+  const me = await (await call('/api/me', { cookie: ola })).json();
+  assert.deepStrictEqual([me.lists[0].shared.people, me.lists[0].bought], [[], {}], 'a deleted member leaves no trace on the list');
+
+  // owner deletes: the link is dead
+  const kari2 = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  await call('/api/account', { method: 'DELETE', cookie: ola });
+  assert.strictEqual((await call('/api/l/' + token, { cookie: kari2 })).status, 404, 'owner deletion must kill the link');
+});
+
 test('GDPR: export downloads the session user\'s data; delete removes every row and kills the session', async () => {
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/account/export')).status, 401, 'export without session must 401');
