@@ -7,19 +7,36 @@
 
 // ---- deterministic offer + history generators -------------
 function _seed(n) { let x = Math.sin(n * 99.13) * 43758.5453; return x - Math.floor(x); }
+// shipping + delivery rotate per product (idn) — deterministic, but the mix varies:
+// some products' cheapest shop charges frakt (→ totals subline / callout), some ship
+// free everywhere, some (idn%5==3) never free, some (idn%4==1) only slow couriers.
+const SHIP_P = [0, 79, 149, 0, 79, 79, 149, 79, 79, 79, 79, 79]; // by sorted rank; 0 = free
+const ETA_P = ['In stock', '2–4 days', 'In stock', '1–2 days', '2–4 days', '3–5 days', 'In stock', '2–4 days', '1–2 days', '3–5 days', 'In stock', '2–4 days'];
+const etaFast = (eta) => !!eta && (/^in stock/i.test(eta) || +((/^(\d+)/.exec(eta) || [])[1]) <= 2);
 function genOffers(p) {
-  const n = Math.min(p.shops, SHOPS.length);
+  const n = Math.min(p.shops, SHOPS.length), idn = p.idn || 0;
+  const slowShipper = p.stock !== false && idn % 4 === 1; // whole assortment ships 3–5 days
+  const noFree = idn % 5 === 3; // no shop ships this free
   const offers = SHOPS.slice(0, n).map((s, i) => ({
     shop: s,
-    price: p.best + Math.round((i * (p.best * 0.035) + (i === 0 ? 0 : 40 + _seed(p.idn + i) * 120)) / 10) * 10,
-    ship: i % 3 === 0 ? 'Free shipping' : 'kr 79 shipping',
-    stock: i % 5 === 4 ? undefined : i % 4 !== 3, // undefined = never checked → unknown
-    eta: i % 2 === 0 ? 'In stock' : '2–4 days',
+    price: i === 1 ? p.best + 40 + (idn % 3) * 20 : p.best + Math.round((i * (p.best * 0.035) + (i === 0 ? 0 : 40 + _seed(idn + i) * 120)) / 10) * 10,
+    stock: p.stock === false ? (i % 3 === 2 ? undefined : false) : (i % 5 === 4 ? undefined : i % 4 !== 3), // undefined = never checked → unknown
     url: i % 4 !== 3 ? 'https://www.' + s.toLowerCase().replace(/[^a-z0-9]/g, '') + '.no' : undefined,
-    updated_at: i % 5 === 4 ? undefined : Date.now() - Math.round(5 + _seed(p.idn + i * 7) * 170) * 60000,
-  })).sort((a, b) => a.price - b.price);
+    updated_at: i % 5 === 4 ? undefined : Date.now() - Math.round(5 + _seed(idn + i * 7) * 170) * 60000,
+  })).sort((a, b) => a.price - b.price).map((o, j) => {
+    const shipCost = SHIP_P[(idn + j) % 12] || (noFree ? 79 : 0);
+    return { ...o, shipCost, ship: shipCost ? 'kr ' + shipCost + ' shipping' : 'Free shipping', eta: (p.stock === false || slowShipper) ? '3–5 days' : ETA_P[(idn + j) % 12] };
+  });
   offers[0].price = p.best;
+  offers.forEach(o => { o.total = o.price + o.shipCost; });
   return offers;
+}
+// true landed cost: cheapest price+frakt across shops
+function applyTotals(p) {
+  let bt = null, shop = null;
+  (p.offers || []).forEach(o => { if (o.total != null && (bt == null || o.total < bt)) { bt = o.total; shop = o.shop; } });
+  if (bt != null) { p.bestTotal = bt; p.bestTotalShop = shop; }
+  return p;
 }
 function genHist(idn, base) {
   const vol = base * 0.06, pts = [];
@@ -101,16 +118,26 @@ const _NEW = [
 
 let _idn = 1;
 const CATALOG = [
-  // reused real products, enriched
-  ...PRODUCTS.filter(p => _META[p.id]).map(p => ({ ...p, ...(_META[p.id]), stock: true, kw: (p.cat + ' ' + p.brand).toLowerCase() })),
+  // reused real products, enriched; offers regenerated in place (mutates the shared
+  // Primitives object so byId/WATCHED consumers see the same shipping totals)
+  ...PRODUCTS.filter(p => _META[p.id]).map(p => {
+    if (p.idn == null) { p.idn = _idn++; p.offers = genOffers(p); applyTotals(p); }
+    return { ...p, ...(_META[p.id]), stock: true, kw: (p.cat + ' ' + p.brand).toLowerCase() };
+  }),
   // new generated listings
   ..._NEW.concat(window.BRICK_ROWS || []).map(p => {
     const drop = Math.round(((p.was - p.best) / p.was) * 100);
     const o = { ...p, drop, idn: _idn++ };
     o.offers = genOffers(o);
     o.history = genHist(o.idn, o.best);
-    return o;
+    return applyTotals(o);
   }),
+];
+// universal availability filters — hardcoded, never collide with FACETS spec keys
+const AVAIL = [
+  { key: 'instock', label: 'In stock now', test: p => p.stock === true },
+  { key: 'freeship', label: 'Free shipping', test: p => (p.offers || []).some(o => o.shipCost === 0) },
+  { key: 'fast', label: 'Delivery ≤ 2 days', test: p => (p.offers || []).some(o => o.stock === true && etaFast(o.eta)) },
 ];
 // attach variation axes (same product page, selectable variants)
 if (window.VARIANT_DEFS) CATALOG.forEach(p => { if (VARIANT_DEFS[p.id]) p.variants = VARIANT_DEFS[p.id]; });
@@ -205,6 +232,7 @@ function ResultRow({ p, go, spark, saved, onSave, badge, hl }) {
           {p.drop >= 12 && <span className="rrow__drop"><Tag kind="best">▼ −{p.drop}%</Tag></span>}
           <div className="rrow__from">from</div>
           <Price value={p.best} size={24} />
+          {p.bestTotal != null && p.bestTotal > p.best && <div className="rrow__tot t-small">kr {fmt(p.bestTotal)} inkl. frakt hos {p.bestTotalShop}</div>}
           <div className="rrow__shops">{p.shops} shops →</div>
         </>) : <div className="no-offers">No offers yet</div>}
       </div>
@@ -351,7 +379,7 @@ function GpcInfo({ bk }) {
   );
 }
 
-function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet, setBoolFacet }) {
+function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet, setBoolFacet, availCounts, setAvail }) {
   const brands = base.brands; // brands present in the active result set
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
   // filter search: every token must hit the group title or an entry label;
@@ -376,8 +404,9 @@ function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet
   const pPrice = grpPred('Price (kr)', []);
   const pRating = grpPred('Rating', [4.5, 4, 3.5].map(ratingLbl));
   const pShow = grpPred('Show only', ['On sale', 'In stock', ...boolDefs.map(d => d.label)]);
+  const pAvail = grpPred('Availability', AVAIL.map(d => d.label));
   const optPreds = optionDefs.map(def => grpPred(def.label, facetBase[def.key].vals.map(v => fdisp(v, def))));
-  const anyVisible = pCat || pBrand || pPrice || pRating || pShow || optPreds.some(Boolean);
+  const anyVisible = pCat || pBrand || pPrice || pRating || pShow || pAvail || optPreds.some(Boolean);
   const searching = tokens.length > 0;
   const nShow = (f.sale ? 1 : 0) + (f.instock ? 1 : 0) + boolDefs.filter(d => f.facets[d.key]).length;
   const specVisible = optionDefs.some((d, i) => optPreds[i]);
@@ -433,6 +462,9 @@ function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet
         {pShow('In stock') && <Check on={f.instock} label="In stock" onClick={() => set('instock', !f.instock)} />}
         {boolDefs.filter(d => pShow(d.label)).map(def => <Check key={def.key} on={!!f.facets[def.key]} label={def.label} onClick={() => setBoolFacet(def.key)} />)}
       </FGroup>}
+      {pAvail && <FGroup id="avail" title="Availability" nSel={f.avail.length} forceOpen={searching}>
+        {AVAIL.filter(d => pAvail(d.label)).map(d => <Check key={d.key} on={f.avail.includes(d.key)} label={d.label} count={availCounts[d.key]} onClick={() => setAvail(d.key)} />)}
+      </FGroup>}
       {specVisible && <div className="filters__cluster">{(((window.brickBy || {})[(baseSel || {}).brick] || {}).name || base.cat || 'Product') + ' specs'}</div>}
       {optionDefs.map((def, i) => optPreds[i] && (
         <FGroup key={def.key} id={'facet.' + def.key} title={def.label} nSel={(f.facets[def.key] || []).length} defOpen={i < 2} forceOpen={searching}>
@@ -462,7 +494,7 @@ function Dropdown({ label, active, children }) {
   );
 }
 
-function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, setBoolFacet }) {
+function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, setBoolFacet, availCounts, setAvail }) {
   const brands = base.brands;
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
   const cnav = catNavModel(baseSel);
@@ -505,6 +537,9 @@ function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, 
           </div>
         ))}
       </Dropdown>
+      <Dropdown label={f.avail.length ? 'Availability · ' + f.avail.length : 'Availability'} active={!!f.avail.length}>
+        {AVAIL.map(d => <Check key={d.key} on={f.avail.includes(d.key)} label={d.label} count={availCounts[d.key]} onClick={() => setAvail(d.key)} />)}
+      </Dropdown>
       {facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2).map(def => {
         const sel = f.facets[def.key] || [];
         return (
@@ -534,6 +569,7 @@ const DIRW = { num: { asc: 'Low \u2192 High', desc: 'High \u2192 Low' }, text: {
 const lastUpd = (p) => { const t = (p.offers || []).map(o => o.updated_at).filter(Boolean); return t.length ? Math.max(...t) : undefined; };
 const SORT_FIELDS = [
   { id: 'best', label: 'Price', grp: 'Price', type: 'num', dir: 'asc', val: p => p.best, w: { asc: 'Cheapest first', desc: 'Priciest first' } },
+  { id: 'total', label: 'Totalpris', grp: 'Price', type: 'num', dir: 'asc', val: p => p.bestTotal != null ? p.bestTotal : p.best, w: { asc: 'Cheapest first', desc: 'Priciest first' }, badge: p => p.bestTotal != null ? 'kr ' + fmt(p.bestTotal) + ' totalt' : null },
   { id: 'drop', label: 'Price drop', grp: 'Price', type: 'num', dir: 'desc', val: p => p.drop, w: { asc: 'Smallest drop', desc: 'Biggest drop' }, badge: p => p.drop != null ? '\u2212' + p.drop + '%' : null },
   { id: 'save', label: 'Kroner off', grp: 'Price', type: 'num', dir: 'desc', val: p => (p.was != null && p.best != null) ? p.was - p.best : undefined, badge: p => (p.was != null && p.best != null) ? 'kr ' + fmt(p.was - p.best) + ' off' : null },
   { id: 'updated', label: 'Price updated', grp: 'Price', type: 'date', dir: 'desc', val: lastUpd, badge: p => lastUpd(p) ? relTime(lastUpd(p)) : null },
@@ -624,7 +660,7 @@ function SortMenu({ fields, field, dir, onPick }) {
 // ===========================================================
 // RESULTS SCREEN
 // ===========================================================
-const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} });
+const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, avail: [], facets: {} });
 function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} };
@@ -684,6 +720,8 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   }, [countPool, cat, served, f.q]);
   const setFacet = (key, v) => setF(prev => { const cur = prev.facets[key] || []; const next = cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v]; const fac = { ...prev.facets }; if (next.length) fac[key] = next; else delete fac[key]; return { ...prev, facets: fac }; });
   const setBoolFacet = (key) => setF(prev => { const fac = { ...prev.facets }; if (fac[key]) delete fac[key]; else fac[key] = true; return { ...prev, facets: fac }; });
+  const setAvail = (key) => setF(prev => ({ ...prev, avail: prev.avail.includes(key) ? prev.avail.filter(x => x !== key) : [...prev.avail, key] }));
+  const availCounts = useMemo(() => { const m = {}; AVAIL.forEach(d => { m[d.key] = countPool.filter(d.test).length; }); return m; }, [countPool]);
 
   // the host serves the query: it merges the matching page into CATALOG and answers
   // with the category-wide total + facet counts. Debounced, page 0, mount included.
@@ -748,6 +786,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     if (f.rating && (p.rating || 0) < f.rating) return false;
     if (f.sale && p.drop < 12) return false;
     if (f.instock && !p.stock) return false;
+    for (const a of AVAIL) { if (f.avail.includes(a.key) && !a.test(p)) return false; }
     for (const def of facetDefs) {
       const sel = f.facets[def.key];
       if (!sel) continue;
@@ -790,6 +829,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     ...(f.rating ? [{ k: 'rating', label: f.rating + '★ & up', clear: () => set('rating', 0) }] : []),
     ...(f.sale ? [{ k: 'sale', label: 'On sale', clear: () => set('sale', false) }] : []),
     ...(f.instock ? [{ k: 'instock', label: 'In stock', clear: () => set('instock', false) }] : []),
+    ...f.avail.map(k => { const d = AVAIL.find(a => a.key === k); return { k: 'avail:' + k, label: d ? d.label : k, clear: () => setAvail(k) }; }),
     ...facetDefs.flatMap(def => {
       const sel = f.facets[def.key];
       if (!sel) return [];
@@ -805,12 +845,12 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
         {filterLayout === 'rail' && (
           <aside className="filterscol">
             <div className="filters">
-              <FiltersBody f={f} set={set} base={base} baseSel={baseSel} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />
+              <FiltersBody f={f} set={set} base={base} baseSel={baseSel} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} availCounts={availCounts} setAvail={setAvail} />
             </div>
           </aside>
         )}
         <main className="results__main">
-          {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} />}
+          {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} availCounts={availCounts} setAvail={setAvail} />}
           <div className="results__title">
             <div className="results__ttl"><h1>{title}</h1>{gb && <GpcInfo bk={gb} />}</div>
             <RefineField value={f.q} onChange={v => { set('q', v); setShown(60); }} scope={scope} n={list.length} />
@@ -939,15 +979,16 @@ function ReportProblemModal({ p, onClose, onDone }) {
 // PRODUCT COMPARISON PAGE (PDP)
 // ===========================================================
 const OFFERS_SHOWN = 5; // cheapest N shown; the rest expand on demand
-function OfferRow({ o, best }) {
+function OfferRow({ o, best, totSort }) {
   return (
     <div className={'orow' + (best ? ' is-best' : '')}>
-      <div className="orow__shop">{o.shop}{best && <Tag kind="best">★ Best</Tag>}</div>
+      <div className="orow__shop">{o.shop}{best && <Tag kind="best">{totSort ? '★ Billigst totalt' : '★ Best'}</Tag>}</div>
       <div className="orow__ship">{o.ship}</div>
       <div className="orow__ship"><StockBadge state={o.stock === undefined ? 'unknown' : o.stock ? 'in' : 'out'} label={o.stock ? o.eta : undefined} />{o.updated_at ? <div className="orow__checked">checked {relTime(o.updated_at)}</div> : null}</div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--s-3)' }}>
-        <Price value={o.price} size={18} />
-        <Btn variant={best ? 'primary' : 'ghost'} size="sm" disabled={!o.url} href={o.url} target="_blank" rel="noopener">Visit</Btn>
+      <div className="orow__item"><Price value={o.price} size={15} /></div>
+      <div className="orow__totcell">{o.total != null ? <Price value={o.total} size={15} /> : <span className="orow__tot">—</span>}</div>
+      <div className="orow__buy">
+        <Btn variant={best ? 'primary' : 'ghost'} size="sm" icon="external-link" disabled={!o.url} href={o.url} target="_blank" rel="noopener" title="Open in new tab"></Btn>
       </div>
     </div>
   );
@@ -975,6 +1016,13 @@ function ProductPage({ go, id }) {
   const low = histAll.length ? Math.min(...histAll) : null;
   const best = (v.offers && v.offers.length) ? v.offers[0] : null;
   const shopUrl = (best && best.url) || ((v.offers || []).find(o => o.url) || {}).url;
+  const [osort, setOsort] = useState('price');
+  const sOffers = useMemo(() => { const os = v.offers || []; return osort === 'total' ? [...os].sort((a, b) => (a.total != null ? a.total : a.price) - (b.total != null ? b.total : b.price)) : os; }, [v, osort]);
+  const bestTot = useMemo(() => { let m = null; (v.offers || []).forEach(o => { if (o.total != null && (!m || o.total < m.total)) m = o; }); return m; }, [v]);
+  const oVal = (o) => (osort === 'total' && o.total != null) ? o.total : o.price;
+  const [inclShip, _setIncl] = useState(w ? !!w.inclShip : false);
+  useEffect(() => { _setIncl(w ? !!w.inclShip : false); }, [id, watching]);
+  const onIncl = (val) => { _setIncl(val); if (WatchStore.has(v.id)) WatchStore.setInclShip(v.id, val); };
   const [buyNow, setBuyNow] = useState(false);
   const [report, setReport] = useState(false);
   const more = (CAT_OF[p.cat] || []).filter(x => x.id !== p.id).slice(0, 4);
@@ -1033,7 +1081,7 @@ function ProductPage({ go, id }) {
                   </div>
                 </div>
                 {!watching ? (
-                  <Btn variant="primary" icon="bell" disabled={!v.best || !(+target > 0)} title={v.unavailable ? 'Pick a combination a shop sells' : (!v.best ? 'No prices to watch yet' : undefined)} onClick={() => { WatchStore.add(v.id, +target || v.best || 0); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || v.best || 0)); }}>
+                  <Btn variant="primary" icon="bell" disabled={!v.best || !(+target > 0)} title={v.unavailable ? 'Pick a combination a shop sells' : (!v.best ? 'No prices to watch yet' : undefined)} onClick={() => { WatchStore.add(v.id, +target || v.best || 0, inclShip); flash('Watching — we\u2019ll ping you below kr ' + fmt(+target || v.best || 0)); }}>
                     Watch price
                   </Btn>
                 ) : (
@@ -1051,6 +1099,11 @@ function ProductPage({ go, id }) {
                   </div>
                 )}
               </div>
+              <div className="watchbox__incl">
+                <Toggle small on={inclShip} onChange={onIncl} />
+                <span>Inkluder frakt</span>
+                {inclShip && v.best != null && <span className="watchbox__inclv">— sammenlignes mot kr {fmt(WatchStore.basis(v, true))} totalt</span>}
+              </div>
               <div className="watchbox__listrow"><SaveMenu p={v} label="Lagre i liste…" align="left" /></div>
             </div>
             {toast && <Toast>{toast}</Toast>}
@@ -1062,19 +1115,29 @@ function ProductPage({ go, id }) {
         </div>
 
         <div className="pdp__grid">
-          <div className="offers">
-            <div className="offers__h"><span>Shop</span><span>Delivery</span><span>Stock</span><span style={{ textAlign: 'right' }}>Price</span></div>
+          <div className={'offers' + (osort === 'total' ? ' is-tot' : '')}>
+            {best && <div className="offers__bar">
+              <span className="offers__sortlbl">Sortér:</span>
+              <div className="seg seg--mini" role="group" aria-label="Sortér tilbud">
+                <button type="button" className={osort === 'price' ? 'is-on' : ''} aria-pressed={osort === 'price'} onClick={() => setOsort('price')}>Pris</button>
+                <button type="button" className={osort === 'total' ? 'is-on' : ''} aria-pressed={osort === 'total'} onClick={() => setOsort('total')}>Totalpris</button>
+              </div>
+            </div>}
+            {best && bestTot && bestTot.shop !== best.shop && (
+              <div className="offers__callout"><Icon name="truck" size={14} /><span>Billigst totalt: <b>{bestTot.shop}</b> — kr {fmt(bestTot.total)} inkl. frakt</span></div>
+            )}
+            <div className="offers__h"><span>Shop</span><span>Delivery</span><span>Stock</span><span style={{ textAlign: 'right' }}>Price</span><span style={{ textAlign: 'right' }}>Totalt</span><span></span></div>
             {!best && <div className="offers__empty">{v.unavailable ? 'No shop sells ' + v.vlabel + ' right now' : 'No offers yet — we’re tracking this product'}</div>}
-            {(v.offers || []).slice(0, OFFERS_SHOWN).map((o, i) => <OfferRow key={o.shop} o={o} best={i === 0} />)}
-            {(v.offers || []).length > OFFERS_SHOWN && (
+            {sOffers.slice(0, OFFERS_SHOWN).map((o, i) => <OfferRow key={o.shop} o={o} best={i === 0} totSort={osort === 'total'} />)}
+            {sOffers.length > OFFERS_SHOWN && (
               <details className="offers__more">
                 <summary className="offers__toggle">
                   <Icon name="chevron-down" size={14} />
-                  <span className="offers__toggle-lbl offers__toggle-lbl--more">Show {v.offers.length - OFFERS_SHOWN} more shops</span>
+                  <span className="offers__toggle-lbl offers__toggle-lbl--more">Show {sOffers.length - OFFERS_SHOWN} more shops</span>
                   <span className="offers__toggle-lbl offers__toggle-lbl--less">Show fewer shops</span>
-                  <span className="offers__toggle-hint">kr {fmt(v.offers[OFFERS_SHOWN].price)} – kr {fmt(v.offers[v.offers.length - 1].price)}</span>
+                  <span className="offers__toggle-hint">kr {fmt(oVal(sOffers[OFFERS_SHOWN]))} – kr {fmt(oVal(sOffers[sOffers.length - 1]))}</span>
                 </summary>
-                {v.offers.slice(OFFERS_SHOWN).map(o => <OfferRow key={o.shop} o={o} />)}
+                {sOffers.slice(OFFERS_SHOWN).map(o => <OfferRow key={o.shop} o={o} totSort={osort === 'total'} />)}
               </details>
             )}
             <div className="offers__foot">
@@ -1112,4 +1175,4 @@ function ProductPage({ go, id }) {
   );
 }
 
-Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, Results, ProductPage, ResultRow, ResultRowCompact, ResultCard, Stars, HiName, refineToks, refineMatch });
+Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, applyTotals, etaFast, Results, ProductPage, ResultRow, ResultRowCompact, ResultCard, Stars, HiName, refineToks, refineMatch });

@@ -101,6 +101,7 @@ function variantListing(p, sel) {
   const v = { ...p, vlabel, best, was, drop: Math.round(((was - best) / was) * 100), shops: Math.max(3, p.shops - (h % 4)), idn: (p.idn || _vhash(p.id)) + h };
   v.offers = window.genOffers(v);
   v.history = window.genHist(v.idn, best);
+  if (window.applyTotals) applyTotals(v);
   return v;
 }
 

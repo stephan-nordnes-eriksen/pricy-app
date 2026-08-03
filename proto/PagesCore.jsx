@@ -6,7 +6,7 @@
 
 // --- WatchStore: single source of truth for watched products
 const WatchStore = {
-  items: WATCHED.map(w => ({ id: w.id, target: w.target, paused: false, hit: w.hit })),
+  items: WATCHED.map(w => ({ id: w.id, target: w.target, paused: false, hit: w.hit, inclShip: false })),
   ls: new Set(),
   emit() { this.items = [...this.items]; this.ls.forEach(f => f()); },
   sub(f) { this.ls.add(f); return () => this.ls.delete(f); },
@@ -18,14 +18,23 @@ const WatchStore = {
     const v = variantListing(rv.p, rv.sel);
     return { ...v, id, name: rv.p.name + ' — ' + v.vlabel };
   },
+  // compare basis: item price, or true landed cost when the watch includes frakt
+  basis(p, inclShip) {
+    if (!p) return undefined;
+    if (!inclShip) return p.best;
+    if (p.bestTotal != null) return p.bestTotal;
+    let m = null;
+    (p.offers || []).forEach(o => { const t = o.total != null ? o.total : (o.shipCost != null && o.price != null ? o.price + o.shipCost : null); if (t != null && (m == null || t < m)) m = t; });
+    return m != null ? m : p.best;
+  },
   get(id) { return this.items.find(w => w.id === id); },
   has(id) { return this.items.some(w => w.id === id); },
   hits() { return this.items.filter(w => w.hit && !w.paused).length; },
   saved() { return this.items.reduce((s, w) => { const p = this.prod(w.id); return s + (p && p.was > p.best ? p.was - p.best : 0); }, 0); },
-  add(id, target) {
+  add(id, target, inclShip = false) {
     if (this.has(id)) return;
     const p = this.prod(id);
-    this.items = [{ id, target, paused: false, hit: p ? p.best <= target : false }, ...this.items];
+    this.items = [{ id, target, paused: false, hit: p ? this.basis(p, inclShip) <= target : false, inclShip }, ...this.items];
     this.emit();
   },
   remove(id) { this.items = this.items.filter(w => w.id !== id); this.emit(); },
@@ -33,7 +42,14 @@ const WatchStore = {
   setTarget(id, target) {
     const w = this.get(id); if (!w) return;
     const p = this.prod(id);
-    w.target = target; w.hit = p ? p.best <= target : false;
+    w.target = target; w.hit = p ? this.basis(p, w.inclShip) <= target : false;
+    this.emit();
+  },
+  setInclShip(id, v) {
+    const w = this.get(id); if (!w) return;
+    w.inclShip = !!v;
+    const p = this.prod(id);
+    w.hit = p ? this.basis(p, w.inclShip) <= w.target : false;
     this.emit();
   },
   setPaused(id, v) { const w = this.get(id); if (!w) return; w.paused = v; this.emit(); },
@@ -108,8 +124,8 @@ function LockedCard({ icon, title, desc, onOpen }) {
 }
 
 // --- Square toggle -------------------------------------------
-function Toggle({ on, onChange }) {
-  return <button type="button" className={'tgl' + (on ? ' is-on' : '')} role="switch" aria-checked={on} onClick={() => onChange(!on)}></button>;
+function Toggle({ on, onChange, small }) {
+  return <button type="button" className={'tgl' + (small ? ' tgl--sm' : '') + (on ? ' is-on' : '')} role="switch" aria-checked={on} onClick={() => onChange(!on)}></button>;
 }
 
 // --- Saved toast ---------------------------------------------

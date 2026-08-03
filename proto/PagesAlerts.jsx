@@ -18,13 +18,14 @@ function AlertRow({ r, go, onRemove }) {
         <div className="alrow__meta">
           <span>{p.brand}</span><span>{p.shops} shops</span>
           {active && <span className="tag tag--best" style={{ fontSize: 9 }}>Below target</span>}
+          {r.inclShip && <span className="tag" style={{ fontSize: 9 }}>Inkl. frakt</span>}
           {r.paused && <span className="tag" style={{ fontSize: 9 }}>Paused</span>}
         </div>
       </div>
       <div className="alrow__spark">{p.history && p.history.length ? <Sparkline points={p.history.slice(-12)} w={110} h={34} color={active ? 'var(--green-700)' : 'var(--ink-900)'} /> : null}</div>
       <div>
-        <div className="alrow__lbl">Best now</div>
-        <Price value={p.best} size={17}></Price>
+        <div className="alrow__lbl">{r.inclShip ? 'Totalt nå' : 'Best now'}</div>
+        <Price value={r.inclShip ? WatchStore.basis(p, true) : p.best} size={17}></Price>
       </div>
       <div className="alrow__tgtcol">
         <div className="alrow__lbl">Your target</div>
@@ -39,6 +40,10 @@ function AlertRow({ r, go, onRemove }) {
             kr {fmt(r.target)} <Icon name="pencil" size={12} />
           </button>
         )}
+        <label className="alrow__incl">
+          <Toggle small on={!!r.inclShip} onChange={(val) => WatchStore.setInclShip(r.id, val)} />
+          <span>Inkl. frakt</span>
+        </label>
       </div>
       <div className="alrow__act">
         <button className="iconbtn" title={r.paused ? 'Resume alerts' : 'Pause alerts'} onClick={() => WatchStore.setPaused(r.id, !r.paused)}>
