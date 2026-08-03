@@ -1,5 +1,9 @@
 # Profile email field is silently dropped
 
+(The `proto/index.html:NNNN` refs predate the prototype split — the Profile
+section is in `proto/PagesAccount.jsx` now. Phase 1 below is done and holds;
+only Phase 2 is open, blocked on email delivery.)
+
 ## Current state
 
 The Profile section renders an editable email input

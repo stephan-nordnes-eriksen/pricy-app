@@ -29,17 +29,18 @@ B. [ingest-crawl-robustness](ingest-crawl-robustness.md) — the crawl is a
 C. [drop-cards-are-seed-only](drop-cards-are-seed-only.md) — "Biggest
    drops" ranks on `meta.was`, which 13,705 of 13,705 auto-promoted rows
    don't have. 24 of 31 categories can never show a drop card.
-D. [search-and-paging-at-scale](search-and-paging-at-scale.md) — no
-   diacritic folding ("hundefor" finds nothing), unranked LIMIT 100, and
-   ~70% of a big category unreachable behind the 400-row cap. Includes the
-   `meta.icon` search bug already fixed on 2026-07-25, for context.
+D. ~~search-and-paging-at-scale~~ — **done**, see
+   [search-and-paging-at-scale](search-and-paging-at-scale.md), kept here as
+   the record of what scale broke (diacritic folding, unranked LIMIT 100,
+   the 400-row cap) and what each fix cost.
 E. ~~facets-for-the-new-categories~~ — done 2026-07-25, see
    [plans-implemented](../plans-implemented/facets-for-the-new-categories.md):
    all 31 categories declare facets and derive their values from the product
    name (`worker/facetrules.js`).
-F. [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md) — `hidden:1`
-   means "unlisted", not "hidden": a demoted product keeps a working PDP.
-   Decide whether that's the intent, then fix the code or the docs.
+F. ~~hidden-rows-readable-by-id~~ — **done 2026-07-26**, moved to
+   [plans-implemented](../plans-implemented/hidden-rows-readable-by-id.md):
+   `hidden:1` now means not served on any read path, ops opts back in with
+   the `INGEST_TOKEN` bearer.
 
 G. ~~api-latency-round-trips~~ — **done 2026-07-26**, five fixes, all still
    in [api-latency-round-trips](api-latency-round-trips.md) as the record. A
@@ -54,9 +55,15 @@ H. ~~category-misclassification~~ — **done 2026-07-26**, record kept in
    prior-art survey, and what shipped). The shop's breadcrumb is kept whole and
    read leaf→root, `cat` re-classifies on every crawl instead of freezing at
    first promotion, and `deriveFacets` reads `srcCat`. 216 products change
-   category, 206 gain one, facet `type` coverage +1,222 rows. **Still open:**
-   44 of the 47 `CATMAP["*"]` shop floors, which are why ~60% of the catalog is
-   still categorized by shop-of-origin.
+   category, 206 gain one, facet `type` coverage +1,222 rows. The floor audit
+   finished differently than planned: 11 floors dropped + Gamezone corrected,
+   36 remain at 61–100% agreement — measured mostly *correct* (specialist
+   shops that publish no category), floor share 44.5% → 42%. **Still open:**
+   the Gamezone refile (~580 rows, held on the CPU ceiling — see
+   [read-path-whats-left](read-path-whats-left.md) §0) and vocabulary growth
+   via `tools/score-cats.mjs --labels`. The 2026-07-31 GPC-departments layer
+   changed none of this — it navigates over `cat=`, it doesn't classify (note
+   at the end of the plan file).
 
 Not backlog items, but read them before any performance change:
 - [api-latency-round-trips](api-latency-round-trips.md) — what each of the
@@ -73,16 +80,16 @@ Not backlog items, but read them before any performance change:
 **Excluded by decision** (planned elsewhere or parked):
 - BankID login (parked, PLAN.md 4b) — fake button stays working.
 - Buy-now / auto-buy execution (AUTOBUY-PLAN.md, FULFILLMENT-PLAN.md).
-  What the auto-buy *copy* claims meanwhile is in scope:
-  [autobuy-copy-honesty](autobuy-copy-honesty.md).
+  What the auto-buy *copy* claims meanwhile was in scope and is done:
+  [autobuy-copy-honesty](../plans-implemented/autobuy-copy-honesty.md).
 - Email Service go-live itself (PLAN.md Phase 2 — paid-plan decision).
   Plans below that need email *delivery* mark it as a dependency.
 - Real price sources / seeded demo offers — PLAN.md 4d (Adtraction
-  rollout). The freshness *claims* made meanwhile are in scope:
-  [marketing-copy-honesty](marketing-copy-honesty.md).
+  rollout). The freshness *claims* made meanwhile were in scope and are done:
+  [marketing-copy-honesty](../plans-implemented/marketing-copy-honesty.md).
   Catalog scale itself is no longer "in flight": the 2026-07-25 crawl
-  landed it, and what it exposed is items A–G above. The no-op hourly
-  cron specifically is now
+  landed it, and what it exposed is items A–G above. The price-refresh half
+  of the hourly cron specifically is now
   [ingest-crawl-robustness](ingest-crawl-robustness.md) Open 4 — it needs
   sharding or Queues, not just a populated `SOURCES`.
 - TODO.md's "convert a watch to auto-buy" — auto-buy scope, track it
@@ -91,7 +98,10 @@ Not backlog items, but read them before any performance change:
 **Implemented** (moved to [../plans-implemented/](../plans-implemented/)):
 honest-metrics, account-privacy, dead-ui-cleanup, price-drop-alerts,
 activity-feed, recently-viewed, real-magic-link-login,
-report-product-error — each file keeps its remaining upstream/delivery
+report-product-error, facets-for-the-new-categories,
+hidden-rows-readable-by-id, gpc-departments, OPEN-CATALOG-PLAN,
+FILTERS-PLAN, marketing-copy-honesty, price-verified-timestamps,
+autobuy-copy-honesty — each file keeps its remaining upstream/delivery
 follow-ups.
 
 ## Suggested order (honesty/feature backlog, 2026-07-18/19 audits)
@@ -100,23 +110,62 @@ The A–G catalog-scale items above are a separate track — they're data and
 API work, these are copy and feature work. A and B outrank everything in
 either list.
 
-1. [marketing-copy-honesty](marketing-copy-honesty.md) — three false
-   copy claims (re-check cadence, referral fees, "drops today"); one
-   upstream pass, no code.
-2. [price-verified-timestamps](price-verified-timestamps.md) — the
-   "every price shows when it was last verified" claim; data already in
-   the API, just render it. Makes the claim true instead of softer.
+1. ~~marketing-copy-honesty~~ — **done**, moved to
+   [plans-implemented](../plans-implemented/marketing-copy-honesty.md).
+2. ~~price-verified-timestamps~~ — **done**, moved to
+   [plans-implemented](../plans-implemented/price-verified-timestamps.md).
 3. [alert-notification-claims](alert-notification-claims.md) — push
    doesn't exist, "within minutes" isn't true; copy pass + dead toggle.
-4. [autobuy-copy-honesty](autobuy-copy-honesty.md) — fullmakt doc's
-   fabricated org.nr/identity and the "purchases for you" present
-   tense; worst honesty offender, copy-only fix.
-5. [profile-email-change](profile-email-change.md) — small; real change
-   needs email.
+   Still open 2026-07-31.
+4. ~~autobuy-copy-honesty~~ — **done**, moved to
+   [plans-implemented](../plans-implemented/autobuy-copy-honesty.md).
+5. [profile-email-change](profile-email-change.md) — Phase 1 (honest
+   read-only field) done; Phase 2 (real change) needs email delivery.
 6. [pricy-plus](pricy-plus.md) — decision-heavy (billing). All Plus
    *copy* honesty synced 2026-07-19; what's left is the mechanics
    (server-side plan state, waitlist-vs-preview, billing). Do last.
+7. [list-sharing-backend](list-sharing-backend.md) — added 2026-08-02
+   with the custom-lists sync; **backend + boot wiring shipped same
+   day** (share tokens, member surface, server-side bought-marks, gift
+   privacy enforced in meBody). Open: the upstream sync — ShareModal
+   still shows its demo link, no member screen. Paste-ready prompt in
+   the plan file.
 
-The upstream prompts in 1–4 (and pricy-plus's) can be pasted into
-Claude Design as one combined copy-honesty pass if syncing once is
-preferred.
+Of the copy passes, only item 3's upstream prompt is still unpasted —
+1, 2 and 4 shipped.
+
+## Upstream feature prompts (2026-08-03)
+
+The prototype project holds eight numbered PROMPT files (competitive-gap
+work, fetched to `proto/PROMPT - 0*.md`) that will each land as an
+upstream UI sync. One backend plan per prompt, written before any of
+them is built upstream. Rough order of backend readiness:
+
+- [lists-v2](lists-v2.md) (05) — **already shipped**; pointer to
+  [list-sharing-backend](list-sharing-backend.md).
+- [shipping-totals](shipping-totals.md) (01) — **backend shipped
+  2026-08-03** (numerics, `sort=total`, `freeship`/`maxeta`,
+  `watches.inclShip`, basis-aware alerts). Open: curating the
+  `worker/shipping.json` registry (offer-level coverage measured at
+  0.3%, so the registry IS the data) and the upstream sync — field
+  contract at the top of the plan file. Foundation for 06 and part
+  of 07.
+- [push-and-barcode-scanner](push-and-barcode-scanner.md) (04) —
+  scanner lookup is one `ean=` endpoint, do with the sync; push stays
+  behind [alert-notification-claims](alert-notification-claims.md)'s
+  decision and item B.
+- [price-guarantee-refunds](price-guarantee-refunds.md) (07) —
+  `purchases` table exists; needs a curated per-shop guarantee
+  registry and decoupling purchases from the HIDE_AUTOBUY switch.
+  Plus-gating deferred with [pricy-plus](pricy-plus.md).
+- [reviews-layer](reviews-layer.md) (02) — UGC product reviews are
+  buildable now; fake shop ratings must NOT ship (honesty precedent) —
+  shop profiles start objective-stats-only.
+- [deals-hub](deals-hub.md) (03) — verdict engine over `price_points`;
+  hard-coupled to item C (`was` capture) and honest only once B makes
+  crawls regular.
+- [basket-optimizer](basket-optimizer.md) (06) — no backend beyond
+  01's shipping registry; pointless until A (cross-shop matching)
+  moves.
+- [browser-extension](browser-extension.md) (08) — concept exploration,
+  no backend; file records what a real one would need.

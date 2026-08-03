@@ -4,9 +4,10 @@ Status: **DONE and deployed (2026-07-31).** Steps 0–6 all landed (commits
 693181b…499997f), including the step-5 upstream fix (Results passes GPC scopes
 through `onQuery`; boot's `scopeCat` translates brick/dept → `cat=`, re-synced
 in ca0767d/499997f). Live smoke-tested: `meta.depts` serves 14 departments over
-all 31 cats, Pets lists 1,169 real rows, brick URLs deep-link. Remaining
-degradation (multi-cat "All <dept>" pages stay client-side) and the parked
-items below are documented in CLAUDE.md. Only the "Parked" section is open.
+all 31 cats, Pets lists 1,169 real rows, brick URLs deep-link. The three parked
+items were also picked up same-day (see bottom section) — only the multi-cat
+"All <dept>" client-side degradation remains, and it's documented in CLAUDE.md
+as an accepted limitation, not open work.
 
 ## What upstream changed
 

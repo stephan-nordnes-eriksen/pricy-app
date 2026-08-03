@@ -58,8 +58,10 @@ international domains already wired.
 
 ## Open 4 — price refresh does not scale
 
-`SOURCES` is empty in prod, so the hourly cron is a no-op and the laptop
-crawl (`tools/crawl.mjs`) is the only price writer. That was fine for 647
+`SOURCES` is empty in prod, so the hourly cron writes no prices (it is no
+longer a full no-op — since 2026-07-26/31 it drains the image queue and
+refreshes GPC slice counts) and the laptop crawl (`tools/crawl.mjs`) is the
+only price writer. That was fine for 647
 products across 8 shops. At 14k across 55 it is a person remembering to run
 a ~40-minute job.
 
@@ -72,15 +74,16 @@ daily; (b) Cloudflare Queues, one message per shop; (c) keep it off-Worker
 and schedule it somewhere that can run for minutes. Decide before adding
 more shops — this is the thing that makes prices *stale*, which is the one
 claim a price-comparison site cannot be wrong about
-(cf. [marketing-copy-honesty](marketing-copy-honesty.md)).
+(cf. [marketing-copy-honesty](../plans-implemented/marketing-copy-honesty.md)).
 
-## Open 5 — the bulk catalog has no images
+## Open 5 — the bulk catalog has no images — MOSTLY CLOSED 2026-07-26/27
 
-The full run used `--no-images` to lift the POST chunk from 40 to 500 rows
-(syncImages' subrequest budget forces the smaller chunk). So ~13.4k products
-have no R2 object and `catalogBody` advertises no `img` for them.
-
-No user impact **yet** — the UI does not render `img` at all (that is an
-upstream prototype change, CLAUDE.md). But the moment it does, the catalog
-is mostly placeholder. Backfill needs a pass that only syncs images, at 40
-rows a POST.
+The mechanism this described is gone: ingest now only *queues* image URLs
+(D1 `images` table) and a drain (hourly cron + bearer-gated admin endpoint)
+streams them into R2 — the 40-row POST cap that forced `--no-images` no
+longer exists, and the UI **does** render `img` (`ProdImg`, CLAUDE.md
+corrected 2026-07-27). What remains is not an image problem but a crawl-scope
+one: full-catalog crawls are opt-in per shop (`approved` on `$discover`,
+2026-07-27, none approved yet), so sampled shops' other products keep no
+image (~8,937 as of 2026-07-27). That resolves with approval + a crawl, not
+with new image code.

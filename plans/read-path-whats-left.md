@@ -78,11 +78,16 @@ all to divide by N a cost that is mostly *the same answer computed again*:
 | same, minus `deriveFacets` + `fcounts` | 9.3 ms | 6.3 ms |
 | **share that is facet derivation** | **58%** | **60%** |
 
-`fcounts` is category-wide and computed *before* filtering by design, so it is
-byte-identical for every request until the catalog version changes. Caching takes
-~60% of the cost to zero for essentially all requests; sharding divides 100% of
-it by N and adds moving parts. Cache first, and only reach for fan-out if the
-remaining 40% still does not fit.
+`fcounts` was category-wide and computed *before* filtering, so it was
+byte-identical for every request until the catalog version changed. **That
+premise moved on 2026-07-27**: `fcounts` is now cross-filtered (each group
+re-counts under the OTHER groups' active selections), so it varies with the
+request's filter set, not just the catalog version. A memo keyed on
+`(cat, version)` alone would serve wrong counts the moment a filter is on —
+either key it on the filter set too, or cache only the no-filter case (the
+mount/prefetch request, still the common one). The derive-per-row cost itself
+is unchanged; sharding still divides 100% of it by N and adds moving parts.
+Cache what is still cacheable first.
 
 Two fixes, and the first one is not code:
 
@@ -103,6 +108,15 @@ Gamezone refile (591 rows, Gaming → Toys, see
 [category-misclassification](category-misclassification.md)) would add 26% to
 Toys, which is the worst offender. It is held for that reason, not because the
 data is in doubt.
+
+Two GPC-departments notes (2026-07-31, plans-implemented/gpc-departments.md),
+so nobody treats brick pages as a separate problem: brick/dept pages translate
+to their backing `cat=` via boot's `scopeCat` and ride this exact read path —
+whatever fixes `cat=` fixes them, and nothing here needs a per-brick variant.
+And `refreshDeptCounts` (hourly cron) runs `listIds` once per *sliced* rule to
+compute sub-category totals — cron-side CPU, not per-request, but it pays the
+same shaping cost this section prices, so count those calls if the slice list
+grows.
 
 ## 1. Invariants the fixes introduced — read before touching the query layer
 
@@ -172,7 +186,7 @@ that file is open.
 
 - ~~**`/api/products?hidden=1` is unauthenticated.**~~ **CLOSED 2026-07-26**
   together with the `ids=` leak it shared a root cause with — see
-  [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md). Bearer-gated
+  [hidden-rows-readable-by-id](../plans-implemented/hidden-rows-readable-by-id.md). Bearer-gated
   now, same as the `catalog.json` dump.
 - **Search paging** — still `LIMIT 100` with no `offset`, the one surface that
   cannot reach past its cap. Same owner. **FTS5 is the candidate here**, and
@@ -180,8 +194,9 @@ that file is open.
   [api-latency-round-trips](api-latency-round-trips.md) §5 records why FTS5 was
   the wrong tool for the latency problem (it attacks a 15 ms scan and costs the
   tuned ranking plus infix matching) while remaining the right tool for paging.
-- **Facet counts are pre-filter** — `fcounts` counts the whole category, not
-  what the other active filters leave. Same owner.
+- ~~**Facet counts are pre-filter**~~ — **closed 2026-07-27**: `fcounts` is
+  cross-filtered now, in the same shaping pass. Note the cost of that: it is
+  what invalidated the "byte-identical per category" caching premise in §0.
 - **`catalog.json` is 6.1 MB per hit** —
   [api-read-path-performance](api-read-path-performance.md) §6. Bearer-gated
   already; leave it whole unless a tool starts polling it.

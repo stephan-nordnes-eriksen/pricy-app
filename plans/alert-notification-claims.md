@@ -1,6 +1,12 @@
 # Alert claims: push doesn't exist, "within minutes" isn't true
 
-Marketing audit 2026-07-19. The claims:
+Marketing audit 2026-07-19. Still open as of 2026-07-31 ("within minutes"
+is still in the copy). The `proto/index.html:NNNN` refs below predate the
+prototype split — the FAQ lives in `proto/PagesPublic.jsx` now, the settings
+toggle in `proto/PagesAccount.jsx`, onboarding in `proto/PagesOnboarding.jsx`;
+grep for the quoted strings.
+
+The claims:
 
 - FAQ (proto/index.html:4943): "you get an email or push notification —
   usually within minutes".

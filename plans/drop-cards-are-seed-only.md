@@ -19,9 +19,16 @@ against the live catalog dump:
 So both surfaces that call it are stuck on those 64 rows:
 
 - Home's "Biggest drops" sidecard — `ensureRoute('home')` fetches
-  `{sort:'drop', limit:3}` (boot.jsx:318).
+  `{sort:'drop', limit:3}` (boot.jsx:319).
 - Browse's per-category drop cards — `{sort:'drop', perCat:1, limit:4}`
-  (boot.jsx:324).
+  (boot.jsx:328).
+
+Still true after the GPC-departments swap (2026-07-31): Browse's tiles are
+GS1 GPC departments now, but the drop cards and the `top=drop` fetch ride
+`cat=` unchanged (a dept is a navigation alias over cats — see
+plans-implemented/gpc-departments.md), and `ensureRoute` even leans on the
+drops slice to resolve cold deep-links. Fixing the baseline here needs no
+GPC awareness.
 
 Live check: `sort=drop&perCat=1&limit=4` returns 13 cards total, across a
 catalog with 31 categories. **24 of 31 categories can never show a drop
@@ -50,10 +57,12 @@ Every category with priced history can produce drop cards, and a product's
 3. Guard the ranking: a product needs at least 2 distinct days of history
    before it can claim a drop, or day-one rows all read as 0% and rank
    randomly.
-4. Watch the cost — `topDropIds` currently does a full head scan per call and
-   its own comment caps that at ~2k heads (worker/index.js:581). At 14k heads
-   joined to `price_points` this needs a stored drop column or a materialised
-   ranking, not a bigger scan. Measure before shipping.
+4. Watch the cost — `topDropIds` does a full head scan per call. Its ~2k-heads
+   comment was measured pessimistic by ~7× (22–34 ms at 14k on prod D1,
+   [read-path-whats-left](read-path-whats-left.md) §3), so the scan itself is
+   fine — but joining `price_points` changes the query, and the Worker CPU
+   ceiling (§0 of the same file) is live. Measure the new shape before
+   shipping; a stored drop column is the fallback, not the default.
 
 ## Note
 

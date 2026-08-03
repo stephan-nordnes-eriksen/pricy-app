@@ -1,8 +1,8 @@
 # Paste-ready prompt — implement the catalog-scale backlog
 
 Copy the block below into a fresh Claude Code session in this repo. Replace
-`<ITEM>` with the letter you want (A–F from [README.md](README.md)), or leave
-the "start with A" wording to let it pick.
+`<ITEM>` with the letter you want (A–C from [README.md](README.md) — D–H are
+done), or leave the "start with A" wording to let it pick.
 
 Do **one item per session**. These touch ingest, the query layer and 14k rows
 of live data; a session that tries three will run out of context mid-migration
@@ -12,7 +12,7 @@ and leave prod half-changed.
 
 ```
 Read plans/README.md, then work item <ITEM> from the catalog-scale backlog
-(A–F). Read that item's plan file in full before touching anything — each one
+(A–C). Read that item's plan file in full before touching anything — each one
 states current state with file:line evidence, what "done" means, and the
 steps.
 
@@ -25,7 +25,12 @@ Context you need up front:
 - These plans came out of the 2026-07-25 run that took the catalog from 647
   products / 8 shops / 10 categories to 14,059 / 55 / 31. The numbers in them
   were measured against live prod, not estimated. Re-measure before you trust
-  any of them — the catalog changes every crawl.
+  any of them — the catalog changes every crawl (~22k visible as of 2026-07-27).
+- Categories carry a GPC navigation layer since 2026-07-31 (worker/depts.json,
+  plans-implemented/gpc-departments.md). If your item adds or renames a
+  category, or touches facets.json's keys, build.js's dept guards will fail
+  until depts.json follows — that is intended, not collateral. Do not "fix"
+  the guards.
 
 How I want you to work:
 
@@ -63,7 +68,7 @@ Constraints:
   disallows its product paths, it does not get crawled — 17 shops were
   refused on exactly that basis and that call stands.
 
-Migrations: items A and D touch data already written to 13,705+ live rows.
+Migrations: item A touches data already written to 13,705+ live rows.
 Auto-promoted rows are guarded against re-promotion (meta.auto + hidden
 checks), so a backfill has to write the field directly rather than re-run
 promotion. Plan the backfill and tell me the row count and how long it will
@@ -99,18 +104,9 @@ that were already fine.
 
 **C (drop cards)** — with one crawl there is exactly one price point per
 product, so nothing has a drop yet regardless of how you rank. Verify there is
-real multi-day history before concluding the ranking works. `topDropIds` also
-does a full head scan and its own comment caps that at ~2k heads; it is 14k
-now, so measure the query before shipping it.
+real multi-day history before concluding the ranking works. `topDropIds`'s
+stale ~2k-heads comment was measured NOT a problem at 14k (22–34 ms —
+[read-path-whats-left](read-path-whats-left.md) §3), but a `price_points`
+join changes the query, so measure the new shape before shipping it.
 
-**D (search)** — the diacritic fix is a migration, not a one-liner: `kw` is
-written once at promotion and 13,705 rows already have an unfolded one.
-
-**E (facets)** — check what upstream Results renders for a category with no
-facet defs BEFORE building data. If it renders a bare heading or empty
-column, that is a Claude Design fix, not a registry edit.
-
-**F (hidden rows)** — decide the intent first. The code comment says the
-`ids=` behaviour is deliberate. If `hidden` is only ever meant to mean
-"unlisted", the fix is documentation and something else has to become the
-moderation tool for a bad product page.
+*(The old D–F notes went with their items — done, see README.)*

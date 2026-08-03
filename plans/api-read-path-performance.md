@@ -171,9 +171,13 @@ tool starts polling it; then page it *and* keep the gate.
 - **A lean row in `listIds`** (drop the parsed `m`, keep the six fields the
   predicate and comparator read). 440 → 280 B/row. Real, but 22 MB against
   128 MB is not a problem worth five lines of indirection.
-- **Facet counts narrowed by the other active filters.** A second histogram
-  per request. The client never did it either; `meta.fcounts` counts the whole
-  category on purpose.
+- **Facet counts narrowed by the other active filters.** ~~A second histogram
+  per request.~~ **Shipped 2026-07-27 after all — but not as the second
+  histogram this rejected**: `listIds` counts a row toward group `k` when
+  `failGroups` says it misses nothing but `k`, inside the one shaping pass it
+  already runs. What was rejected here was the *second pass*, and that
+  rejection stands; do not revert the cross-filter back to whole-category
+  counts either — "Over-ear 3" next to a brand carrying none was a real bug.
 
 ## Rules that produced these numbers
 

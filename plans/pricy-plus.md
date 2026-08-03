@@ -1,5 +1,9 @@
 # Pricy Plus — subscription & Plus features are fully fake
 
+(The `proto/index.html:NNNN` refs predate the prototype split — PlanSection
+and the paywall live in `proto/PagesAccount.jsx` / `proto/PagesCore.jsx` now;
+grep for the quoted strings.)
+
 ## Current state
 
 - The user's plan comes from `window.PLAN`, a frozen designer tweak

@@ -191,7 +191,9 @@ page. A `q=` search never calls it — the client already holds all ≤100 rows.
   query, where the client already holds the whole (≤ 100 row) result set.
 - ~~**`/api/products?hidden=1` is still unauthenticated**~~ — gated 2026-07-26,
   same as the dump in Done 4, along with the `ids=` read of hidden rows it
-  shared a root cause with: [hidden-rows-readable-by-id](hidden-rows-readable-by-id.md).
-- **Facet counts are pre-filter**: `fcounts` counts the whole category, not
-  what the other active filters leave — same as the client did. Narrowing them
-  as you filter is a second histogram per request.
+  shared a root cause with: [hidden-rows-readable-by-id](../plans-implemented/hidden-rows-readable-by-id.md).
+- ~~**Facet counts are pre-filter**~~ — **closed 2026-07-27**: `meta.fcounts`
+  is cross-filtered now (a row counts toward group `k` when it misses nothing
+  but `k`), computed in the same shaping pass, not a second histogram. Values
+  still emit at 0 rather than pruning, so the rail's groups can't vanish under
+  an active selection. See CLAUDE.md.
