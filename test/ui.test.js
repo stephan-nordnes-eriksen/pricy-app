@@ -392,7 +392,8 @@ test('PDP: Go to shop links out to the best offer url; disabled when no offer ha
   assert.strictEqual(goBtn.getAttribute('href'), expected, 'must link to the best offer url');
   assert.strictEqual(goBtn.getAttribute('target'), '_blank', 'must open in a new tab');
   assert.match(goBtn.getAttribute('rel') || '', /noopener/, 'outbound links need rel=noopener');
-  const visit = qa(win, '.btn').find(b => /^visit$/i.test(b.textContent.trim()) && b.tagName === 'A');
+  // per-offer buy button is icon-only since the totals sync (2026-08-03)
+  const visit = qa(win, '.orow .btn').find(b => b.tagName === 'A');
   assert.ok(visit, 'at least one per-offer Visit must be a link when offers have urls');
   assert.ok(offers.some(o => o.url === visit.getAttribute('href')), 'Visit must link to one of the offer urls');
 
@@ -745,6 +746,14 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   }
   assert.strictEqual(typeof res.total, 'number', 'the served total must come back to the screen');
 
+  // availability (PROMPT 01): upstream's f.avail keys map onto the shipping
+  // query params — 'fast' is the fixed ≤2-days def, 'instock' shares instock=
+  await win.onQuery({ cat: 'Audio', sort: 'total', filters: { avail: ['freeship', 'fast', 'instock'], brands: [], facets: {} } });
+  const avail = win.api[win.api.length - 1].call;
+  for (const part of ['sort=total', 'freeship=1', 'maxeta=2', 'instock=1']) {
+    assert.ok(avail.includes(part), `onQuery must send ${part} for f.avail, got: ${avail}`);
+  }
+
   // same selection, different click order = the same cache entry. Counted by
   // URL, not by log length: Results runs its own debounced onQuery on mount
   const hits = () => win.api.filter(c => c.call.includes('brand=Bose%2CSony')).length;
@@ -983,7 +992,7 @@ test('facet filters: served meta.facets replaces the baked registry; cats withou
   const toys = boot('http://pricy.test/search?cat=Toys', { session: true, catalog: { meta, products } });
   assert.ok(await until(() => qa(toys, '.rrow, .rcard').length > 0), 'toys results did not render');
   const titles = qa(toys, '.filters__grp').map(g => { const h = g.querySelector('h4'); return h && h4Title(h); }).filter(Boolean);
-  assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only'], 'no facet groups for a cat without defs, got: ' + titles.join(' | '));
+  assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only', 'Availability'], 'no facet groups for a cat without defs (Availability is universal, not a facet), got: ' + titles.join(' | '));
 });
 
 test('filter search: narrows groups, no-match message clears back', async () => {
@@ -1000,7 +1009,7 @@ test('filter search: narrows groups, no-match message clears back', async () => 
   type(win, search, 'zzzz-no-such-filter');
   assert.ok(await until(() => q(win, '.filters__nomatch')), 'no-match message must show');
   q(win, '.filters__nomatch button').click();
-  assert.ok(await until(() => grpTitles().length === 6), 'clear must restore all groups (incl. the Gaming Type facet)');
+  assert.ok(await until(() => grpTitles().length === 7), 'clear must restore all groups (incl. the Gaming Type facet and Availability)');
 });
 
 test('lazy catalog: home "Biggest drops" ranks the served slice, not the baked demo 8', async () => {
@@ -1021,7 +1030,7 @@ test('offer rows: Visit opens the offer url, url-less offers are disabled', asyn
   });
   const win = boot('http://pricy.test/product/xm5', { session: true, catalog: served });
   assert.ok(await until(() => qa(win, '.orow').length > 1), 'offer rows missing');
-  const visits = qa(win, '.orow .btn').filter(b => /visit/i.test(b.textContent));
+  const visits = qa(win, '.orow .btn'); // icon-only buy buttons since the totals sync
   assert.strictEqual(visits[0].getAttribute('href'), 'https://shop.example/xm5', 'Visit must link to the offer url');
   assert.strictEqual(visits[0].getAttribute('target'), '_blank', 'Visit must open in a new tab');
   assert.ok(visits.slice(1).every(b => b.tagName === 'BUTTON' && b.disabled),

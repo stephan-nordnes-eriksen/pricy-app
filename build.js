@@ -97,6 +97,15 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
   const CATS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'cats.json'), 'utf8'));
   for (const c of ctx.CATEGORIES) if (!CATS[c]) throw new Error(`worker/cats.json is missing prototype category "${c}" — registry must be a superset`);
   // a derived facet nobody declared is invisible (Results renders one group
+  // shipping registry: a typo'd key would silently misprice every total the
+  // shop serves, so the shape is enforced here (plans/shipping-totals.md)
+  const SHIPPING = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'shipping.json'), 'utf8'));
+  for (const [shop, r] of Object.entries(SHIPPING)) {
+    if (typeof r.flat !== 'number' || r.flat < 0 || (r.freeOver != null && !(typeof r.freeOver === 'number' && r.freeOver > 0))
+      || Object.keys(r).some(k => k !== 'flat' && k !== 'freeOver'))
+      throw new Error(`worker/shipping.json "${shop}": expected { flat: number, freeOver?: number }`);
+  }
+
   // per facets.json def), and a def for an unknown cat never renders at all
   const FACETS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'facets.json'), 'utf8'));
   for (const c of Object.keys(FACETS)) if (!CATS[c]) throw new Error(`worker/facets.json has facets for unknown category "${c}"`);

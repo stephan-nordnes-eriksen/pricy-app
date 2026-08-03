@@ -43,9 +43,11 @@ function d1() {
   };
 }
 
-let worker, parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource, discoverSource;
+let worker, shipCost, parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource, discoverSource;
 before(async () => {
-  worker = (await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')))).default;
+  const mod = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')));
+  worker = mod.default;
+  shipCost = mod.shipCost;
   ({ parsePrice, parseSitemapXml, breadcrumbCat, scrapeSource, discoverSource } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js'))));
 });
 
@@ -234,13 +236,13 @@ test('watchlist persists per user and requires auth', async () => {
   assert.strictEqual((await call('/api/watches', { method: 'PUT', body: watches, cookie: ola })).status, 200);
   const me = await (await call('/api/me', { cookie: ola })).json();
   assert.deepStrictEqual(me.watches, [
-    { id: 'xm5', target: 3100, paused: 0, hit: 0 },
-    { id: 'lgc3', target: 12000, paused: 1, hit: 0 },
+    { id: 'xm5', target: 3100, paused: 0, hit: 0, inclShip: 0 },
+    { id: 'lgc3', target: 12000, paused: 1, hit: 0, inclShip: 0 },
   ]);
 
   // replace-all semantics, and another user sees nothing
   await call('/api/watches', { method: 'PUT', body: [{ id: 'xm5', target: 2999 }], cookie: ola });
-  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).watches, [{ id: 'xm5', target: 2999, paused: 0, hit: 0 }]);
+  assert.deepStrictEqual((await (await call('/api/me', { cookie: ola })).json()).watches, [{ id: 'xm5', target: 2999, paused: 0, hit: 0, inclShip: 0 }]);
   const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
   assert.deepStrictEqual((await (await call('/api/me', { cookie: kari })).json()).watches, []);
 
@@ -1447,7 +1449,8 @@ test('mcp: watches are the same list the web sees', async () => {
   // same rows through the web surface
   const web = api(env);
   const cookie = cookieOf(await web('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
-  assert.deepStrictEqual((await (await web('/api/me', { cookie })).json()).watches, [{ id: 'airpods', target: 1999, paused: 0, hit: 0 }]);
+  // inclShip null: MCP watch_product doesn't set it — falsy either way
+  assert.deepStrictEqual((await (await web('/api/me', { cookie })).json()).watches, [{ id: 'airpods', target: 1999, paused: 0, hit: 0, inclShip: null }]);
 
   assert.strictEqual((await tool('unwatch_product', { product_id: 'airpods' })).data.removed, true);
   assert.deepStrictEqual((await tool('list_watches')).data.watches, []);
@@ -1636,7 +1639,9 @@ test('eans table routes ingest rows; admin alias re-homes a discovered product a
 
   const xm5 = (await catBody(call)).find(p => p.id === 'xm5');
   assert.strictEqual(xm5.offers.find(o => o.shop === 'Milrab').price, 500, 'collected offers migrate to the target');
-  assert.strictEqual(xm5.offers.find(o => o.shop === 'Power').price, 3169, 'a shop the target already has keeps the target\'s offer');
+  assert.strictEqual(xm5.offers.find(o => o.shop === 'Power').price,
+    seed.find(p => p.id === 'xm5').offers.find(o => o.shop === 'Power').price,
+    'a shop the target already has keeps the target\'s offer');
   assert.strictEqual((await (await call('/api/products?hidden=1', { token: call.token })).json()).products.length, 0, 'the orphan row is gone');
   assert.deepStrictEqual((await (await call('/api/me', { cookie })).json()).watches.map(w => w.id), ['xm5'], 'watches follow the migration');
 
@@ -2589,4 +2594,95 @@ test('deleting a product drops its search_index row', async () => {
     await DB.prepare("SELECT 1 FROM search_index WHERE product_id = 'ean-7099930000001'").first(), null,
     'the deleted orphan must not leave search text behind');
   await call('/api/products?q=slettes'); // must not 500 on the now-missing row
+});
+
+// ── Shipping-inclusive totals (plans/shipping-totals.md, upstream PROMPT 01) ──
+
+test('shipCost: ship string wins, registry falls back, freeOver waives, unknown stays null', () => {
+  assert.strictEqual(shipCost('X', 100, 'Free shipping'), 0);
+  assert.strictEqual(shipCost('X', 100, 'kr 79 shipping'), 79);
+  assert.strictEqual(shipCost('X', 100, 'kr 109.00 shipping'), 109, 'prod has decimal rates');
+  assert.strictEqual(shipCost('X', 100, 'gratis frakt'), null, 'an unnormalised string is unknown, not free');
+  const reg = { Obs: { flat: 99, freeOver: 500 } };
+  assert.strictEqual(shipCost('Obs', 100, null, reg), 99, 'registry flat rate below the threshold');
+  assert.strictEqual(shipCost('Obs', 500, null, reg), 0, 'freeOver waives at the threshold');
+  assert.strictEqual(shipCost('Obs', 100, 'Free shipping', reg), 0, 'the offer string beats the registry');
+  assert.strictEqual(shipCost('Nope', 100, null, reg), null, 'no data anywhere = unknown, never free');
+});
+
+test('GET /api/products: offers carry shipCost/total, rows bestTotal; total sort and availability filters run server-side', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  // A: cheapest by ITEM at Power, cheapest by TOTAL at Elkjøp — the PROMPT 01
+  // headline case. B: no shipping data anywhere. C: free shipping, slow eta.
+  const rows = [
+    { ean: '7099932000001', name: 'Kaffekvern Stor', offers: [['Power', 1990, 'kr 149 shipping', '2–6 days'], ['Elkjøp', 2040, 'Free shipping', 'In stock']] },
+    // B's second offer has a fast eta but is OUT of stock — upstream's 'fast'
+    // def only counts in-stock offers, so it must not satisfy maxeta
+    { ean: '7099932000002', name: 'Kaffekvern Liten', offers: [['Obs', 500, null, null], ['Power', 520, null, '1–2 days', 0]] },
+    { ean: '7099932000003', name: 'Kaffekvern Medium', offers: [['Komplett', 2000, 'Free shipping', '5–10 days']] },
+  ];
+  for (const r of rows) {
+    await req('/api/ingest', 'POST', r.offers.map(([shop, price, ship, eta, stock = 1]) =>
+      ({ product_id: 'ean-' + r.ean, shop, price, ship, eta, stock, name: r.name, brand: 'Acme' })));
+    await req('/api/admin/products/ean-' + r.ean, 'PATCH', { cat: 'Pets', hidden: null });
+  }
+  const id = (n) => 'ean-709993200000' + n;
+  const get = async (qs) => (await (await call('/api/products?' + qs)).json());
+  const ids = async (qs) => (await get(qs)).products.map(p => p.id);
+
+  const a = (await get('ids=' + id(1))).products[0];
+  assert.strictEqual(a.offers.find(o => o.shop === 'Power').shipCost, 149);
+  assert.strictEqual(a.offers.find(o => o.shop === 'Power').total, 2139);
+  assert.strictEqual(a.offers.find(o => o.shop === 'Elkjøp').total, 2040);
+  assert.strictEqual(a.best, 1990, 'item best stays Power');
+  assert.strictEqual(a.bestTotal, 2040, 'shipping-inclusive best is Elkjøp — the falsifiable-claim fix');
+  assert.strictEqual(a.bestTotalShop, 'Elkjøp');
+  const b = (await get('ids=' + id(2))).products[0];
+  assert.strictEqual(b.offers[0].shipCost, undefined, 'unknown shipping is unknown, not free');
+  assert.strictEqual(b.bestTotal, undefined, 'no known-shipping offer, no bestTotal');
+
+  // Totalpris sort: A (item 1990 / total 2040) and C (item 2000 / total 2000)
+  // swap places between the two sorts; unknown-shipping B rides its item price.
+  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=asc'), [id(2), id(1), id(3)]);
+  assert.deepStrictEqual(await ids('cat=Pets&sort=total&dir=asc'), [id(2), id(3), id(1)],
+    'total sort must order by shipping-inclusive price where known, item price where not');
+
+  // availability filters, whole-category, with meta.total riding along
+  assert.deepStrictEqual((await ids('cat=Pets&freeship=1')).sort(), [id(1), id(3)].sort(), 'freeship = a KNOWN free offer');
+  assert.strictEqual((await get('cat=Pets&freeship=1')).meta.total, 2);
+  assert.deepStrictEqual(await ids('cat=Pets&maxeta=2'), [id(1)], '"In stock" and "2–6 days" pass ≤2; no eta fails; an OUT-of-stock fast eta does not count');
+  assert.deepStrictEqual((await ids('cat=Pets&maxeta=5')).sort(), [id(1), id(3)].sort());
+  assert.deepStrictEqual(await ids('cat=Pets&freeship=1&maxeta=2'), [id(1)], 'availability filters stack');
+});
+
+test('alerts: inclShip watches fire on the total crossing, arm on totals, and round-trip through PUT/me', async () => {
+  const { call, push, alerts } = alertEnv();
+  await call('/api/products'); // seeds
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  const pid = 'ean-7099933000001';
+  const row = (price) => ({ product_id: pid, shop: 'Power', price, ship: 'kr 149 shipping', stock: 1, name: 'Vaffeljern Test', brand: 'Acme' });
+  await withLog(() => push([row(1200)])); // product + offer exist before the watch
+  assert.strictEqual((await call('/api/watches', { method: 'PUT', body: [{ id: pid, target: 1000, inclShip: 'yes' }], cookie })).status, 400,
+    'inclShip must be boolean');
+  await call('/api/watches', { method: 'PUT', body: [{ id: pid, target: 1000, inclShip: true }], cookie });
+
+  // item price crosses the target, total does not: 950 + 149 = 1099 > 1000
+  await withLog(() => push([row(950)]));
+  assert.strictEqual((await alerts()).length, 0, 'item price below target must NOT fire while the total is above');
+
+  // the watch stayed ARMED through that (item price below, total above):
+  // 850 + 149 = 999 ≤ 1000 fires — the band a prev-item-price arming filter dropped
+  await withLog(() => push([row(850)]));
+  const fired = await alerts();
+  assert.strictEqual(fired.length, 1, 'the TOTAL crossing fires');
+  assert.strictEqual(fired[0].price, 850, 'the alert row records the item offer');
+
+  await withLog(() => push([row(840)]));
+  assert.strictEqual((await alerts()).length, 1, 'no refire while the total stays below');
+
+  const me = await (await call('/api/me', { cookie })).json();
+  assert.strictEqual(me.watches[0].inclShip, 1, 'inclShip survives the PUT → me round trip');
 });

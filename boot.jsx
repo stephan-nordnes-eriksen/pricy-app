@@ -64,7 +64,7 @@ function hydrateMe(me) {
   // hit comes from the server now: a real alert fired and the price is still
   // at/below target (worker meBody) — not the old best-vs-target guess
   WatchStore.items = (me.watches || []).map(w =>
-    ({ id: w.id, target: w.target, paused: !!w.paused, hit: !!w.hit }));
+    ({ id: w.id, target: w.target, paused: !!w.paused, hit: !!w.hit, inclShip: !!w.inclShip }));
   ListStore.lists = me.lists || []; // server lists replace the baked demo ones
   WATCHED.splice(0, WATCHED.length, ...WatchStore.items.map(w => {
     const p = WatchStore.prod(w.id);
@@ -201,7 +201,7 @@ WatchStore.emit = function () {
     fetch('/api/watches', {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(this.items.map(w => ({ id: w.id, target: w.target, paused: !!w.paused }))),
+      body: JSON.stringify(this.items.map(w => ({ id: w.id, target: w.target, paused: !!w.paused, inclShip: !!w.inclShip }))),
     }).catch(() => {});
   }
 };
@@ -467,7 +467,12 @@ const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
   ...(f.brands && f.brands.length ? { brand: f.brands.slice().sort().join(',') } : {}),
   ...(f.min ? { min: f.min } : {}), ...(f.max ? { max: f.max } : {}),
   ...(f.rating ? { rating: f.rating } : {}),
-  ...(f.sale ? { sale: 1 } : {}), ...(f.instock ? { instock: 1 } : {}),
+  ...(f.sale ? { sale: 1 } : {}),
+  // availability (PROMPT 01): upstream's f.avail keys map onto query params —
+  // 'instock' shares the legacy instock= param, 'fast' is the fixed ≤2-days def
+  ...(f.instock || (f.avail || []).includes('instock') ? { instock: 1 } : {}),
+  ...((f.avail || []).includes('freeship') ? { freeship: 1 } : {}),
+  ...((f.avail || []).includes('fast') ? { maxeta: 2 } : {}),
   // sorted keys so the same selection is the same FETCHED cache entry
   ...(f.facets && Object.keys(f.facets).length ? { facets: JSON.stringify(Object.fromEntries(Object.entries(f.facets).sort())) } : {}),
   limit: PAGE, offset: page * PAGE,

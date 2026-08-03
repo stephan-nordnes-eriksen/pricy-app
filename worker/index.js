@@ -8,6 +8,7 @@ import eansFile from './eans.json' with { type: 'json' };
 import CATS from './cats.json' with { type: 'json' }; // category registry: { cat: default icon } — THE list of valid cats, served to the UI via catMeta
 import FACETS from './facets.json' with { type: 'json' }; // facet registry: { cat: [facet defs] } — served via catMeta, drives the Results filter UI (FILTERS-PLAN.md)
 import DEPTS from './depts.json' with { type: 'json' }; // GPC department registry: navigation alias over cats — served verbatim via catMeta, boot swaps the prototype's demo GPC layer and joins counts from meta.cats (plans/gpc-departments.md)
+import SHIPPING from './shipping.json' with { type: 'json' }; // per-shop shipping fallback: { shop: { flat, freeOver? } } — curated from shop terms pages, never guessed (plans/shipping-totals.md). Offer-level ship strings win; measured 2026-08-03 they cover 0.3% of offers, so this registry is the real source.
 import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 
@@ -15,7 +16,7 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, lists TEXT, created_at INTEGER)',
   'CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS login_tokens (token_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires_at INTEGER NOT NULL)',
-  'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (user_id, product_id))',
+  'CREATE TABLE IF NOT EXISTS watches (user_id INTEGER NOT NULL, product_id TEXT NOT NULL, target INTEGER, paused INTEGER NOT NULL DEFAULT 0, inclShip INTEGER, PRIMARY KEY (user_id, product_id))',
   'CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, url TEXT, updated_at INTEGER, PRIMARY KEY (product_id, shop))',
   'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
@@ -68,6 +69,7 @@ async function ensureSchema(db) {
     // 4d: real-source offers carry a deep link and a freshness stamp
     await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
+    await db.prepare('ALTER TABLE watches ADD COLUMN inclShip INTEGER').run().catch(() => {});
   })());
   await schemaReady.get(db);
 }
@@ -265,7 +267,20 @@ async function seedCatalog(db) {
 // per-product best in-stock offer — the alert hook reads it after every
 // ingest; AUTOBUY-PLAN AB-1's trigger engine reuses this from the same spot
 async function bestOffer(db, productId) {
-  return db.prepare('SELECT shop, price FROM offers WHERE product_id = ? AND stock = 1 ORDER BY price LIMIT 1').bind(productId).first();
+  return db.prepare('SELECT shop, price, ship FROM offers WHERE product_id = ? AND stock = 1 ORDER BY price LIMIT 1').bind(productId).first();
+}
+
+// Cheapest shipping-INCLUSIVE in-stock offer, for "Inkluder frakt" watches.
+// Unknown shipping counts as the item price (sc ?? 0): a watch on a shop we
+// can't price shipping for still fires on the item price rather than never.
+async function bestTotalOffer(db, productId) {
+  const { results } = await db.prepare('SELECT shop, price, ship FROM offers WHERE product_id = ? AND stock = 1').bind(productId).all();
+  let bo = null;
+  for (const o of results) {
+    const t = o.price + (shipCost(o.shop, o.price, o.ship) ?? 0);
+    if (!bo || t < bo.total) bo = { shop: o.shop, price: o.price, total: t };
+  }
+  return bo;
 }
 
 // stock column: 0 = out, 1 = in, 2 = never checked (catalogBody omits the
@@ -549,6 +564,7 @@ async function ingest(db, rows, env) {
     if (!watched.has(pid)) continue;
     before[pid] = {
       best: (await bestOffer(db, pid))?.price ?? null,
+      bestTotal: (await bestTotalOffer(db, pid))?.total ?? null,
       low: (await db.prepare('SELECT MIN(price) AS low FROM price_points WHERE product_id = ?').bind(pid).first())?.low ?? null,
     };
   }
@@ -644,10 +660,16 @@ async function fireAlerts(db, env, before) {
   for (const [pid, prev] of Object.entries(before)) {
     const offer = await bestOffer(db, pid);
     if (!offer) continue;
+    // target >= item price is a valid pre-filter for BOTH bases (a total is
+    // never below its item price); the arming check moved to JS because it
+    // must compare on the watch's own basis — an inclShip watch whose item
+    // price already sat below target but whose TOTAL was still above must
+    // stay armed, and a prev.best SQL filter dropped exactly those.
     const { results } = await db.prepare(
-      'SELECT w.user_id, w.target, u.email, u.settings FROM watches w JOIN users u ON u.id = w.user_id WHERE w.product_id = ? AND w.paused = 0 AND w.target IS NOT NULL AND w.target >= ? AND (? IS NULL OR ? > w.target)'
-    ).bind(pid, offer.price, prev.best, prev.best).all();
+      'SELECT w.user_id, w.target, w.inclShip, u.email, u.settings FROM watches w JOIN users u ON u.id = w.user_id WHERE w.product_id = ? AND w.paused = 0 AND w.target IS NOT NULL AND w.target >= ?'
+    ).bind(pid, offer.price).all();
     if (!results.length) continue;
+    const totNow = results.some(w => w.inclShip) ? await bestTotalOffer(db, pid) : null;
     const meta = await db.prepare('SELECT meta FROM products WHERE id = ?').bind(pid).first();
     const name = meta ? JSON.parse(meta.meta).name : pid;
     const dropPct = prev.best ? ((prev.best - offer.price) / prev.best) * 100 : 100;
@@ -657,6 +679,11 @@ async function fireAlerts(db, env, before) {
       // threshold = minimum drop % ("any"|"5"|"10"); lows = always alert on
       // an all-time low, even below the threshold (both default permissive)
       if (Number(s.threshold) > dropPct && !(isLow && s.lows !== false)) continue;
+      // hit and arming on the watch's basis: item price, or cheapest TOTAL
+      // for "Inkluder frakt" (unknown shipping = item price, see bestTotalOffer)
+      const now = w.inclShip ? totNow.total : offer.price;
+      const prevP = w.inclShip ? prev.bestTotal : prev.best;
+      if (w.target < now || (prevP != null && prevP <= w.target)) continue;
       let delivered = null;
       if (s.email !== false) { // channel toggle: record the hit, skip the send
         if (env?.SEND_EMAIL) {
@@ -684,14 +711,41 @@ async function fireAlerts(db, env, before) {
   }
 }
 
+// Numeric shipping (plans/shipping-totals.md): the offer's own ship string
+// wins ('Free shipping' / 'kr N shipping', normalised at scrape time), then
+// the per-shop registry (flat rate, waived at freeOver — the Norwegian "fri
+// frakt over N kr" norm, applied per offer against its price). null = unknown,
+// and unknown is NEVER free: no total, no freeship match, no "inkl. frakt"
+// line. Derived at read like facets, so a registry fix needs no backfill.
+export function shipCost(shop, price, ship, reg = SHIPPING) { // reg injectable for tests
+  if (ship != null) {
+    if (ship === 'Free shipping') return 0;
+    const m = /^kr (\d+(?:\.\d+)?) shipping$/.exec(ship); // "kr 109.00 shipping" exists in prod
+    return m ? Math.round(parseFloat(m[1])) : null;
+  }
+  const r = reg[shop];
+  return r ? (r.freeOver && price >= r.freeOver ? 0 : r.flat) : null;
+}
+// "In stock" counts as 0 days (upstream's own predicate); "2–6 days" → 2.
+const etaDays = (eta) => eta === 'In stock' ? 0 : /^\d/.test(eta || '') ? parseInt(eta) : null;
+
 function shapeRows(prods, offs, pts, imgSet) {
   const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
-  const offers = group(offs, o => ({ shop: o.shop, price: o.price, ship: o.ship, stock: o.stock === 2 ? undefined : !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at }));
+  const offers = group(offs, o => {
+    const sc = shipCost(o.shop, o.price, o.ship);
+    return { shop: o.shop, price: o.price, ship: o.ship,
+      ...(sc != null ? { shipCost: sc, total: o.price + sc } : {}),
+      stock: o.stock === 2 ? undefined : !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at };
+  });
   const history = group(pts, p => p.price);
   return prods.map(({ id, meta }) => {
     const m = JSON.parse(meta);
     const po = offers[id] || [];
     const best = po[0]?.price; // po is price-ordered
+    // cheapest shipping-inclusive offer, only over offers whose shipping is
+    // KNOWN — absent when none is (upstream renders no "inkl. frakt" then)
+    let bestTotal, bestTotalShop;
+    for (const o of po) if (o.total != null && (bestTotal == null || o.total < bestTotal)) { bestTotal = o.total; bestTotalShop = o.shop; }
     // name-derived facet values (worker/facetrules.js) under whatever
     // enrichment actually stored — an explicit meta.facets value always wins
     const derived = deriveFacets(m);
@@ -700,6 +754,7 @@ function shapeRows(prods, offs, pts, imgSet) {
       facets: derived ? { ...derived, ...m.facets } : m.facets,
       img: imgSet.has(id) ? `/img/${id}` : undefined,
       best,
+      bestTotal, bestTotalShop,
       drop: m.was && best ? Math.round((1 - best / m.was) * 100) : undefined,
       shops: po.length,
       stock: po.some(o => o.stock),
@@ -904,6 +959,11 @@ const SORT_VAL = {
   shops: r => r.shops,
   name: r => r.m.name,
   brand: r => r.m.brand,
+  // "Totalpris": shipping-inclusive where shipping is known, item price where
+  // it isn't (0.3% offer coverage + a curated registry — most rows are
+  // unknown, and hiding them all would empty the sort). Upstream's comparator
+  // must mirror this exact fallback or its re-sort disagrees with the page.
+  total: r => r.bestTotal ?? r.best,
 };
 const blank = (v) => v === undefined || v === null || v === '' || (typeof v === 'number' && !isFinite(v));
 function sortRows(rows, sort, dir) {
@@ -935,7 +995,13 @@ function failGroups(r, f) {
     || (f.max && r.best > f.max)
     || (f.rating && (r.m.rating || 0) < f.rating)
     || (f.sale && r.drop < 12)
-    || (f.instock && !r.stock)) bad.push('');
+    || (f.instock && !r.stock)
+    // availability group (upstream's universal defs, not FACETS): freeship =
+    // some offer KNOWN free; maxeta = some offer at/inside N days ("In stock"
+    // counts as 0). r.free/r.minEta ride the shipAgg pass in listIds, which
+    // runs whenever these filters are set.
+    || (f.freeship && !r.free)
+    || (f.maxeta && !(r.minEta <= f.maxeta))) bad.push('');
   for (const k in f.facets) {
     const sel = f.facets[k];
     const v = fval(r.m, r.f, k);
@@ -964,9 +1030,10 @@ function listFilters(p) {
     brands: (p.get('brand') || '').split(',').filter(Boolean).slice(0, 50),
     min: num('min'), max: num('max'), rating: num('rating'),
     sale: p.get('sale') === '1', instock: p.get('instock') === '1',
+    freeship: p.get('freeship') === '1', maxeta: num('maxeta'),
     facets: typeof facets === 'object' && facets ? facets : {},
   };
-  const on = f.name.length || f.brands.length || f.min || f.max || f.rating || f.sale || f.instock || Object.keys(f.facets).length;
+  const on = f.name.length || f.brands.length || f.min || f.max || f.rating || f.sale || f.instock || f.freeship || f.maxeta || Object.keys(f.facets).length;
   return on ? f : null;
 }
 
@@ -1028,6 +1095,27 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
      FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${where}
      GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid`
   ).bind(...bind).all();
+  // Shipping aggregates need per-offer rows (shipCost is registry logic the
+  // GROUP BY above can't see — same reason the facets run in JS), so fetch
+  // them only when the query actually touches shipping. ~1 offer/product
+  // today, so it's roughly one extra row per head.
+  let shipAgg = null;
+  if (sort === 'total' || filters?.freeship || filters?.maxeta) {
+    const offs = await db.prepare(
+      `SELECT o.product_id, o.shop, o.price, o.ship, o.eta, o.stock FROM offers o JOIN products p ON p.id = o.product_id WHERE ${where}`
+    ).bind(...bind).all();
+    shipAgg = {};
+    for (const o of offs.results) {
+      const a = shipAgg[o.product_id] ??= { free: false, minEta: Infinity };
+      const sc = shipCost(o.shop, o.price, o.ship);
+      if (sc === 0) a.free = true;
+      if (sc != null) { const t = o.price + sc; if (a.bestTotal == null || t < a.bestTotal) a.bestTotal = t; }
+      // upstream's AVAIL 'fast' def counts IN-STOCK offers only (o.stock ===
+      // true && etaFast) — mirror it or the count and the page disagree
+      const d = o.stock === 1 ? etaDays(o.eta) : null;
+      if (d != null && d < a.minEta) a.minEta = d;
+    }
+  }
   // per-cat only: the rail has no facets without one. Counted in a Map and
   // served as [value, count] PAIRS — a JSON object would stringify the
   // numeric axes (55 → "55") and the rail's option ids must keep their type
@@ -1041,6 +1129,7 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
       best: x.best ?? undefined, shops: x.shops, stock: x.stock === 1, updated: x.updated || undefined,
     };
     r.drop = m.was && r.best ? Math.round((1 - r.best / m.was) * 100) : undefined;
+    if (shipAgg) Object.assign(r, shipAgg[x.id] || { free: false, minEta: Infinity });
     const bad = filters ? failGroups(r, filters) : NO_FAIL;
     // Histogram over the whole category, CROSS-FILTERED: a row counts toward
     // group k when it misses nothing else, so picking a brand re-counts every
@@ -1175,7 +1264,7 @@ async function meBody(db, user, hideAutobuy) {
   // hit = an alert fired for this watch and the price is still at/below the
   // target (rising back above re-arms the watch and clears the flag)
   const { results } = await db.prepare(
-    'SELECT product_id AS id, target, paused, COALESCE(EXISTS(SELECT 1 FROM alerts a WHERE a.user_id = watches.user_id AND a.product_id = watches.product_id) AND target >= (SELECT MIN(price) FROM offers o WHERE o.product_id = watches.product_id AND o.stock = 1), 0) AS hit FROM watches WHERE user_id = ? ORDER BY rowid'
+    'SELECT product_id AS id, target, paused, inclShip, COALESCE(EXISTS(SELECT 1 FROM alerts a WHERE a.user_id = watches.user_id AND a.product_id = watches.product_id) AND target >= (SELECT MIN(price) FROM offers o WHERE o.product_id = watches.product_id AND o.stock = 1), 0) AS hit FROM watches WHERE user_id = ? ORDER BY rowid'
   ).bind(user.id).all(); // rowid = the order the client PUT them in
   // hideAutobuy (env.HIDE_AUTOBUY): the feature is invisible — no autobuy blob,
   // no purchase history in the me payload. The data export passes false: a
@@ -1919,15 +2008,16 @@ export default {
       if (!user) return json({ error: 'unauthenticated' }, 401);
       const list = await request.json().catch(() => null);
       const bad = !Array.isArray(list) || list.length > 200
-        || list.some(w => typeof w.id !== 'string' || (w.target != null && typeof w.target !== 'number'))
+        || list.some(w => typeof w.id !== 'string' || (w.target != null && typeof w.target !== 'number')
+          || (w.inclShip != null && typeof w.inclShip !== 'boolean'))
         || new Set(list.map(w => w.id)).size !== list.length;
       if (bad) return json({ error: 'bad watchlist' }, 400);
       // ponytail: whole-list replace — the client (WatchStore) owns the list;
       // per-item endpoints when lists get big or multi-device concurrent
       await db.batch([
         db.prepare('DELETE FROM watches WHERE user_id = ?').bind(user.id),
-        ...list.map(w => db.prepare('INSERT INTO watches (user_id, product_id, target, paused) VALUES (?, ?, ?, ?)')
-          .bind(user.id, w.id, w.target ?? null, w.paused ? 1 : 0)),
+        ...list.map(w => db.prepare('INSERT INTO watches (user_id, product_id, target, paused, inclShip) VALUES (?, ?, ?, ?, ?)')
+          .bind(user.id, w.id, w.target ?? null, w.paused ? 1 : 0, w.inclShip ? 1 : 0)),
       ]);
       return json({ ok: true });
     }
