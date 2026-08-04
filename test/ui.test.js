@@ -16,7 +16,7 @@ const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 2000
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
-function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false, fcounts } = {}) {
+function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false, fcounts, reviews = [] } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -94,6 +94,20 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
       // loaded row has — the whole point of counting server-side.
       if (p.get('ids') || p.get('q') || p.get('top')) return ok({ meta, products: out });
       return ok({ meta: { ...meta, total: out.length, ...(p.get('cat') && fcounts ? { fcounts } : {}) }, products: out });
+    }
+    if (u.startsWith('/api/reviews')) {
+      // served-review rows (worker reviewsFor shape); `reviews` boot option
+      // seeds them, POST upserts the session user's own like the worker does
+      if (!ME) return ok({ error: 'unauthenticated' }, 401);
+      if (/\/vote$/.test(u)) return ok({ helpful: 1, voted: true });
+      if (opts.method === 'POST') {
+        const row = { id: 900, prodId: body.product_id, author: 'Mari N.', rating: body.rating, title: body.title, body: body.body, helpful: 0, verified: false, voted: false, mine: true, created_at: Date.now() };
+        const i = reviews.findIndex(r => r.mine && r.prodId === body.product_id);
+        if (i >= 0) { row.id = reviews[i].id; reviews[i] = row; } else { row.id += reviews.length; reviews.push(row); }
+        return ok({ reviews: reviews.filter(r => r.prodId === body.product_id) });
+      }
+      const want = new Set((new URLSearchParams(u.split('?')[1]).get('ids') || '').split(','));
+      return ok({ reviews: reviews.filter(r => want.has(r.prodId)) });
     }
     if (u === '/api/me') return ME ? ok(ME) : ok({ error: 'unauthenticated' }, 401);
     if (u === '/api/auth/login' || u === '/api/auth/signup') {
@@ -1066,6 +1080,24 @@ test('shop profile renders served objective stats, never the demo stars', async 
   assert.ok(!q(win, '.shop-hero__stars'), 'no stars we did not measure');
   assert.ok(!q(win, '.shopbars'), 'no demo delivery/service/returns bars');
   assert.ok(!q(win, '.pdp .shopchip, .shopchip'), 'shop chips stay dark without measured ratings');
+});
+
+// The regression that shipped 2026-08-04: fetchReviews gated on boot's ME,
+// which hydrateSession sets AFTER ensureRoute already ran (they're
+// concurrent) — so a cold PDP load (refresh, deep link) never fetched and
+// every persisted review "disappeared". The write modal's optimistic card
+// masked it until the next refresh.
+test('PDP reviews hydrate on a cold load — a refresh must not lose them', async () => {
+  const win = boot('http://pricy.test/product/xm5', {
+    session: true,
+    reviews: [{ id: 1, prodId: 'xm5', author: 'Kari H.', rating: 4, title: 'Server-omtale', body: 'Fra databasen', helpful: 2, verified: true, voted: false, mine: false, created_at: Date.now() - 864e5 }],
+  });
+  assert.ok(await until(() => q(win, '.revsec .revcard')), 'served review did not render on a cold load');
+  assert.match(q(win, '.revcard__title').textContent, /Server-omtale/);
+  assert.ok(win.api.some(c => c.call === 'GET /api/reviews?ids=xm5'),
+    'the PDP route must fetch its reviews, got: ' + win.api.map(c => c.call).join(' | '));
+  // the baked demo reviews are purged — only served rows may render
+  assert.strictEqual(qa(win, '.revsec .revcard').length, 1, 'demo PRODUCT_REVIEWS must not render next to real rows');
 });
 
 test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise', async () => {

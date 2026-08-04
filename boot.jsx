@@ -280,7 +280,11 @@ function applyReviews(pid, rows) {
 }
 function fetchReviews(id) {
   const pid = id.split('~')[0]; // reviews hang on the head, like SPECS
-  if (!ME || REVIEWED.has(pid)) return Promise.resolve();
+  // no ME gate: on a cold PDP load ensureRoute runs BEFORE hydrateSession has
+  // set ME (they're concurrent), which silently skipped the fetch and made
+  // every refresh lose the reviews. The route is auth-gated anyway; logged
+  // out the 401 lands in the catch.
+  if (REVIEWED.has(pid)) return Promise.resolve();
   return fetchJson('/api/reviews?ids=' + encodeURIComponent(pid))
     .then(({ reviews }) => { REVIEWED.add(pid); applyReviews(pid, reviews); })
     .catch(() => {});
