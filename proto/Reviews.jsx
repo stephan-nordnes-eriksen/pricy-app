@@ -167,8 +167,19 @@ function ReviewSection({ p }) {
 }
 
 // ---- shop profile route ------------------------------------
+function relTimeNo(ms) {
+  const m = Math.max(0, Math.round((Date.now() - ms) / 60000));
+  if (m < 1) return 'nå nettopp';
+  if (m < 60) return 'for ' + m + ' min siden';
+  const h = Math.round(m / 60);
+  if (h < 24) return 'for ' + h + (h === 1 ? ' time' : ' timer') + ' siden';
+  const d = Math.round(h / 24);
+  return d === 1 ? 'i går' : 'for ' + d + ' dager siden';
+}
+
 function ShopPage({ go, shop }) {
   const meta = SHOP_META[shop];
+  const stats = !meta && window.SHOP_STATS ? window.SHOP_STATS[shop] : null;
   const rows = useMemo(() => {
     const out = [];
     (window.CATALOG || []).forEach(p => {
@@ -178,33 +189,37 @@ function ShopPage({ go, shop }) {
     out.sort((a, b) => (b.best - a.best) || ((b.p.drop || 0) - (a.p.drop || 0)));
     return out;
   }, [shop]);
-  if (!meta) return (
+  if (!meta && !stats) return (
     <div className="screen">
       <AppHeader go={go} onLogout={() => go('landing')} />
       <div className="page"><div className="offers__empty" style={{ marginTop: 'var(--s-6)' }}>Fant ikke butikken «{shop}»</div></div>
     </div>
   );
-  const warn = meta.rating < 3.8;
+  const warn = !!meta && meta.rating < 3.8;
   const bestCount = rows.filter(r => r.best).length;
   return (
     <div className="screen" data-screen-label={'Shop · ' + shop}>
       <AppHeader go={go} onLogout={() => go('landing')} />
       <div className="page shoppage">
         <div className="pdp__crumb"><a onClick={() => go('home')}>Home</a><Icon name="chevron-right" size={13} /><span style={{ color: 'var(--ink-900)' }}>{shop}</span></div>
-        <div className="shop-hero">
+        <div className="shop-hero" style={meta ? undefined : { gridTemplateColumns: '1fr' }}>
           <div>
             <div className="t-label">Butikkprofil</div>
             <h1 className="shop-hero__name">{shop}</h1>
-            <div className="shop-hero__stars"><Stars rating={meta.rating} reviews={meta.count} /></div>
-            <div className="shop-hero__meta">Hos Pricy siden {meta.since} · {meta.physical ? 'Fysiske butikker + nettbutikk' : 'Kun nettbutikk'}</div>
+            {meta && <div className="shop-hero__stars"><Stars rating={meta.rating} reviews={meta.count} /></div>}
+            {meta ? (
+              <div className="shop-hero__meta">Hos Pricy siden {meta.since} · {meta.physical ? 'Fysiske butikker + nettbutikk' : 'Kun nettbutikk'}</div>
+            ) : (
+              <div className="shop-hero__meta">{fmt(stats.offers)} priser fulgt · Sist oppdatert {relTimeNo(stats.updated)}</div>
+            )}
             {warn && <div className="shop-flag"><Icon name="alert-triangle" size={14} /> Vurdert under snittet av kundene — sjekk leverings- og returvilkår før kjøp</div>}
           </div>
-          <div className="shopbars">
+          {meta && <div className="shopbars">
             <div className="t-label" style={{ marginBottom: 4 }}>Kundevurderinger · {fmt(meta.count)}</div>
             <RatingBar label="Levering" v={meta.delivery} />
             <RatingBar label="Service" v={meta.service} />
             <RatingBar label="Retur" v={meta.returns} />
-          </div>
+          </div>}
         </div>
         <div className="sec">
           <div className="sec__head"><h2>Beste priser hos {shop} nå</h2><span className="shop-hero__count">Billigst på {bestCount} av {rows.length} produkter</span></div>
