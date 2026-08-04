@@ -182,12 +182,12 @@ function ListTeaserCard({ go }) {
   return (
     <div className="sidecard">
       <div className="sidecard__head">
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icon name="gift" size={13} className="ic" /> {l.name}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icon name={l.icon || 'gift'} size={13} className="ic" /> {l.name}</span>
         <span style={{ color: 'var(--green-700)', cursor: 'pointer' }} onClick={() => go('lists')}>Alle lister</span>
       </div>
       <div className="listtease" onClick={() => go('lists', { id: l.id })}>
         <div className="listtease__bar"><span style={{ width: (n ? Math.round(b / n * 100) : 0) + '%' }}></span></div>
-        <div className="listtease__meta"><b>{b} av {n} kjøpt</b><span>Delt med {(l.shared.people || []).length} · kr {fmt(ListStore.sum(l))}</span></div>
+        <div className="listtease__meta"><b>{b} av {n} kjøpt</b><span>{l.shared ? 'Delt med ' + (l.shared.people || []).length + ' · ' : ''}kr {fmt(ListStore.sum(l))}</span></div>
         <div className="listtease__imgs">{l.items.slice(0, 4).map(id => { const p = WatchStore.prod(id); return p ? <span key={id} className={'listtease__img' + (l.bought && l.bought[id] ? ' is-b' : '')}><ProdImg p={p} fill size={16} /></span> : null; })}</div>
       </div>
     </div>
