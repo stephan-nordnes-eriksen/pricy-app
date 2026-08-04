@@ -433,6 +433,11 @@ function ensureRoute(name, params = {}) {
   // browse renders per-cat top drops + global top-4 from the cache; counts
   // and category presence come from the served meta.cats (upstream synced)
   else if (name === 'browse') wants.push({ top: 'drop', perCat: 1, limit: 4 });
+  // any served slice: a cold /shop deep-link must run the live purge (demo
+  // SHOP_META stars) and land meta.shopStats before ShopPage renders.
+  // ponytail: rows shown are whatever the cache holds — a shop= product
+  // query doesn't exist server-side
+  else if (name === 'shop') wants.push({ top: 'drop', limit: 3 });
   else if (name === 'compare') {
     const first = CompareStore.prods()[0];
     if (first) wants.push({ cat: first.cat }); // CmpAdd candidates are same-category

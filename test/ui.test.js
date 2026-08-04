@@ -84,6 +84,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         depts: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'depts.json'), 'utf8')),
         // ...and the per-cat sub-category counts (Browse type chips)
         types: heads.reduce((m, r) => { const t = r.facets?.type; if (t) ((m[r.cat] ??= {})[t] = (m[r.cat][t] || 0) + 1); return m; }, {}),
+        // ...and per-shop objective stats (reviews layer: ShopPage fallback)
+        shopStats: rows.flatMap(r => r.offers.map(o => o.shop)).reduce((m, s) => ((m[s] = { offers: (m[s]?.offers || 0) + 1, updated: Date.now() - 3600e3 }), m), {}),
       };
       // list branches carry the query's own total (worker: meta.total)
       // list branches carry the query's own total and, with a cat, the
@@ -1050,6 +1052,20 @@ test('offer rows: Visit opens the offer url, url-less offers are disabled', asyn
   assert.strictEqual(visits[0].getAttribute('target'), '_blank', 'Visit must open in a new tab');
   assert.ok(visits.slice(1).every(b => b.tagName === 'BUTTON' && b.disabled),
     'offers without a url must render a disabled Visit, never a dead link');
+});
+
+// Reviews layer (plans/reviews-layer.md): production serves no shop ratings,
+// so ShopPage must render off the served objective stats (window.SHOP_STATS,
+// set by boot from meta.shopStats after the live purge empties SHOP_META) —
+// name + freshness line, and none of the demo trust chrome.
+test('shop profile renders served objective stats, never the demo stars', async () => {
+  const win = boot('http://pricy.test/shop?shop=Elkj%C3%B8p', { session: true });
+  assert.ok(await until(() => q(win, '.shop-hero__name')), 'shop page did not render');
+  assert.strictEqual(q(win, '.shop-hero__name').textContent, 'Elkjøp');
+  assert.match(q(win, '.shop-hero__meta').textContent, /priser fulgt · Sist oppdatert/);
+  assert.ok(!q(win, '.shop-hero__stars'), 'no stars we did not measure');
+  assert.ok(!q(win, '.shopbars'), 'no demo delivery/service/returns bars');
+  assert.ok(!q(win, '.pdp .shopchip, .shopchip'), 'shop chips stay dark without measured ratings');
 });
 
 test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise', async () => {
