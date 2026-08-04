@@ -505,6 +505,12 @@ test('reviews: post is edit-your-own (one per user), aggregate lands in product 
     { product_id: 'nope-no-such', rating: 5, title: 't', body: 'b' },
   ]) assert.strictEqual((await call('/api/reviews', { method: 'POST', body: bad, cookie: ola })).status, 400, JSON.stringify(bad));
 
+  // the demo seed stars are fake trust signals — a row with no real reviews
+  // serves no rating/reviews at all ("No reviews yet" upstream)
+  const [bare] = (await (await call('/api/products?ids=xm5')).json()).products.filter(q => q.id === 'xm5');
+  assert.strictEqual(bare.rating, undefined, 'demo seed rating must not serve');
+  assert.strictEqual(bare.reviews, undefined, 'demo seed review count must not serve');
+
   const first = await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 5, title: 'Topp', body: 'Beste ANC' }, cookie: ola });
   assert.strictEqual(first.status, 200);
   const mine = (await first.json()).reviews;

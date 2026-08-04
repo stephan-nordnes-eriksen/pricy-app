@@ -757,12 +757,14 @@ function shapeRows(prods, offs, pts, imgSet) {
     // name-derived facet values (worker/facetrules.js) under whatever
     // enrichment actually stored — an explicit meta.facets value always wins
     const derived = deriveFacets(m);
+    // demo seed rating/reviews never ship — fake trust signals, same honesty
+    // rule as the purged demo review cards. Only the real aggregates
+    // (urating/ureviews, written by refreshReviewMeta) serve as rating/reviews;
+    // separate keys because seed re-upserts json_patch with seed keys winning,
+    // so a real value in meta.rating would be clobbered back on every deploy.
+    const { rating: _demoRating, reviews: _demoReviews, ...pub } = m;
     return {
-      id, ...m,
-      // real review aggregates (urating/ureviews, written by refreshReviewMeta)
-      // override the demo seed numbers — separate keys because seed re-upserts
-      // json_patch with seed keys winning, so a real value in meta.rating
-      // would be clobbered back to the demo number on every deploy
+      id, ...pub,
       ...(m.ureviews ? { rating: m.urating, reviews: m.ureviews } : {}),
       facets: derived ? { ...derived, ...m.facets } : m.facets,
       img: imgSet.has(id) ? `/img/${id}` : undefined,
@@ -967,8 +969,10 @@ const SORT_VAL = {
   drop: r => r.drop,
   save: r => (r.m.was != null && r.best != null) ? r.m.was - r.best : undefined,
   updated: r => r.updated,
-  rating: r => r.m.rating,
-  reviews: r => r.m.reviews,
+  // real aggregates only — shapeRows never serves the demo seed numbers, and
+  // the sort must rank what the screen shows
+  rating: r => r.m.urating,
+  reviews: r => r.m.ureviews,
   shops: r => r.shops,
   name: r => r.m.name,
   brand: r => r.m.brand,
@@ -1006,7 +1010,7 @@ function failGroups(r, f) {
     || ((f.min || f.max) && r.best == null)
     || (f.min && r.best < f.min)
     || (f.max && r.best > f.max)
-    || (f.rating && (r.m.rating || 0) < f.rating)
+    || (f.rating && (r.m.urating || 0) < f.rating)
     || (f.sale && r.drop < 12)
     || (f.instock && !r.stock)
     // availability group (upstream's universal defs, not FACETS): freeship =
