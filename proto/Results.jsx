@@ -844,6 +844,16 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
       <div className={'page results' + (filterLayout === 'topbar' ? ' results--topbar' : '') + (density === 'compact' ? ' is-compact' : '') + (view === 'grid' ? ' is-grid' : '')}>
         {filterLayout === 'rail' && (
           <aside className="filterscol">
+            <input type="checkbox" id="fcol-open" className="fcol-open" />
+            <label htmlFor="fcol-open" className="fcol-toggle">
+              <Icon name="sliders-horizontal" size={15} />
+              <span>Filters</span>
+              {activeChips.length > 0 && <span className="fcol-n">{activeChips.length}</span>}
+              <span className="fcol-chev"><Icon name="chevron-down" size={16} /></span>
+            </label>
+            <button type="button" className="fjump" aria-label="Jump to results" title="Jump to results" onClick={() => { const el = document.querySelector('.results__main'); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 78, behavior: 'smooth' }); }}>
+              <Icon name="arrow-down-to-line" size={19} />
+            </button>
             <div className="filters">
               <FiltersBody f={f} set={set} base={base} baseSel={baseSel} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} availCounts={availCounts} setAvail={setAvail} />
             </div>
