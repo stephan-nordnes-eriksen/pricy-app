@@ -818,6 +818,21 @@ test('dynamic categories: a served dept registry the prototype does not know ren
   assert.ok(card.textContent.includes('5 products'), 'card must show the served count, got: ' + card.textContent);
 });
 
+// PDP breadcrumb over the served registry: boot's productPaths override —
+// demo PRODMAP is emptied, so paths must derive from meta.depts, slices only
+// when the row's own facet value confirms the pin
+test('PDP breadcrumb: dept › matching slice canonical, only verified paths in Also in', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  assert.ok(await until(() => q(win, '.pdp__crumb')), 'PDP did not render');
+  const links = [...q(win, '.pdp__crumb').querySelectorAll('a')].map(a => a.textContent);
+  assert.deepStrictEqual(links.slice(0, 3), ['Home', 'Audio & Headphones', 'Headphones'],
+    'canonical path must be dept › the slice xm5 verifiably matches, got: ' + links.join(' › '));
+  const also = q(win, '.pdp__crumb-also');
+  assert.ok(also, 'Also-in strip must render');
+  assert.deepStrictEqual([...also.querySelectorAll('a')].map(a => a.textContent), ['Audio & Headphones', 'Audio'],
+    'only the whole-cat brick may list under Also in — non-matching slices (Earbuds, Speakers…) must not');
+});
+
 // FILTERS-PLAN: data-driven per-category facet filters on Results
 // h4 may carry a selected-count badge + chevron; the title is the first span
 const h4Title = h => h.querySelector('span')?.textContent ?? h.textContent;

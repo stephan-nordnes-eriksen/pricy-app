@@ -415,6 +415,32 @@ function gpcParams(name, params) {
   return r?.facets ? { ...params, facets: JSON.parse(JSON.stringify(r.facets)) } : params;
 }
 
+// PDP breadcrumb paths (upstream productPaths, GpcData.jsx): the demo version
+// resolves via PRODMAP, which hydrateCatalog empties — so with the served
+// registry in, derive paths from meta.depts instead: every rule backing
+// p.cat, slices only when the product's own facet value confirms the pin
+// (upstream's honesty rule; values are exact facetrules vocabulary, so no
+// case folding), finest match first so the breadcrumb prefers Dept › Slice
+// over Dept › whole category.
+const demoPaths = window.productPaths;
+window.productPaths = (p) => {
+  const depts = CATALOG.meta?.depts;
+  if (!depts) return demoPaths(p);
+  const out = [];
+  for (const d of depts) for (const r of d.rules) {
+    if (r.cat !== p.cat) continue;
+    if (r.facets) {
+      const ok = Object.entries(r.facets).every(([k, want]) => {
+        const v = window.fval && fval(p, k);
+        return v !== undefined && [].concat(v).some(x => want.includes(x));
+      });
+      if (!ok) continue;
+      out.unshift({ dept: d, sub: r.name, nav: { brick: r.b, ...(r.n != null ? { count: r.n } : {}) } });
+    } else out.push({ dept: d, sub: r.name, nav: { brick: r.b } });
+  }
+  return out;
+};
+
 // Login-time hydration: hydrateMe/hydrateFeed/hydrateRecent all resolve ids
 // against the catalog and silently drop what they can't find — so fetch
 // every product the session references in ONE ids= batch first.
