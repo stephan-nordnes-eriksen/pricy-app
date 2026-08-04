@@ -149,6 +149,17 @@ const tick = (ms = 25) => new Promise(r => setTimeout(r, ms));
 async function until(fn, ms = 3000) {
   const t0 = Date.now();
   while (!fn() && Date.now() - t0 < ms) await tick();
+  // One extra yield AFTER the condition holds: React commits the DOM fn()
+  // sees synchronously, but flushes passive effects (store subscriptions,
+  // popstate/beforeinstallprompt listeners) a macrotask later — jsdom has no
+  // MessageChannel, so the scheduler queues that flush via setTimeout(0).
+  // Returning on the commit tick let a test click/dispatch before any
+  // listener existed: an emit with no subscribers, missed forever. A real
+  // browser flushes effects right after paint, long before a human can act,
+  // so this yield restores the ordering the app actually runs under. This
+  // was the whole story of the compare-tray / PDP-popstate / install-bar
+  // flakes (they failed exactly when a test ran FAST).
+  await tick();
   return fn();
 }
 function q(win, sel) { return win.document.querySelector(sel); }
