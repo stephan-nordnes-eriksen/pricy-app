@@ -256,6 +256,58 @@ window.onSharedBought = (token, productId, bought) =>
     body: JSON.stringify({ product_id: productId, bought: !!bought }),
   });
 
+// ── Reviews bridge (plans/reviews-layer.md) ────────────────────────────────
+// Upstream's ReviewSection reads ReviewStore synchronously, so the PDP route
+// prefetches its product's reviews (ensureRoute) and this replaces that
+// product's rows in place. Server rows carry numeric ids; the store's demo/
+// optimistic ids are strings, which is how the vote wrap tells them apart.
+const REVIEWED = new Set(); // product ids already fetched this session
+const agoNo = (ms) => {
+  const d = Math.floor((Date.now() - ms) / 864e5);
+  if (d < 1) return 'I dag';
+  if (d === 1) return 'I går';
+  if (d < 30) return d + ' dager siden';
+  const mn = Math.floor(d / 30);
+  return mn < 12 ? mn + ' mnd siden' : Math.floor(mn / 12) + ' år siden';
+};
+function applyReviews(pid, rows) {
+  ReviewStore.items = [
+    ...rows.map(r => ({ id: String(r.id), prodId: r.prodId, author: r.mine ? 'Du' : r.author, rating: r.rating, date: agoNo(r.created_at), title: r.title, body: r.body, helpful: r.helpful, verified: r.verified })),
+    ...ReviewStore.items.filter(x => x.prodId !== pid),
+  ];
+  rows.forEach(r => ReviewStore.voted[r.voted ? 'add' : 'delete'](String(r.id)));
+  ReviewStore.emit();
+}
+function fetchReviews(id) {
+  const pid = id.split('~')[0]; // reviews hang on the head, like SPECS
+  if (!ME || REVIEWED.has(pid)) return Promise.resolve();
+  return fetchJson('/api/reviews?ids=' + encodeURIComponent(pid))
+    .then(({ reviews }) => { REVIEWED.add(pid); applyReviews(pid, reviews); })
+    .catch(() => {});
+}
+// The write modal calls add() for the instant local card; the server upserts
+// (edit-your-own) and the refetched canonical rows replace the optimistic one
+// — which is also what dedupes an edit instead of stacking a second card.
+const _revAdd = ReviewStore.add;
+ReviewStore.add = function (r) {
+  _revAdd.call(this, r);
+  if (ME && typeof fetch === 'function') {
+    fetchJson('/api/reviews', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ product_id: r.prodId, rating: r.rating, title: r.title, body: r.body }),
+    }).then(({ reviews }) => applyReviews(r.prodId, reviews)).catch(() => {});
+  }
+};
+const _revVote = ReviewStore.vote;
+ReviewStore.vote = function (id) {
+  _revVote.call(this, id);
+  // numeric id = a server row; the optimistic local card has no server id yet
+  if (ME && /^\d+$/.test(id) && typeof fetch === 'function') {
+    fetch('/api/reviews/' + id + '/vote', { method: 'POST' }).catch(() => {});
+  }
+};
+
 // Every auto-buy mutation (sign/revoke/add/cancel/payment change) funnels
 // through AutobuyStore.emit — persist the fullmakt + active orders from
 // there, same seam as WatchStore.emit above. Executed orders are derived
@@ -336,6 +388,7 @@ function parseUrl(session) {
   else if (p === '/alerts') s = { name: 'alerts', params: { tab: q.get('tab') || undefined } };
   else if (p === '/lists') s = { name: 'lists', params: { id: q.get('id') || undefined } };
   else if (p.startsWith('/l/')) s = { name: 'lists', params: { token: decodeURIComponent(p.slice('/l/'.length)) } };
+  else if (p === '/shop') s = { name: 'shop', params: { shop: q.get('shop') || undefined } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
   else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
   else if (['/login', '/browse', '/autobuy', '/onboarding', '/compare'].includes(p)) s = { name: p.slice(1), params: {} };
@@ -375,7 +428,8 @@ function ensureRoute(name, params = {}) {
   // of a different slice would just be a second 400-row fetch per visit
   else if (name === 'results' && (params.brick || params.dept)) return gpcRoute(params);
   else if (name === 'results') wants.push(params.query ? { q: params.query } : listQuery({ cat: params.cat, sort: 'best', dir: 'asc' }));
-  else if (name === 'product') wants.push({ ids: params.id }); // server adds family + same-cat neighbors
+  // server adds family + same-cat neighbors; reviews ride the same prefetch
+  else if (name === 'product') return Promise.all([fetchProducts({ ids: params.id }).catch(() => {}), fetchReviews(params.id)]);
   // browse renders per-cat top drops + global top-4 from the cache; counts
   // and category presence come from the served meta.cats (upstream synced)
   else if (name === 'browse') wants.push({ top: 'drop', perCat: 1, limit: 4 });
@@ -550,6 +604,7 @@ function toUrl(name, params = {}) {
     const s = q.toString();
     return '/search' + (s ? '?' + s : '');
   }
+  if (name === 'shop') return '/shop' + (params.shop ? '?shop=' + encodeURIComponent(params.shop) : '');
   if (name === 'alerts') return '/alerts' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
   if (name === 'lists') return params.token ? '/l/' + encodeURIComponent(params.token) : '/lists' + (params.id ? '?id=' + encodeURIComponent(params.id) : '');
   if (name === 'account') return '/account' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
@@ -699,6 +754,7 @@ function App() {
   else if (name === 'results') view = <Results go={go} query={params.query} cat={params.cat} brick={params.brick} dept={params.dept} label={params.label} count={params.count} filterLayout={T.filterLayout} density={T.density} sparklines={T.sparklines} />;
   else if (name === 'product') view = <ProductPage go={go} id={params.id} />;
   else if (name === 'compare') view = <ComparePage go={go} />;
+  else if (name === 'shop') view = <ShopPage go={go} shop={params.shop} />;
   else if (name === 'browse') view = <BrowsePage go={go} />;
   else if (name === 'alerts') view = <AlertsPage go={go} tab={params.tab} />;
   else if (name === 'lists') view = <ListsPage go={go} params={params} />;
@@ -743,6 +799,12 @@ function hydrateCatalog(data) {
     // must never sit next to fake demo prices in search/facets
     hydrateCatalog.live = true;
     CATALOG.length = 0;
+    // Reviews layer: the baked demo reviews and shop ratings are fake trust
+    // signals keyed on real served ids — same honesty rule. Real reviews
+    // hydrate per PDP (fetchReviews); shop profiles stay dark until upstream
+    // renders the served objective stats (plans/reviews-layer.md v1).
+    ReviewStore.items = [];
+    Object.keys(SHOP_META).forEach(k => delete SHOP_META[k]);
   }
   // 4e: variant children (meta.family) stay out of CATALOG/CAT_OF — search,
   // results and browse are head-only; each head instead gets
@@ -789,6 +851,10 @@ function hydrateCatalog(data) {
       freshest: CATALOG.flatMap(p => (p.offers || []).map(o => o.updated_at)).filter(Boolean).sort((a, b) => a - b).pop() || null,
     };
   }
+  // Per-shop objective stats (offers tracked, price freshness) for the
+  // future served ShopPage — upstream still reads demo SHOP_META, which is
+  // emptied above; this is the honest replacement it will switch to.
+  if (CATALOG.meta?.shopStats) window.SHOP_STATS = CATALOG.meta.shopStats;
   // Dynamic categories: server cats the prototype doesn't know join
   // CATEGORIES in place (same array object as window.CATEGORIES, so every
   // lexical reader — browse tiles, header menu, suggest, onboarding — sees

@@ -31,6 +31,14 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS list_shares (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, list_id TEXT NOT NULL, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS list_members (owner_id INTEGER NOT NULL, list_id TEXT NOT NULL, user_id INTEGER NOT NULL, joined_at INTEGER NOT NULL, PRIMARY KEY (owner_id, list_id, user_id))',
   'CREATE TABLE IF NOT EXISTS list_bought (owner_id INTEGER NOT NULL, list_id TEXT NOT NULL, product_id TEXT NOT NULL, user_id INTEGER NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (owner_id, list_id, product_id))',
+  // UGC reviews (plans/reviews-layer.md): product_id XOR shop targets — the
+  // shop column is reserved for shop-rating v2, no endpoint accepts it yet.
+  // One review per (user, target) via the partial unique indexes; hidden is
+  // the moderation switch (admin PATCH, same bearer as product triage).
+  'CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT, shop TEXT, rating INTEGER NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, verified INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, hidden INTEGER NOT NULL DEFAULT 0)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_prod ON reviews(user_id, product_id) WHERE product_id IS NOT NULL',
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_shop ON reviews(user_id, shop) WHERE shop IS NOT NULL',
+  'CREATE TABLE IF NOT EXISTS review_votes (review_id INTEGER NOT NULL, user_id INTEGER NOT NULL, PRIMARY KEY (review_id, user_id))',
   'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS images (product_id TEXT PRIMARY KEY, src TEXT NOT NULL, fetched_at INTEGER NOT NULL)',
   // EAN → product routing (OPEN-CATALOG-PLAN A1): bootstrapped from
@@ -751,6 +759,11 @@ function shapeRows(prods, offs, pts, imgSet) {
     const derived = deriveFacets(m);
     return {
       id, ...m,
+      // real review aggregates (urating/ureviews, written by refreshReviewMeta)
+      // override the demo seed numbers — separate keys because seed re-upserts
+      // json_patch with seed keys winning, so a real value in meta.rating
+      // would be clobbered back to the demo number on every deploy
+      ...(m.ureviews ? { rating: m.urating, reviews: m.ureviews } : {}),
       facets: derived ? { ...derived, ...m.facets } : m.facets,
       img: imgSet.has(id) ? `/img/${id}` : undefined,
       best,
@@ -1216,7 +1229,9 @@ async function catMeta(db, ver) {
   const heads = `FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()}`;
   const [nRes, sRes, fRes, cRes, tRes, dRes] = await db.batch([
     db.prepare(`SELECT COUNT(*) AS n ${heads}`),
-    db.prepare('SELECT COUNT(DISTINCT shop) AS n FROM offers'),
+    // per-shop objective stats (plans/reviews-layer.md shop profiles v1):
+    // offers tracked + price freshness — the shops count is this list's length
+    db.prepare('SELECT shop, COUNT(*) AS n, MAX(updated_at) AS t FROM offers GROUP BY shop'),
     db.prepare('SELECT MAX(updated_at) AS t FROM offers'),
     db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n ${heads} GROUP BY 1`),
     // per-cat sub-category counts (facets.type) — Browse's type chips read
@@ -1227,7 +1242,8 @@ async function catMeta(db, ver) {
     db.prepare('SELECT hash FROM seed_meta WHERE id = 4'),
   ]);
   const products = nRes.results[0].n;
-  const shops = sRes.results[0].n;
+  const shops = sRes.results.length;
+  const shopStats = Object.fromEntries(sRes.results.map(r => [r.shop, { offers: r.n, updated: r.t ?? null }]));
   const freshest = fRes.results[0].t ?? null;
   const results = cRes.results;
   const tr = tRes.results;
@@ -1238,9 +1254,50 @@ async function catMeta(db, ver) {
   let sliceN = {};
   try { sliceN = JSON.parse(dRes.results[0]?.hash || '{}'); } catch (e) {}
   const depts = DEPTS.map(d => ({ ...d, rules: d.rules.map(r => r.facets && sliceN[r.b] != null ? { ...r, n: sliceN[r.b] } : r) }));
-  const val = { products, shops, freshest, icons: CATS, facets: FACETS, depts, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  const val = { products, shops, shopStats, freshest, icons: CATS, facets: FACETS, depts, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
   if (ver) metaCache.set(db, { ver, val });
   return val;
+}
+
+// ── Reviews (plans/reviews-layer.md) ───────────────────────────────────────
+// First name + last initial ("Kari Nordmann" → "Kari N.") — the only slice of
+// another user's identity a review ever carries.
+const revName = (name) => {
+  const p = String(name).trim().split(/\s+/);
+  return p[0] + (p.length > 1 ? ' ' + p[p.length - 1][0] + '.' : '');
+};
+
+// Visible reviews for a set of product ids, helpful counts and the session
+// user's own vote/authorship joined in — the PDP hydrate batch.
+async function reviewsFor(db, ids, userId) {
+  const rows = await chunked(ids, async c => (await db.prepare(
+    `SELECT r.id, r.product_id, r.user_id, r.rating, r.title, r.body, r.verified, r.created_at, u.name,
+       (SELECT COUNT(*) FROM review_votes v WHERE v.review_id = r.id) AS helpful,
+       EXISTS(SELECT 1 FROM review_votes v WHERE v.review_id = r.id AND v.user_id = ?) AS voted
+     FROM reviews r JOIN users u ON u.id = r.user_id
+     WHERE r.hidden = 0 AND r.product_id IN (${ph(c)}) ORDER BY r.id DESC`
+  ).bind(userId, ...c).all()).results);
+  return rows.map(r => ({
+    id: r.id, prodId: r.product_id, author: revName(r.name), rating: r.rating,
+    title: r.title, body: r.body, helpful: r.helpful, verified: !!r.verified,
+    voted: !!r.voted, mine: r.user_id === userId, created_at: r.created_at,
+  }));
+}
+
+// Real reviews recompute the product's aggregate into meta at write time
+// (same meta-merge seam as admin PATCH) so list queries stay one read. Zero
+// visible reviews deletes the keys — the demo seed rating shows only until a
+// product's first real review, then real wins (shapeRows prefers urating).
+async function refreshReviewMeta(db, productId) {
+  const [agg, cur] = await Promise.all([
+    db.prepare('SELECT COUNT(*) AS n, AVG(rating) AS avg FROM reviews WHERE product_id = ? AND hidden = 0').bind(productId).first(),
+    db.prepare('SELECT meta FROM products WHERE id = ?').bind(productId).first(),
+  ]);
+  if (!cur) return;
+  const meta = JSON.parse(cur.meta);
+  if (agg.n) { meta.urating = Math.round(agg.avg * 10) / 10; meta.ureviews = agg.n; }
+  else { delete meta.urating; delete meta.ureviews; }
+  await db.batch([db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), productId), bumpVer(db)]);
 }
 
 async function purchasesBody(db, userId) {
@@ -1794,6 +1851,21 @@ export default {
       return json({ ok: true, id, meta });
     }
 
+    // Review moderation (same bearer as product triage): {hidden: 1} pulls a
+    // review from every GET and the aggregate, {hidden: 0} restores it. No
+    // listing route — `wrangler d1 execute` is the triage view, like reports.
+    if (request.method === 'PATCH' && url.pathname.startsWith('/api/admin/reviews/')) {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      const b = await request.json().catch(() => null);
+      if (!b || (b.hidden !== 0 && b.hidden !== 1)) return json({ error: 'bad patch (hidden: 0|1)' }, 400);
+      const row = await db.prepare('UPDATE reviews SET hidden = ? WHERE id = ? RETURNING product_id')
+        .bind(b.hidden, Number(url.pathname.slice('/api/admin/reviews/'.length))).first();
+      if (!row) return json({ error: 'unknown review' }, 404);
+      if (row.product_id) await refreshReviewMeta(db, row.product_id);
+      return json({ ok: true });
+    }
+
     // Map an EAN to a product (variant/duplicate triage). Migrates the
     // orphaned auto-discovered `ean-<key>` row's collected offers/history/
     // watches/purchases to the target instead of throwing them away, then
@@ -1939,7 +2011,9 @@ export default {
     if (route === 'GET /api/account/export') {
       if (!user) return json({ error: 'unauthenticated' }, 401);
       const reports = (await db.prepare('SELECT product_id, shop, reason, text, created_at FROM reports WHERE user_id = ? ORDER BY created_at DESC, id DESC').bind(user.id).all()).results;
-      return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1), reports }, 200,
+      const reviews = (await db.prepare('SELECT product_id, shop, rating, title, body, verified, hidden, created_at FROM reviews WHERE user_id = ? ORDER BY id DESC').bind(user.id).all()).results;
+      const review_votes = (await db.prepare('SELECT review_id FROM review_votes WHERE user_id = ?').bind(user.id).all()).results.map(r => r.review_id);
+      return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1), reports, reviews, review_votes }, 200,
         { 'content-disposition': 'attachment; filename="pricy-export.json"' });
     }
 
@@ -1947,9 +2021,13 @@ export default {
     // blobs live on the users row), and the session cookie is expired
     if (route === 'DELETE /api/account') {
       if (!user) return json({ error: 'unauthenticated' }, 401);
+      // products whose review aggregate must be recomputed once the rows die
+      const reviewed = (await db.prepare('SELECT DISTINCT product_id FROM reviews WHERE user_id = ? AND product_id IS NOT NULL').bind(user.id).all()).results.map(r => r.product_id);
       await db.batch([
         db.prepare('DELETE FROM alerts WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM reports WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM review_votes WHERE user_id = ? OR review_id IN (SELECT id FROM reviews WHERE user_id = ?)').bind(user.id, user.id),
+        db.prepare('DELETE FROM reviews WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM purchases WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM watches WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM list_shares WHERE user_id = ?').bind(user.id),
@@ -1960,6 +2038,7 @@ export default {
         db.prepare('DELETE FROM login_tokens WHERE email = ?').bind(user.email),
         db.prepare('DELETE FROM users WHERE id = ?').bind(user.id),
       ]);
+      for (const pid of reviewed) await refreshReviewMeta(db, pid);
       return json({ ok: true }, 200, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
     }
 
@@ -2111,6 +2190,54 @@ export default {
         }])),
         products,
       });
+    }
+
+    // UGC product reviews (plans/reviews-layer.md). Batch GET for the PDP
+    // hydrate; POST is create-or-edit-your-own (the partial unique index makes
+    // the upsert atomic; editing never clears hidden, so a moderated author
+    // can't republish by editing). verified = a purchases row matches.
+    if (route === 'GET /api/reviews') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const ids = (url.searchParams.get('ids') || '').split(',').map(s => s.trim()).filter(Boolean);
+      if (!ids.length || ids.length > 100) return json({ error: 'need ids (max 100)' }, 400);
+      return json({ reviews: await reviewsFor(db, ids, user.id) });
+    }
+
+    if (route === 'POST /api/reviews') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const b = await request.json().catch(() => ({}));
+      const pid = typeof b.product_id === 'string' ? b.product_id.trim() : '';
+      const title = typeof b.title === 'string' ? b.title.trim() : '';
+      const text = typeof b.body === 'string' ? b.body.trim() : '';
+      if (!pid || !Number.isInteger(b.rating) || b.rating < 1 || b.rating > 5
+        || !title || title.length > 80 || !text || text.length > 2000) {
+        return json({ error: 'bad review' }, 400);
+      }
+      await seedCatalog(db);
+      if (!await db.prepare(`SELECT 1 FROM products WHERE id = ? AND ${visible()}`).bind(pid).first()) {
+        return json({ error: 'unknown product' }, 400);
+      }
+      const verified = await db.prepare('SELECT 1 FROM purchases WHERE user_id = ? AND product_id = ? LIMIT 1').bind(user.id, pid).first() ? 1 : 0;
+      await db.prepare(
+        `INSERT INTO reviews (user_id, product_id, rating, title, body, verified, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, product_id) WHERE product_id IS NOT NULL
+         DO UPDATE SET rating = excluded.rating, title = excluded.title, body = excluded.body, verified = excluded.verified, created_at = excluded.created_at`
+      ).bind(user.id, pid, b.rating, title, text, verified, Date.now()).run();
+      await refreshReviewMeta(db, pid);
+      return json({ reviews: await reviewsFor(db, [pid], user.id) });
+    }
+
+    // Helpful-vote toggle — one per (review, user), count at read
+    if (request.method === 'POST' && /^\/api\/reviews\/\d+\/vote$/.test(url.pathname)) {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const id = Number(url.pathname.split('/')[3]);
+      if (!await db.prepare('SELECT 1 FROM reviews WHERE id = ? AND hidden = 0').bind(id).first()) {
+        return json({ error: 'not found' }, 404);
+      }
+      const undone = await db.prepare('DELETE FROM review_votes WHERE review_id = ? AND user_id = ? RETURNING review_id').bind(id, user.id).first();
+      if (!undone) await db.prepare('INSERT INTO review_votes (review_id, user_id) VALUES (?, ?)').bind(id, user.id).run();
+      const { n } = await db.prepare('SELECT COUNT(*) AS n FROM review_votes WHERE review_id = ?').bind(id).first();
+      return json({ helpful: n, voted: !undone });
     }
 
     // "Report a problem" on a product page (plans/report-product-error.md).
