@@ -989,10 +989,10 @@ function ReportProblemModal({ p, onClose, onDone }) {
 // PRODUCT COMPARISON PAGE (PDP)
 // ===========================================================
 const OFFERS_SHOWN = 5; // cheapest N shown; the rest expand on demand
-function OfferRow({ o, best, totSort }) {
+function OfferRow({ o, best, totSort, go }) {
   return (
     <div className={'orow' + (best ? ' is-best' : '')}>
-      <div className="orow__shop">{o.shop}{best && <Tag kind="best">{totSort ? '★ Billigst totalt' : '★ Best'}</Tag>}</div>
+      <div className="orow__shop">{o.shop}<ShopChip shop={o.shop} go={go} />{best && <Tag kind="best">{totSort ? '★ Billigst totalt' : '★ Best'}</Tag>}</div>
       <div className="orow__ship">{o.ship}</div>
       <div className="orow__ship"><StockBadge state={o.stock === undefined ? 'unknown' : o.stock ? 'in' : 'out'} label={o.stock ? o.eta : undefined} />{o.updated_at ? <div className="orow__checked">checked {relTime(o.updated_at)}</div> : null}</div>
       <div className="orow__item"><Price value={o.price} size={15} /></div>
@@ -1065,7 +1065,7 @@ function ProductPage({ go, id }) {
             <div className="pdp__brand">{p.brand}</div>
             <h1>{p.name}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)', margin: '0 0 var(--s-4)', flexWrap: 'wrap' }}>
-              <Stars rating={p.rating} reviews={p.reviews} />
+              <a className="pdp__revlink" title="Les omtaler" onClick={scrollToReviews}><Stars rating={p.rating} reviews={p.reviews} /></a>
               {p.nc && <span className="rrow__feat">Noise cancelling</span>}
               <StockBadge state={v.unavailable ? 'out' : (p.stock ? 'in' : 'back')} />
               {specsFor(p) && <a className="pdp__speclink" onClick={scrollToSpecs}>Specifications ↓</a>}
@@ -1150,7 +1150,7 @@ function ProductPage({ go, id }) {
             )}
             <div className="offers__h"><span>Shop</span><span>Delivery</span><span>Stock</span><span style={{ textAlign: 'right' }}>Price</span><span style={{ textAlign: 'right' }}>Totalt</span><span></span></div>
             {!best && <div className="offers__empty">{v.unavailable ? 'No shop sells ' + v.vlabel + ' right now' : 'No offers yet — we’re tracking this product'}</div>}
-            {sOffers.slice(0, OFFERS_SHOWN).map((o, i) => <OfferRow key={o.shop} o={o} best={i === 0} totSort={osort === 'total'} />)}
+            {sOffers.slice(0, OFFERS_SHOWN).map((o, i) => <OfferRow key={o.shop} o={o} best={i === 0} totSort={osort === 'total'} go={go} />)}
             {sOffers.length > OFFERS_SHOWN && (
               <details className="offers__more">
                 <summary className="offers__toggle">
@@ -1159,7 +1159,7 @@ function ProductPage({ go, id }) {
                   <span className="offers__toggle-lbl offers__toggle-lbl--less">Show fewer shops</span>
                   <span className="offers__toggle-hint">kr {fmt(oVal(sOffers[OFFERS_SHOWN]))} – kr {fmt(oVal(sOffers[sOffers.length - 1]))}</span>
                 </summary>
-                {sOffers.slice(OFFERS_SHOWN).map(o => <OfferRow key={o.shop} o={o} totSort={osort === 'total'} />)}
+                {sOffers.slice(OFFERS_SHOWN).map(o => <OfferRow key={o.shop} o={o} totSort={osort === 'total'} go={go} />)}
               </details>
             )}
             <div className="offers__foot">
@@ -1185,6 +1185,8 @@ function ProductPage({ go, id }) {
         </div>
 
         <SpecsSection p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))}></SpecsSection>
+
+        <ReviewSection p={p}></ReviewSection>
 
         <div className="sec" style={{ marginTop: 'var(--s-7)' }}>
           <div className="sec__head"><h2>More in {main ? main.sub : p.cat}</h2><span className="more" onClick={() => go('results', main ? main.nav : { cat: p.cat })}>See all <Icon name="arrow-right" size={14} /></span></div>
