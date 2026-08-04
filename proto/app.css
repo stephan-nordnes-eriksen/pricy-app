@@ -492,6 +492,8 @@ input, select, textarea { min-width: 0; }
 .gpcinfo:hover .gpcinfo__btn, .gpcinfo__btn:focus-visible { border-color: var(--ink-900); color: var(--ink-900); }
 .gpcinfo__pop { display: none; position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; flex-direction: column; gap: 4px; width: max-content; max-width: 340px; padding: 9px 11px 10px; border: var(--bw) solid var(--ink-900); background: var(--paper); box-shadow: var(--shadow); font-size: 12px; font-weight: 400; line-height: 1.5; color: var(--ink-600); }
 .gpcinfo:hover .gpcinfo__pop, .gpcinfo:focus-within .gpcinfo__pop { display: flex; }
+.gpcinfo--r .gpcinfo__pop { left: auto; right: 0; }
+.pdp__crumb .gpcinfo { margin-top: 0; }
 .gpcinfo__k { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-400); }
 .gpcinfo__c { font-weight: 400; letter-spacing: 0; }
 .gpcinfo__p { text-wrap: pretty; }

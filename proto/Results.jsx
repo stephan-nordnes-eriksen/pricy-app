@@ -367,9 +367,9 @@ function catNavModel({ cat, brick, dept, label }) {
   return { head: { name: d.name, icon: d.icon, n: d.n, on: !subs.some(s => s.on), nav: { dept: d.id } }, subs };
 }
 // GS1 GPC classification: hover chip next to the results title (CSS-only popover)
-function GpcInfo({ bk }) {
+function GpcInfo({ bk, r }) {
   return (
-    <span className="gpcinfo">
+    <span className={'gpcinfo' + (r ? ' gpcinfo--r' : '')}>
       <button className="gpcinfo__btn" aria-label="GS1 GPC classification of this sub-category"><Icon name="info" size={12} />GS1 GPC</button>
       <span className="gpcinfo__pop" role="tooltip">
         <span className="gpcinfo__k">GS1 GPC classification<span className="gpcinfo__c">#{bk.code}</span></span>
@@ -1025,7 +1025,14 @@ function ProductPage({ go, id }) {
   const onIncl = (val) => { _setIncl(val); if (WatchStore.has(v.id)) WatchStore.setInclShip(v.id, val); };
   const [buyNow, setBuyNow] = useState(false);
   const [report, setReport] = useState(false);
-  const more = (CAT_OF[p.cat] || []).filter(x => x.id !== p.id).slice(0, 4);
+  // full category path(s): canonical first (breadcrumb), plus every other
+  // department the product occurs in — see productPaths (GpcData.jsx)
+  const paths = window.productPaths ? productPaths(p) : [];
+  const main = paths[0];
+  const gbk = main ? brickBy[main.nav.brick] : null;
+  const _seen = new Set([p.id]);
+  const _dedup = (arr) => arr.filter(x => _seen.has(x.id) ? false : (_seen.add(x.id), true));
+  const more = _dedup(main ? [...brickProducts(main.nav.brick), ...(CAT_OF[p.cat] || [])] : (CAT_OF[p.cat] || [])).slice(0, 4);
 
   return (
     <div className="screen">
@@ -1033,8 +1040,13 @@ function ProductPage({ go, id }) {
       <div className="page pdp">
         <div className="pdp__crumb">
           <a onClick={() => go('home')}>Home</a><Icon name="chevron-right" size={13} />
-          <a onClick={() => go('results', { cat: p.cat })}>{p.cat}</a><Icon name="chevron-right" size={13} />
+          {main && main.dept && <React.Fragment><a onClick={() => go('results', { dept: main.dept.id })}>{main.dept.name}</a><Icon name="chevron-right" size={13} /></React.Fragment>}
+          <a onClick={() => go('results', main ? main.nav : { cat: p.cat })}>{main ? main.sub : p.cat}</a><Icon name="chevron-right" size={13} />
           <span style={{ color: 'var(--ink-900)' }}>{p.name}</span>
+          {(paths.length > 1 || gbk) && <span className="pdp__crumb-also">
+            {paths.length > 1 && <React.Fragment><span>Also in</span>{paths.slice(1).map((x, i) => <span key={i} className="pdp__crumb-alt">{x.dept && <React.Fragment><a onClick={() => go('results', { dept: x.dept.id })}>{x.dept.name}</a> › </React.Fragment>}<a onClick={() => go('results', x.nav)}>{x.sub}</a></span>)}</React.Fragment>}
+            {gbk && <GpcInfo bk={gbk} r />}
+          </span>}
         </div>
 
         <div className="pdp__top">
@@ -1165,7 +1177,7 @@ function ProductPage({ go, id }) {
         <SpecsSection p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))}></SpecsSection>
 
         <div className="sec" style={{ marginTop: 'var(--s-7)' }}>
-          <div className="sec__head"><h2>More in {p.cat}</h2><span className="more" onClick={() => go('results', { cat: p.cat })}>See all <Icon name="arrow-right" size={14} /></span></div>
+          <div className="sec__head"><h2>More in {main ? main.sub : p.cat}</h2><span className="more" onClick={() => go('results', main ? main.nav : { cat: p.cat })}>See all <Icon name="arrow-right" size={14} /></span></div>
           <div className="pgrid">
             {more.map(x => <ResultCard key={x.id} p={x} go={go} />)}
           </div>

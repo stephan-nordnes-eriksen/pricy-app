@@ -236,4 +236,38 @@ function deptProducts(id) {
   return _gpool().filter(p => { const b = brickOf(p); return b ? bricks.has(b) : cats.has(p.cat); });
 }
 
-Object.assign(window, { GPC, GPC_TOTAL, ALL_BRICKS, brickBy, brickPath, PRODMAP, samplesOf, DEPTS, DEPT_BRICKS, BRICK_DEPT, brickSearch, brickToCat, brickOf, brickProducts, deptProducts });
+// ---- every category a product occurs in ----------------------
+// Canonical path first (drives the PDP breadcrumb): owner department
+// (BRICK_DEPT) › whole brick. Then one entry per additional department
+// rule the product verifiably matches — whole-brick rules always,
+// attribute slices (where) only when a facet value or kw keyword confirms
+// the slice (same honesty rule as deptProducts: a slice must not claim
+// products it can't verify).
+const _navOf = (r) => ({ brick: r.b, ...(r.label ? { label: r.label } : {}), ...(r.n != null ? { count: r.n } : {}) });
+const sliceMatch = (p, r) => {
+  const m = /^(.+?)\s*=\s*(.+)$/.exec(r.where || '');
+  if (!m) return false;
+  const wants = m[2].split('/').map(s => s.trim().toLowerCase());
+  const defs = (window.BRICK_FACETS || {})[r.b] || (window.FACETS || {})[brickToCat(r.b)] || [];
+  const def = defs.find(d => d.label.toLowerCase() === m[1].trim().toLowerCase());
+  const v = def && window.fval ? fval(p, def.key) : undefined;
+  if (v !== undefined) return [].concat(v).some(x => wants.includes(String(x).toLowerCase()));
+  const kw = (p.kw || '').toLowerCase();
+  return !!kw && wants.some(w => kw.includes(w));
+};
+function productPaths(p) {
+  const code = brickOf(p), bk = code && brickBy[code];
+  if (!bk) return [];
+  const own = BRICK_DEPT[code] || null;
+  const out = [{ dept: own, sub: bk.name, nav: { brick: code } }];
+  DEPTS.forEach(d => d.rules.forEach(r => {
+    if (r.b !== code) return;
+    if (r.where && !sliceMatch(p, r)) return;
+    const sub = r.label || bk.name;
+    if (d === own && sub === bk.name) return; // the canonical entry
+    out.push({ dept: d, sub, nav: _navOf(r) });
+  }));
+  return out;
+}
+
+Object.assign(window, { GPC, GPC_TOTAL, ALL_BRICKS, brickBy, brickPath, PRODMAP, samplesOf, DEPTS, DEPT_BRICKS, BRICK_DEPT, brickSearch, brickToCat, brickOf, brickProducts, deptProducts, productPaths });

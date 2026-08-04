@@ -96,7 +96,9 @@ button { font-family: inherit; }
 
 /* ---- PRODUCT DETAIL ------------------------------------ */
 .pdp { padding: var(--s-6) 0 var(--s-9); }
-.pdp__crumb { font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); margin-bottom: var(--s-4); display: flex; gap: 8px; align-items: center; }
+.pdp__crumb { font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); margin-bottom: var(--s-4); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pdp__crumb-also { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; padding-left: 16px; }
+.pdp__crumb-alt { white-space: nowrap; }
 .pdp__crumb a { color: var(--ink-600); text-decoration: none; cursor: pointer; }
 .pdp__crumb a:hover { color: var(--ink-900); }
 .pdp__top { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--s-6); }
