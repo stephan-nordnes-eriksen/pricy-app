@@ -465,7 +465,26 @@ Two Claude Design projects feed this repo:
   `window.onSharedList`/`onSharedBought` for the upstream member
   screen, which does NOT exist yet — ShareModal still shows its demo
   link until the plan file's upstream prompt is pasted.
-- Changing password is real too: `POST /api/account/password`
+- Product reviews persist for real (2026-08-04, plans/reviews-layer.md):
+  `GET /api/reviews?ids=` (batch, session required, author = first name +
+  last initial, `mine`/`voted` joined per user), `POST /api/reviews`
+  (create-or-edit-your-own via partial unique index; `verified` = a
+  purchases row matches), `POST /api/reviews/:id/vote` (toggle), and
+  `PATCH /api/admin/reviews/:id` `{hidden: 0|1}` (bearer moderation; edits
+  never clear hidden). Write-time aggregates land in `meta.urating`/
+  `ureviews` — NOT `meta.rating`, which seed re-upserts json_patch back to
+  the demo number on every deploy — and `shapeRows` prefers them; zero
+  visible reviews deletes the keys (demo stars show only until the first
+  real review). GDPR export/delete cover reviews + votes and recompute
+  affected aggregates. boot: PDP route prefetches its head's reviews,
+  wraps `ReviewStore.add/vote` (numeric ids = server rows), and empties
+  the demo `PRODUCT_REVIEWS`/`SHOP_META` when live — fake trust signals
+  don't ship. `catMeta` serves `meta.shopStats` `{shop: {offers, updated}}`
+  (boot exposes `window.SHOP_STATS`); the `/shop` route is mirrored but
+  renders its not-found state until upstream's ShopPage/ShopChip read the
+  served objective stats instead of SHOP_META demo ratings (v1 = no stars,
+  see the plan's honesty section). Shop-rating UGC is v2 — the reviews
+  table's `shop` column is reserved, no endpoint accepts it yet.
   (`{currentPassword, newPassword}`) verifies the current password (skipped
   for passwordless magic-link/BankID accounts, which just set one) and
   re-hashes with the same PBKDF2 scheme as signup. `meBody`'s user object

@@ -1,7 +1,29 @@
 # Reviews layer: shop ratings + product reviews (upstream PROMPT 02)
 
+**Status 2026-08-04: backend SHIPPED** (worker + boot + tests, deployed).
+Decisions taken: aggregates live in `meta.urating`/`ureviews` (seed
+json_patch clobbers `meta.rating` on deploy), demo seed ratings stay
+until a product's first real review, `meta.shops` was taken so the
+per-shop stats key is `meta.shopStats` (offers + freshness only — no
+join to visible products, hidden rows are tracked too). Remaining:
+the upstream prompt below — until then ShopChip/ShopPage are dark in
+prod (boot empties SHOP_META) and only product reviews are live.
+
+## Upstream prompt (paste into the prototype project when picked up)
+
+> **Shop trust, honest v1 (pricy repo, plans/reviews-layer.md):** the
+> production host serves no shop ratings — it has no source for them.
+> It exposes `window.SHOP_STATS` = `{ [shop]: { offers, updated } }`
+> (objective: offers tracked + price freshness, ms epoch). When
+> SHOP_META has no entry for a shop but SHOP_STATS does: ShopChip
+> renders nothing (no stars we didn't measure), and ShopPage renders
+> the profile from SHOP_STATS — name, "X priser fulgt", "Oppdatert
+> <relTime>", best-price list from CATALOG — with no stars, no
+> delivery/service/returns bars, no "vurderinger" count. Keep the
+> demo SHOP_META path for preview. Product reviews are unchanged.
+
 Backend plan for `proto/PROMPT - 02 Reviews Layer.md` (fetched
-2026-08-03, not yet built upstream). Upstream will add `SHOP_META` (per-
+2026-08-03, built upstream 2026-08-04). Upstream will add `SHOP_META` (per-
 shop ratings), `PRODUCT_REVIEWS` + `ReviewStore` (UGC reviews with
 helpful votes), shop profile pages, and rating chips on offer rows.
 
