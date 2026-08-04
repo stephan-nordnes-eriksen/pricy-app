@@ -16,7 +16,7 @@ const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 2000
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
-function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false, fcounts, reviews = [] } = {}) {
+function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false, fcounts, reviews = [], catalogLag = 0 } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
     url,
@@ -92,8 +92,11 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
       // category-wide facet histogram as [value, count] pairs (worker: catMeta
       // + listIds). `fcounts` is injectable so a test can serve a value no
       // loaded row has — the whole point of counting server-side.
-      if (p.get('ids') || p.get('q') || p.get('top')) return ok({ meta, products: out });
-      return ok({ meta: { ...meta, total: out.length, ...(p.get('cat') && fcounts ? { fcounts } : {}) }, products: out });
+      // catalogLag: resolve a macrotask late, so tiny responses (reviews)
+      // land first — the real network order on a cold PDP load
+      const send = d => catalogLag ? new Promise(r => setTimeout(r, catalogLag)).then(() => ok(d)) : ok(d);
+      if (p.get('ids') || p.get('q') || p.get('top')) return send({ meta, products: out });
+      return send({ meta: { ...meta, total: out.length, ...(p.get('cat') && fcounts ? { fcounts } : {}) }, products: out });
     }
     if (u.startsWith('/api/reviews')) {
       // served-review rows (worker reviewsFor shape); `reviews` boot option
@@ -1109,6 +1112,19 @@ test('PDP reviews hydrate on a cold load — a refresh must not lose them', asyn
     'the PDP route must fetch its reviews, got: ' + win.api.map(c => c.call).join(' | '));
   // the baked demo reviews are purged — only served rows may render
   assert.strictEqual(qa(win, '.revsec .revcard').length, 1, 'demo PRODUCT_REVIEWS must not render next to real rows');
+});
+
+// The reviews response is tiny and beats the 400-row products payload on a
+// real network — hydrateCatalog's first-payload demo purge then ran AFTER
+// applyReviews and wiped the landed server rows (REVIEWED blocks a refetch).
+test('PDP reviews survive the demo purge when they land before the catalog', async () => {
+  const win = boot('http://pricy.test/product/xm5', {
+    session: true, catalogLag: 5,
+    reviews: [{ id: 1, prodId: 'xm5', author: 'Kari H.', rating: 4, title: 'Server-omtale', body: 'Fra databasen', helpful: 2, verified: true, voted: false, mine: false, created_at: Date.now() - 864e5 }],
+  });
+  assert.ok(await until(() => q(win, '.revsec .revcard')), 'served review was wiped by the demo purge');
+  assert.match(q(win, '.revcard__title').textContent, /Server-omtale/);
+  assert.strictEqual(qa(win, '.revsec .revcard').length, 1, 'demo PRODUCT_REVIEWS must stay purged');
 });
 
 test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise', async () => {

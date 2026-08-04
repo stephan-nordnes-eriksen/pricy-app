@@ -812,7 +812,10 @@ function hydrateCatalog(data) {
     // signals keyed on real served ids — same honesty rule. Real reviews
     // hydrate per PDP (fetchReviews); shop profiles stay dark until upstream
     // renders the served objective stats (plans/reviews-layer.md v1).
-    ReviewStore.items = [];
+    // Purge DEMO rows only (string ids) — on a cold PDP load fetchReviews
+    // races this first payload, and its landed server rows (numeric ids,
+    // same discriminator as the vote wrap) must survive the purge.
+    ReviewStore.items = ReviewStore.items.filter(r => /^\d+$/.test(r.id));
     Object.keys(SHOP_META).forEach(k => delete SHOP_META[k]);
   }
   // 4e: variant children (meta.family) stay out of CATALOG/CAT_OF — search,
