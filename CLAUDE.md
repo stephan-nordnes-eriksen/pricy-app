@@ -415,7 +415,12 @@ Two Claude Design projects feed this repo:
   notification and click-focuses the app; boot's `setupPush` re-subscribes
   silently when permission is granted, else shows a one-tap chip (iOS only
   exposes push inside the installed home-screen app, and only ≥16.4).
-  Price-drop alerts do NOT push yet — the alert cron is the obvious caller.
+  **Price-drop alerts push too** (2026-08-05): fireAlerts sends to the
+  user's devices when settings `push === true` (upstream NotifSection
+  toggle, default off — the boot chip flips it on after a successful
+  subscribe; the silent re-subscribe never does, so a settings opt-out
+  sticks). A delivered push marks the alert delivered_at even with the
+  email channel off.
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
   `Mcp-Session-Id` header to the shared `sessions` table), search_products,

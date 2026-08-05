@@ -999,7 +999,15 @@ function setupPush() {
   btn.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:60;padding:10px 16px;border:0;border-radius:999px;background:#111;color:#fff;font:600 14px system-ui;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer';
   btn.onclick = async () => {
     btn.remove();
-    try { if (await Notification.requestPermission() === 'granted') await subscribe(); } catch (e) {}
+    try {
+      if (await Notification.requestPermission() === 'granted') {
+        await subscribe();
+        // tapping the chip IS the opt-in: flip the settings channel toggle
+        // (default off upstream) so fireAlerts' s.push gate opens. Only here —
+        // the silent re-subscribe must not override a deliberate opt-out.
+        await saveSettings({ push: true }).catch(() => {});
+      }
+    } catch (e) {}
   };
   document.body.appendChild(btn);
 }

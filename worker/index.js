@@ -727,6 +727,24 @@ async function fireAlerts(db, env, before) {
           delivered = Date.now();
         }
       }
+      // push channel: settings toggle (upstream NotifSection, default off —
+      // boot flips it on when the enable chip's subscribe succeeds). Same
+      // payload shape the manual /api/admin/push sends; dead endpoints prune
+      // exactly like there. Crossings are rare, so the extra subrequests
+      // (one per device) don't threaten the ingest budget.
+      if (s.push === true && env?.VAPID_PRIVATE_KEY) {
+        const { results: devices } = await db.prepare('SELECT endpoint, p256dh, auth FROM push_subs WHERE user_id = ?').bind(w.user_id).all();
+        for (const sub of devices) {
+          const status = await sendPush(env, sub, {
+            title: `Price drop: ${name}`,
+            body: `${offer.price} kr at ${offer.shop} — at or below your target of ${w.target} kr`,
+            url: `/product/${pid}`,
+          }).catch(() => 0);
+          if (status === 404 || status === 410) {
+            await db.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
+          } else if (status >= 200 && status < 300 && !delivered) delivered = Date.now();
+        }
+      }
       await db.prepare('INSERT INTO alerts (user_id, product_id, shop, price, prev_price, target, created_at, delivered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
         .bind(w.user_id, pid, offer.shop, offer.price, prev.best, w.target, Date.now(), delivered).run();
     }

@@ -3045,3 +3045,38 @@ test('web push: subscribe is session-bound, admin push sends VAPID-signed posts 
   assert.strictEqual((await res2.json()).devices, 1);
   assert.strictEqual((await call('/api/admin/push', { method: 'POST', body: { title: 'X' } })).status, 401, 'send is bearer-gated');
 });
+
+test('alerts: push channel sends to the subscribed devices and marks delivered', async () => {
+  const { call, push, alerts, env } = alertEnv();
+  const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign']);
+  env.VAPID_PUBLIC_KEY = Buffer.from(await crypto.subtle.exportKey('raw', kp.publicKey)).toString('base64url');
+  env.VAPID_PRIVATE_KEY = JSON.stringify(await crypto.subtle.exportKey('jwk', kp.privateKey));
+
+  await call('/api/products'); // seeds
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  // email channel OFF, push ON — delivered_at must come from the push send
+  await call('/api/settings', { method: 'PUT', body: { email: false, push: true }, cookie });
+  const ua = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/dev1', keys: {
+    p256dh: Buffer.from(await crypto.subtle.exportKey('raw', ua.publicKey)).toString('base64url'),
+    auth: Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url'),
+  } }, cookie });
+
+  const target = seedBest - 100;
+  await call('/api/watches', { method: 'PUT', body: [{ id: 'airpods', target }], cookie });
+  const posts = [];
+  await withFetch(async (u) => { posts.push(String(u)); return new Response(null, { status: 201 }); },
+    () => push([{ product_id: 'airpods', shop: 'Power', price: target - 10, stock: 1 }]));
+  assert.deepStrictEqual(posts, ['https://push.test/dev1'], 'one push to the subscribed device, nothing else fetched');
+  const rows = await alerts();
+  assert.strictEqual(rows.length, 1, 'the crossing fired');
+  assert.ok(rows[0].delivered_at > 0, 'push delivery marks the alert delivered even with email off');
+
+  // toggle off → next crossing records the alert but sends nothing
+  await call('/api/settings', { method: 'PUT', body: { email: false, push: false }, cookie });
+  await push([{ product_id: 'airpods', shop: 'Power', price: target + 50, stock: 1 }]); // re-arm above target
+  await withFetch(async (u) => { posts.push(String(u)); return new Response(null, { status: 201 }); },
+    () => push([{ product_id: 'airpods', shop: 'Power', price: target - 20, stock: 1 }]));
+  assert.strictEqual(posts.length, 1, 'no push after the opt-out');
+  assert.strictEqual((await alerts()).length, 2, 'the alert row still lands');
+});
