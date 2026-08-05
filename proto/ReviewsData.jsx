@@ -139,7 +139,7 @@ function _calcStats(p) {
   const real = ReviewStore.items.filter(r => r.prodId === p.id);
   const pool = TRAIT_POOL[p.cat] || TRAIT_POOL._;
   const idn = p.idn || String(p.id).split('').reduce((a, c) => a + c.charCodeAt(0), 7);
-  if (!real.length && p.rating == null) return null;
+  if (!real.length && !p.dom && p.rating == null) return null;
   let claims, traits, paid = null, n;
   if (real.length) {
     claims = CLAIMS.map(c => {
@@ -153,6 +153,12 @@ function _calcStats(p) {
     const paids = real.filter(r => r.paid > 0).map(r => r.paid);
     if (paids.length) paid = { lo: Math.min(...paids), hi: Math.max(...paids), n: paids.length };
     n = Math.max(p.reviews || 0, real.length);
+  } else if (p.dom) {
+    const d = p.dom;
+    n = d.n;
+    claims = CLAIMS.map(c => { const [y, nn, u] = d.c[c.key] || [0, 0, 0]; return { ...c, y, n: nn, u, verdict: claimVerdict(y, nn, u) }; });
+    traits = (d.t || []).map(([t, c, pos]) => ({ t, pos: !!pos, c, share: c / d.n }));
+    if (d.p) paid = { lo: d.p[0], hi: d.p[1], n: d.p[2] };
   } else {
     n = p.reviews || 0;
     const base = Math.max(.08, Math.min(.96, .5 + (p.rating - 4) * .55));

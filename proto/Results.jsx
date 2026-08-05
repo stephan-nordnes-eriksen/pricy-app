@@ -396,7 +396,7 @@ function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet
   const pShow = grpPred('Show only', ['On sale', 'In stock', ...boolDefs.map(d => d.label)]);
   const pAvail = grpPred('Availability', AVAIL.map(d => d.label));
   const optPreds = optionDefs.map(def => grpPred(def.label, facetBase[def.key].vals.map(v => fdisp(v, def))));
-  const anyVisible = pCat || pBrand || pPrice || pRating || pShow || pAvail || optPreds.some(Boolean);
+  const anyVisible = pCat || pBrand || pPrice || pDom || pShow || pAvail || optPreds.some(Boolean);
   const searching = tokens.length > 0;
   const nShow = (f.sale ? 1 : 0) + (f.instock ? 1 : 0) + boolDefs.filter(d => f.facets[d.key]).length;
   const specVisible = optionDefs.some((d, i) => optPreds[i]);
