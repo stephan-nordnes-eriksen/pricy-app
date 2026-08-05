@@ -1151,8 +1151,10 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
   // GROUP BY above can't see — same reason the facets run in JS), so fetch
   // them only when the query actually touches shipping. ~1 offer/product
   // today, so it's roughly one extra row per head.
+  // `cat` fetches it too: the rail's availability counts (meta.acounts) need
+  // free/minEta on every row, and they ride every category response now
   let shipAgg = null;
-  if (sort === 'total' || filters?.freeship || filters?.maxeta) {
+  if (cat || sort === 'total' || filters?.freeship || filters?.maxeta) {
     const offs = await db.prepare(
       `SELECT o.product_id, o.shop, o.price, o.ship, o.eta, o.stock FROM offers o JOIN products p ON p.id = o.product_id WHERE ${where}`
     ).bind(...bind).all();
@@ -1180,6 +1182,11 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
   // rule as failGroups vs Results' own predicate.
   const brands = cat ? new Map() : null;
   let plo = Infinity, phi = -Infinity;
+  // availability counts in upstream's OWN convention: its availCounts reads
+  // countPool — no filters applied at all — so these count the whole
+  // category unfiltered, and the refine falls back client-side like the rest.
+  // `fast` mirrors upstream's fixed ≤2-days AVAIL def (boot sends maxeta=2).
+  const acounts = cat ? { instock: 0, freeship: 0, fast: 0 } : null;
   let rows = [];
   for (const x of results) {
     const m = JSON.parse(x.meta);
@@ -1206,6 +1213,11 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
       const hit = bad.length === 0 || (bad.length === 1 && bad[0] === k) ? 1 : 0;
       for (const x2 of [].concat(v)) c.set(x2, (c.get(x2) || 0) + hit);
     }
+    if (acounts) {
+      if (r.stock) acounts.instock++;
+      if (r.free) acounts.freeship++;
+      if (r.minEta <= 2) acounts.fast++;
+    }
     if (brands && !bad.some(k => k !== '')) {
       if (r.best != null) { if (r.best < plo) plo = r.best; if (r.best > phi) phi = r.best; }
       if (m.brand) brands.set(m.brand, (brands.get(m.brand) || 0) + 1);
@@ -1219,6 +1231,7 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
     fcounts: fcounts && Object.fromEntries([...fcounts].map(([k, m]) => [k, [...m]])),
     prange: phi >= plo ? [plo, phi] : undefined,
     brands: brands && [...brands].sort((a, b) => a[0].localeCompare(b[0])),
+    acounts: acounts || undefined,
   };
 }
 
@@ -1874,7 +1887,7 @@ export default {
         // facet histogram) come back as meta — neither is computable from the
         // partial cache the screen holds.
         const slice = await listIds(db, { cat: p.get('cat'), ...page });
-        extra = { total: slice.total, fcounts: slice.fcounts || undefined, prange: slice.prange, brands: slice.brands || undefined };
+        extra = { total: slice.total, fcounts: slice.fcounts || undefined, prange: slice.prange, brands: slice.brands || undefined, acounts: slice.acounts };
         products = await rowsFor(db, slice.ids, { expand: false });
       }
       return json({ meta: { ...await catMeta(db, ver), ...extra }, products });

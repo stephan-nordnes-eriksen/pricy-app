@@ -645,7 +645,7 @@ window.onQuery = (q) => {
   if (held) { clearTimeout(held.t); held.res(null); held = null; }
   const cat = scopeCat(q);
   if ((q.brick || q.dept) && !cat) return Promise.resolve(null);
-  const go = () => fetchProducts(listQuery({ ...q, cat })).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts, prange: (d.meta || {}).prange, brands: (d.meta || {}).brands }));
+  const go = () => fetchProducts(listQuery({ ...q, cat })).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts, prange: (d.meta || {}).prange, brands: (d.meta || {}).brands, acounts: (d.meta || {}).acounts }));
   const n = String((q.filters || {}).q || '').trim().length;
   if (q.page || !n || n >= REFINE_MIN) return go();
   return new Promise(res => { held = { res, t: setTimeout(() => { held = null; res(go()); }, REFINE_HOLD) }; });

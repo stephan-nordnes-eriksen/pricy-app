@@ -2945,6 +2945,14 @@ test('GET /api/products: offers carry shipCost/total, rows bestTotal; total sort
   assert.deepStrictEqual(await ids('cat=Pets&maxeta=2'), [id(1)], '"In stock" and "2–6 days" pass ≤2; no eta fails; an OUT-of-stock fast eta does not count');
   assert.deepStrictEqual((await ids('cat=Pets&maxeta=5')).sort(), [id(1), id(3)].sort());
   assert.deepStrictEqual(await ids('cat=Pets&freeship=1&maxeta=2'), [id(1)], 'availability filters stack');
+
+  // the rail's availability counts, whole-category and unfiltered (upstream's
+  // own availCounts convention): B's fast eta is out of stock so it counts
+  // nowhere, and an active filter must not change the numbers
+  assert.deepStrictEqual((await get('cat=Pets')).meta.acounts, { instock: 3, freeship: 2, fast: 1 });
+  assert.deepStrictEqual((await get('cat=Pets&freeship=1')).meta.acounts, { instock: 3, freeship: 2, fast: 1 },
+    'counts ignore the active filters, like the screen counting its unfiltered pool');
+  assert.strictEqual((await get('')).meta.acounts, undefined, 'no category, no rail, no counts');
 });
 
 test('alerts: inclShip watches fire on the total crossing, arm on totals, and round-trip through PUT/me', async () => {
