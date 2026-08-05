@@ -256,7 +256,7 @@ window.onSharedBought = (token, productId, bought) =>
     body: JSON.stringify({ product_id: productId, bought: !!bought }),
   });
 
-// ── Reviews bridge (plans/reviews-layer.md) ────────────────────────────────
+// ── Reviews bridge (plans/folkedommen-reviews.md) ──────────────────────────
 // Upstream's ReviewSection reads ReviewStore synchronously, so the PDP route
 // prefetches its product's reviews (ensureRoute) and this replaces that
 // product's rows in place. Server rows carry numeric ids; the store's demo/
@@ -270,9 +270,20 @@ const agoNo = (ms) => {
   const mn = Math.floor(d / 30);
   return mn < 12 ? mn + ' mnd siden' : Math.floor(mn / 12) + ' år siden';
 };
+// server `claims` is upstream's own 'ynu' string; the store speaks the object
+const mapReview = (r) => ({
+  id: String(r.id), prodId: r.prodId, author: r.mine ? 'Du' : r.author,
+  claims: typeof r.claims === 'string'
+    ? { worth: r.claims[0], durable: r.claims[1], described: r.claims[2] }
+    : (r.claims || {}),
+  plus: r.plus || [], minus: r.minus || [], shop: r.shop || null,
+  paid: r.paid, showPaid: !!r.showPaid, edited: !!r.edited,
+  date: agoNo(r.created_at), title: r.title, body: r.body,
+  helpful: r.helpful, verified: r.verified,
+});
 function applyReviews(pid, rows) {
   ReviewStore.items = [
-    ...rows.map(r => ({ id: String(r.id), prodId: r.prodId, author: r.mine ? 'Du' : r.author, rating: r.rating, date: agoNo(r.created_at), title: r.title, body: r.body, helpful: r.helpful, verified: r.verified })),
+    ...rows.map(mapReview),
     ...ReviewStore.items.filter(x => x.prodId !== pid),
   ];
   rows.forEach(r => ReviewStore.voted[r.voted ? 'add' : 'delete'](String(r.id)));
@@ -289,18 +300,56 @@ function fetchReviews(id) {
     .then(({ reviews }) => { REVIEWED.add(pid); applyReviews(pid, reviews); })
     .catch(() => {});
 }
-// The write modal calls add() for the instant local card; the server upserts
-// (edit-your-own) and the refetched canonical rows replace the optimistic one
-// — which is also what dedupes an edit instead of stacking a second card.
+// The account tab lists ReviewStore.mine() across ALL products, which the
+// per-PDP fetch can never hold. Rows merge by id so a product already loaded
+// keeps its other authors, then the referenced products are fetched so
+// prodOf() resolves (upstream falls back to the bare id otherwise).
+let MY_REVIEWS = false;
+function fetchMyReviews() {
+  if (MY_REVIEWS) return Promise.resolve();
+  return fetchJson('/api/reviews?mine=1').then(({ reviews }) => {
+    MY_REVIEWS = true;
+    const rows = reviews.map(mapReview);
+    const ids = [...new Set(rows.map(r => r.prodId))];
+    const fresh = new Set(rows.map(r => r.id));
+    ReviewStore.items = [...rows, ...ReviewStore.items.filter(x => !fresh.has(x.id))];
+    ReviewStore.emit();
+    return ids.length ? fetchProducts({ ids: ids.slice(0, 100).join(',') }) : null;
+  }).catch(() => {});
+}
+// The write modal calls add()/update() for the instant local card; the server
+// upserts (create-or-edit-your-own) and the refetched canonical rows replace
+// the optimistic one — which is also what dedupes an edit instead of stacking
+// a second card.
+function postReview(r) {
+  return fetchJson('/api/reviews', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      product_id: r.prodId, claims: r.claims, plus: r.plus, minus: r.minus,
+      shop: r.shop, paid: r.paid, show_paid: r.showPaid, title: r.title, body: r.body,
+    }),
+  }).then(({ reviews }) => applyReviews(r.prodId, reviews)).catch(() => {});
+}
 const _revAdd = ReviewStore.add;
 ReviewStore.add = function (r) {
   _revAdd.call(this, r);
-  if (ME && typeof fetch === 'function') {
-    fetchJson('/api/reviews', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ product_id: r.prodId, rating: r.rating, title: r.title, body: r.body }),
-    }).then(({ reviews }) => applyReviews(r.prodId, reviews)).catch(() => {});
+  if (ME && typeof fetch === 'function') postReview(r);
+};
+const _revUpdate = ReviewStore.update;
+ReviewStore.update = function (id, patch) {
+  const cur = this.items.find(x => x.id === id);
+  _revUpdate.call(this, id, patch);
+  // same create-or-edit endpoint; the patch carries no prodId, the row does
+  if (ME && cur && typeof fetch === 'function') postReview({ ...cur, ...patch });
+};
+const _revRemove = ReviewStore.remove;
+ReviewStore.remove = function (id) {
+  const cur = this.items.find(x => x.id === id);
+  _revRemove.call(this, id);
+  if (ME && cur && /^\d+$/.test(id) && typeof fetch === 'function') {
+    fetchJson('/api/reviews/' + id, { method: 'DELETE' })
+      .then(({ reviews }) => applyReviews(cur.prodId, reviews)).catch(() => {});
   }
 };
 const _revVote = ReviewStore.vote;
@@ -442,6 +491,8 @@ function ensureRoute(name, params = {}) {
   // ponytail: rows shown are whatever the cache holds — a shop= product
   // query doesn't exist server-side
   else if (name === 'shop') wants.push({ top: 'drop', limit: 3 });
+  // the "My reviews" tab reads ReviewStore.mine() synchronously, like the PDP
+  else if (name === 'account') return fetchMyReviews();
   else if (name === 'compare') {
     const first = CompareStore.prods()[0];
     if (first) wants.push({ cat: first.cat }); // CmpAdd candidates are same-category
@@ -555,7 +606,7 @@ const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
   ...(f.q ? { name: f.q } : {}),
   ...(f.brands && f.brands.length ? { brand: f.brands.slice().sort().join(',') } : {}),
   ...(f.min ? { min: f.min } : {}), ...(f.max ? { max: f.max } : {}),
-  ...(f.rating ? { rating: f.rating } : {}),
+  ...(f.dom ? { dom: f.dom } : {}), // Folkedommen tier 1–3, not a star count
   ...(f.sale ? { sale: 1 } : {}),
   // availability (PROMPT 01): upstream's f.avail keys map onto query params —
   // 'instock' shares the legacy instock= param, 'fast' is the fixed ≤2-days def

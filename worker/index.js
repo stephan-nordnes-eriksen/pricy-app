@@ -31,11 +31,16 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS list_shares (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, list_id TEXT NOT NULL, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS list_members (owner_id INTEGER NOT NULL, list_id TEXT NOT NULL, user_id INTEGER NOT NULL, joined_at INTEGER NOT NULL, PRIMARY KEY (owner_id, list_id, user_id))',
   'CREATE TABLE IF NOT EXISTS list_bought (owner_id INTEGER NOT NULL, list_id TEXT NOT NULL, product_id TEXT NOT NULL, user_id INTEGER NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (owner_id, list_id, product_id))',
-  // UGC reviews (plans/reviews-layer.md): product_id XOR shop targets — the
-  // shop column is reserved for shop-rating v2, no endpoint accepts it yet.
+  // UGC reviews (plans/folkedommen-reviews.md): product_id XOR shop targets —
+  // the shop column is reserved for shop-rating v2, no endpoint accepts it yet
+  // (buy_shop is where the REVIEWER bought it, free text, never our registry).
   // One review per (user, target) via the partial unique indexes; hidden is
   // the moderation switch (admin PATCH, same bearer as product triage).
-  'CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT, shop TEXT, rating INTEGER NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, verified INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, hidden INTEGER NOT NULL DEFAULT 0)',
+  // `claims` is upstream's own 'ynu' encoding, in CLAIM_KEYS order — a 3-char
+  // string needs no parse. `rating` is dead since Folkedommen (no numbers
+  // anywhere in the UI); it stays NOT NULL and is written 0.
+  // ponytail: dead rating column kept — drop it if the table is ever rebuilt
+  'CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT, shop TEXT, rating INTEGER NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, verified INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, hidden INTEGER NOT NULL DEFAULT 0, claims TEXT, plus TEXT, minus TEXT, buy_shop TEXT, paid INTEGER, show_paid INTEGER NOT NULL DEFAULT 0, updated_at INTEGER)',
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_prod ON reviews(user_id, product_id) WHERE product_id IS NOT NULL',
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_shop ON reviews(user_id, shop) WHERE shop IS NOT NULL',
   'CREATE TABLE IF NOT EXISTS review_votes (review_id INTEGER NOT NULL, user_id INTEGER NOT NULL, PRIMARY KEY (review_id, user_id))',
@@ -78,6 +83,11 @@ async function ensureSchema(db) {
     await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
     await db.prepare('ALTER TABLE watches ADD COLUMN inclShip INTEGER').run().catch(() => {});
+    // Folkedommen: stars became three claims + traits + what people paid
+    for (const col of ['claims TEXT', 'plus TEXT', 'minus TEXT', 'buy_shop TEXT', 'paid INTEGER',
+      'show_paid INTEGER NOT NULL DEFAULT 0', 'updated_at INTEGER']) {
+      await db.prepare(`ALTER TABLE reviews ADD COLUMN ${col}`).run().catch(() => {});
+    }
   })());
   await schemaReady.get(db);
 }
@@ -758,14 +768,17 @@ function shapeRows(prods, offs, pts, imgSet) {
     // enrichment actually stored — an explicit meta.facets value always wins
     const derived = deriveFacets(m);
     // demo seed rating/reviews never ship — fake trust signals, same honesty
-    // rule as the purged demo review cards. Only the real aggregates
-    // (urating/ureviews, written by refreshReviewMeta) serve as rating/reviews;
-    // separate keys because seed re-upserts json_patch with seed keys winning,
-    // so a real value in meta.rating would be clobbered back on every deploy.
-    const { rating: _demoRating, reviews: _demoReviews, ...pub } = m;
+    // rule as the purged demo review cards. The real aggregate (meta.udom,
+    // written by refreshReviewMeta) serves as `dom`, which is the ONLY thing
+    // upstream's reviewStats can read for a product whose rows it hasn't
+    // fetched; a separate key because seed re-upserts json_patch with seed
+    // keys winning, so a real value in meta.rating would be clobbered back on
+    // every deploy. `rating` itself is never served: it is the demo synth's
+    // input upstream, and a synthesised verdict is a fake trust signal too.
+    const { rating: _demoRating, reviews: _demoReviews, udom, urating: _u1, ureviews: _u2, ...pub } = m;
     return {
       id, ...pub,
-      ...(m.ureviews ? { rating: m.urating, reviews: m.ureviews } : {}),
+      ...(udom ? { dom: udom, reviews: udom.n } : {}),
       facets: derived ? { ...derived, ...m.facets } : m.facets,
       img: imgSet.has(id) ? `/img/${id}` : undefined,
       best,
@@ -961,6 +974,23 @@ function fval(m, f, k) {
   return ids.every(id => isFinite(parseFloat(id))) ? ids.map(id => parseFloat(id)) : ids;
 }
 
+// Folkedommen (plans/folkedommen-reviews.md). These mirror upstream's
+// _calcStats/verdictWord/domTier line for line — the served sort/filter and
+// the screen's own must agree, exactly like failGroups mirrors Results'
+// predicate. A claim with no decided answers counts as .5, which is what
+// upstream's `d ? c.y / d : .5` does; no udom = no verdict at all.
+const CLAIM_KEYS = ['worth', 'durable', 'described'];
+function domScore(m) {
+  const c = m.udom && m.udom.c;
+  if (!c) return undefined;
+  const s = CLAIM_KEYS.map(k => { const [y = 0, n = 0] = c[k] || []; return (y + n) ? y / (y + n) : .5; });
+  return s.reduce((a, b) => a + b, 0) / s.length;
+}
+const domTier = (m) => {
+  const s = domScore(m);
+  return s === undefined ? null : s >= .85 ? 3 : s >= .6 ? 2 : s >= .4 ? 1 : 0;
+};
+
 // Sort fields mirror the prototype's SORT_FIELDS ids; `facet:<key>` is one of
 // its spec axes. An axis holding several values sorts on the end of its range
 // that matches the direction, like specSorts does.
@@ -969,10 +999,11 @@ const SORT_VAL = {
   drop: r => r.drop,
   save: r => (r.m.was != null && r.best != null) ? r.m.was - r.best : undefined,
   updated: r => r.updated,
-  // real aggregates only — shapeRows never serves the demo seed numbers, and
-  // the sort must rank what the screen shows
-  rating: r => r.m.urating,
-  reviews: r => r.m.ureviews,
+  // Folkedommen (upstream kept the field id `rating`; only its label and value
+  // changed). Real aggregate only — shapeRows never serves the demo seed
+  // numbers, and the sort must rank what the screen shows.
+  rating: r => domScore(r.m),
+  reviews: r => r.m.udom?.n,
   shops: r => r.shops,
   name: r => r.m.name,
   brand: r => r.m.brand,
@@ -997,7 +1028,7 @@ function sortRows(rows, sort, dir) {
 }
 
 // Which filter GROUPS a row misses: `''` for the whole non-facet block
-// (name/brand/price/rating/sale/stock), plus one entry per facet key whose
+// (name/brand/price/dom/sale/stock), plus one entry per facet key whose
 // selection it fails. Empty array = a match, so this is Results' own predicate
 // line for line, quirks included (a row with no drop passes `sale`, because
 // `undefined < 12` is false there too) — it just reports WHY instead of
@@ -1010,7 +1041,9 @@ function failGroups(r, f) {
     || ((f.min || f.max) && r.best == null)
     || (f.min && r.best < f.min)
     || (f.max && r.best > f.max)
-    || (f.rating && (r.m.urating || 0) < f.rating)
+    // Folkedommen tier: a row with no reviews has no tier and is EXCLUDED,
+    // like upstream's `domTier(p) == null || domTier(p) < f.dom`
+    || (f.dom && !(domTier(r.m) >= f.dom))
     || (f.sale && r.drop < 12)
     || (f.instock && !r.stock)
     // availability group (upstream's universal defs, not FACETS): freeship =
@@ -1045,12 +1078,14 @@ function listFilters(p) {
     // serves rows the screen then drops — a count with an empty list under it.
     name: String(p.get('name') || '').trim().split(/\s+/).filter(Boolean).slice(0, 8).map(foldJs),
     brands: (p.get('brand') || '').split(',').filter(Boolean).slice(0, 50),
-    min: num('min'), max: num('max'), rating: num('rating'),
+    min: num('min'), max: num('max'),
+    // Folkedommen tier, 1–3 (DOM_TIERS upstream); anything else is no filter
+    dom: [1, 2, 3].includes(num('dom')) ? num('dom') : 0,
     sale: p.get('sale') === '1', instock: p.get('instock') === '1',
     freeship: p.get('freeship') === '1', maxeta: num('maxeta'),
     facets: typeof facets === 'object' && facets ? facets : {},
   };
-  const on = f.name.length || f.brands.length || f.min || f.max || f.rating || f.sale || f.instock || f.freeship || f.maxeta || Object.keys(f.facets).length;
+  const on = f.name.length || f.brands.length || f.min || f.max || f.dom || f.sale || f.instock || f.freeship || f.maxeta || Object.keys(f.facets).length;
   return on ? f : null;
 }
 
@@ -1196,7 +1231,7 @@ async function topDropIds(db, { limit = 4, perCat = false } = {}) {
 // marker table the seed hash and catalog version live in), read back by
 // catMeta. The version bump makes every isolate's memoised catMeta pick the
 // fresh numbers up.
-const sliceFilters = (facets) => ({ name: [], brands: [], min: 0, max: 0, rating: 0, sale: false, instock: false, facets });
+const sliceFilters = (facets) => ({ name: [], brands: [], min: 0, max: 0, dom: 0, sale: false, instock: false, facets });
 async function refreshDeptCounts(db) {
   const counts = {};
   for (const d of DEPTS) for (const r of d.rules) {
@@ -1271,36 +1306,91 @@ const revName = (name) => {
   return p[0] + (p.length > 1 ? ' ' + p[p.length - 1][0] + '.' : '');
 };
 
+const REVIEW_COLS = `r.id, r.product_id, r.user_id, r.claims, r.plus, r.minus, r.buy_shop, r.paid,
+       r.show_paid, r.title, r.body, r.verified, r.created_at, r.updated_at, u.name,
+       (SELECT COUNT(*) FROM review_votes v WHERE v.review_id = r.id) AS helpful,
+       EXISTS(SELECT 1 FROM review_votes v WHERE v.review_id = r.id AND v.user_id = ?) AS voted`;
+
+// `paid` is served only when the reviewer chose to show it, or to the author
+// (whose edit modal prefills from it). A hidden amount still counts toward the
+// aggregate range — it is never returned as a number attached to a name. Same
+// promise as the gift-list `by` stripping in plans/list-sharing-backend.md.
+const mapReview = (r, userId) => ({
+  id: r.id, prodId: r.product_id, author: revName(r.name),
+  claims: r.claims || 'uuu', // upstream's own 'ynu' encoding, CLAIM_KEYS order
+  plus: JSON.parse(r.plus || '[]'), minus: JSON.parse(r.minus || '[]'),
+  shop: r.buy_shop || null,
+  ...(r.paid != null && (r.show_paid || r.user_id === userId) ? { paid: r.paid } : {}),
+  showPaid: !!r.show_paid,
+  title: r.title, body: r.body, helpful: r.helpful, verified: !!r.verified,
+  voted: !!r.voted, mine: r.user_id === userId,
+  edited: r.updated_at > r.created_at, created_at: r.created_at,
+});
+
 // Visible reviews for a set of product ids, helpful counts and the session
 // user's own vote/authorship joined in — the PDP hydrate batch.
 async function reviewsFor(db, ids, userId) {
   const rows = await chunked(ids, async c => (await db.prepare(
-    `SELECT r.id, r.product_id, r.user_id, r.rating, r.title, r.body, r.verified, r.created_at, u.name,
-       (SELECT COUNT(*) FROM review_votes v WHERE v.review_id = r.id) AS helpful,
-       EXISTS(SELECT 1 FROM review_votes v WHERE v.review_id = r.id AND v.user_id = ?) AS voted
-     FROM reviews r JOIN users u ON u.id = r.user_id
+    `SELECT ${REVIEW_COLS} FROM reviews r JOIN users u ON u.id = r.user_id
      WHERE r.hidden = 0 AND r.product_id IN (${ph(c)}) ORDER BY r.id DESC`
   ).bind(userId, ...c).all()).results);
-  return rows.map(r => ({
-    id: r.id, prodId: r.product_id, author: revName(r.name), rating: r.rating,
-    title: r.title, body: r.body, helpful: r.helpful, verified: !!r.verified,
-    voted: !!r.voted, mine: r.user_id === userId, created_at: r.created_at,
-  }));
+  return rows.map(r => mapReview(r, userId));
 }
 
-// Real reviews recompute the product's aggregate into meta at write time
-// (same meta-merge seam as admin PATCH) so list queries stay one read. Zero
-// visible reviews deletes the keys — the demo seed rating shows only until a
-// product's first real review, then real wins (shapeRows prefers urating).
+// The account tab's "My reviews" needs them across ALL products, which
+// ReviewStore (one PDP at a time) can never hold. Deliberately not folded into
+// meBody: /api/me is on every cold load and this tab is rare.
+// ponytail: LIMIT 100, no paging — add offset paging for the 101st review
+async function myReviews(db, userId) {
+  const { results } = await db.prepare(
+    `SELECT ${REVIEW_COLS} FROM reviews r JOIN users u ON u.id = r.user_id
+     WHERE r.hidden = 0 AND r.user_id = ? ORDER BY r.id DESC LIMIT 100`
+  ).bind(userId, userId).all();
+  return results.map(r => mapReview(r, userId));
+}
+
+// Real reviews recompute the product's aggregate into meta at write time (same
+// meta-merge seam as admin PATCH) so list queries stay one read. This is the
+// load-bearing bit of Folkedommen: upstream's reviewStats only ever holds the
+// rows of the PDP you are on, so every result row, card, Compare cell, the
+// `dom` filter and the Folkedommen sort read THIS instead. Zero visible
+// reviews deletes the key and the product reads "Ingen omtaler ennå" — the
+// honest cold start, since the demo `rating` synth never ships.
+// ponytail: the whole blob rides every list row (~150 B); serve {n, c} only
+// for list queries and the rest on ids= if a page ever gets tight
 async function refreshReviewMeta(db, productId) {
-  const [agg, cur] = await Promise.all([
-    db.prepare('SELECT COUNT(*) AS n, AVG(rating) AS avg FROM reviews WHERE product_id = ? AND hidden = 0').bind(productId).first(),
+  const [rows, cur] = await Promise.all([
+    db.prepare('SELECT claims, plus, minus, paid FROM reviews WHERE product_id = ? AND hidden = 0').bind(productId).all(),
     db.prepare('SELECT meta FROM products WHERE id = ?').bind(productId).first(),
   ]);
   if (!cur) return;
   const meta = JSON.parse(cur.meta);
-  if (agg.n) { meta.urating = Math.round(agg.avg * 10) / 10; meta.ureviews = agg.n; }
-  else { delete meta.urating; delete meta.ureviews; }
+  delete meta.urating; delete meta.ureviews; // pre-Folkedommen stars; migration is this write
+  const rs = rows.results;
+  if (!rs.length) delete meta.udom;
+  else {
+    const c = { worth: [0, 0, 0], durable: [0, 0, 0], described: [0, 0, 0] };
+    const traits = new Map(); // '<1|0><trait>' → count
+    const paids = [];
+    for (const r of rs) {
+      const s = String(r.claims || 'uuu');
+      CLAIM_KEYS.forEach((k, i) => { const j = 'ynu'.indexOf(s[i]); c[k][j < 0 ? 2 : j]++; });
+      for (const [col, pos] of [['plus', 1], ['minus', 0]]) {
+        for (const t of JSON.parse(r[col] || '[]')) traits.set(pos + t, (traits.get(pos + t) || 0) + 1);
+      }
+      if (r.paid > 0) paids.push(r.paid);
+    }
+    // 6 covers the PDP's 3 plus + 2 minus with slack, and a row shows 1–2
+    const t = [...traits.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
+      .map(([k, n]) => [k.slice(1), n, Number(k[0])]);
+    meta.udom = { n: rs.length, c, t };
+    // "alltid spennet, aldri enkeltkjøp": upstream renders lo === hi as ONE
+    // amount, so with fewer than 3 reporters (or unrounded ends) that is a
+    // named person's exact receipt — hidden toggle or not.
+    if (paids.length >= 3) {
+      meta.udom.p = [Math.floor(Math.min(...paids) / 10) * 10, Math.ceil(Math.max(...paids) / 10) * 10, paids.length];
+    }
+  }
   await db.batch([db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), productId), bumpVer(db)]);
 }
 
@@ -2015,7 +2105,7 @@ export default {
     if (route === 'GET /api/account/export') {
       if (!user) return json({ error: 'unauthenticated' }, 401);
       const reports = (await db.prepare('SELECT product_id, shop, reason, text, created_at FROM reports WHERE user_id = ? ORDER BY created_at DESC, id DESC').bind(user.id).all()).results;
-      const reviews = (await db.prepare('SELECT product_id, shop, rating, title, body, verified, hidden, created_at FROM reviews WHERE user_id = ? ORDER BY id DESC').bind(user.id).all()).results;
+      const reviews = (await db.prepare('SELECT product_id, shop, claims, plus, minus, buy_shop, paid, show_paid, title, body, verified, hidden, created_at, updated_at FROM reviews WHERE user_id = ? ORDER BY id DESC').bind(user.id).all()).results;
       const review_votes = (await db.prepare('SELECT review_id FROM review_votes WHERE user_id = ?').bind(user.id).all()).results.map(r => r.review_id);
       return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1), reports, reviews, review_votes }, 200,
         { 'content-disposition': 'attachment; filename="pricy-export.json"' });
@@ -2196,12 +2286,14 @@ export default {
       });
     }
 
-    // UGC product reviews (plans/reviews-layer.md). Batch GET for the PDP
-    // hydrate; POST is create-or-edit-your-own (the partial unique index makes
-    // the upsert atomic; editing never clears hidden, so a moderated author
-    // can't republish by editing). verified = a purchases row matches.
+    // UGC product reviews (plans/folkedommen-reviews.md). Batch GET for the PDP
+    // hydrate, `mine=1` for the account tab; POST is create-or-edit-your-own
+    // (the partial unique index makes the upsert atomic; editing never clears
+    // hidden, so a moderated author can't republish by editing).
+    // verified = a purchases row matches.
     if (route === 'GET /api/reviews') {
       if (!user) return json({ error: 'unauthenticated' }, 401);
+      if (url.searchParams.get('mine') === '1') return json({ reviews: await myReviews(db, user.id) });
       const ids = (url.searchParams.get('ids') || '').split(',').map(s => s.trim()).filter(Boolean);
       if (!ids.length || ids.length > 100) return json({ error: 'need ids (max 100)' }, 400);
       return json({ reviews: await reviewsFor(db, ids, user.id) });
@@ -2213,8 +2305,17 @@ export default {
       const pid = typeof b.product_id === 'string' ? b.product_id.trim() : '';
       const title = typeof b.title === 'string' ? b.title.trim() : '';
       const text = typeof b.body === 'string' ? b.body.trim() : '';
-      if (!pid || !Number.isInteger(b.rating) || b.rating < 1 || b.rating > 5
-        || !title || title.length > 80 || !text || text.length > 2000) {
+      // the three claims are the ONLY required field — upstream's own gate says
+      // the same ("«Vet ikke» er også et svar"), title/body are optional now
+      const claims = CLAIM_KEYS.map(k => (b.claims || {})[k]).join('');
+      const shop = b.shop == null || b.shop === '' ? null : String(b.shop).trim();
+      const paid = b.paid == null ? null : b.paid;
+      // free text rendered to other users — the caps are not optional
+      const traits = (v) => [...new Set((Array.isArray(v) ? v : [])
+        .map(t => String(t == null ? '' : t).trim().slice(0, 40)).filter(Boolean))].slice(0, 6);
+      if (!pid || !/^[ynu]{3}$/.test(claims) || title.length > 80 || text.length > 2000
+        || (shop != null && shop.length > 60)
+        || (paid != null && (!Number.isInteger(paid) || paid < 1 || paid > 1_000_000))) {
         return json({ error: 'bad review' }, 400);
       }
       await seedCatalog(db);
@@ -2222,13 +2323,34 @@ export default {
         return json({ error: 'unknown product' }, 400);
       }
       const verified = await db.prepare('SELECT 1 FROM purchases WHERE user_id = ? AND product_id = ? LIMIT 1').bind(user.id, pid).first() ? 1 : 0;
+      const showPaid = paid != null && (b.show_paid === true || b.show_paid === 1) ? 1 : 0;
+      // created_at is NOT overwritten on conflict — the card keeps its real
+      // date, and `edited` is derivable as updated_at > created_at
       await db.prepare(
-        `INSERT INTO reviews (user_id, product_id, rating, title, body, verified, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO reviews (user_id, product_id, rating, claims, plus, minus, buy_shop, paid, show_paid, title, body, verified, created_at, updated_at)
+         VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(user_id, product_id) WHERE product_id IS NOT NULL
-         DO UPDATE SET rating = excluded.rating, title = excluded.title, body = excluded.body, verified = excluded.verified, created_at = excluded.created_at`
-      ).bind(user.id, pid, b.rating, title, text, verified, Date.now()).run();
+         DO UPDATE SET claims = excluded.claims, plus = excluded.plus, minus = excluded.minus,
+           buy_shop = excluded.buy_shop, paid = excluded.paid, show_paid = excluded.show_paid,
+           title = excluded.title, body = excluded.body, verified = excluded.verified,
+           updated_at = excluded.updated_at`
+      ).bind(user.id, pid, claims, JSON.stringify(traits(b.plus)), JSON.stringify(traits(b.minus)),
+        shop, paid, showPaid, title, text, verified, Date.now(), Date.now()).run();
       await refreshReviewMeta(db, pid);
       return json({ reviews: await reviewsFor(db, [pid], user.id) });
+    }
+
+    // Delete your own review (ReviewStore.remove, wired on the PDP card and in
+    // the account tab). Own only — a 404 either way, so this never tells you
+    // whether someone else's review with that id exists.
+    if (request.method === 'DELETE' && /^\/api\/reviews\/\d+$/.test(url.pathname)) {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const id = Number(url.pathname.split('/')[3]);
+      const gone = await db.prepare('DELETE FROM reviews WHERE id = ? AND user_id = ? RETURNING product_id').bind(id, user.id).first();
+      if (!gone) return json({ error: 'not found' }, 404);
+      await db.prepare('DELETE FROM review_votes WHERE review_id = ?').bind(id).run();
+      await refreshReviewMeta(db, gone.product_id);
+      return json({ reviews: await reviewsFor(db, [gone.product_id], user.id) });
     }
 
     // Helpful-vote toggle — one per (review, user), count at read

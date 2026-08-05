@@ -487,58 +487,88 @@ test('GDPR: export downloads the session user\'s data; delete removes every row 
   assert.strictEqual((await call('/api/me', { cookie: kari })).status, 200, 'other users unaffected');
 });
 
-// ── Reviews (plans/reviews-layer.md) ───────────────────────────────────────
-test('reviews: post is edit-your-own (one per user), aggregate lands in product meta, votes toggle', async () => {
+// ── Reviews / Folkedommen (plans/folkedommen-reviews.md) ───────────────────
+const REV = (claims, x = {}) => ({ claims: { worth: claims[0], durable: claims[1], described: claims[2] }, ...x });
+const prodOf = async (call, id) => (await (await call('/api/products?ids=' + id)).json()).products.find(q => q.id === id);
+
+test('reviews: post is edit-your-own (one per user), the udom aggregate lands in product meta, votes toggle', async () => {
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/reviews?ids=xm5')).status, 401, 'GET requires a session');
-  assert.strictEqual((await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 5, title: 't', body: 'b' } })).status, 401, 'POST requires a session');
+  assert.strictEqual((await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy') } })).status, 401, 'POST requires a session');
 
   const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari.hansen@example.no', password: 'correcthorse1' } }));
 
   for (const bad of [
-    { product_id: 'xm5', rating: 0, title: 't', body: 'b' },
-    { product_id: 'xm5', rating: 3.5, title: 't', body: 'b' },
-    { product_id: 'xm5', rating: 5, title: '', body: 'b' },
-    { product_id: 'xm5', rating: 5, title: 'x'.repeat(81), body: 'b' },
-    { product_id: 'xm5', rating: 5, title: 't', body: 'x'.repeat(2001) },
-    { product_id: 'nope-no-such', rating: 5, title: 't', body: 'b' },
+    { product_id: 'xm5' },                                              // claims are the one required field
+    { product_id: 'xm5', claims: { worth: 'y', durable: 'x', described: 'y' } },
+    { product_id: 'xm5', claims: { worth: 'y', described: 'y' } },
+    { product_id: 'xm5', ...REV('yyy'), title: 'x'.repeat(81) },
+    { product_id: 'xm5', ...REV('yyy'), body: 'x'.repeat(2001) },
+    { product_id: 'xm5', ...REV('yyy'), shop: 'x'.repeat(61) },
+    { product_id: 'xm5', ...REV('yyy'), paid: 0 },
+    { product_id: 'xm5', ...REV('yyy'), paid: 2790.5 },
+    { product_id: 'xm5', ...REV('yyy'), paid: 1000001 },
+    { product_id: 'nope-no-such', ...REV('yyy') },
   ]) assert.strictEqual((await call('/api/reviews', { method: 'POST', body: bad, cookie: ola })).status, 400, JSON.stringify(bad));
 
   // the demo seed stars are fake trust signals — a row with no real reviews
-  // serves no rating/reviews at all ("No reviews yet" upstream)
-  const [bare] = (await (await call('/api/products?ids=xm5')).json()).products.filter(q => q.id === 'xm5');
-  assert.strictEqual(bare.rating, undefined, 'demo seed rating must not serve');
+  // serves no dom/rating/reviews at all ("Ingen omtaler ennå" upstream)
+  const bare = await prodOf(call, 'xm5');
+  assert.strictEqual(bare.rating, undefined, 'demo seed rating must never serve — it is upstream\'s synth input');
+  assert.strictEqual(bare.dom, undefined, 'no reviews, no verdict');
   assert.strictEqual(bare.reviews, undefined, 'demo seed review count must not serve');
 
-  const first = await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 5, title: 'Topp', body: 'Beste ANC' }, cookie: ola });
+  // title and body are optional now; the three claims carry the review
+  const first = await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), plus: ['God lyd'] }, cookie: ola });
   assert.strictEqual(first.status, 200);
   const mine = (await first.json()).reviews;
   assert.strictEqual(mine.length, 1);
   assert.strictEqual(mine[0].author, 'Ola'); // single-word name, no initial
+  assert.strictEqual(mine[0].claims, 'yyy', 'claims serve as upstream\'s own 3-char encoding');
+  assert.deepStrictEqual(mine[0].plus, ['God lyd']);
+  assert.strictEqual(mine[0].title, '');
+  assert.strictEqual(mine[0].edited, false);
   assert.strictEqual(mine[0].mine, true);
   assert.strictEqual(mine[0].verified, false);
 
-  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 3, title: 'Grei', body: 'Helt ok' }, cookie: kari });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('ynu'), plus: ['God lyd'], minus: ['Blir varm'], title: 'Grei' }, cookie: kari });
   let list = (await (await call('/api/reviews?ids=xm5', { cookie: ola })).json()).reviews;
   assert.strictEqual(list.length, 2);
   assert.strictEqual(list.find(r => !r.mine).author, 'Kari H.', 'author is first name + last initial');
 
-  // real aggregate overrides the demo seed rating on the served row
-  let [p] = (await (await call('/api/products?ids=xm5')).json()).products.filter(q => q.id === 'xm5');
-  assert.strictEqual(p.rating, 4); // (5 + 3) / 2
-  assert.strictEqual(p.reviews, 2);
+  // the served aggregate — the ONLY thing every result row, card and Compare
+  // cell can read for a product whose review rows the client never fetched
+  let p = await prodOf(call, 'xm5');
+  assert.deepStrictEqual(p.dom.c, { worth: [2, 0, 0], durable: [1, 1, 0], described: [1, 0, 1] });
+  assert.strictEqual(p.dom.n, 2);
+  assert.strictEqual(p.reviews, 2, 'upstream\'s `reviews` sort still reads a count');
+  assert.deepStrictEqual(p.dom.t, [['God lyd', 2, 1], ['Blir varm', 1, 0]], 'traits are [trait, count, 1=plus], count desc');
+  assert.strictEqual(p.dom.p, undefined, 'nobody reported a price');
+  assert.strictEqual(p.rating, undefined, 'no numeric rating survives Folkedommen');
 
   // second POST from the same user edits, never duplicates
-  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 1, title: 'Ombestemt', body: 'Angrer' }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('nnn'), title: 'Ombestemt' }, cookie: ola });
   list = (await (await call('/api/reviews?ids=xm5', { cookie: ola })).json()).reviews;
   assert.strictEqual(list.length, 2, 'edit must not add a row');
-  [p] = (await (await call('/api/products?ids=xm5')).json()).products.filter(q => q.id === 'xm5');
-  assert.strictEqual(p.rating, 2); // (1 + 3) / 2
+  assert.strictEqual(list.find(r => r.mine).edited, true, 'an edit keeps created_at and stamps updated_at');
+  p = await prodOf(call, 'xm5');
+  assert.deepStrictEqual(p.dom.c.worth, [1, 1, 0]);
+  assert.deepStrictEqual(p.dom.t, [['God lyd', 1, 1], ['Blir varm', 1, 0]], 'the edited-away trait is gone');
+
+  // free text rendered to other users is capped: 6 entries, 40 chars each
+  await call('/api/reviews', { method: 'POST', body: {
+    product_id: 'xm5', ...REV('yyy'),
+    plus: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'x'.repeat(50), ' b ', ''],
+  }, cookie: ola });
+  const capped = (await (await call('/api/reviews?ids=xm5', { cookie: ola })).json()).reviews.find(r => r.mine);
+  assert.strictEqual(capped.plus.length, 6, 'at most 6 traits per side');
+  assert.ok(capped.plus.every(t => t.length <= 40), 'each trait is capped at 40 chars');
+  assert.deepStrictEqual(capped.plus.slice(0, 3), ['a', 'b', 'c'], 'trimmed and deduped');
 
   // a purchase marks the buyer's review as a verified buy
   await call('/api/buy', { method: 'POST', body: { id: 'xm5' }, cookie: ola });
-  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 4, title: 'Kjøpt nå', body: 'Verifisert' }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy') }, cookie: ola });
   list = (await (await call('/api/reviews?ids=xm5', { cookie: ola })).json()).reviews;
   assert.strictEqual(list.find(r => r.mine).verified, true);
 
@@ -553,12 +583,123 @@ test('reviews: post is edit-your-own (one per user), aggregate lands in product 
   assert.strictEqual((await call('/api/reviews/999999/vote', { method: 'POST', cookie: ola })).status, 404);
 });
 
+// "alltid spennet, aldri enkeltkjøp" — a single reporter's exact receipt is a
+// named person's purchase, hidden toggle or not, and upstream renders
+// lo === hi as ONE amount. The floor of 3 + rounding is what makes that true.
+test('reviews: what people paid is a rounded range over 3+ reporters, and a hidden amount never carries a name', async () => {
+  const call = api({ DB: d1() });
+  const users = [];
+  for (const email of ['ola@nordmann.no', 'kari@example.no', 'per@example.no']) {
+    users.push(cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email, password: 'correcthorse1' } })));
+  }
+  const [ola, kari, per] = users;
+
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), paid: 2795, show_paid: false }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), paid: 3291, show_paid: true }, cookie: kari });
+  assert.strictEqual((await prodOf(call, 'xm5')).dom.p, undefined, 'two reporters is not a range yet');
+
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), paid: 2999, show_paid: true }, cookie: per });
+  // a HIDDEN amount still counts toward the range — it is only never attached
+  // to a name — so lo comes off ola's 2795, rounded down to the nearest 10
+  assert.deepStrictEqual((await prodOf(call, 'xm5')).dom.p, [2790, 3300, 3]);
+
+  const seen = (await (await call('/api/reviews?ids=xm5', { cookie: kari })).json()).reviews;
+  const olasRow = seen.find(r => r.author === 'Ola');
+  assert.strictEqual(olasRow.paid, undefined, 'a hidden amount must never reach another user');
+  assert.strictEqual(olasRow.showPaid, false);
+  assert.strictEqual(seen.find(r => r.mine).paid, 3291, 'your own amount comes back — the edit modal prefills from it');
+  assert.strictEqual(seen.find(r => r.author === 'Per').paid, 2999, 'a shown amount is public');
+
+  const own = (await (await call('/api/reviews?ids=xm5', { cookie: ola })).json()).reviews.find(r => r.mine);
+  assert.strictEqual(own.paid, 2795, 'the author always sees their own hidden amount');
+
+  // show_paid can only be true when there is something to show
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), show_paid: true }, cookie: ola });
+  const cleared = (await (await call('/api/reviews?ids=xm5', { cookie: ola })).json()).reviews.find(r => r.mine);
+  assert.strictEqual(cleared.showPaid, false);
+  assert.strictEqual(cleared.paid, undefined);
+  assert.strictEqual((await prodOf(call, 'xm5')).dom.p, undefined, 'back under 3 reporters, the range goes away');
+});
+
+test('reviews: delete removes your own only, cascades votes and refreshes the aggregate', async () => {
+  const call = api({ DB: d1() });
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  const olaRid = (await (await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), title: 'Topp' }, cookie: ola })).json()).reviews.find(r => r.mine).id;
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('nnn'), title: 'Dårlig' }, cookie: kari });
+  await call(`/api/reviews/${olaRid}/vote`, { method: 'POST', cookie: kari });
+
+  assert.strictEqual((await call(`/api/reviews/${olaRid}`, { method: 'DELETE' })).status, 401);
+  assert.strictEqual((await call(`/api/reviews/${olaRid}`, { method: 'DELETE', cookie: kari })).status, 404, 'someone else\'s review is a 404, not a 403');
+  assert.strictEqual((await call('/api/reviews/999999', { method: 'DELETE', cookie: ola })).status, 404);
+
+  const gone = await call(`/api/reviews/${olaRid}`, { method: 'DELETE', cookie: ola });
+  assert.strictEqual(gone.status, 200);
+  assert.deepStrictEqual((await gone.json()).reviews.map(r => r.title), ['Dårlig'], 'the response is the product\'s canonical rows');
+  assert.deepStrictEqual((await prodOf(call, 'xm5')).dom.c.worth, [0, 1, 0], 'aggregate recomputed');
+  assert.strictEqual((await call(`/api/reviews/${olaRid}`, { method: 'DELETE', cookie: ola })).status, 404, 'second delete is a 404');
+
+  // deleting the last one takes the verdict off the product entirely
+  const kariRid = (await (await call('/api/reviews?ids=xm5', { cookie: kari })).json()).reviews[0].id;
+  await call(`/api/reviews/${kariRid}`, { method: 'DELETE', cookie: kari });
+  const p = await prodOf(call, 'xm5');
+  assert.strictEqual(p.dom, undefined, 'no reviews left, no served verdict');
+  assert.strictEqual(p.reviews, undefined);
+});
+
+test('reviews: mine=1 lists your reviews across every product', async () => {
+  const call = api({ DB: d1() });
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
+  assert.strictEqual((await call('/api/reviews?mine=1')).status, 401);
+
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), title: 'Sony' }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'ps5', ...REV('yuy'), title: 'Konsoll' }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('nnn'), title: 'Kari' }, cookie: kari });
+
+  const mine = (await (await call('/api/reviews?mine=1', { cookie: ola })).json()).reviews;
+  assert.deepStrictEqual(mine.map(r => [r.prodId, r.title]), [['ps5', 'Konsoll'], ['xm5', 'Sony']], 'newest first, both products, mine only');
+  assert.ok(mine.every(r => r.mine));
+  assert.deepStrictEqual((await (await call('/api/reviews?mine=1', { cookie: kari })).json()).reviews.map(r => r.title), ['Kari']);
+});
+
+// The CLAUDE.md rule about failGroups/sortRows drifting from Results' own
+// predicate applies here exactly as it does to facets: these numbers ARE
+// upstream's domTier cuts (.85/.6/.4) over its claim shares.
+test('reviews: the dom filter and the Folkedommen sort mirror upstream\'s tiers server-side', async () => {
+  const call = api({ DB: d1() });
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  // score = mean of y/(y+n) per claim, .5 for a claim with no decided answers
+  for (const [id, c] of [['xm5', 'yyy'], ['bose-ultra', 'yyn'], ['airpods', 'nnn'], ['senn-m4', 'uuu']]) {
+    await call('/api/reviews', { method: 'POST', body: { product_id: id, ...REV(c) }, cookie: ola });
+  }
+  const ids = async (qs) => (await (await call('/api/products?cat=Audio&' + qs)).json()).products.map(p => p.id);
+  const meta = async (qs) => (await (await call('/api/products?cat=Audio&' + qs)).json()).meta;
+
+  // 1.0 → tier 3, .667 → 2, 0 → 0, .5 (all undecided) → 1
+  assert.deepStrictEqual((await ids('dom=3')).sort(), ['xm5']);
+  assert.deepStrictEqual((await ids('dom=2')).sort(), ['bose-ultra', 'xm5']);
+  assert.deepStrictEqual((await ids('dom=1')).sort(), ['bose-ultra', 'senn-m4', 'xm5'],
+    'an all-«vet ikke» review still scores .5 — tier 1');
+  assert.strictEqual((await meta('dom=2')).total, 2, 'the served total counts the same rows');
+  assert.strictEqual((await ids('dom=9')).length > 4, true, 'an out-of-range tier is no filter at all');
+
+  // a row with no reviews has no tier and is EXCLUDED — upstream's behaviour
+  assert.ok(!(await ids('dom=1')).includes('airpods4'), 'unreviewed rows fail the tier test');
+
+  const sorted = await ids('sort=rating&dir=desc');
+  assert.deepStrictEqual(sorted.slice(0, 4), ['xm5', 'bose-ultra', 'senn-m4', 'airpods'],
+    'Folkedommen sorts on the claim score, best first, unreviewed rows last');
+  assert.deepStrictEqual((await ids('sort=reviews&dir=desc')).slice(0, 4).sort(),
+    ['airpods', 'bose-ultra', 'senn-m4', 'xm5'], 'the reviews sort ranks the four that have one');
+});
+
 test('reviews: moderation hide drops the review from GET and the aggregate; editing cannot republish', async () => {
   const call = api({ DB: d1() });
   const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
-  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 5, title: 'Spam', body: 'kjøp klokker billig' }, cookie: ola });
-  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 3, title: 'Grei', body: 'Helt ok' }, cookie: kari });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), title: 'Spam', body: 'kjøp klokker billig' }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('ynu'), title: 'Grei', body: 'Helt ok' }, cookie: kari });
   const rid = (await (await call('/api/reviews?ids=xm5', { cookie: kari })).json()).reviews.find(r => !r.mine).id;
 
   assert.strictEqual((await call(`/api/admin/reviews/${rid}`, { method: 'PATCH', body: { hidden: 1 } })).status, 401, 'moderation is bearer-gated');
@@ -568,13 +709,14 @@ test('reviews: moderation hide drops the review from GET and the aggregate; edit
 
   let list = (await (await call('/api/reviews?ids=xm5', { cookie: kari })).json()).reviews;
   assert.deepStrictEqual(list.map(r => r.title), ['Grei'], 'hidden review is gone from GET');
-  let [p] = (await (await call('/api/products?ids=xm5')).json()).products.filter(q => q.id === 'xm5');
-  assert.strictEqual(p.rating, 3, 'aggregate recomputed without the hidden review');
-  assert.strictEqual(p.reviews, 1);
+  let p = await prodOf(call, 'xm5');
+  assert.deepStrictEqual(p.dom.c, { worth: [1, 0, 0], durable: [0, 1, 0], described: [0, 0, 1] }, 'aggregate recomputed without the hidden review');
+  assert.strictEqual(p.dom.n, 1);
+  assert.deepStrictEqual((await (await call('/api/reviews?mine=1', { cookie: ola })).json()).reviews, [], 'a hidden review is not served to its author either');
   assert.strictEqual((await call(`/api/reviews/${rid}/vote`, { method: 'POST', cookie: kari })).status, 404, 'hidden reviews cannot be voted');
 
   // editing while hidden stays hidden — no self-republish
-  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 5, title: 'Ny drakt', body: 'samme spam' }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), title: 'Ny drakt', body: 'samme spam' }, cookie: ola });
   list = (await (await call('/api/reviews?ids=xm5', { cookie: kari })).json()).reviews;
   assert.deepStrictEqual(list.map(r => r.title), ['Grei']);
 
@@ -587,21 +729,22 @@ test('reviews GDPR: export includes reviews + votes; delete removes them and rec
   const call = api({ DB: d1() });
   const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
   const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@example.no', password: 'correcthorse1' } }));
-  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 5, title: 'Topp', body: 'Beste ANC' }, cookie: ola });
-  const kariRid = (await (await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', rating: 3, title: 'Grei', body: 'Helt ok' }, cookie: kari })).json()).reviews.find(r => r.mine).id;
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), title: 'Topp', body: 'Beste ANC', plus: ['God lyd'], shop: 'Komplett', paid: 2790, show_paid: true }, cookie: ola });
+  const kariRid = (await (await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('ynu'), title: 'Grei', body: 'Helt ok' }, cookie: kari })).json()).reviews.find(r => r.mine).id;
   await call(`/api/reviews/${kariRid}/vote`, { method: 'POST', cookie: ola });
 
   const data = await (await call('/api/account/export', { cookie: ola })).json();
-  assert.deepStrictEqual(data.reviews.map(r => [r.product_id, r.rating, r.title]), [['xm5', 5, 'Topp']]);
+  assert.deepStrictEqual(data.reviews.map(r => [r.product_id, r.claims, r.plus, r.buy_shop, r.paid, r.show_paid, r.title]),
+    [['xm5', 'yyy', '["God lyd"]', 'Komplett', 2790, 1, 'Topp']], 'the export carries every field the review holds');
   assert.deepStrictEqual(data.review_votes, [kariRid]);
 
   await call('/api/account', { method: 'DELETE', cookie: ola });
   const list = (await (await call('/api/reviews?ids=xm5', { cookie: kari })).json()).reviews;
   assert.deepStrictEqual(list.map(r => r.title), ['Grei'], 'deleted user\'s review is gone');
   assert.strictEqual(list[0].helpful, 0, 'their votes die too');
-  const [p] = (await (await call('/api/products?ids=xm5')).json()).products.filter(q => q.id === 'xm5');
-  assert.strictEqual(p.rating, 3, 'aggregate recomputed after the delete');
-  assert.strictEqual(p.reviews, 1);
+  const p = await prodOf(call, 'xm5');
+  assert.strictEqual(p.dom.n, 1, 'aggregate recomputed after the delete');
+  assert.deepStrictEqual(p.dom.c.worth, [1, 0, 0]);
 });
 
 test('catMeta serves per-shop objective stats (shopStats) and the shops count off the same GROUP BY', async () => {

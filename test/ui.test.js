@@ -103,13 +103,27 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
       // seeds them, POST upserts the session user's own like the worker does
       if (!ME) return ok({ error: 'unauthenticated' }, 401);
       if (/\/vote$/.test(u)) return ok({ helpful: 1, voted: true });
+      if (opts.method === 'DELETE') {
+        const id = Number(u.split('/')[3]);
+        const gone = reviews.find(r => r.id === id);
+        if (!gone) return ok({ error: 'not found' }, 404);
+        reviews.splice(reviews.indexOf(gone), 1);
+        return ok({ reviews: reviews.filter(r => r.prodId === gone.prodId) });
+      }
       if (opts.method === 'POST') {
-        const row = { id: 900, prodId: body.product_id, author: 'Mari N.', rating: body.rating, title: body.title, body: body.body, helpful: 0, verified: false, voted: false, mine: true, created_at: Date.now() };
+        const row = { id: 900, prodId: body.product_id, author: 'Mari N.',
+          claims: ['worth', 'durable', 'described'].map(k => (body.claims || {})[k] || 'u').join(''),
+          plus: body.plus || [], minus: body.minus || [], shop: body.shop || null,
+          ...(body.paid != null ? { paid: body.paid } : {}), showPaid: !!body.show_paid,
+          title: body.title, body: body.body, helpful: 0, verified: false, voted: false,
+          mine: true, edited: false, created_at: Date.now() };
         const i = reviews.findIndex(r => r.mine && r.prodId === body.product_id);
-        if (i >= 0) { row.id = reviews[i].id; reviews[i] = row; } else { row.id += reviews.length; reviews.push(row); }
+        if (i >= 0) { row.id = reviews[i].id; row.edited = true; reviews[i] = row; } else { row.id += reviews.length; reviews.push(row); }
         return ok({ reviews: reviews.filter(r => r.prodId === body.product_id) });
       }
-      const want = new Set((new URLSearchParams(u.split('?')[1]).get('ids') || '').split(','));
+      const p2 = new URLSearchParams(u.split('?')[1]);
+      if (p2.get('mine') === '1') return ok({ reviews: reviews.filter(r => r.mine) });
+      const want = new Set((p2.get('ids') || '').split(','));
       return ok({ reviews: reviews.filter(r => want.has(r.prodId)) });
     }
     if (u === '/api/me') return ME ? ok(ME) : ok({ error: 'unauthenticated' }, 401);
@@ -767,11 +781,11 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
 
   const res = await win.onQuery({
     cat: 'Audio', sort: 'best', dir: 'desc', page: 2,
-    filters: { q: 'buds', brands: ['Sony', 'Bose'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },
+    filters: { q: 'buds', brands: ['Sony', 'Bose'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },
   });
   const call = win.api[win.api.length - 1].call;
   for (const part of ['cat=Audio', 'sort=best', 'dir=desc', 'offset=800', 'limit=400', 'brand=Bose%2CSony', 'name=buds',
-    'min=100', 'max=900', 'rating=4', 'sale=1', 'instock=1', 'facets=' + encodeURIComponent('{"nc":true,"size":[55,65]}')]) {
+    'min=100', 'max=900', 'dom=2', 'sale=1', 'instock=1', 'facets=' + encodeURIComponent('{"nc":true,"size":[55,65]}')]) {
     assert.ok(call.includes(part), `onQuery must send ${part}, got: ${call}`);
   }
   assert.strictEqual(typeof res.total, 'number', 'the served total must come back to the screen');
@@ -788,7 +802,7 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   // URL, not by log length: Results runs its own debounced onQuery on mount
   const hits = () => win.api.filter(c => c.call.includes('brand=Bose%2CSony')).length;
   const before = hits();
-  await win.onQuery({ cat: 'Audio', sort: 'best', dir: 'desc', page: 2, filters: { q: 'buds', brands: ['Bose', 'Sony'], min: 100, max: 900, rating: 4, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
+  await win.onQuery({ cat: 'Audio', sort: 'best', dir: 'desc', page: 2, filters: { q: 'buds', brands: ['Bose', 'Sony'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
   assert.strictEqual(hits(), before, 'a re-ordered but identical selection must not refetch');
 });
 
@@ -957,7 +971,7 @@ test('GPC scopes are served: onQuery translates brick/dept to the backing cat qu
   const win = boot('http://pricy.test/search?brick=10001448', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
   const audioCount = CATALOG_JSON.filter(p => !p.family && p.cat === 'Audio').length;
-  const f = { q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, facets: {} };
+  const f = { q: '', brands: [], min: '', max: '', dom: 0, sale: false, instock: false, facets: {} };
   // a brick query rides its backing cat — total is the category-wide count,
   // not the page length, and brick/dept never leak onto the query string
   const r = await win.onQuery({ brick: '10001448', sort: 'best', dir: 'asc', filters: f, page: 0 });
@@ -1104,7 +1118,7 @@ test('shop profile renders served objective stats, never the demo stars', async 
 test('PDP reviews hydrate on a cold load — a refresh must not lose them', async () => {
   const win = boot('http://pricy.test/product/xm5', {
     session: true,
-    reviews: [{ id: 1, prodId: 'xm5', author: 'Kari H.', rating: 4, title: 'Server-omtale', body: 'Fra databasen', helpful: 2, verified: true, voted: false, mine: false, created_at: Date.now() - 864e5 }],
+    reviews: [{ id: 1, prodId: 'xm5', author: 'Kari H.', claims: 'yyn', plus: ['God lyd'], minus: [], shop: null, showPaid: false, title: 'Server-omtale', body: 'Fra databasen', helpful: 2, verified: true, voted: false, mine: false, edited: false, created_at: Date.now() - 864e5 }],
   });
   assert.ok(await until(() => q(win, '.revsec .revcard')), 'served review did not render on a cold load');
   assert.match(q(win, '.revcard__title').textContent, /Server-omtale/);
@@ -1120,11 +1134,29 @@ test('PDP reviews hydrate on a cold load — a refresh must not lose them', asyn
 test('PDP reviews survive the demo purge when they land before the catalog', async () => {
   const win = boot('http://pricy.test/product/xm5', {
     session: true, catalogLag: 5,
-    reviews: [{ id: 1, prodId: 'xm5', author: 'Kari H.', rating: 4, title: 'Server-omtale', body: 'Fra databasen', helpful: 2, verified: true, voted: false, mine: false, created_at: Date.now() - 864e5 }],
+    reviews: [{ id: 1, prodId: 'xm5', author: 'Kari H.', claims: 'yyn', plus: ['God lyd'], minus: [], shop: null, showPaid: false, title: 'Server-omtale', body: 'Fra databasen', helpful: 2, verified: true, voted: false, mine: false, edited: false, created_at: Date.now() - 864e5 }],
   });
   assert.ok(await until(() => q(win, '.revsec .revcard')), 'served review was wiped by the demo purge');
   assert.match(q(win, '.revcard__title').textContent, /Server-omtale/);
   assert.strictEqual(qa(win, '.revsec .revcard').length, 1, 'demo PRODUCT_REVIEWS must stay purged');
+});
+
+// The account tab lists ReviewStore.mine() across ALL products, and the store
+// only ever holds the PDP you last opened — so the route prefetches ?mine=1
+// and then the products it references (upstream's prodOf falls back to the
+// bare id, which renders but looks broken).
+test('account "My reviews" prefetches your reviews across products, and their products', async () => {
+  const win = boot('http://pricy.test/account?tab=reviews', {
+    session: true,
+    reviews: [
+      { id: 7, prodId: 'lego', author: 'Ola N.', claims: 'yyy', plus: ['Solid kvalitet'], minus: [], shop: null, showPaid: false, title: 'Min egen dom', body: '', helpful: 1, verified: false, voted: false, mine: true, edited: false, created_at: Date.now() - 3 * 864e5 },
+    ],
+  });
+  assert.ok(await until(() => q(win, '.myrev')), 'the account tab did not render the served review');
+  assert.match(q(win, '.myrev').textContent, /Min egen dom/);
+  assert.ok(win.api.some(c => c.call === 'GET /api/reviews?mine=1'),
+    'the account route must fetch mine=1, got: ' + win.api.map(c => c.call).join(' | '));
+  assert.match(q(win, '.myrev__prod').textContent, /LEGO/, 'the referenced product must be fetched so prodOf resolves');
 });
 
 test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise', async () => {

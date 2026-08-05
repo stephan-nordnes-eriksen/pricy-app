@@ -465,26 +465,55 @@ Two Claude Design projects feed this repo:
   `window.onSharedList`/`onSharedBought` for the upstream member
   screen, which does NOT exist yet — ShareModal still shows its demo
   link until the plan file's upstream prompt is pasted.
-- Product reviews persist for real (2026-08-04, plans/reviews-layer.md):
-  `GET /api/reviews?ids=` (batch, session required, author = first name +
-  last initial, `mine`/`voted` joined per user), `POST /api/reviews`
-  (create-or-edit-your-own via partial unique index; `verified` = a
-  purchases row matches), `POST /api/reviews/:id/vote` (toggle), and
-  `PATCH /api/admin/reviews/:id` `{hidden: 0|1}` (bearer moderation; edits
-  never clear hidden). Write-time aggregates land in `meta.urating`/
-  `ureviews` — NOT `meta.rating`, which seed re-upserts json_patch back to
-  the demo number on every deploy — and `shapeRows` prefers them; zero
-  visible reviews deletes the keys (demo stars show only until the first
-  real review). GDPR export/delete cover reviews + votes and recompute
-  affected aggregates. boot: PDP route prefetches its head's reviews,
-  wraps `ReviewStore.add/vote` (numeric ids = server rows), and empties
-  the demo `PRODUCT_REVIEWS`/`SHOP_META` when live — fake trust signals
-  don't ship. `catMeta` serves `meta.shopStats` `{shop: {offers, updated}}`
+- Product reviews persist for real (2026-08-05,
+  plans/folkedommen-reviews.md — **Folkedommen**: no numeric ratings
+  anywhere, a review is three `y|n|u` claims (worth/durable/described)
+  plus optional traits, shop, what you paid, title and body; the claims
+  are the only required field): `GET /api/reviews?ids=` (batch, session
+  required, author = first name + last initial, `mine`/`voted` joined per
+  user) and `?mine=1` (your reviews across all products, for the account
+  tab — deliberately NOT in `meBody`, which rides every cold load),
+  `POST /api/reviews` (create-or-edit-your-own via partial unique index;
+  `verified` = a purchases row matches; an edit keeps `created_at` and
+  stamps `updated_at`, which is where `edited` comes from),
+  `DELETE /api/reviews/:id` (own only, 404 otherwise), `POST
+  /api/reviews/:id/vote` (toggle), and `PATCH /api/admin/reviews/:id`
+  `{hidden: 0|1}` (bearer moderation; edits never clear hidden).
+  **`paid` is served only when the reviewer showed it or to the author** —
+  a hidden amount still counts toward the aggregate range but is never a
+  number attached to a name (same promise as the gift-list `by` stripping).
+  The write-time aggregate lands in `meta.urating`/`ureviews`' replacement
+  `meta.udom` `{n, c: {claim: [y,n,u]}, t: [[trait, count, 1|0], …], p:
+  [lo, hi, count]}` — NOT `meta.rating`, which seed re-upserts json_patch
+  back to the demo number on every deploy — and `shapeRows` serves it as
+  `dom` (+ `reviews: udom.n`). **This is load-bearing**: upstream's
+  `reviewStats` only holds the rows of the PDP you are on, so every result
+  row, card, Compare cell, the `dom` filter and the Folkedommen sort read
+  `p.dom` — without it they all read "Ingen omtaler ennå". `p.rating` is
+  never served at all (it is the demo synth's input). `udom.p` needs ≥3
+  reporters and both ends rounded to 10 kr, because upstream renders
+  `lo === hi` as one amount. `domScore`/`domTier` in worker/index.js mirror
+  upstream's `.85/.6/.4` cuts for `sort=rating` and `dom=` — same
+  drift rule as `failGroups`/`sortRows` vs Results' own predicate; a row
+  with no reviews has no tier and is excluded. GDPR export/delete cover
+  reviews + votes and recompute affected aggregates. boot: PDP route
+  prefetches its head's reviews and the account route `?mine=1` (plus the
+  products it references, so `prodOf` resolves), wraps
+  `ReviewStore.add/update/remove/vote` (numeric ids = server rows), and
+  empties the demo `PRODUCT_REVIEWS`/`SHOP_META` when live — fake trust
+  signals don't ship. `catMeta` serves `meta.shopStats` `{shop: {offers, updated}}`
   (boot exposes `window.SHOP_STATS`); the `/shop` route is mirrored but
   renders its not-found state until upstream's ShopPage/ShopChip read the
   served objective stats instead of SHOP_META demo ratings (v1 = no stars,
-  see the plan's honesty section). Shop-rating UGC is v2 — the reviews
-  table's `shop` column is reserved, no endpoint accepts it yet.
+  see the plan's honesty section; SHOP_META's invented *quotes* are no
+  more measured than its old stars were). Shop-rating UGC is v2 — the
+  reviews table's `shop` column is the reserved TARGET (`buy_shop` is the
+  reviewer's own free-text "where I bought it"), no endpoint accepts it yet.
+  Two upstream fixes are still pending in the plan file: `Results.jsx:399`
+  reads `pRating` after the rename to `pDom` (typing in the filter search
+  unmounts the screen — `test/ui.test.js` "filter search: narrows groups"
+  is red for exactly this), and `_calcStats` needs the branch that reads
+  the served `p.dom`, without which none of the above is visible.
   (`{currentPassword, newPassword}`) verifies the current password (skipped
   for passwordless magic-link/BankID accounts, which just set one) and
   re-hashes with the same PBKDF2 scheme as signup. `meBody`'s user object
