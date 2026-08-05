@@ -2306,14 +2306,17 @@ export default {
       const title = typeof b.title === 'string' ? b.title.trim() : '';
       const text = typeof b.body === 'string' ? b.body.trim() : '';
       // the three claims are the ONLY required field — upstream's own gate says
-      // the same ("«Vet ikke» er også et svar"), title/body are optional now
-      const claims = CLAIM_KEYS.map(k => (b.claims || {})[k]).join('');
+      // the same ("«Vet ikke» er også et svar"), title/body are optional now.
+      // Per-key check, not a regex on the join: {worth: 'yn'} would join to a
+      // valid string with the answers shifted onto the wrong claims.
+      const claimVals = CLAIM_KEYS.map(k => (b.claims || {})[k]);
+      const claims = claimVals.every(c => c === 'y' || c === 'n' || c === 'u') ? claimVals.join('') : '';
       const shop = b.shop == null || b.shop === '' ? null : String(b.shop).trim();
       const paid = b.paid == null ? null : b.paid;
       // free text rendered to other users — the caps are not optional
       const traits = (v) => [...new Set((Array.isArray(v) ? v : [])
         .map(t => String(t == null ? '' : t).trim().slice(0, 40)).filter(Boolean))].slice(0, 6);
-      if (!pid || !/^[ynu]{3}$/.test(claims) || title.length > 80 || text.length > 2000
+      if (!pid || !claims || title.length > 80 || text.length > 2000
         || (shop != null && shop.length > 60)
         || (paid != null && (!Number.isInteger(paid) || paid < 1 || paid > 1_000_000))) {
         return json({ error: 'bad review' }, 400);
@@ -2325,7 +2328,10 @@ export default {
       const verified = await db.prepare('SELECT 1 FROM purchases WHERE user_id = ? AND product_id = ? LIMIT 1').bind(user.id, pid).first() ? 1 : 0;
       const showPaid = paid != null && (b.show_paid === true || b.show_paid === 1) ? 1 : 0;
       // created_at is NOT overwritten on conflict — the card keeps its real
-      // date, and `edited` is derivable as updated_at > created_at
+      // date, and `edited` is derivable as updated_at > created_at. One shared
+      // timestamp: two Date.now() calls can straddle a ms tick, and a create
+      // with updated_at = created_at + 1 renders as edited.
+      const now = Date.now();
       await db.prepare(
         `INSERT INTO reviews (user_id, product_id, rating, claims, plus, minus, buy_shop, paid, show_paid, title, body, verified, created_at, updated_at)
          VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -2335,7 +2341,7 @@ export default {
            title = excluded.title, body = excluded.body, verified = excluded.verified,
            updated_at = excluded.updated_at`
       ).bind(user.id, pid, claims, JSON.stringify(traits(b.plus)), JSON.stringify(traits(b.minus)),
-        shop, paid, showPaid, title, text, verified, Date.now(), Date.now()).run();
+        shop, paid, showPaid, title, text, verified, now, now).run();
       await refreshReviewMeta(db, pid);
       return json({ reviews: await reviewsFor(db, [pid], user.id) });
     }

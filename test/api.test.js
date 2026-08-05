@@ -503,6 +503,9 @@ test('reviews: post is edit-your-own (one per user), the udom aggregate lands in
     { product_id: 'xm5' },                                              // claims are the one required field
     { product_id: 'xm5', claims: { worth: 'y', durable: 'x', described: 'y' } },
     { product_id: 'xm5', claims: { worth: 'y', described: 'y' } },
+    // these join to a valid 'ynu' string with the answers on the wrong claims
+    { product_id: 'xm5', claims: { worth: 'yn', durable: 'u' } },
+    { product_id: 'xm5', claims: { worth: 'ynu' } },
     { product_id: 'xm5', ...REV('yyy'), title: 'x'.repeat(81) },
     { product_id: 'xm5', ...REV('yyy'), body: 'x'.repeat(2001) },
     { product_id: 'xm5', ...REV('yyy'), shop: 'x'.repeat(61) },
@@ -736,6 +739,8 @@ test('reviews GDPR: export includes reviews + votes; delete removes them and rec
   const data = await (await call('/api/account/export', { cookie: ola })).json();
   assert.deepStrictEqual(data.reviews.map(r => [r.product_id, r.claims, r.plus, r.buy_shop, r.paid, r.show_paid, r.title]),
     [['xm5', 'yyy', '["God lyd"]', 'Komplett', 2790, 1, 'Topp']], 'the export carries every field the review holds');
+  assert.strictEqual(data.reviews[0].updated_at, data.reviews[0].created_at,
+    'a create stamps ONE timestamp — a ms tick between two Date.now() calls read as edited');
   assert.deepStrictEqual(data.review_votes, [kariRid]);
 
   await call('/api/account', { method: 'DELETE', cookie: ola });
