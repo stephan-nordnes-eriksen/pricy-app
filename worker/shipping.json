@@ -1,1 +1,17 @@
-{}
+{
+  "Hi-Fi Klubben": { "flat": 79 },
+  "Kidsdreamstore": { "flat": 59, "freeOver": 499 },
+  "David-Andersen": { "flat": 139, "freeOver": 700 },
+  "Japan Photo": { "flat": 119, "freeOver": 2000 },
+  "Skoringen": { "flat": 69, "freeOver": 799 },
+  "Sport 1": { "flat": 99 },
+  "Fjellsport": { "flat": 59, "freeOver": 1200 },
+  "KappAhl": { "flat": 49 },
+  "Guttelus": { "flat": 59, "freeOver": 1299 },
+  "Lekia": { "flat": 79, "freeOver": 999 },
+  "Nettdyret": { "flat": 79, "freeOver": 1000 },
+  "Panduro": { "flat": 49, "freeOver": 599 },
+  "Rusta": { "flat": 69 },
+  "Rum21": { "flat": 49, "freeOver": 599 },
+  "Tegne.no": { "flat": 50, "freeOver": 750 }
+}

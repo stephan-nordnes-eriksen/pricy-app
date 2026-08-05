@@ -19,6 +19,66 @@ shop terms pages** (never guessed); until then totals/freeship surface
 only for the few offer-level shops and everything else is honestly
 unknown.
 
+## Registry curation (2026-08-05)
+
+`worker/shipping.json` curated from each shop's own frakt/terms page —
+every entry is a stated fixed rate, quoted below where it matters.
+Convention: `flat` = the cheapest stated fixed NON-MEMBER delivery
+option (pickup point / locker / mailbox); the price is uniform
+nationwide even where the method isn't offered at every address.
+Member-only rates and thresholds are never recorded.
+
+Recorded (source pages):
+- Hi-Fi Klubben 79 — "Vi har fast lav frakt på 79 kr"
+  (hifiklubben.no salgs-og-leveringsvillkar; 699 kr >35 kg home
+  delivery is a bulky surcharge on top).
+- Kidsdreamstore 59/499 — "Ombud: 59 kr … Fri frakt: vid köp över
+  499 kr" (kidsdreamstore.no shipping-policy).
+- David-Andersen 139/700 — "fastpris på kr: 139" / "spanderer frakt
+  … over kr: 700" (david-andersen.no/retningslinjer/frakt).
+- Japan Photo 119/2000 — "Kamera og utstyr: 119,- / Over 2 000 kr:
+  0,-" (japanphoto.no/frakt-og-levering; photo prints ship at 69 —
+  our rows are camera gear).
+- Skoringen 69/799, Sport 1 99, Fjellsport 59/1200, KappAhl 49
+  (Helthjem; the 500 kr free-ship is member-only, omitted),
+  Guttelus 59/1299 (pakkeautomat; 39 kr tier is member-only),
+  Lekia 79/999, Nettdyret 79/1000 (current terms page + header; an
+  older stale page still says 499 — followed the terms), Panduro
+  49/599, Rusta 69 (utleveringssted; bulky home delivery is a
+  599–999 range on top), Rum21 49/599 (bulky classes 129/499 on
+  top), Tegne.no 50/750.
+
+Skipped (no plain fixed nationwide rate on the shop's own pages):
+- Threshold stated but no base rate: Ringo (fri frakt >1000, no
+  under-price anywhere incl. Salgsvilkår PDF), Lekeverden (>1000),
+  Klokker.no (>1000), PetXL (>599), Dyrekassen (>599), Mestergull
+  (>1000), Jernia (>800), Bergans (>1700) — schema needs `flat`, a
+  freeOver alone can't be recorded.
+- Weight/size/region/cart-computed: Clas Ohlson ("fra 79/29 kr",
+  weight-based), Blivakker, Zooservice (volume weight), JYSK ("fra
+  89,95"), Chilli / Trademax (per postal area), Widforss (per
+  postnummer), Kjell & Company (checkout-only), Obs / Obs Bygg
+  (size/weight/region), Fagmøbler (store-area), Sporttema (cart),
+  Shark Gaming (per product/address, ranges), Møbelringen (per
+  product category 99–1499), Christiania Belysning ("fra 139"),
+  Hobbii ("fra 49"), Kicks (checkout-only; >199 free option exists
+  but no rate), Vitusapotek (order-size dependent), Foss Sport (99
+  flat stated but explicitly excludes sykkel/ski/staver with
+  unstated separate freight — we serve its rows in Bikes/Sport, so
+  a shop-wide 99 would misprice exactly that inventory).
+- Rate depends on product VAT status: Outland (59/89/79 by vare).
+- Member-only free shipping, no public rate: Bjørklund, Kid
+  Interiør (member >799; standard is address/size/weight-computed).
+- Ambiguous terms: Junior Barneklær ("kr 90 og kr 125" with no
+  stated distinction; threshold stated as both 1000 and 1500).
+- No shipping info found on own pages: Gamezone, Parfymeri
+  (unqualified "Gratis frakt" badge only), Intersport (only Klikk &
+  hent free).
+- Unreachable (bot wall / broken TLS): Power (JS-only pages),
+  Proshop (403), NetOnNet (403), Milrab (403), Bikeshop
+  (deskpro.bikeshop.no TLS failure), CDON (marketplace — seller
+  decides shipping, skip regardless).
+
 **Sync contract (when upstream PROMPT 01 lands):** field names are
 `shipCost`/`total` per offer, `bestTotal`/`bestTotalShop` per row —
 upstream's genOffers-derived names must match. Its Totalpris comparator
