@@ -21,6 +21,13 @@ unknown.
 
 ## Registry curation (2026-08-05)
 
+**Measured live before → after deploy:** offers with known `shipCost`
+119 of 34,445 (0.3%) → 9,872 (28.7%); `meta.acounts.freeship` summed
+across all 31 cats 30 → 2,779 of 34,377 rows (Toys 2 → 132, Jewelry
+767, Shoes 656, Outdoor 447, Photo 221). Every registry shop covers
+100% of its own offers. Remaining offer-level-only coverage: Power,
+NetOnNet, Proshop, CDON (scraped ship strings).
+
 `worker/shipping.json` curated from each shop's own frakt/terms page —
 every entry is a stated fixed rate, quoted below where it matters.
 Convention: `flat` = the cheapest stated fixed NON-MEMBER delivery
