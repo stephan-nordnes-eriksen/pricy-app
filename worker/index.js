@@ -11,6 +11,7 @@ import DEPTS from './depts.json' with { type: 'json' }; // GPC department regist
 import SHIPPING from './shipping.json' with { type: 'json' }; // per-shop shipping fallback: { shop: { flat, freeOver? } } — curated from shop terms pages, never guessed (plans/shipping-totals.md). Offer-level ship strings win; measured 2026-08-03 they cover 0.3% of offers, so this registry is the real source.
 import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
+import { sendPush } from './push.js';
 
 const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, lists TEXT, created_at INTEGER)',
@@ -44,6 +45,9 @@ const SCHEMA = [
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_prod ON reviews(user_id, product_id) WHERE product_id IS NOT NULL',
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_shop ON reviews(user_id, shop) WHERE shop IS NOT NULL',
   'CREATE TABLE IF NOT EXISTS review_votes (review_id INTEGER NOT NULL, user_id INTEGER NOT NULL, PRIMARY KEY (review_id, user_id))',
+  // Web Push subscriptions (one row per browser/device; endpoint is the
+  // push service's unique URL). Pruned when the service says 404/410.
+  'CREATE TABLE IF NOT EXISTS push_subs (endpoint TEXT PRIMARY KEY, user_id INTEGER NOT NULL, p256dh TEXT NOT NULL, auth TEXT NOT NULL, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS images (product_id TEXT PRIMARY KEY, src TEXT NOT NULL, fetched_at INTEGER NOT NULL)',
   // EAN → product routing (OPEN-CATALOG-PLAN A1): bootstrapped from
@@ -2100,8 +2104,56 @@ export default {
       return json(await meBody(db, user, !!env.HIDE_AUTOBUY), 200, { 'set-cookie': await startSession(db, user.id) });
     }
 
+    // Web Push: the VAPID public key is public by definition — the browser
+    // needs it as applicationServerKey before it can subscribe at all.
+    if (route === 'GET /api/push/key') {
+      return json({ key: env.VAPID_PUBLIC_KEY || null });
+    }
+
+    // Manual send, bearer-gated like the rest of the ops surface. Body:
+    // { title, body, url?, email? } — email narrows to one user's devices.
+    // ponytail: fires from tools/push.mjs by hand; becomes the alert cron's
+    // delivery channel when price-drop pushes ship for real.
+    if (route === 'POST /api/admin/push') {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      if (!env.VAPID_PRIVATE_KEY || !env.VAPID_PUBLIC_KEY) return json({ error: 'disabled (no VAPID keys)' }, 503);
+      const body = await request.json().catch(() => ({}));
+      const title = String(body.title || '').trim();
+      if (!title) return json({ error: 'title required' }, 400);
+      const payload = { title, body: String(body.body || ''), url: String(body.url || '/') };
+      const email = body.email ? String(body.email).trim().toLowerCase() : null;
+      // 40 devices per call — free-plan subrequest ceiling, same cap as drainImages
+      const { results: subs } = await (email
+        ? db.prepare('SELECT s.endpoint, s.p256dh, s.auth FROM push_subs s JOIN users u ON u.id = s.user_id WHERE u.email = ? LIMIT 40').bind(email)
+        : db.prepare('SELECT endpoint, p256dh, auth FROM push_subs LIMIT 40')).all();
+      let sent = 0, pruned = 0, failed = 0;
+      await Promise.all(subs.map(async (sub) => {
+        const status = await sendPush(env, sub, payload).catch(() => 0);
+        if (status >= 200 && status < 300) sent++;
+        else if (status === 404 || status === 410) {
+          pruned++;
+          await db.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
+        } else failed++;
+      }));
+      return json({ ok: true, devices: subs.length, sent, pruned, failed });
+    }
+
     const token = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`))?.[1];
     const user = await sessionUser(db, token);
+
+    // stores the browser's PushSubscription verbatim ({endpoint, keys})
+    if (route === 'POST /api/push/subscribe') {
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const sub = await request.json().catch(() => ({}));
+      const { endpoint, keys } = sub || {};
+      if (typeof endpoint !== 'string' || !endpoint.startsWith('https://') || endpoint.length > 1024
+        || typeof keys?.p256dh !== 'string' || typeof keys?.auth !== 'string'
+        || keys.p256dh.length > 200 || keys.auth.length > 100) return json({ error: 'bad subscription' }, 400);
+      await db.prepare('INSERT INTO push_subs (endpoint, user_id, p256dh, auth, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(endpoint) DO UPDATE SET user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth')
+        .bind(endpoint, user.id, keys.p256dh, keys.auth, Date.now()).run();
+      return json({ ok: true });
+    }
 
     if (route === 'GET /api/me') {
       return user ? json(await meBody(db, user, !!env.HIDE_AUTOBUY)) : json({ error: 'unauthenticated' }, 401);
@@ -2134,7 +2186,8 @@ export default {
       const reports = (await db.prepare('SELECT product_id, shop, reason, text, created_at FROM reports WHERE user_id = ? ORDER BY created_at DESC, id DESC').bind(user.id).all()).results;
       const reviews = (await db.prepare('SELECT product_id, shop, claims, plus, minus, buy_shop, paid, show_paid, title, body, verified, hidden, created_at, updated_at FROM reviews WHERE user_id = ? ORDER BY id DESC').bind(user.id).all()).results;
       const review_votes = (await db.prepare('SELECT review_id FROM review_votes WHERE user_id = ?').bind(user.id).all()).results.map(r => r.review_id);
-      return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1), reports, reviews, review_votes }, 200,
+      const push_subs = (await db.prepare('SELECT endpoint, created_at FROM push_subs WHERE user_id = ?').bind(user.id).all()).results;
+      return json({ ...await meBody(db, user), alerts: await alertsBody(db, user.id, -1), reports, reviews, review_votes, push_subs }, 200,
         { 'content-disposition': 'attachment; filename="pricy-export.json"' });
     }
 
@@ -2151,6 +2204,7 @@ export default {
         db.prepare('DELETE FROM reviews WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM purchases WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM watches WHERE user_id = ?').bind(user.id),
+        db.prepare('DELETE FROM push_subs WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM list_shares WHERE user_id = ?').bind(user.id),
         db.prepare('DELETE FROM list_members WHERE owner_id = ? OR user_id = ?').bind(user.id, user.id),
         db.prepare('DELETE FROM list_bought WHERE owner_id = ? OR user_id = ?').bind(user.id, user.id),

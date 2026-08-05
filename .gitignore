@@ -7,3 +7,5 @@ tools/.ingest-token
 tools/.catalog.json
 env
 tools/.gpc-en.json
+tools/.vapid-private.jwk
+tools/.vapid-public.txt

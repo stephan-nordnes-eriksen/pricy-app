@@ -2983,3 +2983,65 @@ test('alerts: inclShip watches fire on the total crossing, arm on totals, and ro
   const me = await (await call('/api/me', { cookie })).json();
   assert.strictEqual(me.watches[0].inclShip, 1, 'inclShip survives the PUT → me round trip');
 });
+
+// Web Push: the encryption is hand-rolled (worker/push.js), so pin it to the
+// spec's own vector — RFC 8291 Appendix A, fixed keys + salt → exact bytes.
+test('web push: encrypt matches the RFC 8291 Appendix A vector', async () => {
+  const { encrypt } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'push.js')));
+  const unb64u = (s) => Uint8Array.from(Buffer.from(s, 'base64url'));
+  const asPub = unb64u('BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8');
+  const jwk = {
+    kty: 'EC', crv: 'P-256',
+    d: 'yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw',
+    x: Buffer.from(asPub.slice(1, 33)).toString('base64url'),
+    y: Buffer.from(asPub.slice(33)).toString('base64url'),
+  };
+  const out = await encrypt('When I grow up, I want to be a watermelon',
+    'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4',
+    'BTBZMqHH6r4Tts7J_aSIgg',
+    { jwk, salt: unb64u('DGv6ra1nlYgDCS1FRnbzlw') });
+  assert.strictEqual(Buffer.from(out).toString('base64url'),
+    'DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_yl95bQpu6cVPTpK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN');
+});
+
+test('web push: subscribe is session-bound, admin push sends VAPID-signed posts and prunes dead endpoints', async () => {
+  const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign']);
+  const env = {
+    DB: d1(),
+    VAPID_PUBLIC_KEY: Buffer.from(await crypto.subtle.exportKey('raw', kp.publicKey)).toString('base64url'),
+    VAPID_PRIVATE_KEY: JSON.stringify(await crypto.subtle.exportKey('jwk', kp.privateKey)),
+  };
+  const call = api(env);
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  assert.strictEqual((await (await call('/api/push/key')).json()).key, env.VAPID_PUBLIC_KEY);
+
+  // browser-side subscription keys: any P-256 point + 16-byte auth secret
+  const ua = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  const keys = {
+    p256dh: Buffer.from(await crypto.subtle.exportKey('raw', ua.publicKey)).toString('base64url'),
+    auth: Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url'),
+  };
+  assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/a', keys } })).status, 401, 'session required');
+  assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'http://push.test/a', keys }, cookie })).status, 400, 'https endpoints only');
+  assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/a', keys }, cookie })).status, 200);
+  await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/gone', keys }, cookie });
+
+  const posts = [];
+  const res = await withFetch(async (u, init) => {
+    posts.push({ url: String(u), init });
+    return new Response(null, { status: String(u).endsWith('/gone') ? 410 : 201 });
+  }, () => call('/api/admin/push', { method: 'POST', body: { title: 'Hei', body: 'Test', url: '/deals' }, token: OPS }));
+  const out = await res.json();
+  assert.deepStrictEqual({ devices: out.devices, sent: out.sent, pruned: out.pruned, failed: out.failed },
+    { devices: 2, sent: 1, pruned: 1, failed: 0 });
+  const p = posts.find((x) => x.url === 'https://push.test/a');
+  assert.match(p.init.headers.authorization, /^vapid t=[\w-]+\.[\w-]+\.[\w-]+, k=/, 'VAPID JWT rides the send');
+  assert.strictEqual(p.init.headers['content-encoding'], 'aes128gcm');
+  assert.ok(p.init.body.length > 103, 'encrypted body: 86-byte header + ciphertext');
+
+  // the 410 device is gone — a second send only reaches the live one
+  const res2 = await withFetch(async () => new Response(null, { status: 201 }),
+    () => call('/api/admin/push', { method: 'POST', body: { title: 'Igjen' }, token: OPS }));
+  assert.strictEqual((await res2.json()).devices, 1);
+  assert.strictEqual((await call('/api/admin/push', { method: 'POST', body: { title: 'X' } })).status, 401, 'send is bearer-gated');
+});

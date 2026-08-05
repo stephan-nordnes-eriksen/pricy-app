@@ -404,6 +404,18 @@ Two Claude Design projects feed this repo:
   sites still render `Icon` directly instead of `ProdImg` —
   `HomeSections.jsx`'s `WatchRow` and `SignedHome.jsx`'s alert feed card.
 
+- **Web Push is live** (2026-08-05): `worker/push.js` hand-rolls VAPID +
+  RFC 8291 aes128gcm on WebCrypto (test-vector-pinned in api.test.js).
+  Keys: `VAPID_PUBLIC_KEY` var (served at `GET /api/push/key`) +
+  `VAPID_PRIVATE_KEY` secret (JWK; local copies gitignored in `tools/`).
+  `POST /api/push/subscribe` (session) upserts into `push_subs`;
+  `POST /api/admin/push` `{title, body?, url?, email?}` (bearer, ≤40
+  devices/call) sends and prunes 404/410 endpoints — manual trigger:
+  `node tools/push.mjs "Title" ["Body"] [/url] [email]`. sw.js shows the
+  notification and click-focuses the app; boot's `setupPush` re-subscribes
+  silently when permission is granted, else shows a one-tap chip (iOS only
+  exposes push inside the installed home-screen app, and only ≥16.4).
+  Price-drop alerts do NOT push yet — the alert cron is the obvious caller.
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
   `Mcp-Session-Id` header to the shared `sessions` table), search_products,

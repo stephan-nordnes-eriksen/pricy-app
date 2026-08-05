@@ -973,6 +973,37 @@ function hydrateCatalog(data) {
 // nothing in the app depends on it, and jsdom/file:// have no serviceWorker.
 navigator.serviceWorker?.register('/sw.js').catch(() => {});
 
+// Web Push: iOS only exposes Notification/PushManager inside an installed
+// (home-screen) web app, so the guards double as the platform gate; Android
+// Chrome exposes them everywhere. Permission already granted → re-subscribe
+// silently (endpoints rotate). Not asked yet → a one-tap chip, because
+// requestPermission must run in a user gesture. Denied → nothing to do.
+function setupPush() {
+  if (!('Notification' in window) || !('PushManager' in window)) return;
+  const subscribe = async () => {
+    const [reg, { key }] = await Promise.all([navigator.serviceWorker.ready, fetchJson('/api/push/key')]);
+    if (!key) return;
+    const raw = Uint8Array.from(atob(key.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: raw });
+    await fetchJson('/api/push/subscribe', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(sub),
+    });
+  };
+  if (Notification.permission === 'granted') { subscribe().catch(() => {}); return; }
+  if (Notification.permission !== 'default') return;
+  // ponytail: plain DOM chip, not an upstream component — one tap resolves the
+  // permission either way, after which it never renders again. Moves into the
+  // prototype's notification settings when that screen grows a push toggle.
+  const btn = document.createElement('button');
+  btn.textContent = '🔔 Slå på varsler';
+  btn.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:60;padding:10px 16px;border:0;border-radius:999px;background:#111;color:#fff;font:600 14px system-ui;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer';
+  btn.onclick = async () => {
+    btn.remove();
+    try { if (await Notification.requestPermission() === 'granted') await subscribe(); } catch (e) {}
+  };
+  document.body.appendChild(btn);
+}
+
 // Boot: who am I + alert history first (cheap), then ONE ids= batch for
 // everything the session references plus the initial route's slice — no
 // full-catalog fetch anywhere. fetch failure at any step falls back to the
@@ -992,4 +1023,5 @@ Promise.all([
   // params.facets (sliced-brick pin) exactly like a pushed nav
   try { history.replaceState({ ...history.state, name: s.name, params: gpcParams(s.name, s.params) }, ''); } catch (e) {}
   ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
+  if (loggedIn) setupPush(); // subscriptions are session-bound, no point earlier
 });

@@ -19,6 +19,28 @@ const cacheable = (req) => {
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
+// Web Push: payload is the JSON the worker's sendPush encrypted —
+// { title, body, url }. Click focuses the installed app (or opens a tab)
+// on the payload's URL.
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data.json(); } catch {}
+  e.waitUntil(self.registration.showNotification(d.title || 'Pricy', {
+    body: d.body || '',
+    icon: '/icon-512.png',
+    data: { url: d.url || '/' },
+  }));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = e.notification.data?.url || '/';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+    const w = wins[0];
+    return w ? w.focus().then(() => w.navigate(url)) : self.clients.openWindow(url);
+  }));
+});
+
 self.addEventListener('fetch', (e) => {
   if (!cacheable(e.request)) return; // fall through to the network untouched
   e.respondWith(

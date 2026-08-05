@@ -55,7 +55,10 @@
   // prototype's TWEAK_DEFAULTS.hideAutobuy (build.js enforces). Hides the MCP
   // buy tools, 404s /api/buy + PUT /api/autobuy, drops autobuy/purchases
   // from /api/me while the SPA hides every buy surface.
-  "vars": { "HIDE_AUTOBUY": true, "CATMAP": {
+  // VAPID_PUBLIC_KEY: Web Push application server key (base64url P-256 point),
+  // served to browsers via GET /api/push/key; the matching private key is the
+  // VAPID_PRIVATE_KEY secret (JWK, local copy in tools/.vapid-private.jwk).
+  "vars": { "HIDE_AUTOBUY": true, "VAPID_PUBLIC_KEY": "BAW_T9dXDz_esSekgqqImjyXNwQ294OKhskRWBndFSgWYgukRY5CMEtnjJcdqSpkY4PCjm69jZChUPFhS_H7hAo", "CATMAP": {
     "Power": {
       "Mobiltelefon": "Phones",
       "TV": "TV",
