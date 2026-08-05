@@ -1172,6 +1172,14 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
   // served as [value, count] PAIRS — a JSON object would stringify the
   // numeric axes (55 → "55") and the rail's option ids must keep their type
   const fcounts = cat ? new Map() : null;
+  // brand histogram + price bounds over the WHOLE category, in Results'
+  // brandPool convention (facet selections applied, the non-facet block —
+  // brand/price/dom/sale/stock/avail — deliberately not): the slider's max was
+  // the max of whichever 400 rows were loaded (kr 100 on Toys, true max kr
+  // 25k), and a brand outside the page never made the rail at all. Same drift
+  // rule as failGroups vs Results' own predicate.
+  const brands = cat ? new Map() : null;
+  let plo = Infinity, phi = -Infinity;
   let rows = [];
   for (const x of results) {
     const m = JSON.parse(x.meta);
@@ -1198,6 +1206,10 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
       const hit = bad.length === 0 || (bad.length === 1 && bad[0] === k) ? 1 : 0;
       for (const x2 of [].concat(v)) c.set(x2, (c.get(x2) || 0) + hit);
     }
+    if (brands && !bad.some(k => k !== '')) {
+      if (r.best != null) { if (r.best < plo) plo = r.best; if (r.best > phi) phi = r.best; }
+      if (m.brand) brands.set(m.brand, (brands.get(m.brand) || 0) + 1);
+    }
     if (!bad.length) rows.push(r);
   }
   if (sort) rows = sortRows(rows, sort, dir === 'desc' ? 'desc' : 'asc');
@@ -1205,6 +1217,8 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
     ids: rows.slice(offset, offset + limit).map(r => r.id),
     total: rows.length,
     fcounts: fcounts && Object.fromEntries([...fcounts].map(([k, m]) => [k, [...m]])),
+    prange: phi >= plo ? [plo, phi] : undefined,
+    brands: brands && [...brands].sort((a, b) => a[0].localeCompare(b[0])),
   };
 }
 
@@ -1860,7 +1874,7 @@ export default {
         // facet histogram) come back as meta — neither is computable from the
         // partial cache the screen holds.
         const slice = await listIds(db, { cat: p.get('cat'), ...page });
-        extra = { total: slice.total, fcounts: slice.fcounts || undefined };
+        extra = { total: slice.total, fcounts: slice.fcounts || undefined, prange: slice.prange, brands: slice.brands || undefined };
         products = await rowsFor(db, slice.ids, { expand: false });
       }
       return json({ meta: { ...await catMeta(db, ver), ...extra }, products });

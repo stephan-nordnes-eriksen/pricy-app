@@ -1178,6 +1178,19 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   assert.deepStrictEqual((await get('cat=Pets&name=kattesand')).meta.fcounts.animal, [['Dog', 0], ['Cat', 1]],
     'a value with nothing left counts 0, it does not disappear (the rail drops a group under 2 values)');
 
+  // price bounds + brand histogram over the whole category, in Results'
+  // brandPool convention: facet selections apply, the non-facet block does
+  // not — sliding the price slider must not move its own ends, and a brand
+  // outside the loaded page (slider max kr 100 on Toys, true max kr 25k)
+  // must still be listed.
+  assert.deepStrictEqual((await get('cat=Pets')).meta.prange, [100, 900], 'bounds span the category, not the page');
+  assert.deepStrictEqual((await get('cat=Pets')).meta.brands, [['Acme', 1], ['Zoo', 2]]);
+  assert.deepStrictEqual((await get('cat=Pets&min=200&max=600')).meta.prange, [100, 900], 'the price filter never shrinks its own slider');
+  assert.deepStrictEqual((await get('cat=Pets&brand=Zoo')).meta.brands, [['Acme', 1], ['Zoo', 2]], 'picking a brand keeps its siblings listed');
+  assert.deepStrictEqual(picked.meta.prange, [500, 500], 'a facet selection cross-filters the bounds');
+  assert.deepStrictEqual(picked.meta.brands, [['Zoo', 1]], 'and the brand counts');
+  assert.strictEqual((await get('')).meta.prange, undefined, 'no category, no rail, no bounds');
+
   // the other branches keep their own semantics
   assert.ok((await ids('ids=' + id('7099931000001') + '&sort=best')).includes(id('7099931000001')), 'ids= ignores list params');
   assert.strictEqual((await get('q=hundeseng&sort=best')).meta.total, undefined, 'q= is not a paged list branch');
