@@ -45,6 +45,11 @@ function genHist(idn, base) {
   pts[pts.length - 1] = base;
   return pts;
 }
+// per-shop history: rides at/above the lowest-across-shops line, ends at that shop's current price
+function genShopHist(idn, j, hist, delta) {
+  const last = hist.length - 1;
+  return hist.map((h, i) => i === last ? h + delta : h + Math.round((delta * (0.5 + _seed(idn * 17 + j * 29 + i) * 1.1) + (_seed(idn * 3 + j * 11 + i) > 0.85 ? h * 0.04 : 0)) / 10) * 10);
+}
 
 // ---- expanded catalog (search corpus) ---------------------
 // real PRODUCTS get reused (they already carry offers/history);
@@ -1017,6 +1022,11 @@ function ProductPage({ go, id }) {
   const histAll = v.history || [];
   const histView = histAll.slice(-weeks);
   const low = histAll.length ? Math.min(...histAll) : null;
+  const [shopSel, setShopSel] = useState('all');
+  useEffect(() => { setShopSel('all'); }, [id]);
+  const histShops = (v.offers || []).slice(0, 6);
+  const selOffer = shopSel !== 'all' ? histShops.find(o => o.shop === shopSel) : null;
+  const chartPts = selOffer ? genShopHist(v.idn || v.shops || 1, histShops.indexOf(selOffer), histAll, Math.max(0, selOffer.price - (v.best != null ? v.best : selOffer.price))).slice(-weeks) : histView;
   const best = (v.offers && v.offers.length) ? v.offers[0] : null;
   const shopUrl = (best && best.url) || ((v.offers || []).find(o => o.url) || {}).url;
   const [osort, setOsort] = useState('price');
@@ -1169,9 +1179,14 @@ function ProductPage({ go, id }) {
                 ))}
               </div>
             </div>
-            {histAll.length ? <HistoryChart points={histView} low={low} /> : <div className="offers__empty">No price history yet</div>}
+            {histAll.length > 0 && histShops.length > 1 && <div className="chart__shops" role="group" aria-label="Price history per shop">
+              <button type="button" className={shopSel === 'all' ? 'is-on' : ''} aria-pressed={shopSel === 'all'} onClick={() => setShopSel('all')}>All shops</button>
+              {histShops.map(o => <button key={o.shop} type="button" className={shopSel === o.shop ? 'is-on' : ''} aria-pressed={shopSel === o.shop} onClick={() => setShopSel(o.shop)}>{o.shop}</button>)}
+            </div>}
+            {histAll.length ? <HistoryChart points={chartPts} low={low} refPoints={selOffer ? histView : null} /> : <div className="offers__empty">No price history yet</div>}
             {histAll.length > 0 && <div className="chart__legend">
-              <span><span className="dot dot--line" /> Lowest across shops</span>
+              <span><span className="dot dot--line" /> {selOffer ? 'Price at ' + selOffer.shop : 'Lowest across shops'}</span>
+              {selOffer && <span><span className="dot dot--ref" /> Lowest across shops</span>}
               <span><span className="dot dot--low" /> All-time low kr {fmt(low)}</span>
             </div>}
           </div>

@@ -696,6 +696,7 @@ html { scrollbar-gutter: stable; }
 .chart__legend .dot { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 6px; }
 .chart__legend .dot--line { background: var(--ink-900); }
 .chart__legend .dot--low { background: var(--green-500); }
+.chart__legend .dot--ref { background: var(--ink-400); }
 
 @media (max-width: 900px) {
   .results .pgrid, .results--topbar .pgrid { grid-template-columns: repeat(2, 1fr); }

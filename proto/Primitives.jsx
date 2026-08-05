@@ -117,9 +117,10 @@ function Sparkline({ points, w = 120, h = 40, color = 'var(--ink-900)' }) {
 }
 
 // --- Price-history step chart -------------------------------
-function HistoryChart({ points, low }) {
+function HistoryChart({ points, low, refPoints }) {
   const w = 560, h = 180, pad = 4;
-  const max = Math.max(...points), min = Math.min(...points);
+  const all = refPoints ? points.concat(refPoints) : points;
+  const max = Math.max(...all), min = Math.min(...all, low != null ? low : Infinity);
   const range = max - min || 1;
   const step = (w - pad * 2) / (points.length - 1);
   const x = i => pad + i * step;
@@ -127,6 +128,8 @@ function HistoryChart({ points, low }) {
   let line = '';
   points.forEach((p, i) => { line += (i === 0 ? `M ${x(i)} ${y(p)}` : ` H ${x(i)} V ${y(p)}`); });
   const area = `${line} V ${h - pad} H ${x(0)} Z`;
+  let ref = '';
+  if (refPoints) refPoints.forEach((p, i) => { ref += (i === 0 ? `M ${x(i)} ${y(p)}` : ` H ${x(i)} V ${y(p)}`); });
   const lastIdx = points.length - 1;
   const [hi, setHi] = React.useState(null);
   const wrapRef = React.useRef(null);
@@ -145,6 +148,7 @@ function HistoryChart({ points, low }) {
     <div className="chart__plot" ref={wrapRef} onMouseMove={track} onMouseLeave={() => setHi(null)}>
       <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
         <path d={area} fill="var(--green-100)" />
+        {refPoints ? <path d={ref} stroke="var(--ink-400)" strokeWidth="2" fill="none" strokeDasharray="2 3" strokeLinecap="square" strokeLinejoin="miter" /> : null}
         <path d={line} stroke="var(--ink-900)" strokeWidth="2.5" fill="none" strokeLinecap="square" strokeLinejoin="miter" />
         <line x1={x(0)} y1={y(low)} x2={w - pad} y2={y(low)} stroke="var(--green-500)" strokeWidth="2" strokeDasharray="6 4" />
         <rect x={x(lastIdx) - 5} y={y(points[lastIdx]) - 5} width="10" height="10" fill="var(--green-500)" stroke="var(--ink-900)" strokeWidth="2" />
