@@ -1141,6 +1141,38 @@ test('PDP reviews survive the demo purge when they land before the catalog', asy
   assert.strictEqual(qa(win, '.revsec .revcard').length, 1, 'demo PRODUCT_REVIEWS must stay purged');
 });
 
+// The whole point of the served aggregate (plans/folkedommen-reviews.md §6):
+// boot only ever fetches review ROWS for the PDP you are on, so every result
+// row, card and Compare cell asks reviewStats about a product with none
+// loaded. Before _calcStats learned to read p.dom they all fell through to the
+// p.rating synth — and the host never serves rating — so a catalog full of
+// reviewed products read "Ingen omtaler ennå".
+test('result rows render the served Folkedommen aggregate with no review rows loaded', async () => {
+  const seed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  // shapeRows strips the demo seed rating/reviews from every served row — the
+  // production condition this test exists for. seed.json still carries them.
+  const served = seed.map(({ rating, reviews, ...p }) => p.id !== 'xm5' ? p : {
+    ...p,
+    dom: { n: 42, c: { worth: [40, 1, 1], durable: [38, 2, 2], described: [41, 0, 1] },
+      t: [['God lyd', 18, 1], ['Blir varm', 5, 0]] },
+  });
+  const win = boot('http://pricy.test/search?cat=Audio', { session: true, catalog: served });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  const rows = qa(win, '.rrow, .rcard');
+  const xm5 = rows.find(el => el.textContent.includes('WH-1000XM5'));
+  assert.ok(xm5, 'the reviewed product must be on the page');
+  assert.match(xm5.querySelector('.vchip').textContent, /Svært fornøyde/, 'the verdict must come off p.dom');
+  assert.ok(xm5.querySelector('.vchip--pos'), 'tone follows the .85 tier cut');
+  assert.match(xm5.textContent, /God lyd/, 'the top trait rides the aggregate too');
+
+  const bare = rows.find(el => el !== xm5);
+  assert.match(bare.querySelector('.vchip').textContent, /Ingen omtaler ennå/,
+    'a product with no served aggregate stays honestly blank — no synth from demo stars');
+
+  assert.ok(!win.api.some(c => c.call.startsWith('GET /api/reviews')),
+    'a list screen must never fetch review rows, got: ' + win.api.map(c => c.call).join(' | '));
+});
+
 // The account tab lists ReviewStore.mine() across ALL products, and the store
 // only ever holds the PDP you last opened — so the route prefetches ?mine=1
 // and then the products it references (upstream's prodOf falls back to the
