@@ -117,7 +117,8 @@ const CMP_OVERVIEW = [
   { id: 'low', label: 'All-time low', best: 'min', val: p => (p.history && p.history.length ? Math.min(...p.history) : Infinity), render: p => (p.history && p.history.length ? <span className="cmp__mono">kr {fmt(Math.min(...p.history))}</span> : <span className="cmp__sub">—</span>) },
   { id: 'hist', label: 'Price history · 24w', val: p => (p.history || []).join(), render: p => (p.history && p.history.length ? <CmpSpark points={p.history} /> : <span className="cmp__sub">—</span>) },
   { id: 'shops', label: 'Shops tracking', best: 'max', val: p => p.shops, render: p => <span className="cmp__mono">{p.shops} shops</span> },
-  { id: 'rating', label: 'Rating', best: 'max', val: p => p.rating, render: p => <Stars rating={p.rating} reviews={p.reviews} /> },
+  { id: 'rating', label: 'Folkedommen', best: 'max', val: p => domScore(p) || 0, render: p => <Verdict p={p} count /> },
+  { id: 'traits', label: 'Folk trekker frem', val: p => { const s = reviewStats(p); return s ? s.traits.slice(0, 3).map(t => (t.pos ? '+' : '−') + t.t).join(', ') : ''; }, render: p => { const s = reviewStats(p); return s && s.traits.length ? <span className="cmp__traits">{s.traits.filter(t => t.pos).slice(0, 2).map(t => <TraitChip key={'+' + t.t} t={t.t} pos />)}{s.traits.filter(t => !t.pos).slice(0, 1).map(t => <TraitChip key={'-' + t.t} t={t.t} pos={false} />)}</span> : <span className="cmp__sub">—</span>; } },
   { id: 'stock', label: 'Availability', val: p => String(p.stock), render: p => <StockBadge state={p.stock ? 'in' : 'back'} /> },
   { id: 'watch', label: 'Price alert', val: p => (WatchStore.has(p.id) ? 'on' : 'off'), render: p => <CmpWatch p={p} /> },
 ];

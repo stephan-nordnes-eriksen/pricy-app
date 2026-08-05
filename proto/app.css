@@ -588,14 +588,7 @@ input, select, textarea { min-width: 0; }
 .ropt { display: flex; align-items: center; gap: 8px; padding: 5px 8px; margin: 0 -8px; cursor: pointer; font-size: 13px; white-space: nowrap; }
 .ropt:hover { background: var(--canvas-2); }
 .ropt.is-on { background: var(--green-100); }
-.ropt__stars { color: var(--warn-500); letter-spacing: 1px; font-size: 13px; }
-.stars__off { color: var(--ink-300); }
-
-/* stars inline */
-.stars { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 12px; }
-.stars__ic { color: var(--warn-500); letter-spacing: 1px; }
-.stars b { font-weight: 700; }
-.stars__n { color: var(--ink-400); }
+.ropt .vtx { width: 14px; text-align: center; font-family: var(--font-mono); font-weight: 800; }
 
 /* missing-data states */
 .no-offers { font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); white-space: nowrap; }

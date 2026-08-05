@@ -193,16 +193,7 @@ function RefineField({ value, onChange, scope, n }) {
 }
 
 // ---- small UI bits ----------------------------------------
-function Stars({ rating, reviews }) {
-  if (!rating) return <span className="stars"><span className="stars__n">No reviews yet</span></span>;
-  const full = Math.round(rating);
-  return (
-    <span className="stars" title={rating + ' / 5'}>
-      <span className="stars__ic">{'★★★★★'.slice(0, full)}<span className="stars__off">{'★★★★★'.slice(full)}</span></span>
-      <b>{rating.toFixed(1)}</b>{reviews != null && <span className="stars__n">({fmt(reviews)})</span>}
-    </span>
-  );
-}
+// (folkedommen: Verdict/TraitChip live in Reviews.jsx — no numbers)
 function Spark({ points, hit }) {
   const D = window.DrawSpark;
   return D
@@ -220,7 +211,7 @@ function ResultRow({ p, go, spark, saved, onSave, badge, hl }) {
         <div className="rrow__name"><HiName text={p.name} q={hl} /></div>
         <div className="rrow__metarow">
           {badge && <span className="sortval">{badge}</span>}
-          <Stars rating={p.rating} reviews={p.reviews} />
+          <Verdict p={p} traits={2} count />
           {p.nc && <span className="rrow__feat">Noise cancelling</span>}
           <StockBadge state={p.stock ? 'in' : 'back'} />
           <VariantHint p={p} />
@@ -257,7 +248,7 @@ function ResultRowCompact({ p, go, saved, onSave, badge, showBadge, hl }) {
       <span className="crow__brand">{p.brand}</span>
       <span className="crow__name"><HiName text={p.name} q={hl} /></span>
       <span className="crow__drop">{p.drop >= 12 ? <>▼ −{p.drop}%</> : null}</span>
-      <span className="crow__meta">{p.rating ? '★ ' + p.rating.toFixed(1) : 'No reviews yet'}</span>
+      <span className="crow__meta">{(() => { const s = reviewStats(p); return s ? <span className={'vtx vtx--' + s.verdict.tone}>{s.verdict.tiny}</span> : 'ingen omtaler'; })()}</span>
       <span className="crow__meta">{p.shops} shops</span>
       {showBadge && <span className="crow__sv">{badge && <span className="sortval">{badge}</span>}</span>}
       <span className="crow__price"><Price value={p.best} size={15} /></span>
@@ -276,7 +267,7 @@ function ResultCard({ p, go, badge, hl, saved, onSave }) {
       {onSave && <div className="saveg pcard__saveg"><button className={'rrow__save' + (saved ? ' is-on' : '')} title="Watch price" onClick={(e) => { e.stopPropagation(); onSave(p.id); }}><Icon name="bookmark" size={15} /></button><SaveMenu p={p} /></div>}
       <div className="pcard__img"><ProdImg p={p} fill size={42} /></div>
       <div className="pcard__name"><HiName text={p.name} q={hl} /></div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}>{badge && <span className="sortval">{badge}</span>}<Stars rating={p.rating} /><VariantHint p={p} /></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px', flexWrap: 'wrap' }}>{badge && <span className="sortval">{badge}</span>}<Verdict p={p} traits={1} /><VariantHint p={p} /></div>
       <div className="pcard__foot">
         <div>
           {p.best != null ? (<><div className="pcard__from">from</div><Price value={p.best} size={20} /></>) : <div className="no-offers">No offers yet</div>}
@@ -398,11 +389,10 @@ function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet
   const crows = cnav.depts || cnav.subs;
   const optionDefs = facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2);
   const boolDefs = facetDefs.filter(d => d.type === 'bool');
-  const ratingLbl = (r) => r.toFixed(1) + ' & up';
   const pCat = grpPred('Category', crows.map(s => s.label).concat(cnav.head ? [cnav.head.name] : []));
   const pBrand = grpPred('Brand', brands);
   const pPrice = grpPred('Price (kr)', []);
-  const pRating = grpPred('Rating', [4.5, 4, 3.5].map(ratingLbl));
+  const pDom = grpPred('Folkedommen', DOM_TIERS.map(t => t.label));
   const pShow = grpPred('Show only', ['On sale', 'In stock', ...boolDefs.map(d => d.label)]);
   const pAvail = grpPred('Availability', AVAIL.map(d => d.label));
   const optPreds = optionDefs.map(def => grpPred(def.label, facetBase[def.key].vals.map(v => fdisp(v, def))));
@@ -449,11 +439,11 @@ function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet
           onChange={(lo, hi) => { set('min', lo <= base.min ? '' : String(lo)); set('max', hi >= base.max ? '' : String(hi)); }} />
         <div className="pricefields__lbl"><span>kr {fmt(base.min)}</span><span>kr {fmt(base.max)}</span></div>
       </FGroup>}
-      {pRating && <FGroup id="rating" title="Rating" nSel={f.rating ? 1 : 0} forceOpen={searching}>
-        {[4.5, 4, 3.5].filter(r => pRating(ratingLbl(r))).map(r => (
-          <div key={r} className={'ropt' + (f.rating === r ? ' is-on' : '')} onClick={() => set('rating', f.rating === r ? 0 : r)}>
-            <span className="ropt__stars">{'★★★★★'.slice(0, Math.round(r))}<span className="stars__off">{'★★★★★'.slice(Math.round(r))}</span></span>
-            <span>{ratingLbl(r)}</span>
+      {pDom && <FGroup id="rating" title="Folkedommen" nSel={f.dom ? 1 : 0} forceOpen={searching}>
+        {DOM_TIERS.filter(t => pDom(t.label)).map(t => (
+          <div key={t.v} className={'ropt' + (f.dom === t.v ? ' is-on' : '')} onClick={() => set('dom', f.dom === t.v ? 0 : t.v)}>
+            <span className={'vtx ' + (t.v >= 2 ? 'vtx--pos' : 'vtx--mix')}>{t.v >= 2 ? '✓' : '·'}</span>
+            <span>{t.label}</span>
           </div>
         ))}
       </FGroup>}
@@ -530,10 +520,10 @@ function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, 
             onChange={(lo, hi) => { set('min', lo <= base.min ? '' : String(lo)); set('max', hi >= base.max ? '' : String(hi)); }} />
         </div>
       </Dropdown>
-      <Dropdown label={f.rating ? 'Rating · ' + f.rating + '+' : 'Rating'} active={!!f.rating}>
-        {[4.5, 4, 3.5].map(r => (
-          <div key={r} className={'fmenu__item' + (f.rating === r ? ' is-on' : '')} onClick={() => set('rating', f.rating === r ? 0 : r)}>
-            <span className="ropt__stars">{'★★★★★'.slice(0, Math.round(r))}<span className="stars__off">{'★★★★★'.slice(Math.round(r))}</span></span><span>{r.toFixed(1)} & up</span>
+      <Dropdown label={f.dom ? 'Folkedom · ' + (DOM_TIERS.find(t => t.v === f.dom) || {}).label : 'Folkedommen'} active={!!f.dom}>
+        {DOM_TIERS.map(t => (
+          <div key={t.v} className={'fmenu__item' + (f.dom === t.v ? ' is-on' : '')} onClick={() => set('dom', f.dom === t.v ? 0 : t.v)}>
+            <span className={'vtx ' + (t.v >= 2 ? 'vtx--pos' : 'vtx--mix')}>{t.v >= 2 ? '✓' : '·'}</span><span>{t.label}</span>
           </div>
         ))}
       </Dropdown>
@@ -573,7 +563,7 @@ const SORT_FIELDS = [
   { id: 'drop', label: 'Price drop', grp: 'Price', type: 'num', dir: 'desc', val: p => p.drop, w: { asc: 'Smallest drop', desc: 'Biggest drop' }, badge: p => p.drop != null ? '\u2212' + p.drop + '%' : null },
   { id: 'save', label: 'Kroner off', grp: 'Price', type: 'num', dir: 'desc', val: p => (p.was != null && p.best != null) ? p.was - p.best : undefined, badge: p => (p.was != null && p.best != null) ? 'kr ' + fmt(p.was - p.best) + ' off' : null },
   { id: 'updated', label: 'Price updated', grp: 'Price', type: 'date', dir: 'desc', val: lastUpd, badge: p => lastUpd(p) ? relTime(lastUpd(p)) : null },
-  { id: 'rating', label: 'Rating', grp: 'Popularity', type: 'num', dir: 'desc', val: p => p.rating },
+  { id: 'rating', label: 'Folkedommen', grp: 'Popularity', type: 'num', dir: 'desc', val: p => domScore(p), badge: p => { const s = reviewStats(p); return s ? s.verdict.short : null; } },
   { id: 'reviews', label: 'Reviews', grp: 'Popularity', type: 'num', dir: 'desc', val: p => p.reviews, badge: p => p.reviews != null ? fmt(p.reviews) + ' reviews' : null },
   { id: 'shops', label: 'Shops with offers', grp: 'Popularity', type: 'num', dir: 'desc', val: p => p.shops },
   { id: 'name', label: 'Product name', grp: 'Catalog', type: 'text', dir: 'asc', val: p => p.name },
@@ -660,7 +650,7 @@ function SortMenu({ fields, field, dir, onPick }) {
 // ===========================================================
 // RESULTS SCREEN
 // ===========================================================
-const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', rating: 0, sale: false, instock: false, avail: [], facets: {} });
+const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', dom: 0, sale: false, instock: false, avail: [], facets: {} });
 function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} };
@@ -783,7 +773,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     if ((f.min || f.max) && p.best == null) return false;
     if (f.min && p.best < +f.min) return false;
     if (f.max && p.best > +f.max) return false;
-    if (f.rating && (p.rating || 0) < f.rating) return false;
+    if (f.dom && (domTier(p) == null || domTier(p) < f.dom)) return false;
     if (f.sale && p.drop < 12) return false;
     if (f.instock && !p.stock) return false;
     for (const a of AVAIL) { if (f.avail.includes(a.key) && !a.test(p)) return false; }
@@ -826,7 +816,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     ...f.brands.map(b => ({ k: 'brand:' + b, label: b, clear: () => set('brands', f.brands.filter(x => x !== b)) })),
     ...(f.min ? [{ k: 'min', label: 'min kr ' + fmt(+f.min), clear: () => set('min', '') }] : []),
     ...(f.max ? [{ k: 'max', label: 'max kr ' + fmt(+f.max), clear: () => set('max', '') }] : []),
-    ...(f.rating ? [{ k: 'rating', label: f.rating + '★ & up', clear: () => set('rating', 0) }] : []),
+    ...(f.dom ? [{ k: 'dom', label: (DOM_TIERS.find(t => t.v === f.dom) || {}).label, clear: () => set('dom', 0) }] : []),
     ...(f.sale ? [{ k: 'sale', label: 'On sale', clear: () => set('sale', false) }] : []),
     ...(f.instock ? [{ k: 'instock', label: 'In stock', clear: () => set('instock', false) }] : []),
     ...f.avail.map(k => { const d = AVAIL.find(a => a.key === k); return { k: 'avail:' + k, label: d ? d.label : k, clear: () => setAvail(k) }; }),
@@ -1065,7 +1055,7 @@ function ProductPage({ go, id }) {
             <div className="pdp__brand">{p.brand}</div>
             <h1>{p.name}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)', margin: '0 0 var(--s-4)', flexWrap: 'wrap' }}>
-              <a className="pdp__revlink" title="Les omtaler" onClick={scrollToReviews}><Stars rating={p.rating} reviews={p.reviews} /></a>
+              <a className="pdp__revlink" title="Les omtaler" onClick={scrollToReviews}><Verdict p={p} traits={2} count /></a>
               {p.nc && <span className="rrow__feat">Noise cancelling</span>}
               <StockBadge state={v.unavailable ? 'out' : (p.stock ? 'in' : 'back')} />
               {specsFor(p) && <a className="pdp__speclink" onClick={scrollToSpecs}>Specifications ↓</a>}
@@ -1199,4 +1189,4 @@ function ProductPage({ go, id }) {
   );
 }
 
-Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, applyTotals, etaFast, Results, ProductPage, ResultRow, ResultRowCompact, ResultCard, Stars, HiName, refineToks, refineMatch });
+Object.assign(window, { CATALOG, CAT_OF, getListing, searchCatalog, genOffers, genHist, applyTotals, etaFast, Results, ProductPage, ResultRow, ResultRowCompact, ResultCard, HiName, refineToks, refineMatch });

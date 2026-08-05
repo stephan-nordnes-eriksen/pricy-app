@@ -5,6 +5,7 @@
 
 const ACCT_SECTIONS = [
   { id: 'profile',       label: 'Profile',        icon: 'user' },
+  { id: 'reviews',       label: 'My reviews',     icon: 'star' },
   { id: 'notifications', label: 'Notifications',  icon: 'bell' },
   { id: 'plan',          label: 'Plan & billing', icon: 'sparkles' },
   { id: 'privacy',       label: 'Privacy & data', icon: 'shield' },
@@ -87,6 +88,52 @@ function ProfileSection({ onToast, initialName, onSave, hasPassword, onChangePas
           />
         )}
       </div>
+    </div>
+  );
+}
+
+const prodOf = (id) => (window.byId && byId[id]) || (window.CATALOG || []).find(p => p.id === id);
+
+function MyReviewsSection({ onToast, go }) {
+  useReviewStore();
+  const mine = ReviewStore.mine();
+  const [edit, setEdit] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  return (
+    <div className="asec">
+      <div className="asec__head"><h2>My reviews</h2>{mine.length > 0 && <span className="hint">{mine.length} published</span>}</div>
+      {mine.length === 0 ? (
+        <div className="asec__body"><div className="rev-empty">No reviews yet. Open a product you own and hit «Skriv omtale» — it shows up here afterwards.</div></div>
+      ) : mine.map(r => {
+        const p = prodOf(r.prodId);
+        return (
+          <div key={r.id} className="myrev">
+            <div className="myrev__img" onClick={() => go('product', { id: r.prodId })}><ProdImg p={p || { icon: 'package' }} fill size={22} /></div>
+            <div>
+              <a className="myrev__prod" onClick={() => go('product', { id: r.prodId })}>{p ? p.brand + ' · ' + p.name : r.prodId} <Icon name="arrow-up-right" size={11} /></a>
+              <div className="myrev__rate"><ClaimChips r={r} />{r.title ? <b>{r.title}</b> : null}</div>
+              {((r.plus || []).length > 0 || (r.minus || []).length > 0) && <div className="myrev__traits">{(r.plus || []).map(t => <TraitChip key={'+' + t} t={t} pos />)}{(r.minus || []).map(t => <TraitChip key={'-' + t} t={t} pos={false} />)}</div>}
+              {r.body ? <p>{r.body}</p> : null}
+              <div className="myrev__meta">{r.date}{r.edited ? ' · edited' : ''} · {r.helpful} found it helpful{r.verified ? ' · verified purchase' : ''}</div>
+            </div>
+            <div className="myrev__acts">
+              {confirm === r.id ? (
+                <React.Fragment>
+                  <span className="rev-confirm">Delete?</span>
+                  <Btn size="sm" onClick={() => setConfirm(null)}>Keep</Btn>
+                  <Btn size="sm" variant="dark" style={{ background: 'var(--up-600)', borderColor: 'var(--up-600)' }} onClick={() => { ReviewStore.remove(r.id); setConfirm(null); onToast('Review deleted'); }}>Delete</Btn>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  <Btn size="sm" icon="pencil-line" onClick={() => setEdit(r)}>Edit</Btn>
+                  <Btn size="sm" icon="trash-2" onClick={() => setConfirm(r.id)}>Delete…</Btn>
+                </React.Fragment>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      {edit && <WriteReviewModal p={prodOf(edit.prodId) || { id: edit.prodId, brand: '', name: edit.prodId }} review={edit} onClose={() => setEdit(null)} onDone={() => { setEdit(null); onToast('Review updated'); }} />}
     </div>
   );
 }
@@ -262,6 +309,7 @@ function AccountPage({ go, tab: tab0, me, onSaveProfile, onSaveSettings, onChang
             ))}
           </nav>
           <div>
+            {tab === 'reviews' && <MyReviewsSection onToast={onToast} go={go} />}
             {tab === 'profile' && <ProfileSection onToast={onToast} initialName={me && me.user && me.user.name} onSave={onSaveProfile} hasPassword={me && me.user && me.user.hasPassword} onChangePassword={onChangePassword} />}
             {tab === 'notifications' && <NotifSection onToast={onToast} openPaywall={openPaywall} initial={settings} onSave={onSaveSettings} />}
             {tab === 'plan' && <PlanSection openPaywall={openPaywall} onToast={onToast} />}
