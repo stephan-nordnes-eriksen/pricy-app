@@ -665,7 +665,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   const [shown, setShown] = useState(60);
   const [loadingMore, setLoadingMore] = useState(false);
   // what the host served for the current query: real category-wide total + facet counts
-  const [served, setServed] = useState({ total: null, fcounts: null, prange: null, brands: null });
+  const [served, setServed] = useState({ total: null, fcounts: null, prange: null, brands: null, acounts: null });
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState(() => (window.history.state || {}).rsort || 'best');
   const [dir, setDir] = useState(() => (window.history.state || {}).rdir || (SORT_FIELDS.find(s => s.id === (window.history.state || {}).rsort) || SORT_FIELDS[0]).dir);
@@ -711,19 +711,19 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   const setFacet = (key, v) => setF(prev => { const cur = prev.facets[key] || []; const next = cur.includes(v) ? cur.filter(x => x !== v) : [...cur, v]; const fac = { ...prev.facets }; if (next.length) fac[key] = next; else delete fac[key]; return { ...prev, facets: fac }; });
   const setBoolFacet = (key) => setF(prev => { const fac = { ...prev.facets }; if (fac[key]) delete fac[key]; else fac[key] = true; return { ...prev, facets: fac }; });
   const setAvail = (key) => setF(prev => ({ ...prev, avail: prev.avail.includes(key) ? prev.avail.filter(x => x !== key) : [...prev.avail, key] }));
-  const availCounts = useMemo(() => { const m = {}; AVAIL.forEach(d => { m[d.key] = countPool.filter(d.test).length; }); return m; }, [countPool]);
+  const availCounts = useMemo(() => { if (!rToks.length && served.acounts) return { ...served.acounts }; const m = {}; AVAIL.forEach(d => { m[d.key] = countPool.filter(d.test).length; }); return m; }, [countPool, served, f.q]);
 
   // the host serves the query: it merges the matching page into CATALOG and answers
   // with the category-wide total + facet counts. Debounced, page 0, mount included.
   // A search (q=) is capped at 100 rows the client already holds \u2014 never ask.
   const fKey = JSON.stringify(f);
   useEffect(() => {
-    if (!window.onQuery || query) { setServed({ total: null, fcounts: null, prange: null, brands: null }); return; }
+    if (!window.onQuery || query) { setServed({ total: null, fcounts: null, prange: null, brands: null, acounts: null }); return; }
     let dead = false;
     const t = setTimeout(() => {
       Promise.resolve(window.onQuery({ cat, brick, dept, label, sort, dir, filters: f, page: 0 })).then(r => {
         if (dead || !r) return;
-        setServed({ total: r.total != null ? r.total : null, fcounts: r.fcounts || null, prange: r.prange || null, brands: r.brands || null });
+        setServed({ total: r.total != null ? r.total : null, fcounts: r.fcounts || null, prange: r.prange || null, brands: r.brands || null, acounts: r.acounts || null });
         setPage(0); setShown(60); bump(x => x + 1);
       }).catch(() => {});
     }, 250);
@@ -805,7 +805,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     try {
       const r = await window.onQuery({ cat, brick, dept, label, sort, dir, filters: f, page: page + 1 });
       setPage(page + 1);
-      if (r) setServed(s => ({ total: r.total != null ? r.total : s.total, fcounts: r.fcounts || s.fcounts, prange: r.prange || s.prange, brands: r.brands || s.brands }));
+      if (r) setServed(s => ({ total: r.total != null ? r.total : s.total, fcounts: r.fcounts || s.fcounts, prange: r.prange || s.prange, brands: r.brands || s.brands, acounts: r.acounts || s.acounts }));
       bump(x => x + 1);
       setShown(s => s + 60);
     } catch (e) {}
