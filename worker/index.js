@@ -671,6 +671,23 @@ async function drainImages(db, env, n = 40) {
   return { done, failed: marks.length - done, remaining: await remaining() };
 }
 
+// Web Push to every device a user subscribed; prunes dead endpoints. The
+// caller owns the settings gate (s.push === true — upstream NotifSection
+// toggle, default off; boot flips it on when the enable chip's subscribe
+// succeeds). Returns whether at least one device took the payload.
+async function pushToUser(db, env, userId, payload) {
+  if (!env?.VAPID_PRIVATE_KEY) return false;
+  const { results } = await db.prepare('SELECT endpoint, p256dh, auth FROM push_subs WHERE user_id = ?').bind(userId).all();
+  let delivered = false;
+  for (const sub of results) {
+    const status = await sendPush(env, sub, payload).catch(() => 0);
+    if (status === 404 || status === 410) {
+      await db.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
+    } else if (status >= 200 && status < 300) delivered = true;
+  }
+  return delivered;
+}
+
 // Price-drop alerts, fired from ingest() — the single choke point both the
 // cron and POST /api/ingest route through (AB-1's trigger engine hangs here
 // too). ponytail: armed/fired state is derived, not stored — a "crossing" is
@@ -678,75 +695,74 @@ async function drainImages(db, env, n = 40) {
 // prev <= target so nothing refires; rising back above re-arms for free.
 // Ceiling: a watch created while the price is already below its target never
 // fires until the price rises above the target and crosses again.
+// Two push-only extras ride the same loop for every active watch: back in
+// stock (no buyable offer before this batch, one now — also covers a watched
+// offer-less head getting its first offer) and, for target-less watches, a
+// new all-time low. Neither writes an alerts-feed row — the table requires a
+// target; give them one when the feed should show non-price events.
 async function fireAlerts(db, env, before) {
   for (const [pid, prev] of Object.entries(before)) {
     const offer = await bestOffer(db, pid);
     if (!offer) continue;
-    // target >= item price is a valid pre-filter for BOTH bases (a total is
-    // never below its item price); the arming check moved to JS because it
-    // must compare on the watch's own basis — an inclShip watch whose item
-    // price already sat below target but whose TOTAL was still above must
-    // stay armed, and a prev.best SQL filter dropped exactly those.
     const { results } = await db.prepare(
-      'SELECT w.user_id, w.target, w.inclShip, u.email, u.settings FROM watches w JOIN users u ON u.id = w.user_id WHERE w.product_id = ? AND w.paused = 0 AND w.target IS NOT NULL AND w.target >= ?'
-    ).bind(pid, offer.price).all();
+      'SELECT w.user_id, w.target, w.inclShip, u.email, u.settings FROM watches w JOIN users u ON u.id = w.user_id WHERE w.product_id = ? AND w.paused = 0'
+    ).bind(pid).all();
     if (!results.length) continue;
-    const totNow = results.some(w => w.inclShip) ? await bestTotalOffer(db, pid) : null;
+    const totNow = results.some(w => w.inclShip && w.target != null) ? await bestTotalOffer(db, pid) : null;
     const meta = await db.prepare('SELECT meta FROM products WHERE id = ?').bind(pid).first();
     const name = meta ? JSON.parse(meta.meta).name : pid;
     const dropPct = prev.best ? ((prev.best - offer.price) / prev.best) * 100 : 100;
     const isLow = prev.low != null && offer.price < prev.low; // new all-time low
+    const restocked = prev.best == null; // bestOffer is stock=1 only
     for (const w of results) {
       const s = w.settings ? JSON.parse(w.settings) : {};
+      const push = (title, body) => pushToUser(db, env, w.user_id, { title, body, url: `/product/${pid}` });
+      // price-target crossing: email + push + the alerts-feed row.
+      // target >= item price is a valid pre-filter for BOTH bases (a total is
+      // never below its item price); arming compares on the watch's own basis
+      // — an inclShip watch whose item price already sat below target but
+      // whose TOTAL was still above must stay armed.
       // threshold = minimum drop % ("any"|"5"|"10"); lows = always alert on
       // an all-time low, even below the threshold (both default permissive)
-      if (Number(s.threshold) > dropPct && !(isLow && s.lows !== false)) continue;
-      // hit and arming on the watch's basis: item price, or cheapest TOTAL
-      // for "Inkluder frakt" (unknown shipping = item price, see bestTotalOffer)
-      const now = w.inclShip ? totNow.total : offer.price;
-      const prevP = w.inclShip ? prev.bestTotal : prev.best;
-      if (w.target < now || (prevP != null && prevP <= w.target)) continue;
-      let delivered = null;
-      if (s.email !== false) { // channel toggle: record the hit, skip the send
-        if (env?.SEND_EMAIL) {
-          try {
-            await env.SEND_EMAIL.send({
-              to: w.email,
-              from: { email: 'alerts@pricy.no', name: 'pricy.no' },
-              subject: `Price drop: ${name} is now ${offer.price} kr`,
-              html: `<p>${name} dropped to <b>${offer.price} kr</b> at ${offer.shop} — at or below your target of ${w.target} kr.</p><p><a href="https://pricy.no/product/${pid}">See the offer</a></p>`,
-              text: `${name} dropped to ${offer.price} kr at ${offer.shop} — at or below your target of ${w.target} kr.\n\nhttps://pricy.no/product/${pid}`,
-            });
-            delivered = Date.now();
-          } catch (e) {
-            console.error(`price alert send failed for ${w.email}: ${e.code || ''} ${e.message}`);
+      if (w.target != null && w.target >= offer.price
+        && !(Number(s.threshold) > dropPct && !(isLow && s.lows !== false))) {
+        const now = w.inclShip ? totNow.total : offer.price;
+        const prevP = w.inclShip ? prev.bestTotal : prev.best;
+        if (w.target >= now && !(prevP != null && prevP <= w.target)) {
+          let delivered = null;
+          if (s.email !== false) { // channel toggle: record the hit, skip the send
+            if (env?.SEND_EMAIL) {
+              try {
+                await env.SEND_EMAIL.send({
+                  to: w.email,
+                  from: { email: 'alerts@pricy.no', name: 'pricy.no' },
+                  subject: `Price drop: ${name} is now ${offer.price} kr`,
+                  html: `<p>${name} dropped to <b>${offer.price} kr</b> at ${offer.shop} — at or below your target of ${w.target} kr.</p><p><a href="https://pricy.no/product/${pid}">See the offer</a></p>`,
+                  text: `${name} dropped to ${offer.price} kr at ${offer.shop} — at or below your target of ${w.target} kr.\n\nhttps://pricy.no/product/${pid}`,
+                });
+                delivered = Date.now();
+              } catch (e) {
+                console.error(`price alert send failed for ${w.email}: ${e.code || ''} ${e.message}`);
+              }
+            } else {
+              // ponytail: no SEND_EMAIL binding (tests / local dev) — log it, same as magic links
+              console.log(`price alert for ${w.email}: ${name} ${offer.price} kr at ${offer.shop} (target ${w.target})`);
+              delivered = Date.now();
+            }
           }
-        } else {
-          // ponytail: no SEND_EMAIL binding (tests / local dev) — log it, same as magic links
-          console.log(`price alert for ${w.email}: ${name} ${offer.price} kr at ${offer.shop} (target ${w.target})`);
-          delivered = Date.now();
+          if (s.push === true
+            && await push(`Price drop: ${name}`, `${offer.price} kr at ${offer.shop} — at or below your target of ${w.target} kr`)
+            && !delivered) delivered = Date.now();
+          await db.prepare('INSERT INTO alerts (user_id, product_id, shop, price, prev_price, target, created_at, delivered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+            .bind(w.user_id, pid, offer.shop, offer.price, prev.best, w.target, Date.now(), delivered).run();
+          continue;
         }
       }
-      // push channel: settings toggle (upstream NotifSection, default off —
-      // boot flips it on when the enable chip's subscribe succeeds). Same
-      // payload shape the manual /api/admin/push sends; dead endpoints prune
-      // exactly like there. Crossings are rare, so the extra subrequests
-      // (one per device) don't threaten the ingest budget.
-      if (s.push === true && env?.VAPID_PRIVATE_KEY) {
-        const { results: devices } = await db.prepare('SELECT endpoint, p256dh, auth FROM push_subs WHERE user_id = ?').bind(w.user_id).all();
-        for (const sub of devices) {
-          const status = await sendPush(env, sub, {
-            title: `Price drop: ${name}`,
-            body: `${offer.price} kr at ${offer.shop} — at or below your target of ${w.target} kr`,
-            url: `/product/${pid}`,
-          }).catch(() => 0);
-          if (status === 404 || status === 410) {
-            await db.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
-          } else if (status >= 200 && status < 300 && !delivered) delivered = Date.now();
-        }
+      if (s.push !== true) continue;
+      if (restocked) await push(`Back in stock: ${name}`, `${offer.price} kr at ${offer.shop}`);
+      else if (w.target == null && isLow && s.lows !== false) {
+        await push(`All-time low: ${name}`, `${offer.price} kr at ${offer.shop} — the lowest price we've tracked`);
       }
-      await db.prepare('INSERT INTO alerts (user_id, product_id, shop, price, prev_price, target, created_at, delivered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(w.user_id, pid, offer.shop, offer.price, prev.best, w.target, Date.now(), delivered).run();
     }
   }
 }
@@ -2342,12 +2358,21 @@ export default {
       if (!share) return json({ error: 'not found' }, 404);
       const role = share.user_id === user.id ? 'owner' : 'member';
       const owner = role === 'owner' ? user
-        : await db.prepare('SELECT id, name, lists FROM users WHERE id = ?').bind(share.user_id).first();
+        : await db.prepare('SELECT id, name, lists, settings FROM users WHERE id = ?').bind(share.user_id).first();
       const l = owner && (owner.lists ? JSON.parse(owner.lists) : []).find(x => x.id === share.list_id);
       if (!l) return json({ error: 'not found' }, 404); // owner or list gone — the link is dead
+      await seedCatalog(db); // before the POST block: the bought push reads the product's name
       if (role === 'member') {
+        const known = await db.prepare('SELECT 1 AS x FROM list_members WHERE owner_id = ? AND list_id = ? AND user_id = ?')
+          .bind(share.user_id, share.list_id, user.id).first();
         await db.prepare('INSERT OR IGNORE INTO list_members (owner_id, list_id, user_id, joined_at) VALUES (?, ?, ?, ?)')
           .bind(share.user_id, share.list_id, user.id, Date.now()).run();
+        if (!known && (owner.settings ? JSON.parse(owner.settings) : {}).push === true) {
+          await pushToUser(db, env, owner.id, {
+            title: `${user.name} joined «${l.name}»`, body: 'They can now see the list and mark gifts as bought',
+            url: `/lists?id=${encodeURIComponent(l.id)}`,
+          });
+        }
       }
       if (request.method === 'POST') {
         const b = await request.json().catch(() => ({}));
@@ -2355,8 +2380,28 @@ export default {
         if (b.bought) {
           // OR IGNORE: already bought by someone else is a no-op, the
           // response below shows them who beat them to it
+          const had = await db.prepare('SELECT 1 AS x FROM list_bought WHERE owner_id = ? AND list_id = ? AND product_id = ?')
+            .bind(share.user_id, share.list_id, b.product_id).first();
           await db.prepare('INSERT OR IGNORE INTO list_bought (owner_id, list_id, product_id, user_id, at) VALUES (?, ?, ?, ?, ?)')
             .bind(share.user_id, share.list_id, b.product_id, user.id, Date.now()).run();
+          if (!had) {
+            // gift coordination: tell the OTHER members someone bought it, so
+            // nobody double-buys. NEVER the owner — the in-app marks already
+            // hide who, and a push at purchase time would spoil the surprise
+            // by timing alone.
+            const { results: mem } = await db.prepare('SELECT u.id, u.settings FROM list_members m JOIN users u ON u.id = m.user_id WHERE m.owner_id = ? AND m.list_id = ? AND m.user_id != ?')
+              .bind(share.user_id, share.list_id, user.id).all();
+            const pMeta = await db.prepare('SELECT meta FROM products WHERE id = ?').bind(b.product_id).first();
+            const pName = (pMeta && JSON.parse(pMeta.meta).name) || b.product_id;
+            const tok = decodeURIComponent(url.pathname.slice('/api/l/'.length));
+            for (const m of mem) {
+              if ((m.settings ? JSON.parse(m.settings) : {}).push === true) {
+                await pushToUser(db, env, m.id, {
+                  title: `Bought: ${pName}`, body: `Marked as bought on «${l.name}»`, url: `/l/${tok}`,
+                });
+              }
+            }
+          }
         } else {
           await (role === 'owner'
             ? db.prepare('DELETE FROM list_bought WHERE owner_id = ? AND list_id = ? AND product_id = ?')
@@ -2365,7 +2410,6 @@ export default {
               .bind(share.user_id, share.list_id, b.product_id, user.id)).run();
         }
       }
-      await seedCatalog(db);
       const [members, marks, products] = await Promise.all([
         db.prepare('SELECT u.name FROM list_members m JOIN users u ON u.id = m.user_id WHERE m.owner_id = ? AND m.list_id = ? ORDER BY m.joined_at')
           .bind(share.user_id, share.list_id).all().then(r => r.results),

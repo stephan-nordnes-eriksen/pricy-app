@@ -420,7 +420,13 @@ Two Claude Design projects feed this repo:
   toggle, default off — the boot chip flips it on after a successful
   subscribe; the silent re-subscribe never does, so a settings opt-out
   sticks). A delivered push marks the alert delivered_at even with the
-  email channel off.
+  email channel off. Push-only extras ride the same loop for every active
+  watch (no alerts-feed row — the table requires a target): back in stock
+  (prev.best null → an in-stock offer now) and, for target-less watches,
+  a new all-time low. Shared gift lists push too: a first join notifies
+  the owner, a new bought-mark notifies the OTHER members — never the
+  owner (spoiler by timing) and never the buyer. All sends go through
+  `pushToUser` (settings gate at the caller, dead endpoints pruned).
 - MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
   `Mcp-Session-Id` header to the shared `sessions` table), search_products,

@@ -3080,3 +3080,74 @@ test('alerts: push channel sends to the subscribed devices and marks delivered',
   assert.strictEqual(posts.length, 1, 'no push after the opt-out');
   assert.strictEqual((await alerts()).length, 2, 'the alert row still lands');
 });
+
+// shared makers for the push tests below
+const vapidEnv = async (env) => {
+  const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign']);
+  env.VAPID_PUBLIC_KEY = Buffer.from(await crypto.subtle.exportKey('raw', kp.publicKey)).toString('base64url');
+  env.VAPID_PRIVATE_KEY = JSON.stringify(await crypto.subtle.exportKey('jwk', kp.privateKey));
+  return env;
+};
+const subscribeDevice = async (call, cookie, endpoint) => {
+  const ua = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  await call('/api/push/subscribe', { method: 'POST', body: { endpoint, keys: {
+    p256dh: Buffer.from(await crypto.subtle.exportKey('raw', ua.publicKey)).toString('base64url'),
+    auth: Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url'),
+  } }, cookie });
+};
+// runs fn with the push service mocked; resolves to the endpoints hit
+const pushesDuring = (fn) => {
+  const posts = [];
+  return withFetch(async (u) => { posts.push(String(u)); return new Response(null, { status: 201 }); }, fn).then(() => posts);
+};
+
+test('lists: joining pushes the owner, bought pushes the other members — never the owner or buyer', async () => {
+  const env = await vapidEnv({ DB: d1() });
+  const call = api(env);
+  const account = async (email, endpoint) => {
+    const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email, password: 'correcthorse1' } }));
+    await call('/api/settings', { method: 'PUT', body: { push: true }, cookie });
+    await subscribeDevice(call, cookie, endpoint);
+    return cookie;
+  };
+  const owner = await account('eier@x.no', 'https://push.test/owner');
+  const m1 = await account('venn1@x.no', 'https://push.test/m1');
+  const m2 = await account('venn2@x.no', 'https://push.test/m2');
+
+  await call('/api/lists', { method: 'PUT', body: [{ id: 'l1', name: 'Bursdag', items: ['airpods'] }], cookie: owner });
+  const { url: shareUrl } = await (await call('/api/lists/l1/share', { method: 'POST', cookie: owner })).json();
+  const tok = shareUrl.split('/l/')[1];
+
+  assert.deepStrictEqual(await pushesDuring(() => call('/api/l/' + tok, { cookie: m1 })),
+    ['https://push.test/owner'], 'first join pushes the owner');
+  assert.deepStrictEqual(await pushesDuring(() => call('/api/l/' + tok, { cookie: m1 })),
+    [], 'a revisit does not re-push');
+  await pushesDuring(() => call('/api/l/' + tok, { cookie: m2 })); // m2 joins too
+
+  assert.deepStrictEqual(await pushesDuring(() => call('/api/l/' + tok, { method: 'POST', body: { product_id: 'airpods', bought: true }, cookie: m1 })),
+    ['https://push.test/m2'], 'bought goes to the other members only');
+  assert.deepStrictEqual(await pushesDuring(() => call('/api/l/' + tok, { method: 'POST', body: { product_id: 'airpods', bought: true }, cookie: m2 })),
+    [], 'marking an already-bought item is a no-op');
+  assert.deepStrictEqual(await pushesDuring(() => call('/api/l/' + tok, { method: 'POST', body: { product_id: 'airpods', bought: false }, cookie: m1 })),
+    [], 'unmarking pushes nothing');
+});
+
+test('alerts: push-only extras — back in stock, and all-time low for target-less watches', async () => {
+  const { call, push, alerts, env } = alertEnv();
+  await vapidEnv(env);
+  await call('/api/products'); // seeds
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  await call('/api/settings', { method: 'PUT', body: { email: false, push: true }, cookie });
+  await subscribeDevice(call, cookie, 'https://push.test/dev1');
+
+  const pid = 'ean-7099933000001';
+  const row = (price, stock = 1) => ({ product_id: pid, shop: 'Power', price, stock, name: 'Vaffeljern Test', brand: 'Acme' });
+  await push([row(1200)]); // product + offer exist before the watch
+  await call('/api/watches', { method: 'PUT', body: [{ id: pid }], cookie }); // watch WITHOUT a target
+
+  assert.strictEqual((await pushesDuring(() => push([row(1100)]))).length, 1, 'a new all-time low pushes a target-less watch');
+  assert.strictEqual((await pushesDuring(() => push([row(1150)]))).length, 0, 'not a new low — no push');
+  assert.strictEqual((await pushesDuring(() => push([row(1150, 0)]))).length, 0, 'going out of stock pushes nothing');
+  assert.strictEqual((await pushesDuring(() => push([row(1150)]))).length, 1, 'coming back in stock pushes');
+  assert.strictEqual((await alerts()).length, 0, 'push-only events write no alerts-feed rows');
+});
