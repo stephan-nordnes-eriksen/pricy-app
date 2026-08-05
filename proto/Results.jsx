@@ -665,7 +665,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   const [shown, setShown] = useState(60);
   const [loadingMore, setLoadingMore] = useState(false);
   // what the host served for the current query: real category-wide total + facet counts
-  const [served, setServed] = useState({ total: null, fcounts: null });
+  const [served, setServed] = useState({ total: null, fcounts: null, prange: null, brands: null });
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState(() => (window.history.state || {}).rsort || 'best');
   const [dir, setDir] = useState(() => (window.history.state || {}).rdir || (SORT_FIELDS.find(s => s.id === (window.history.state || {}).rsort) || SORT_FIELDS[0]).dir);
@@ -718,12 +718,12 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   // A search (q=) is capped at 100 rows the client already holds \u2014 never ask.
   const fKey = JSON.stringify(f);
   useEffect(() => {
-    if (!window.onQuery || query) { setServed({ total: null, fcounts: null }); return; }
+    if (!window.onQuery || query) { setServed({ total: null, fcounts: null, prange: null, brands: null }); return; }
     let dead = false;
     const t = setTimeout(() => {
       Promise.resolve(window.onQuery({ cat, brick, dept, label, sort, dir, filters: f, page: 0 })).then(r => {
         if (dead || !r) return;
-        setServed({ total: r.total != null ? r.total : null, fcounts: r.fcounts || null });
+        setServed({ total: r.total != null ? r.total : null, fcounts: r.fcounts || null, prange: r.prange || null, brands: r.brands || null });
         setPage(0); setShown(60); bump(x => x + 1);
       }).catch(() => {});
     }, 250);
@@ -758,12 +758,15 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     }));
   }, [countPool, fKey, facetDefs]);
 
-  const prices = brandPool.map(p => p.best).filter(n => n != null && isFinite(n));
+  // served prange/brands are category-wide (same cross-filter convention as fcounts);
+  // use them when no free-text refine narrows the set, else fall back to local rows
+  const srvWide = !rToks.length;
+  const prices = (srvWide && served.prange) ? null : brandPool.map(p => p.best).filter(n => n != null && isFinite(n));
   const base = {
-    min: prices.length ? Math.floor(Math.min(...prices) / 100) * 100 : 0,
-    max: prices.length ? Math.ceil(Math.max(...prices) / 100) * 100 : 1000,
+    min: (srvWide && served.prange) ? Math.floor(served.prange[0] / 100) * 100 : (prices.length ? Math.floor(Math.min(...prices) / 100) * 100 : 0),
+    max: (srvWide && served.prange) ? Math.ceil(served.prange[1] / 100) * 100 : (prices.length ? Math.ceil(Math.max(...prices) / 100) * 100 : 1000),
     cat,
-    byBrand: brandPool.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
+    byBrand: (srvWide && served.brands) ? served.brands.reduce((m, pr) => ((m[pr[0]] = pr[1]), m), {}) : brandPool.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {}),
   };
   base.brands = Object.keys(base.byBrand).sort();
   base.cat = cat || catF;
@@ -802,7 +805,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     try {
       const r = await window.onQuery({ cat, brick, dept, label, sort, dir, filters: f, page: page + 1 });
       setPage(page + 1);
-      if (r) setServed(s => ({ total: r.total != null ? r.total : s.total, fcounts: r.fcounts || s.fcounts }));
+      if (r) setServed(s => ({ total: r.total != null ? r.total : s.total, fcounts: r.fcounts || s.fcounts, prange: r.prange || s.prange, brands: r.brands || s.brands }));
       bump(x => x + 1);
       setShown(s => s + 60);
     } catch (e) {}
