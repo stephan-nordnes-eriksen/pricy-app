@@ -364,7 +364,7 @@ window.buyNowApi = (p, best) => fetch('/api/buy', {
 // id → hydrated product; child ids (iphone~256-blue) resolve through the
 // prototype's variant seam (watch/alert/order hydration already does, via
 // WatchStore.prod/AutobuyStore.prod)
-function prodOf(id) {
+function prodById(id) {
   const p = CATALOG.find(x => x.id === id);
   if (p) return p;
   const rv = resolveVariantId(id);
@@ -373,7 +373,7 @@ function prodOf(id) {
 function hydrateRecent() {
   let ids = [];
   try { ids = JSON.parse(localStorage.getItem('pricy_recent')) || []; } catch {}
-  RECENT.splice(0, RECENT.length, ...ids.map(prodOf).filter(Boolean));
+  RECENT.splice(0, RECENT.length, ...ids.map(prodById).filter(Boolean));
 }
 function recordRecent(id) {
   let ids = [];
@@ -648,7 +648,7 @@ function App() {
     const t = ++navSeq;
     ensureRoute(name, params).then(() => {
       if (t !== navSeq) return;
-      if (name === 'product') recordRecent(params.id); // after the fetch: prodOf needs the row
+      if (name === 'product') recordRecent(params.id); // after the fetch: prodById needs the row
       params = gpcParams(name, params); // after ensureRoute: needs the served registry
       const url = toUrl(name, params);
       // mirror upstream AppRouter: park scrollY on the outgoing entry so Back

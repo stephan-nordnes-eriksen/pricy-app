@@ -158,9 +158,16 @@ them is built upstream. Rough order of backend readiness:
   `purchases` table exists; needs a curated per-shop guarantee
   registry and decoupling purchases from the HIDE_AUTOBUY switch.
   Plus-gating deferred with [pricy-plus](pricy-plus.md).
-- [reviews-layer](reviews-layer.md) (02) — UGC product reviews are
-  buildable now; fake shop ratings must NOT ship (honesty precedent) —
-  shop profiles start objective-stats-only.
+- [reviews-layer](reviews-layer.md) (02) — UGC product reviews
+  **shipped 2026-08-04**; fake shop ratings must NOT ship (honesty
+  precedent) — shop profiles start objective-stats-only, still open.
+- [folkedommen-reviews](folkedommen-reviews.md) (02, resynced
+  2026-08-05) — upstream replaced stars with a qualitative verdict
+  (three claims + plus/minus traits + paid range). Supersedes 02's
+  write/read half: new columns, delete + `?mine=1`, `meta.udom`
+  replacing `urating`/`ureviews`, `dom=` filter/sort. Blocked on two
+  upstream fixes (paste-ready prompt in the plan) — one of them is a
+  crash in the filter rail.
 - [deals-hub](deals-hub.md) (03) — verdict engine over `price_points`;
   hard-coupled to item C (`was` capture) and honest only once B makes
   crawls regular.

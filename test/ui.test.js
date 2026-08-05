@@ -1037,7 +1037,7 @@ test('facet filters: served meta.facets replaces the baked registry; cats withou
   const toys = boot('http://pricy.test/search?cat=Toys', { session: true, catalog: { meta, products } });
   assert.ok(await until(() => qa(toys, '.rrow, .rcard').length > 0), 'toys results did not render');
   const titles = qa(toys, '.filters__grp').map(g => { const h = g.querySelector('h4'); return h && h4Title(h); }).filter(Boolean);
-  assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Rating', 'Show only', 'Availability'], 'no facet groups for a cat without defs (Availability is universal, not a facet), got: ' + titles.join(' | '));
+  assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Folkedommen', 'Show only', 'Availability'], 'no facet groups for a cat without defs (Availability is universal, not a facet), got: ' + titles.join(' | '));
 });
 
 test('filter search: narrows groups, no-match message clears back', async () => {
@@ -1047,9 +1047,9 @@ test('filter search: narrows groups, no-match message clears back', async () => 
   const search = q(win, '.filters__search input');
   assert.ok(search, 'filter search box must render');
 
-  type(win, search, 'rating');
+  type(win, search, 'folkedom');
   assert.ok(await until(() => grpTitles().length === 1), 'groups did not narrow');
-  assert.deepStrictEqual(grpTitles(), ['Rating']);
+  assert.deepStrictEqual(grpTitles(), ['Folkedommen']);
 
   type(win, search, 'zzzz-no-such-filter');
   assert.ok(await until(() => q(win, '.filters__nomatch')), 'no-match message must show');
