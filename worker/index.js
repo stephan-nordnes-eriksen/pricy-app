@@ -21,6 +21,10 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS offers (product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, ship TEXT, stock INTEGER NOT NULL DEFAULT 1, eta TEXT, url TEXT, updated_at INTEGER, PRIMARY KEY (product_id, shop))',
   'CREATE TABLE IF NOT EXISTS price_points (product_id TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, day))',
+  // per-shop dailies for the PDP's "Price at <shop>" chart line — real
+  // observations only, never synthesized (the prototype's genShopHist is
+  // demo-only). Accumulates from first deploy; rows before that don't exist.
+  'CREATE TABLE IF NOT EXISTS shop_prices (product_id TEXT NOT NULL, shop TEXT NOT NULL, day TEXT NOT NULL, price INTEGER NOT NULL, PRIMARY KEY (product_id, shop, day))',
   'CREATE TABLE IF NOT EXISTS purchases (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, created_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS oauth_codes (code_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, redirect_uri TEXT NOT NULL, code_challenge TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, prev_price INTEGER, target INTEGER NOT NULL, created_at INTEGER NOT NULL, delivered_at INTEGER)',
@@ -599,6 +603,9 @@ async function ingest(db, rows, env) {
     ...Object.entries(best).map(([id, price]) => db.prepare(
       'INSERT INTO price_points (product_id, day, price) VALUES (?, ?, ?) ON CONFLICT(product_id, day) DO UPDATE SET price = MIN(price, excluded.price)'
     ).bind(id, today, price)),
+    ...rows.map(r => db.prepare(
+      'INSERT INTO shop_prices (product_id, shop, day, price) VALUES (?, ?, ?, ?) ON CONFLICT(product_id, shop, day) DO UPDATE SET price = MIN(price, excluded.price)'
+    ).bind(r.product_id, r.shop, today, r.price)),
   ];
   // ponytail: 200-statement chunks — one giant batch trips D1 limits on a
   // full-feed run; the upserts are idempotent so losing cross-chunk atomicity is fine
@@ -785,12 +792,19 @@ export function shipCost(shop, price, ship, reg = SHIPPING) { // reg injectable 
 // "In stock" counts as 0 days (upstream's own predicate); "2–6 days" → 2.
 const etaDays = (eta) => eta === 'In stock' ? 0 : /^\d/.test(eta || '') ? parseInt(eta) : null;
 
-function shapeRows(prods, offs, pts, imgSet) {
+function shapeRows(prods, offs, pts, imgSet, shopPts) {
   const group = (rows, f) => rows.reduce((m, r) => (((m[r.product_id] ??= []).push(f(r))), m), {});
+  // per-shop history rides detail fetches only (shopPts stays undefined on
+  // list queries — same lean-row rule as specs). Real observed days only;
+  // upstream right-aligns a shorter line, it must never pad or invent.
+  const shist = {};
+  for (const r of shopPts || []) (shist[`${r.product_id}\0${r.shop}`] ??= []).push(r.price);
   const offers = group(offs, o => {
+    const h = shist[`${o.product_id}\0${o.shop}`];
     const sc = shipCost(o.shop, o.price, o.ship);
     return { shop: o.shop, price: o.price, ship: o.ship,
       ...(sc != null ? { shipCost: sc, total: o.price + sc } : {}),
+      ...(h ? { hist: h.slice(-24) } : {}), // same window as `history`
       stock: o.stock === 2 ? undefined : !!o.stock, eta: o.eta, url: o.url, updated_at: o.updated_at };
   });
   const history = group(pts, p => p.price);
@@ -899,13 +913,14 @@ async function rowsFor(db, ids, { expand = true, hidden = false } = {}) {
   }
   const all = prods.map(r => r.id);
   // the three families are independent of each other too — one wait, not three
-  const [offs, pts, imgs] = await Promise.all([
+  const [offs, pts, imgs, shopPts] = await Promise.all([
     chunked(all, async c => (await db.prepare(`SELECT product_id, shop, price, ship, stock, eta, url, updated_at FROM offers WHERE product_id IN (${ph(c)}) ORDER BY price`).bind(...c).all()).results),
     chunked(all, async c => (await db.prepare(`SELECT product_id, price FROM price_points WHERE product_id IN (${ph(c)}) ORDER BY day`).bind(...c).all()).results),
     chunked(all, async c => (await db.prepare(`SELECT product_id FROM images WHERE fetched_at > 0 AND product_id IN (${ph(c)})`).bind(...c).all()).results),
+    expand ? chunked(all, async c => (await db.prepare(`SELECT product_id, shop, price FROM shop_prices WHERE product_id IN (${ph(c)}) ORDER BY day`).bind(...c).all()).results) : [],
   ]);
   const withImg = new Set(imgs.map(r => r.product_id));
-  const rows = shapeRows(prods, offs, pts, withImg);
+  const rows = shapeRows(prods, offs, pts, withImg, expand ? shopPts : undefined);
   // full spec sheets (Icecat-sized, ~100 rows) only ride detail fetches —
   // list queries stay lean; boot's Object.assign merge never wipes a
   // previously hydrated sheet with a lean row
@@ -2052,10 +2067,12 @@ export default {
           // the target's wins and the orphan's leftover is deleted below
           db.prepare('UPDATE OR IGNORE offers SET product_id = ? WHERE product_id = ?').bind(target, orphan),
           db.prepare('UPDATE OR IGNORE price_points SET product_id = ? WHERE product_id = ?').bind(target, orphan),
+          db.prepare('UPDATE OR IGNORE shop_prices SET product_id = ? WHERE product_id = ?').bind(target, orphan),
           db.prepare('UPDATE OR IGNORE watches SET product_id = ? WHERE product_id = ?').bind(target, orphan),
           db.prepare('UPDATE purchases SET product_id = ? WHERE product_id = ?').bind(target, orphan),
           db.prepare('DELETE FROM offers WHERE product_id = ?').bind(orphan),
           db.prepare('DELETE FROM price_points WHERE product_id = ?').bind(orphan),
+          db.prepare('DELETE FROM shop_prices WHERE product_id = ?').bind(orphan),
           db.prepare('DELETE FROM watches WHERE product_id = ?').bind(orphan),
           db.prepare('DELETE FROM images WHERE product_id = ?').bind(orphan),
           db.prepare('DELETE FROM products WHERE id = ?').bind(orphan),

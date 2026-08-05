@@ -1803,6 +1803,38 @@ test('POST /api/ingest: bearer-gated, validated, lands offers and keeps one pric
   assert.strictEqual(airpods.history.length, baseline.history.length, 'still one point per day');
 });
 
+// Per-shop dailies (shop_prices) back the PDP's "Price at <shop>" chart line.
+// Real observations only — the served hist must never be synthesized, and it
+// rides detail (ids=) fetches only, like specs, so list pages stay lean.
+test('per-shop price history: captured at ingest, day-min upserted, detail fetches only', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const push = (rows) => admin(env)('/api/ingest', 'POST', rows);
+
+  const r = await push([
+    { product_id: 'airpods', shop: 'Elkjøp', price: 1999 },
+    { product_id: 'airpods', shop: 'Power', price: 2100 },
+  ]);
+  assert.strictEqual(r.status, 200, await r.text());
+  let offers = (await prodOf(call, 'airpods')).offers;
+  assert.deepStrictEqual(offers.find(o => o.shop === 'Elkjøp').hist, [1999]);
+  assert.deepStrictEqual(offers.find(o => o.shop === 'Power').hist, [2100]);
+
+  // same-day re-push: the day's point keeps the min, no second point
+  await push([{ product_id: 'airpods', shop: 'Elkjøp', price: 2050 }]);
+  offers = (await prodOf(call, 'airpods')).offers;
+  assert.deepStrictEqual(offers.find(o => o.shop === 'Elkjøp').hist, [1999], "day's per-shop point keeps the day's minimum");
+
+  // list queries never carry hist — lean rows, same rule as specs
+  const listed = (await (await call('/api/products?q=airpods')).json()).products.find(p => p.id === 'airpods');
+  assert.ok(listed.offers.length > 0);
+  assert.ok(listed.offers.every(o => !('hist' in o)), 'per-shop hist must not ride list queries');
+
+  // a shop we never observed serves no hist at all (upstream falls back)
+  assert.ok((await prodOf(call, 'xm5')).offers.every(o => !('hist' in o)), 'no invented hist for unobserved shops');
+});
+
 // An ingest chunk used to read the WHOLE products table — id, the meta blob and
 // a hidden flag — so its cost was FIXED per chunk (~55 ms of CPU at 22k
 // products, the same for 50 rows as for 500). That is the shape that cannot be
@@ -1933,6 +1965,7 @@ test('eans table routes ingest rows; admin alias re-homes a discovered product a
     'a shop the target already has keeps the target\'s offer');
   assert.strictEqual((await (await call('/api/products?hidden=1', { token: call.token })).json()).products.length, 0, 'the orphan row is gone');
   assert.deepStrictEqual((await (await call('/api/me', { cookie })).json()).watches.map(w => w.id), ['xm5'], 'watches follow the migration');
+  assert.deepStrictEqual((await prodOf(call, 'xm5')).offers.find(o => o.shop === 'Milrab').hist, [500], 'per-shop price history follows the migration');
 
   // future rows for that EAN land straight on the target
   await push([{ product_id: 'ean-7099999999991', shop: 'Elkjøp', price: 470, name: 'Mystery Widget 3000' }]);
