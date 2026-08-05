@@ -172,34 +172,43 @@ function RangeSlider({ min, max, step, lo, hi, onChange, label = 'value' }) {
   const span = (max - min) || 1;
   const st = step || Math.max(1, niceStep(span));
   const clamp = v => Math.min(max, Math.max(min, isFinite(v) ? v : min));
+  // While a drag is active (track or native thumb), values live in local state
+  // and onChange fires exactly once on pointerup. Keyboard commits immediately.
+  const [tmp, setTmp] = useState(null); // {lo, hi} during a drag, else null
+  const tmpRef = useRef(null);
+  const setBoth = v => { tmpRef.current = v; setTmp(v); };
+  const curLo = clamp(tmp ? tmp.lo : lo), curHi = clamp(tmp ? tmp.hi : hi);
   const pct = v => ((clamp(v) - min) / span) * 100;
-  const a = pct(lo), b = pct(hi);
+  const a = pct(curLo), b = pct(curHi);
+  const commit = () => { const c = tmpRef.current; setBoth(null); if (c) onChange(c.lo, c.hi); };
   const drag = (e) => {
     if (e.target !== wrap.current && e.target.tagName === 'INPUT') return; // native thumb drag
     const r = wrap.current.getBoundingClientRect();
     const valAt = x => clamp(min + Math.round((((x - r.left) / r.width) * span) / st) * st);
     const v0 = valAt(e.clientX);
     const pickLo = Math.abs(v0 - lo) <= Math.abs(v0 - hi);
-    let cur = { lo: clamp(lo), hi: clamp(hi) };
+    setBoth({ lo: clamp(lo), hi: clamp(hi) });
     const move = (ev) => {
-      const v = valAt(ev.clientX);
-      cur = pickLo ? { lo: Math.min(v, cur.hi), hi: cur.hi } : { lo: cur.lo, hi: Math.max(v, cur.lo) };
-      onChange(cur.lo, cur.hi);
+      const v = valAt(ev.clientX), c = tmpRef.current;
+      setBoth(pickLo ? { lo: Math.min(v, c.hi), hi: c.hi } : { lo: c.lo, hi: Math.max(v, c.lo) });
     };
-    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); commit(); };
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
     move(e); e.preventDefault();
   };
+  const thumbDown = () => { setBoth({ lo: curLo, hi: curHi }); window.addEventListener('pointerup', commit, { once: true }); };
+  const setLo = v => { const c = tmpRef.current; if (c) setBoth({ lo: Math.min(v, c.hi), hi: c.hi }); else onChange(Math.min(v, curHi), curHi); };
+  const setHi = v => { const c = tmpRef.current; if (c) setBoth({ lo: c.lo, hi: Math.max(v, c.lo) }); else onChange(curLo, Math.max(v, curLo)); };
   return (
     <div className="range2" ref={wrap} onPointerDown={drag}>
       <div className="range2__track" />
       <div className="range2__fill" style={{ left: a + '%', right: (100 - b) + '%' }} />
-      <input className="range2__in" type="range" min={min} max={max} step={st} value={clamp(lo)}
+      <input className="range2__in" type="range" min={min} max={max} step={st} value={curLo}
         aria-label={'Minimum ' + label} style={{ zIndex: a > 55 ? 4 : 3 }}
-        onChange={e => onChange(Math.min(+e.target.value, clamp(hi)), clamp(hi))} />
-      <input className="range2__in" type="range" min={min} max={max} step={st} value={clamp(hi)}
+        onPointerDown={thumbDown} onChange={e => setLo(+e.target.value)} />
+      <input className="range2__in" type="range" min={min} max={max} step={st} value={curHi}
         aria-label={'Maximum ' + label}
-        onChange={e => onChange(clamp(lo), Math.max(+e.target.value, clamp(lo)))} />
+        onPointerDown={thumbDown} onChange={e => setHi(+e.target.value)} />
     </div>
   );
 }
