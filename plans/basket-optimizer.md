@@ -12,25 +12,14 @@ Alerts ≥3 watches and Lists detail). Backend landed with the sync:
   by a real shop silently fell out of the fewest-shops plan (whose lower
   total then replaced cheapest via the guard). Pinned in ui.test.js.
 
-Remaining upstream gap: `optimize()` prices group shipping as
-`max(o.shipCost)` — per-offer shipCost is computed at the single item's
-price, so a basket that crosses a shop's `freeOver` still shows flat
-shipping (only ever overcharges, never under). Paste-ready fix:
-
-## UPSTREAM PROMPT — threshold-aware group shipping
-
-> In `pricy/Optimizer.jsx`: group shipping is currently
-> `Math.max(...offers' shipCost)`. The host serves per-shop rules at
-> `window.SHIPPING` (`{shop: {flat, freeOver?}}`). Add
-> `const shipFor = (shop, sum, fallback) => { const r =
-> window.SHIPPING && window.SHIPPING[shop]; return r ? (r.freeOver &&
-> sum >= r.freeOver ? 0 : r.flat) : fallback; }` and use it in BOTH
-> `optToPlan` (group ship from the group's item sum) and `totalOf`
-> (per-shop item sums first, then ship per shop) — they must agree or
-> the greedy pass optimizes a different total than the cards show. Keep
-> the current max-shipCost value as the `fallback` for shops the
-> registry doesn't know. Demo data has no `window.SHIPPING`, so the
-> preview behaves exactly as today.
+**2026-08-07: threshold-aware group shipping landed upstream too** —
+`shipFor(shop, groupSum, fallback)` reads `window.SHIPPING` in both
+`optToPlan` and `totalOf`, falling back to max per-offer `shipCost` for
+shops the registry doesn't know. A basket crossing a shop's `freeOver`
+now shows "Fri frakt" (pinned in ui.test.js, which serves the real
+registry like the worker does). Nothing remains on this plan except
+what already blocks it product-wise: cross-shop overlap
+(cross-shop-product-matching.md, 94 of 14k products multi-shop).
 
 Original plan below for context.
 

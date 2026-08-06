@@ -86,6 +86,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         types: heads.reduce((m, r) => { const t = r.facets?.type; if (t) ((m[r.cat] ??= {})[t] = (m[r.cat][t] || 0) + 1); return m; }, {}),
         // ...and per-shop objective stats (reviews layer: ShopPage fallback)
         shopStats: rows.flatMap(r => r.offers.map(o => o.shop)).reduce((m, s) => ((m[s] = { offers: (m[s]?.offers || 0) + 1, updated: Date.now() - 3600e3 }), m), {}),
+        // ...and the shipping registry (basket optimizer's threshold-aware totals)
+        shipping: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'shipping.json'), 'utf8')),
       };
       // list branches carry the query's own total (worker: meta.total)
       // list branches carry the query's own total and, with a cat, the
@@ -1517,16 +1519,21 @@ test('optimizer: plans over served real-shop offers, shipping once per shop', as
   const catalog = [
     { id: 'a', name: 'Alpha', brand: 'X', cat: 'Audio', icon: 'headphones', best: 100, shops: 2, stock: true, offers: [off('Fjellsport', 100, 59), off('Sport 1', 120, 99)] },
     { id: 'b', name: 'Beta', brand: 'X', cat: 'Audio', icon: 'headphones', best: 150, shops: 2, stock: true, offers: [off('Lekia', 150, 79), off('Fjellsport', 200, 59)] },
-    { id: 'c', name: 'Gamma', brand: 'X', cat: 'Audio', icon: 'headphones', best: 300, shops: 1, stock: true, offers: [off('Lekia', 300, 79)] },
+    { id: 'c', name: 'Gamma', brand: 'X', cat: 'Audio', icon: 'headphones', best: 960, shops: 1, stock: true, offers: [off('Lekia', 960, 79)] },
   ];
-  const me = { user: mari, watches: [{ id: 'a', target: 90, paused: 0 }, { id: 'b', target: 140, paused: 0 }, { id: 'c', target: 280, paused: 0 }] };
+  const me = { user: mari, watches: [{ id: 'a', target: 90, paused: 0 }, { id: 'b', target: 140, paused: 0 }, { id: 'c', target: 900, paused: 0 }] };
   const win = boot('http://pricy.test/optimizer', { session: true, me, catalog });
   assert.ok(await until(() => qa(win, '.opt-card').length === 2), 'two shop groups (Fjellsport + Lekia)');
   assert.ok(win.SHOPS.includes('Fjellsport'), 'SHOPS replaced in place from meta.shopStats');
   const names = qa(win, '.opt-row .nm').map(e => e.textContent);
   for (const n of ['Alpha', 'Beta', 'Gamma']) assert.ok(names.includes(n), n + ' must be in the plan');
-  // cheapest: a@Fjellsport(100) + b@Lekia(150) + c@Lekia(300), ship 59 + 79 once each = 688
-  assert.match(q(win, '.opt-verdict').textContent, /688/, 'total = items + one shipping per shop');
+  // threshold-aware shipping (meta.shipping → window.SHIPPING → shipFor): the
+  // Lekia group sums 150 + 960 = 1110 ≥ its freeOver 999, so shipping is FREE
+  // even though each offer's individual shipCost says kr 79
+  const lekia = qa(win, '.opt-card').find(c => c.textContent.includes('Lekia'));
+  assert.match(lekia.textContent, /Fri frakt/, 'basket crossing freeOver ships free');
+  // cheapest: a@Fjellsport(100) + ship 59, b+c@Lekia(1110) + ship 0 = 1 269
+  assert.match(q(win, '.opt-verdict').textContent, /1 269/, 'total = items + threshold-aware shipping once per shop');
   assert.match(q(win, '.opt-verdict').textContent, /2 butikker/);
 });
 
