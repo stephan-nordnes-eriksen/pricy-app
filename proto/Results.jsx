@@ -1026,7 +1026,11 @@ function ProductPage({ go, id }) {
   useEffect(() => { setShopSel('all'); }, [id]);
   const histShops = (v.offers || []).slice(0, 6);
   const selOffer = shopSel !== 'all' ? histShops.find(o => o.shop === shopSel) : null;
-  const chartPts = selOffer ? genShopHist(v.idn || v.shops || 1, histShops.indexOf(selOffer), histAll, Math.max(0, selOffer.price - (v.best != null ? v.best : selOffer.price))).slice(-weeks) : histView;
+  const anyHist = histShops.some(o => o.hist && o.hist.length);
+  const realPts = selOffer && anyHist ? (selOffer.hist || []).slice(-weeks) : null;
+  const tooShort = realPts && realPts.length < 2;
+  const chartPts = selOffer ? (realPts ? realPts : genShopHist(v.idn || v.shops || 1, histShops.indexOf(selOffer), histAll, Math.max(0, selOffer.price - (v.best != null ? v.best : selOffer.price))).slice(-weeks)) : histView;
+  const refPts = selOffer ? (realPts ? histView.slice(-realPts.length) : histView) : null;
   const best = (v.offers && v.offers.length) ? v.offers[0] : null;
   const shopUrl = (best && best.url) || ((v.offers || []).find(o => o.url) || {}).url;
   const [osort, setOsort] = useState('price');
@@ -1181,9 +1185,9 @@ function ProductPage({ go, id }) {
             </div>
             {histAll.length > 0 && histShops.length > 1 && <div className="chart__shops" role="group" aria-label="Price history per shop">
               <button type="button" className={shopSel === 'all' ? 'is-on' : ''} aria-pressed={shopSel === 'all'} onClick={() => setShopSel('all')}>All shops</button>
-              {histShops.map(o => <button key={o.shop} type="button" className={shopSel === o.shop ? 'is-on' : ''} aria-pressed={shopSel === o.shop} onClick={() => setShopSel(o.shop)}>{o.shop}</button>)}
+              {histShops.filter(o => !anyHist || (o.hist && o.hist.length)).map(o => <button key={o.shop} type="button" className={shopSel === o.shop ? 'is-on' : ''} aria-pressed={shopSel === o.shop} onClick={() => setShopSel(o.shop)}>{o.shop}</button>)}
             </div>}
-            {histAll.length ? <HistoryChart points={chartPts} low={low} refPoints={selOffer ? histView : null} /> : <div className="offers__empty">No price history yet</div>}
+            {!histAll.length ? <div className="offers__empty">No price history yet</div> : tooShort ? <div className="offers__empty">Not enough price history for this shop yet</div> : <HistoryChart points={chartPts} low={low} refPoints={refPts} />}
             {histAll.length > 0 && <div className="chart__legend">
               <span><span className="dot dot--line" /> {selOffer ? 'Price at ' + selOffer.shop : 'Lowest across shops'}</span>
               {selOffer && <span><span className="dot dot--ref" /> Lowest across shops</span>}
