@@ -2433,6 +2433,14 @@ test('classify reads a category PATH leaf-first, and the ambiguous tokens stay f
     ['Rettetang', 'Beauty'],
     ['Krølltang', 'Beauty'],
     ['Home > Fototilbehør > Tilbehør til kamera og objektiv > Solblender', undefined], // a lens hood is not a blender — unread, the shop floor decides
+    // `konsoll` compounds are furniture/brackets, not game machines
+    ['Stue > Bord > Konsollbord', 'Furniture'],
+    ['Gangbord', 'Furniture'],
+    ['Avlastningsbord & sidobord', 'Furniture'],
+    ['Produkter > Lyd og bilde > Høyttaler > Høyttalerkonsoller', 'Audio'],
+    ['Hylleplan & hyllekonsoll', 'Furniture'],
+    ['Spillkonsoller', 'Gaming'], // …while the gaming senses still read
+    ['Konsoller', 'Gaming'],
   ];
   for (const [label, want] of cases) {
     assert.strictEqual(classify(label), want, `classify(${JSON.stringify(label)})`);

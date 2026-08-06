@@ -350,7 +350,10 @@ const CAT_RULES = [
   // \b-anchor `bok`: unanchored `e-?bok` matched the "ebok" inside Klokkebokser,
   // Kakeboks and Plantebokser
   [/lesebrett|läsplatt|\be-?bok|kindle|kobo/i, 'E-readers'],
-  [/playstation|xbox|nintendo|konsoll|gamepad|tv-?spill|dataspill|videospill|pc-?spill|gaming|\bps[45]\b/i, 'Gaming'],
+  // \b-anchor `konsoll`: bare it matched the furniture/bracket compounds
+  // Konsollbord (console table), hyllekonsoll, Høyttalerkonsoller — the word
+  // alone ("Konsoller") and spillkonsoll compounds are the gaming senses
+  [/playstation|xbox|nintendo|spill-?konsoll|\bkonsoll(er|en)?\b|gamepad|tv-?spill|dataspill|videospill|pc-?spill|gaming|\bps[45]\b/i, 'Gaming'],
   // A televison crumb says `tv` on its own; every other `TV-<noun>` is furniture
   // (TV-benk/bord/møbel — 30 rows) or merchandise ("TV- og filmkarakterer" — 14
   // Pokémon figures). The lookahead is a list because the ambiguity is lexical.
@@ -374,7 +377,7 @@ const CAT_RULES = [
   // `skap`/`highboard`/`skjenk` are spelled out rather than a bare `\bskap\b`:
   // Home's `oppbevaring` was reading 178 cabinets and highboards across
   // Trademax/Chilli as storage, but `baderomsskap` really is Home.
-  [/(?<!hage)(?<!ute)(?<!tur)(?<!camping)møb(?:ler|el(?!pleie|beslag|hjul|knott))|sofa|\bstol\b|\bbord\b|\bseng(er)?\b|sengegavl|sengebenk|(?<!strand)madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|spisestue|spisegruppe|spisestol|lenestol|barstol|sengeramme|sengestamme|kontinentalseng|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|oppbevaringsskap|klesskap|garderobeskap|vitrineskap|highboard|\bskjenk|sideboard|lampebord|sittepuff|fotskammel|veggspeil|sminkebord|toalettbord/i, 'Furniture'],
+  [/(?<!hage)(?<!ute)(?<!tur)(?<!camping)møb(?:ler|el(?!pleie|beslag|hjul|knott))|sofa|\bstol\b|\bbord\b|\bseng(er)?\b|sengegavl|sengebenk|(?<!strand)madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|spisestue|spisegruppe|spisestol|lenestol|barstol|sengeramme|sengestamme|kontinentalseng|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|oppbevaringsskap|klesskap|garderobeskap|vitrineskap|highboard|\bskjenk|sideboard|lampebord|sittepuff|fotskammel|veggspeil|sminkebord|toalettbord|konsollbord|avlastningsbord|gangbord/i, 'Furniture'],
   [/\bhage|utemøbl|plante|gressklipper|\bgrill\b|grilltrekk|terrasse|blomst|\bfrø\b|uterom|parasoll|paviljong|basseng/i, 'Garden'],
   // hobby paint/craft before Tools, or Panduro's craft paints read as housepaint.
   // Art supplies are polysemous with Office the same way: measured at Tegne.no

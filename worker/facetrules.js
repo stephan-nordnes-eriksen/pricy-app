@@ -148,9 +148,20 @@ const RULES = {
       [/brettspill|board game|kortspill|\brpg\b|pathfinder|dungeons|terning|\bdice\b|expansion/, 'Board games'],
       [/enkeltkort|samlekort|booster|\bmagic\b|pokemon|\btcg\b|trading card/, 'Trading cards'],
       [/warhammer|miniatyr|vallejo|citadel|warpaints|\bprimer\b|speedpaint|\bpaint\b/, 'Miniatures'],
-      [/playstation|\bps5\b|\bps4\b|xbox|nintendo switch|\bswitch\b|konsoll|console/, 'Consoles'],
       [/steam deck|steamdeck|håndholdt|handheld/, 'Handhelds'],
       [/controller|kontroller|joy-con|gamepad|\bratt\b|\bmus\b|\bmouse\b|tastatur|keyboard|headset|gamingstol|musematte/, 'Controllers'],
+      // A bare platform token names what a game runs ON, not a console. Before
+      // the Consoles rule: spill/dlc and "for/til <platform>" are game tells
+      // even when the name starts with the platform ("Splatoon 3 for Nintendo
+      // Switch™", crumb "Nintendo Switch-spill"). `edition`/`game` stay in the
+      // LAST rule — "PS5 Digital Edition" is a console.
+      [/\bspill\b|\bdlc\b|\b(?:for|til)\s+(?:nintendo|playstation|xbox)\b/, 'Games'],
+      // Only konsoll/console or a name that IS the platform (anchored;
+      // segments are wrapped in spaces, hence ^\s*) counts as the machine.
+      [/spill-?konsoll|\bkonsoll(?:er|en)?\b|\bconsole\b|^\s*(?:sony\s+)?playstation\b|^\s*(?:microsoft\s+)?xbox\s+(?:one|series)\b|^\s*nintendo\s+switch\b/, 'Consoles'],
+      // Game titles carry the platform at the tail ("Horizon Forbidden West
+      // PS5", "… - Microsoft Xbox One - Sport") with no spill/game/edition word.
+      [/(?:\bps[45]\b|\bxbox\s+(?:one|series\s+[sx])\b|playstation\s+\d|nintendo\s+switch|\bswitch(?:\s+2)?\b)[\s\w:()/-]*$/, 'Games'],
       [/gaming-?pc|hovedkort|grafikkort|kabinett|\brtx\b|\bssd\b|kjøler|\bpsu\b/, 'PC hardware'],
       [/\bspill\b|\bgame\b|edition|\bdlc\b/, 'Games'],
     ),
