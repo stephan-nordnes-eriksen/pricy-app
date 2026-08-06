@@ -17,9 +17,13 @@ function genOffers(p) {
   const n = Math.min(p.shops, SHOPS.length), idn = p.idn || 0;
   const slowShipper = p.stock !== false && idn % 4 === 1; // whole assortment ships 3–5 days
   const noFree = idn % 5 === 3; // no shop ships this free
+  // cheapest shop rotates per product (among confirmed-in-stock indexes) so
+  // multi-item baskets genuinely split across shops (basket optimizer needs this)
+  const stockIdx = SHOPS.slice(0, n).map((_, i) => i).filter(i => i % 4 !== 3 && i % 5 !== 4);
+  const cheapIdx = stockIdx.length ? stockIdx[idn % stockIdx.length] : 0;
   const offers = SHOPS.slice(0, n).map((s, i) => ({
     shop: s,
-    price: i === 1 ? p.best + 40 + (idn % 3) * 20 : p.best + Math.round((i * (p.best * 0.035) + (i === 0 ? 0 : 40 + _seed(idn + i) * 120)) / 10) * 10,
+    price: (() => { const r = (i - cheapIdx + n) % n; return r === 0 ? p.best : r === 1 ? p.best + 40 + (idn % 3) * 20 : p.best + Math.round((r * (p.best * 0.035) + 40 + _seed(idn + i) * 120) / 10) * 10; })(),
     stock: p.stock === false ? (i % 3 === 2 ? undefined : false) : (i % 5 === 4 ? undefined : i % 4 !== 3), // undefined = never checked → unknown
     url: i % 4 !== 3 ? 'https://www.' + s.toLowerCase().replace(/[^a-z0-9]/g, '') + '.no' : undefined,
     updated_at: i % 5 === 4 ? undefined : Date.now() - Math.round(5 + _seed(idn + i * 7) * 170) * 60000,

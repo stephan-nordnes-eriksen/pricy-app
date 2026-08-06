@@ -111,6 +111,7 @@ function AlertsPage({ go, tab: tab0 }) {
           <div className="al__headr">
             <Btn variant="primary" icon="plus" onClick={() => go('browse')}>Watch a product</Btn>
             <a className="quietlink" onClick={() => go('lists')}>Alle lister →</a>
+            {watches.length >= 3 && !!window.OptimizerPage && <a className="quietlink" onClick={() => go('optimizer', { list: 'watch' })}>Optimaliser kjøpet →</a>}
           </div>
         </div>
 
