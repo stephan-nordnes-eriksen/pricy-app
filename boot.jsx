@@ -154,6 +154,13 @@ function changePassword(currentPassword, newPassword) {
 // either their whole sub-object or a single-key patch; merging covers both.
 function saveSettings(patch) {
   if (!ME) return Promise.reject(new Error('not signed in'));
+  // The settings Push toggle is an opt-in surface too, not just a flag:
+  // without this, flipping it on saves push:true but subscribes no device.
+  // Fired synchronously so it runs inside the toggle's own click gesture;
+  // best-effort — a denied prompt still saves the preference.
+  if (patch.push === true && 'Notification' in window && 'PushManager' in window && Notification.permission !== 'denied') {
+    Notification.requestPermission().then(p => p === 'granted' && subscribePush()).catch(() => {});
+  }
   const next = { ...(ME.settings || {}), ...patch };
   return fetch('/api/settings', {
     method: 'PUT',
@@ -978,18 +985,18 @@ navigator.serviceWorker?.register('/sw.js').catch(() => {});
 // Chrome exposes them everywhere. Permission already granted → re-subscribe
 // silently (endpoints rotate). Not asked yet → a one-tap chip, because
 // requestPermission must run in a user gesture. Denied → nothing to do.
+async function subscribePush() {
+  const [reg, { key }] = await Promise.all([navigator.serviceWorker.ready, fetchJson('/api/push/key')]);
+  if (!key) return;
+  const raw = Uint8Array.from(atob(key.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: raw });
+  await fetchJson('/api/push/subscribe', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(sub),
+  });
+}
 function setupPush() {
   if (!('Notification' in window) || !('PushManager' in window)) return;
-  const subscribe = async () => {
-    const [reg, { key }] = await Promise.all([navigator.serviceWorker.ready, fetchJson('/api/push/key')]);
-    if (!key) return;
-    const raw = Uint8Array.from(atob(key.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: raw });
-    await fetchJson('/api/push/subscribe', {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(sub),
-    });
-  };
-  if (Notification.permission === 'granted') { subscribe().catch(() => {}); return; }
+  if (Notification.permission === 'granted') { subscribePush().catch(() => {}); return; }
   if (Notification.permission !== 'default') return;
   // ponytail: plain DOM chip, not an upstream component — one tap resolves the
   // permission either way, after which it never renders again. Moves into the
@@ -1001,7 +1008,7 @@ function setupPush() {
     btn.remove();
     try {
       if (await Notification.requestPermission() === 'granted') {
-        await subscribe();
+        await subscribePush();
         // tapping the chip IS the opt-in: flip the settings channel toggle
         // (default off upstream) so fireAlerts' s.push gate opens. Only here —
         // the silent re-subscribe must not override a deliberate opt-out.
