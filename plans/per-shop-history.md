@@ -17,9 +17,10 @@ live (same honesty rule as the purged demo reviews / SHOP_META).
 - `POST /api/admin/alias` migrates `shop_prices` with the rest.
 - Test: "per-shop price history: captured at ingest…" in test/api.test.js.
 
-## Upstream fix (pending — paste into the prototype project)
+## Upstream fix (DONE 2026-08-06, synced same day)
 
-Until this lands, prod shows the synth line. Prompt:
+Guarded by test/ui.test.js "PDP chart: per-shop line reads served o.hist".
+The prompt that was pasted, for the record:
 
 > In Results.jsx's ProductPage, the per-shop price-history line
 > (`genShopHist`) is demo synthesis. Live offers now carry real data:

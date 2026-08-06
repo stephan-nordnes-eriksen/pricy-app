@@ -1229,6 +1229,35 @@ test('PDP specs: groups-shaped served specs render for a cat with no SPEC_KINDS 
   assert.ok(rows.some(t => t.includes('Missing') && t.includes('—')), 'null values must render as —');
 });
 
+// The chart's per-shop line must come from served o.hist (real observed
+// dailies, worker shop_prices) — genShopHist synth is demo-only. Once ANY
+// offer carries hist: chips only for observed shops, <2 points = a note,
+// never an invented line (plans/per-shop-history.md).
+test('PDP chart: per-shop line reads served o.hist — short history shows a note, unobserved shops lose their chip', async () => {
+  const seed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
+  const served = seed.map(p => p.id !== 'xm5' ? p : {
+    ...p,
+    offers: p.offers.map((o, i) =>
+      i === 0 ? { ...o, hist: [3000, 2900, o.price] } : i === 1 ? { ...o, hist: [o.price] } : o),
+  });
+  const xm5 = served.find(p => p.id === 'xm5');
+  const [observed, shortHist] = [xm5.offers[0].shop, xm5.offers[1].shop];
+  const win = boot('http://pricy.test/product/xm5', { session: true, catalog: served });
+  assert.ok(await until(() => qa(win, '.chart__shops button').length > 0), 'shop chips missing');
+  const chips = qa(win, '.chart__shops button').map(b => b.textContent);
+  assert.deepStrictEqual(chips, ['All shops', observed, shortHist],
+    'once any offer has hist, only observed shops keep a chip');
+
+  qa(win, '.chart__shops button').find(b => b.textContent === observed).click();
+  assert.ok(await until(() => /Price at/.test((q(win, '.chart__legend') || {}).textContent || '')), 'per-shop legend missing');
+  assert.ok(q(win, '.chart__plot svg'), 'a shop with ≥2 observed points must chart its real line');
+
+  qa(win, '.chart__shops button').find(b => b.textContent === shortHist).click();
+  assert.ok(await until(() => /Not enough price history/.test((q(win, '.offers__empty') || {}).textContent || '')),
+    'a 1-point shop must show the note, never a synthesized line');
+  assert.ok(!q(win, '.chart__plot svg'), 'no chart may render for a 1-point shop');
+});
+
 // ---------- product variants (Phase 4e) ----------
 
 test('PDP: variant picker renders from hydrated listings — selecting a combo swaps in the child row', async () => {
