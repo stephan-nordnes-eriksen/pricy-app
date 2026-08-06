@@ -926,6 +926,12 @@ test('facet values derive from the product name, per category', async () => {
     [{ cat: 'Phones', name: 'Xiaomi 15T Pro' }, { type: 'Phones' }],
     [{ cat: 'Phones', name: 'Anker 737 Power Bank' }, { type: 'Accessories' }],
     [{ cat: 'Gaming', name: 'Case of the Trampled Garden (Enkeltkort)', srcCat: 'Magic løskort' }, { type: 'Trading cards' }],
+    // a platform-prefixed accessory is not the machine, and a game title
+    // carrying its platform is a game, not a console
+    [{ cat: 'Gaming', name: 'Nintendo Switch™ Deluxe Travel Case Super Mario™ reiseveske' }, { type: 'Accessories' }],
+    [{ cat: 'Gaming', name: 'Horizon Forbidden West PS5' }, { type: 'Games' }],
+    [{ cat: 'Gaming', name: 'Splatoon 3 for Nintendo Switch™' }, { type: 'Games' }],
+    [{ cat: 'Gaming', name: 'Nintendo Switch OLED' }, { type: 'Consoles' }],
     [{ cat: 'Books', name: 'Cable And X-force Volume 4: Vendetta (marvel Now)' }, { format: 'Comics & graphic novels' }],
     [{ cat: 'Fashion', name: 'Soft Texture Long Sleeve' }, undefined],
     [{ cat: 'Toys', name: 'NEGLESETT M/ARMBÅND OG STICKE.' }, undefined],

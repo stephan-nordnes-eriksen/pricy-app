@@ -158,7 +158,10 @@ const RULES = {
       [/\bspill\b|\bdlc\b|\b(?:for|til)\s+(?:nintendo|playstation|xbox)\b/, 'Games'],
       // Only konsoll/console or a name that IS the platform (anchored;
       // segments are wrapped in spaces, hence ^\s*) counts as the machine.
-      [/spill-?konsoll|\bkonsoll(?:er|en)?\b|\bconsole\b|^\s*(?:sony\s+)?playstation\b|^\s*(?:microsoft\s+)?xbox\s+(?:one|series)\b|^\s*nintendo\s+switch\b/, 'Consoles'],
+      // …and accessories share the platform prefix ("Nintendo Switch™ Deluxe
+      // Travel Case"), so an accessory noun after the anchor vetoes it and
+      // lets the ACC fallback type the row.
+      [/spill-?konsoll|\bkonsoll(?:er|en)?\b|\bconsole\b|^\s*(?:(?:sony\s+)?playstation|(?:microsoft\s+)?xbox\s+(?:one|series)|nintendo\s+switch)\b(?!.*\b(?:case|veske|etui|deksel|cover|skin|grips?|bag|lader|charger|dock(?:ing)?|stands?|stativ|kabel|cable|beskytter|film)\b)/, 'Consoles'],
       // Game titles carry the platform at the tail ("Horizon Forbidden West
       // PS5", "… - Microsoft Xbox One - Sport") with no spill/game/edition word.
       [/(?:\bps[45]\b|\bxbox\s+(?:one|series\s+[sx])\b|playstation\s+\d|nintendo\s+switch|\bswitch(?:\s+2)?\b)[\s\w:()/-]*$/, 'Games'],
