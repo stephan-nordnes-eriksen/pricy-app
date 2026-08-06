@@ -8,12 +8,18 @@
 // only confirmed-in-stock offers are buyable in a plan (unknown ≠ on lager)
 function optAvail(p) { return (p.offers || []).filter(o => o.stock === true); }
 
+const shipFor = (shop, sum, fallback) => {
+  const r = window.SHIPPING && window.SHIPPING[shop];
+  return r ? (r.freeOver && sum >= r.freeOver ? 0 : r.flat) : fallback;
+};
+
 function optToPlan(as) { // as: [{p, o}]
   const by = {};
   as.forEach(a => { (by[a.o.shop] = by[a.o.shop] || []).push(a); });
   const groups = Object.keys(by).map(shop => {
     const its = by[shop];
-    const ship = Math.max(...its.map(a => a.o.shipCost || 0));
+    const sum = its.reduce((s, a) => s + a.o.price, 0);
+    const ship = shipFor(shop, sum, Math.max(...its.map(a => a.o.shipCost || 0)));
     const items = its.map(a => ({ id: a.p.id, price: a.o.price, p: a.p, url: a.o.url }));
     return { shop, items, ship, subtotal: items.reduce((s, i) => s + i.price, 0) + ship };
   }).sort((a, b) => b.items.length - a.items.length || b.subtotal - a.subtotal);
@@ -25,9 +31,9 @@ function optimize(prods) {
   const parked = prods.filter(p => !optAvail(p).length);
   const offerAt = (p, shop) => optAvail(p).find(o => o.shop === shop);
   const totalOf = (as) => {
-    const ships = {}; let t = 0;
-    as.forEach(a => { t += a.o.price; ships[a.o.shop] = Math.max(ships[a.o.shop] || 0, a.o.shipCost || 0); });
-    return t + Object.values(ships).reduce((s, x) => s + x, 0);
+    const sums = {}, maxes = {}; let t = 0;
+    as.forEach(a => { t += a.o.price; sums[a.o.shop] = (sums[a.o.shop] || 0) + a.o.price; maxes[a.o.shop] = Math.max(maxes[a.o.shop] || 0, a.o.shipCost || 0); });
+    return t + Object.keys(sums).reduce((s, shop) => s + shipFor(shop, sums[shop], maxes[shop]), 0);
   };
   if (!items.length) { const e = optToPlan([]); return { cheapest: e, fewest: e, baseline: null, parked }; }
   // -- cheapest total: per-item min price, then greedy moves while total drops
