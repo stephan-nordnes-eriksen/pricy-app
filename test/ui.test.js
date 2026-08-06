@@ -1508,6 +1508,28 @@ test('compare: a product from another category is refused with a notice', async 
   assert.strictEqual(qa(win, '.ctray__item').length, 1, 'the mismatched product must not be added');
 });
 
+test('optimizer: plans over served real-shop offers, shipping once per shop', async () => {
+  // Shops deliberately NOT in the demo SHOPS list: optimize()'s set-cover and
+  // baseline passes iterate SHOPS, so without boot's live replacement (from
+  // meta.shopStats) every item silently falls out of the fewest-shops plan —
+  // whose lower total then replaces cheapest via the upstream guard.
+  const off = (shop, price, shipCost) => ({ shop, price, shipCost, total: price + shipCost, stock: true, eta: 'In stock', url: 'https://www.example.no', updated_at: Date.now() });
+  const catalog = [
+    { id: 'a', name: 'Alpha', brand: 'X', cat: 'Audio', icon: 'headphones', best: 100, shops: 2, stock: true, offers: [off('Fjellsport', 100, 59), off('Sport 1', 120, 99)] },
+    { id: 'b', name: 'Beta', brand: 'X', cat: 'Audio', icon: 'headphones', best: 150, shops: 2, stock: true, offers: [off('Lekia', 150, 79), off('Fjellsport', 200, 59)] },
+    { id: 'c', name: 'Gamma', brand: 'X', cat: 'Audio', icon: 'headphones', best: 300, shops: 1, stock: true, offers: [off('Lekia', 300, 79)] },
+  ];
+  const me = { user: mari, watches: [{ id: 'a', target: 90, paused: 0 }, { id: 'b', target: 140, paused: 0 }, { id: 'c', target: 280, paused: 0 }] };
+  const win = boot('http://pricy.test/optimizer', { session: true, me, catalog });
+  assert.ok(await until(() => qa(win, '.opt-card').length === 2), 'two shop groups (Fjellsport + Lekia)');
+  assert.ok(win.SHOPS.includes('Fjellsport'), 'SHOPS replaced in place from meta.shopStats');
+  const names = qa(win, '.opt-row .nm').map(e => e.textContent);
+  for (const n of ['Alpha', 'Beta', 'Gamma']) assert.ok(names.includes(n), n + ' must be in the plan');
+  // cheapest: a@Fjellsport(100) + b@Lekia(150) + c@Lekia(300), ship 59 + 79 once each = 688
+  assert.match(q(win, '.opt-verdict').textContent, /688/, 'total = items + one shipping per shop');
+  assert.match(q(win, '.opt-verdict').textContent, /2 butikker/);
+});
+
 // ---------- structural chrome + chaos monkey ----------
 // A sync once shipped without the footer and no test noticed. CHROME lists
 // the load-bearing structure per screen; the test asserts it all renders,

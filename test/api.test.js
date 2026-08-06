@@ -761,6 +761,10 @@ test('catMeta serves per-shop objective stats (shopStats) and the shops count of
     assert.ok(Number.isInteger(s.offers) && s.offers > 0);
     assert.ok('updated' in s);
   }
+  // basket optimizer: the raw {flat, freeOver} rules ride along — per-offer
+  // shipCost is priced at the single item, so threshold-aware basket totals
+  // need the registry itself (plans/basket-optimizer.md)
+  assert.deepStrictEqual(meta.shipping, JSON.parse(require('node:fs').readFileSync(path.join(__dirname, '..', 'worker', 'shipping.json'), 'utf8')), 'meta.shipping serves the shipping registry');
 });
 
 test('changing password requires the current one and re-hashes; passwordless accounts just set one', async () => {

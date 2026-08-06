@@ -1,7 +1,41 @@
 # Basket optimizer (upstream PROMPT 06)
 
+**Status 2026-08-06: built upstream and synced.** `Optimizer.jsx` ships
+(route `optimizer`, `/optimizer?list=` mirrored in boot; entry points on
+Alerts ≥3 watches and Lists detail). Backend landed with the sync:
+
+- `catMeta` serves the shipping registry as `meta.shipping` (raw
+  `{flat, freeOver}` per shop); boot exposes it as `window.SHIPPING`.
+- boot replaces the demo `SHOPS` array in place with the served
+  `meta.shopStats` keys once live — `optimize()`'s set-cover and baseline
+  passes iterate `SHOPS`, and with the 8 demo names an item offered only
+  by a real shop silently fell out of the fewest-shops plan (whose lower
+  total then replaced cheapest via the guard). Pinned in ui.test.js.
+
+Remaining upstream gap: `optimize()` prices group shipping as
+`max(o.shipCost)` — per-offer shipCost is computed at the single item's
+price, so a basket that crosses a shop's `freeOver` still shows flat
+shipping (only ever overcharges, never under). Paste-ready fix:
+
+## UPSTREAM PROMPT — threshold-aware group shipping
+
+> In `pricy/Optimizer.jsx`: group shipping is currently
+> `Math.max(...offers' shipCost)`. The host serves per-shop rules at
+> `window.SHIPPING` (`{shop: {flat, freeOver?}}`). Add
+> `const shipFor = (shop, sum, fallback) => { const r =
+> window.SHIPPING && window.SHIPPING[shop]; return r ? (r.freeOver &&
+> sum >= r.freeOver ? 0 : r.flat) : fallback; }` and use it in BOTH
+> `optToPlan` (group ship from the group's item sum) and `totalOf`
+> (per-shop item sums first, then ship per shop) — they must agree or
+> the greedy pass optimizes a different total than the cards show. Keep
+> the current max-shipCost value as the `fallback` for shops the
+> registry doesn't know. Demo data has no `window.SHIPPING`, so the
+> preview behaves exactly as today.
+
+Original plan below for context.
+
 Backend plan for `proto/PROMPT - 06 Basket Optimizer.md` (fetched
-2026-08-03, not yet built upstream). Upstream computes "buy everything
+2026-08-03, since built upstream). Upstream computes "buy everything
 cheapest / from fewest shops, shipping counted once per shop" over a
 list. The optimization itself needs **no backend**: a list is ≤ 50
 items, offers ride the existing `ids=` hydrate, and brute

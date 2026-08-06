@@ -1376,7 +1376,10 @@ async function catMeta(db, ver) {
   let sliceN = {};
   try { sliceN = JSON.parse(dRes.results[0]?.hash || '{}'); } catch (e) {}
   const depts = DEPTS.map(d => ({ ...d, rules: d.rules.map(r => r.facets && sliceN[r.b] != null ? { ...r, n: sliceN[r.b] } : r) }));
-  const val = { products, shops, shopStats, freshest, icons: CATS, facets: FACETS, depts, types, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  // per-shop {flat, freeOver} for the basket optimizer's threshold-aware
+  // group shipping (plans/basket-optimizer.md) — per-offer shipCost is priced
+  // at the single item, so a basket crossing freeOver needs the raw rule
+  const val = { products, shops, shopStats, freshest, icons: CATS, facets: FACETS, depts, types, shipping: SHIPPING, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
   if (ver) metaCache.set(db, { ver, val });
   return val;
 }

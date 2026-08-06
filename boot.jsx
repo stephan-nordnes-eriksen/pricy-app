@@ -449,6 +449,7 @@ function parseUrl(session) {
   else if (p === '/lists') s = { name: 'lists', params: { id: q.get('id') || undefined } };
   else if (p.startsWith('/l/')) s = { name: 'lists', params: { token: decodeURIComponent(p.slice('/l/'.length)) } };
   else if (p === '/shop') s = { name: 'shop', params: { shop: q.get('shop') || undefined } };
+  else if (p === '/optimizer') s = { name: 'optimizer', params: { list: q.get('list') || undefined } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
   else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
   else if (['/login', '/browse', '/autobuy', '/onboarding', '/compare'].includes(p)) s = { name: p.slice(1), params: {} };
@@ -674,6 +675,9 @@ function toUrl(name, params = {}) {
   if (name === 'shop') return '/shop' + (params.shop ? '?shop=' + encodeURIComponent(params.shop) : '');
   if (name === 'alerts') return '/alerts' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
   if (name === 'lists') return params.token ? '/l/' + encodeURIComponent(params.token) : '/lists' + (params.id ? '?id=' + encodeURIComponent(params.id) : '');
+  // callers pass the list as `list` (Alerts) or `id` (Lists detail) — AppRouter
+  // reads both, the URL speaks one
+  if (name === 'optimizer') { const l = params.list || params.id; return '/optimizer' + (l ? '?list=' + encodeURIComponent(l) : ''); }
   if (name === 'account') return '/account' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
   if (name === 'about') return '/about' + (params.section ? '?section=' + encodeURIComponent(params.section) : '');
   if (name === 'home' || name === 'landing') return '/';
@@ -826,6 +830,7 @@ function App() {
   else if (name === 'alerts') view = <AlertsPage go={go} tab={params.tab} />;
   else if (name === 'lists') view = <ListsPage go={go} params={params} />;
   else if (name === 'account') view = <AccountPage go={go} tab={params.tab} me={ME} onSaveProfile={saveProfile} onSaveSettings={saveSettings} onChangePassword={changePassword} />;
+  else if (name === 'optimizer') view = <OptimizerPage go={go} list={params.list || params.id} />;
   else if (name === 'autobuy' && !window.HIDE_AUTOBUY) view = <AutobuyPage go={go} />;
   else if (name === 'onboarding') view = <Onboarding go={go} onFinish={({ notif }) => saveSettings(notif).catch(() => {})} />;
   else if (name === 'about') view = <AboutPage go={go} section={params.section} />;
@@ -924,7 +929,18 @@ function hydrateCatalog(data) {
   // Per-shop objective stats (offers tracked, price freshness) for the
   // future served ShopPage — upstream still reads demo SHOP_META, which is
   // emptied above; this is the honest replacement it will switch to.
-  if (CATALOG.meta?.shopStats) window.SHOP_STATS = CATALOG.meta.shopStats;
+  if (CATALOG.meta?.shopStats) {
+    window.SHOP_STATS = CATALOG.meta.shopStats;
+    // The optimizer's set-cover/baseline iterate SHOPS — the demo list of 8.
+    // Served offers come from ~50 real shops, and an uncovered item silently
+    // FALLS OUT of the fewest-shops plan (whose lower total then replaces
+    // cheapest via the guard). Replace in place: same array object as
+    // window.SHOPS, and the demo genOffers synth only runs at bake time.
+    SHOPS.length = 0;
+    SHOPS.push(...Object.keys(CATALOG.meta.shopStats));
+  }
+  // per-shop {flat, freeOver} shipping rules for threshold-aware basket math
+  if (CATALOG.meta?.shipping) window.SHIPPING = CATALOG.meta.shipping;
   // Dynamic categories: server cats the prototype doesn't know join
   // CATEGORIES in place (same array object as window.CATEGORIES, so every
   // lexical reader — browse tiles, header menu, suggest, onboarding — sees
