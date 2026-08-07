@@ -489,8 +489,18 @@ function ensureRoute(name, params = {}) {
   // of a different slice would just be a second 400-row fetch per visit
   else if (name === 'results' && (params.brick || params.dept)) return gpcRoute(params);
   else if (name === 'results') wants.push(params.query ? { q: params.query } : listQuery({ cat: params.cat, sort: 'best', dir: 'asc' }));
-  // server adds family + same-cat neighbors; reviews ride the same prefetch
-  else if (name === 'product') return Promise.all([fetchProducts({ ids: params.id }).catch(() => {}), fetchReviews(params.id)]);
+  // server adds family + same-cat neighbors; reviews ride the same prefetch.
+  // pickSimilar/"More in" pool: the ids= fetch only carries ≤4 arbitrary
+  // neighbors, so chain the cat slice (same FETCHED key as the results
+  // screen — warm nav from a listing is a cache hit, only a cold deep-link
+  // pays the extra roundtrip)
+  else if (name === 'product') return Promise.all([
+    fetchProducts({ ids: params.id }).then(() => {
+      const cat = prodById(params.id.split('~')[0])?.cat;
+      return cat ? fetchProducts(listQuery({ cat, sort: 'best', dir: 'asc' })) : null;
+    }).catch(() => {}),
+    fetchReviews(params.id),
+  ]);
   // browse renders per-cat top drops + global top-4 from the cache; counts
   // and category presence come from the served meta.cats (upstream synced)
   else if (name === 'browse') wants.push({ top: 'drop', perCat: 1, limit: 4 });

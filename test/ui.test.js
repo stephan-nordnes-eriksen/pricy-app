@@ -475,6 +475,21 @@ test('PDP: Report a problem posts the report through the /api/report bridge', as
   assert.ok(await until(() => /we.ll look into it/i.test((q(win, '.toast') || {}).textContent || '')), 'thanks toast missing');
 });
 
+test('PDP: similar products picks from the chained cat slice on a cold deep-link', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  assert.ok(await until(() => q(win, '.simsec')), 'similar section missing');
+  assert.ok(win.api.some(a => a.call.startsWith('GET /api/products?') && /cat=Audio/.test(a.call)),
+    'PDP must chain-fetch its cat slice for the pickSimilar pool');
+  const cards = qa(win, '.simcard');
+  assert.ok(cards.length >= 1 && cards.length <= 2, 'expected one or two sim cards');
+  // the picks must not repeat in the "More in" grid below
+  const simIds = cards.map(c => c.querySelector('.simcard__name').textContent);
+  qa(win, '.morecard, .rcard').forEach(el => simIds.forEach(n => assert.ok(!el.textContent.includes(n), n + ' duplicated below')));
+  cards[0].click();
+  assert.ok(await until(() => win.location.pathname.startsWith('/product/') && !win.location.pathname.endsWith('/xm5')),
+    'sim card click must navigate to that product');
+});
+
 test('recently viewed: a visited product shows in the home rail on the next visit', async () => {
   const win = boot('http://pricy.test/product/xm5', { session: true });
   assert.ok(await until(() => q(win, '.watchbox')), 'PDP did not render');
