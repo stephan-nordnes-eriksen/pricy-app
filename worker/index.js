@@ -12,6 +12,8 @@ import SHIPPING from './shipping.json' with { type: 'json' }; // per-shop shippi
 import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 import { sendPush } from './push.js';
+import GPC from './gpc.json' with { type: 'json' }; // condensed GS1 GPC taxonomy (tools/gpc-build.mjs) — segs/fams/classes/bricks, the ONLY category vocabulary (gpc-strict)
+import { resolveGtins, RESOLVER_SOURCE } from './gpc-resolver.js';
 
 const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT, settings TEXT, autobuy TEXT, lists TEXT, created_at INTEGER)',
@@ -58,6 +60,13 @@ const SCHEMA = [
   // worker/eans.json, extended at runtime via POST /api/admin/alias.
   // ean is eanKey-normalized (digits, no leading zeros).
   'CREATE TABLE IF NOT EXISTS eans (ean TEXT PRIMARY KEY, product_id TEXT NOT NULL)',
+  // gtin → GPC brick, written only by worker/gpc-resolver.js drains
+  // (resolveGpcQueue). status: queued | resolved | none ('none' = the source
+  // answered and knows no brick — the future VbG branch re-queues these).
+  // These FIVE columns are the licensing boundary (see gpc-resolver.js):
+  // never store any other field a resolver returns.
+  'CREATE TABLE IF NOT EXISTS gpc (gtin TEXT PRIMARY KEY, brick TEXT, status TEXT NOT NULL DEFAULT \'queued\', source TEXT, checked_at INTEGER)',
+  'CREATE INDEX IF NOT EXISTS idx_gpc_status ON gpc(status)',
   // Pre-folded search text, one row per product, maintained by triggers (see
   // SEARCH_SQL). searchIds used to build the diacritic fold — 18 nested
   // replace() calls — per row per token, at query time. Measured on prod D1
@@ -271,7 +280,11 @@ async function seedCatalog(db) {
   const virgin = !(await db.prepare('SELECT 1 FROM offers WHERE updated_at IS NOT NULL LIMIT 1').first());
   const stmts = []; // OR IGNORE / upserts: two racing requests must not fail
   for (const [pid, list] of Object.entries(eansFile)) {
-    for (const e of list) stmts.push(db.prepare('INSERT OR IGNORE INTO eans (ean, product_id) VALUES (?, ?)').bind(eanKey(e), pid));
+    for (const e of list) {
+      stmts.push(db.prepare('INSERT OR IGNORE INTO eans (ean, product_id) VALUES (?, ?)').bind(eanKey(e), pid));
+      // every known GTIN queues for brick resolution (OR IGNORE — answered rows keep their answer)
+      stmts.push(db.prepare("INSERT OR IGNORE INTO gpc (gtin, status) VALUES (?, 'queued')").bind(eanKey(e)));
+    }
   }
   for (const { id, offers, history, best, drop, shops, stock, ...meta } of seed) {
     stmts.push(db.prepare('INSERT INTO products (id, meta) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET meta = json_patch(meta, excluded.meta)').bind(id, JSON.stringify(meta)));
@@ -466,6 +479,17 @@ export const classify = (label) => {
 };
 
 async function ingest(db, rows, env) {
+  // gpc-strict: every GTIN that enters the system queues for brick resolution
+  // (OR IGNORE — answered rows keep their answer). Collected off the RAW rows
+  // so `ean-*` ids count before the alias remap rewrites them.
+  const gtins = new Set();
+  for (const r of rows) {
+    const m = /^ean-(\d+)$/.exec(r.product_id);
+    if (m) gtins.add(m[1]);
+    const k = eanKey(r.ean);
+    if (k) gtins.add(k);
+  }
+  if (gtins.size) await db.batch([...gtins].map(g => db.prepare("INSERT OR IGNORE INTO gpc (gtin, status) VALUES (?, 'queued')").bind(g)));
   // EAN aliasing (OPEN-CATALOG-PLAN A2): `ean-*` ids re-map through the eans
   // table, so a variant/duplicate EAN lands on its real product without a
   // deploy. ponytail: full table read per ingest, same scale note as below.
@@ -513,7 +537,8 @@ async function ingest(db, rows, env) {
   const creates = {};
   for (const r of rows) {
     if (known.has(r.product_id) || !autoAdd(r)) continue;
-    creates[r.product_id] ??= { name: r.name.trim(), ...(r.brand ? { brand: String(r.brand) } : {}), ...(r.srcCat ? { srcCat: String(r.srcCat) } : {}), ...(r.product_id.startsWith('ean-') ? { ean: r.product_id.slice(4) } : {}), hidden: 1 };
+    const ean = r.product_id.startsWith('ean-') ? r.product_id.slice(4) : eanKey(r.ean) || null;
+    creates[r.product_id] ??= { name: r.name.trim(), ...(r.brand ? { brand: String(r.brand) } : {}), ...(r.srcCat ? { srcCat: String(r.srcCat) } : {}), ...(ean ? { ean } : {}), hidden: 1 };
     stillHidden.add(r.product_id);
     metaOf[r.product_id] = creates[r.product_id];
   }
@@ -521,6 +546,25 @@ async function ingest(db, rows, env) {
   if (Object.keys(creates).length) {
     await db.batch(Object.entries(creates).map(([id, meta]) =>
       db.prepare('INSERT OR IGNORE INTO products (id, meta) VALUES (?, ?)').bind(id, JSON.stringify(meta))));
+  }
+  // GTIN capture (gpc-strict): a scraped row carrying an ean teaches a known
+  // product (typically a p-<slug> row from a gtin-less first crawl) its GTIN —
+  // an eans routing row (OR IGNORE: curated aliases win) plus meta.ean. The
+  // in-memory meta is updated too so a promotion write this batch keeps it;
+  // the SQL guard keeps a concurrent writer from clobbering a stored value.
+  const learn = {};
+  for (const r of rows) {
+    const k = eanKey(r.ean);
+    const meta = metaOf[r.product_id];
+    if (!k || !meta || meta.ean) continue;
+    meta.ean = k;
+    learn[r.product_id] = k;
+  }
+  if (Object.keys(learn).length) {
+    await db.batch(Object.entries(learn).flatMap(([id, k]) => [
+      db.prepare('INSERT OR IGNORE INTO eans (ean, product_id) VALUES (?, ?)').bind(k, id),
+      db.prepare(`UPDATE products SET meta = json_patch(meta, ?) WHERE id = ? AND json_extract(meta, '$.ean') IS NULL`).bind(JSON.stringify({ ean: k }), id),
+    ]));
   }
   // Auto-promotion (B3): a hidden row goes live the moment a source supplies
   // name + a source category that env.CATMAP (JSON var, per-shop
@@ -613,12 +657,83 @@ async function ingest(db, rows, env) {
   // ponytail: 200-statement chunks — one giant batch trips D1 limits on a
   // full-feed run; the upserts are idempotent so losing cross-chunk atomicity is fine
   for (let i = 0; i < stmts.length; i += 200) await db.batch(stmts.slice(i, i + 200));
-  // one bump covers this whole ingest — creates, promotions, offers, points
+  // gpc-strict: gtins in this batch that ALREADY resolved get their brick
+  // stamped now — a product created after its gtin resolved must not wait
+  // for a resolver pass that will never re-answer it.
+  if (gtins.size) {
+    const done = await chunked([...gtins], async c => (await db.prepare(
+      `SELECT gtin, brick FROM gpc WHERE status = 'resolved' AND gtin IN (${c.map(() => '?').join(',')})`).bind(...c).all()).results);
+    await stampBricks(db, Object.fromEntries(done.map(r => [r.gtin, r.brick])));
+  }
+  // one bump covers this whole ingest — creates, promotions, learns, stamps, offers, points
   await bumpVer(db).run();
   await fireAlerts(db, env, before);
   // hidden rows skip images — no UI shows them; the URL is queued on the
   // first ingest after enrichment unhides the product
   await queueImages(db, rows.filter(r => !stillHidden.has(r.product_id))).catch(e => console.error(`image queue failed: ${e.message}`));
+}
+
+// gpc-strict: stamp meta.brick on the products owning these gtins.
+// Routing: the eans table maps a gtin to its product (else the derived
+// ean-<gtin> id). A variant child (meta.family) forwards to its HEAD —
+// children never carry brick. meta.man (admin pin) blocks the resolver;
+// a no-op stamp is skipped. Returns how many rows changed; the CALLER
+// bumps the catalog version (ingest's bump covers its own call).
+async function stampBricks(db, valid) {
+  const gtins = Object.keys(valid);
+  if (!gtins.length) return 0;
+  const routed = new Map(await chunked(gtins, async c => (await db.prepare(
+    `SELECT ean, product_id FROM eans WHERE ean IN (${c.map(() => '?').join(',')})`).bind(...c).all()).results.map(r => [r.ean, r.product_id])));
+  const brickOf = {};
+  for (const g of gtins) brickOf[routed.get(g) ?? `ean-${g}`] = String(valid[g]);
+  // two meta fetches: the routed ids, then any heads the family walk adds
+  const metas = {};
+  const fetchMetas = async (ids) => {
+    const need = ids.filter(id => !(id in metas));
+    for (const r of await chunked(need, async c => (await db.prepare(
+      `SELECT id, meta FROM products WHERE id IN (${c.map(() => '?').join(',')})`).bind(...c).all()).results)) metas[r.id] = JSON.parse(r.meta);
+    for (const id of need) metas[id] ??= null; // unknown id — nothing to stamp
+  };
+  await fetchMetas(Object.keys(brickOf));
+  for (const [id, brick] of Object.entries(brickOf)) {
+    const head = metas[id]?.family;
+    if (head) { delete brickOf[id]; brickOf[head] ??= brick; }
+  }
+  await fetchMetas(Object.keys(brickOf));
+  const writes = Object.entries(brickOf).filter(([id, brick]) => {
+    const m = metas[id];
+    return m && !m.man && m.brick !== brick;
+  });
+  if (writes.length) {
+    await db.batch(writes.map(([id, brick]) =>
+      db.prepare('UPDATE products SET meta = json_patch(meta, ?) WHERE id = ?').bind(JSON.stringify({ brick }), id)));
+  }
+  return writes.length;
+}
+
+// Drain the gtin→brick queue through the resolver seam (worker/gpc-resolver.js)
+// and stamp the owning heads. Hourly from scheduled(); POST /api/admin/gpc is
+// the bearer fast lane after a big crawl. A resolver answer outside the
+// shipped taxonomy records as 'none' — never stamp a code we can't display.
+async function resolveGpcQueue(db, env, n = 200) {
+  const queued = (await db.prepare("SELECT gtin FROM gpc WHERE status = 'queued' LIMIT ?").bind(n).all()).results.map(r => r.gtin);
+  let resolved = 0, stamped = 0;
+  if (queued.length) {
+    const answers = await resolveGtins(queued, env);
+    const now = Date.now();
+    const valid = {};
+    await db.batch(queued.map(g => {
+      const raw = answers.get(g);
+      const b = raw != null && GPC.bricks[String(raw)] ? String(raw) : null;
+      if (b) { valid[g] = b; resolved++; }
+      return db.prepare('UPDATE gpc SET brick = ?, status = ?, source = ?, checked_at = ? WHERE gtin = ?')
+        .bind(b, b ? 'resolved' : 'none', RESOLVER_SOURCE, now, g);
+    }));
+    stamped = await stampBricks(db, valid);
+    if (stamped) await bumpVer(db).run();
+  }
+  const remaining = (await db.prepare("SELECT COUNT(*) AS n FROM gpc WHERE status = 'queued'").first()).n;
+  return { checked: queued.length, resolved, stamped, remaining, done: remaining === 0 };
 }
 
 // Product images live in R2 (IMAGES bucket), served at GET /img/:id. The
@@ -1964,7 +2079,7 @@ export default {
         || (r.ship != null && typeof r.ship !== 'string') || (r.eta != null && typeof r.eta !== 'string')
         || (r.url != null && typeof r.url !== 'string') || (r.image != null && typeof r.image !== 'string')
         || (r.name != null && typeof r.name !== 'string') || (r.brand != null && typeof r.brand !== 'string')
-        || (r.srcCat != null && typeof r.srcCat !== 'string'));
+        || (r.srcCat != null && typeof r.srcCat !== 'string') || (r.ean != null && typeof r.ean !== 'string'));
       if (bad) return json({ error: 'bad rows' }, 400);
       await seedCatalog(db);
       // by the batch's own ids, not the whole products table: this check only
@@ -1997,6 +2112,17 @@ export default {
       const res = await drainImages(db, env, n);
       if (res.done) await bumpVer(db).run(); // stored bytes = new img: links in the catalog
       return json(res);
+    }
+
+    // Drain the gtin→brick queue (gpc-strict). The cron drains on its own;
+    // this is how a backfill after a crawl or a fixture change gets done in
+    // minutes — loop until remaining = 0.
+    if (route === 'POST /api/admin/gpc') {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      await seedCatalog(db);
+      const n = Math.min(Math.max(Number(url.searchParams.get('n')) || 200, 1), 500);
+      return json(await resolveGpcQueue(db, env, n));
     }
 
     // Admin surface (OPEN-CATALOG-PLAN A3, bearer = INGEST_TOKEN, same trust
@@ -2064,6 +2190,8 @@ export default {
         await db.prepare('INSERT INTO products (id, meta) VALUES (?, ?)').bind(target, JSON.stringify({ ...b.meta, ean: key })).run();
       }
       await db.prepare('INSERT INTO eans (ean, product_id) VALUES (?, ?) ON CONFLICT(ean) DO UPDATE SET product_id = excluded.product_id').bind(key, target).run();
+      // gpc-strict: an aliased gtin queues for brick resolution like any other
+      await db.prepare("INSERT OR IGNORE INTO gpc (gtin, status) VALUES (?, 'queued')").bind(key).run();
       const orphan = `ean-${key}`;
       let migrated = false;
       if (orphan !== target && await db.prepare('SELECT 1 FROM products WHERE id = ?').bind(orphan).first()) {
@@ -2594,6 +2722,8 @@ export default {
     // (~40/hour), POST /api/admin/images is the fast lane after a big crawl
     const drained = await drainImages(db, env).catch(e => console.error(`image drain failed: ${e.message}`));
     if (drained?.done) await bumpVer(db).run();
+    // gtin→brick resolution rides the same hourly tick (gpc-strict)
+    await resolveGpcQueue(db, env).catch(e => console.error(`gpc drain failed: ${e.message}`));
     // sliced dept-rule counts (meta.depts n) refresh hourly off the same tick
     await refreshDeptCounts(db).catch(e => console.error(`dept count refresh failed: ${e.message}`));
   },

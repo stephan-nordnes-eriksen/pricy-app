@@ -88,7 +88,7 @@ export async function adtractionSource(shop, _cfg, env) {
       const price = parsePrice(pick(f, 'price', 'priceinclvat'));
       if (!product_id || !price) continue; // no EAN+name / junk row
       rows.push({
-        product_id, shop, price,
+        product_id, shop, price, ean: key,
         name: name ?? null,
         brand: pick(f, 'brand', 'manufacturer') ?? null,
         srcCat: pick(f, 'category', 'categoryname', 'producttype', 'productcategory') ?? null,
@@ -175,8 +175,9 @@ export async function scrapeSource(shop, cfg) {
       // already rejects genuinely empty/error pages
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       const html = await res.text();
-      const { ean: _ean, ...row } = scrapeRow(html, url);
-      return { product_id, shop, url, ...row };
+      // ean rides along (gpc-strict): ingest teaches the curated id its GTIN
+      // (eans routing + meta.ean) and queues it for brick resolution
+      return { product_id, shop, url, ...scrapeRow(html, url) };
     } catch (e) {
       console.warn(`ingest: ${shop}/${product_id} scrape failed: ${e.message}`);
       return null; // this product freezes; the rest of the shop still updates
@@ -265,12 +266,12 @@ export async function discoverSource(shop, cfg) {
     try {
       const res = await fetch(url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA, accept: 'text/html' } });
       const html = await res.text();
-      const { ean, ...row } = scrapeRow(html, url);
+      const row = scrapeRow(html, url);
       // a name is mandatory on the slug path: some shops publish priced
       // brand/landing pages whose Product node carries a brand but no name,
       // which would key on the brand alone (p-aiaiai) and can never become a
       // product — ingest rejects the whole POST over one of them
-      const product_id = ean ? `ean-${ean}` : (row.name ? slugId(row.brand, row.name) : null);
+      const product_id = row.ean ? `ean-${row.ean}` : (row.name ? slugId(row.brand, row.name) : null);
       if (!product_id) throw new Error('no gtin and no name — nothing to key a discovered row on');
       rows.push({ product_id, shop, url, ...row });
     } catch (e) {

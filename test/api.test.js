@@ -1285,13 +1285,88 @@ test('seed evolution: changed seed refreshes meta, leaves real offers alone, add
   assert.deepStrictEqual([honest.offers, honest.history], [[], []], 'non-virgin DB must not get demo offers/history');
 });
 
-test('scheduled with no sources configured is a no-op — prices freeze until real rows arrive', async () => {
+test('scheduled with no sources configured freezes prices — only brick resolution moves', async () => {
   const DB = d1();
   const call = api({ DB });
   const before = await catBody(call); // seeds
   await worker.scheduled({ cron: '0 * * * *' }, { DB }, { waitUntil() {} });
   const after = await catBody(call);
-  assert.deepStrictEqual(after, before, 'no sources must mean no changes (the synthetic jiggle is gone)');
+  // the gpc drain legitimately stamps meta.brick on fixture-resolved demo
+  // rows; everything else (prices, offers, history) must not move
+  const strip = (rows) => rows.map(({ brick, ...r }) => r);
+  assert.deepStrictEqual(strip(after), strip(before), 'no sources must mean no price/offer changes (the synthetic jiggle is gone)');
+  assert.ok(after.some(r => r.brick), 'the scheduled tick resolves queued gtins and stamps bricks');
+});
+
+// ── gpc-strict: gtin→brick resolver queue, stamping, GTIN capture ─────────
+
+test('gtin queue: seeding enqueues eans.json, the drain resolves via the fixture and stamps HEADS', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await catBody(call); // seeds — the eans.json bootstrap enqueues every alias gtin
+  const body = await (await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS })).json();
+  assert.ok(body.checked > 0, 'seeding queued gtins');
+  assert.ok(body.resolved > 0, 'the fixture answers demo gtins');
+  assert.ok(body.stamped > 0, 'resolved bricks land on products');
+  assert.strictEqual(body.remaining, 0, 'one n=500 drain empties the demo queue');
+  const by = Object.fromEntries((await catBody(call)).map(r => [r.id, r]));
+  assert.strictEqual(by.airpods.brick, '10001181', 'airpods carry the real headphones brick');
+  // iphone~256-blue's EAN routes to the CHILD id; the family walk stamps the head
+  assert.strictEqual(by.iphone.brick, '10001198', 'a variant child EAN stamps its head');
+  const child = await DB.prepare("SELECT meta FROM products WHERE id = 'iphone~256-blue'").first();
+  assert.strictEqual(JSON.parse(child.meta).brick, undefined, 'children never carry brick');
+});
+
+test('resolver respects the man pin and refuses codes outside the taxonomy', async () => {
+  const DB = d1();
+  // 12345678 is no GPC code; note 99999999 IS one ("Temporary Classification")
+  const env = { DB, GPC_FIXTURE: { 7012345678901: '10001400', 7000000000002: '12345678' } };
+  const call = api(env);
+  await catBody(call);
+  await call('/api/ingest', { method: 'POST', token: OPS, body: [
+    { product_id: 'ean-7012345678901', shop: 'TestShop', price: 999, name: 'Pinned Product', srcCat: 'TV-er' },
+    { product_id: 'ean-7000000000002', shop: 'TestShop', price: 99, name: 'Bogus Brick Product', srcCat: 'TV-er' },
+  ] });
+  await call('/api/admin/products/ean-7012345678901', { method: 'PATCH', token: OPS, body: { man: 1 } });
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS });
+  const metaOf = async (id) => JSON.parse((await DB.prepare('SELECT meta FROM products WHERE id = ?').bind(id).first()).meta);
+  assert.strictEqual((await metaOf('ean-7012345678901')).brick, undefined, 'man pin blocks the resolver');
+  assert.strictEqual((await metaOf('ean-7000000000002')).brick, undefined, 'an unknown code never stamps');
+  const bogus = await DB.prepare("SELECT status, brick FROM gpc WHERE gtin = '7000000000002'").first();
+  assert.deepStrictEqual({ status: bogus.status, brick: bogus.brick }, { status: 'none', brick: null }, 'a code outside the taxonomy records as none');
+});
+
+test('a scraped ean teaches a p-* product its GTIN (eans + meta.ean) and its brick follows', async () => {
+  const DB = d1();
+  const env = { DB, GPC_FIXTURE: { 7098765432109: '10005166' } };
+  const call = api(env);
+  await catBody(call);
+  await call('/api/ingest', { method: 'POST', token: OPS, body: [
+    { product_id: 'p-lego-test-set', shop: 'ShopA', price: 499, name: 'Lego Test Set', srcCat: 'Leker' },
+  ] });
+  // the next crawl carries the page's gtin
+  await call('/api/ingest', { method: 'POST', token: OPS, body: [
+    { product_id: 'p-lego-test-set', shop: 'ShopA', price: 489, name: 'Lego Test Set', ean: '7098765432109' },
+  ] });
+  const routed = await DB.prepare("SELECT product_id FROM eans WHERE ean = '7098765432109'").first();
+  assert.strictEqual(routed.product_id, 'p-lego-test-set', 'captured gtin routes to the slug product');
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS });
+  const meta = JSON.parse((await DB.prepare("SELECT meta FROM products WHERE id = 'p-lego-test-set'").first()).meta);
+  assert.strictEqual(meta.ean, '7098765432109');
+  assert.strictEqual(meta.brick, '10005166', 'the captured gtin resolves and stamps the slug row');
+});
+
+test('a product created AFTER its gtin resolved is stamped at ingest, not never', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await catBody(call);
+  // a gtin the resolver already answered, long before any product carries it
+  await DB.prepare("INSERT INTO gpc (gtin, brick, status, source, checked_at) VALUES ('7011111111111', '10001400', 'resolved', 'stub', 1)").run();
+  await call('/api/ingest', { method: 'POST', token: OPS, body: [
+    { product_id: 'ean-7011111111111', shop: 'ShopA', price: 5000, name: 'Late TV' },
+  ] });
+  const meta = JSON.parse((await DB.prepare("SELECT meta FROM products WHERE id = 'ean-7011111111111'").first()).meta);
+  assert.strictEqual(meta.brick, '10001400', 'ingest stamps already-resolved gtins itself');
 });
 
 test('sliced dept rules serve real cron-computed counts (refreshDeptCounts → seed_meta → catMeta)', async () => {
