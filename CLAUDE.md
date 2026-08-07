@@ -62,9 +62,9 @@ Two Claude Design projects feed this repo:
   made every Furniture row match "sofa"), LIMIT 100, ranked
   word-start-in-name > in-name > brand > blob, and diacritic-folded on both
   sides of the LIKE (in the query, not a stored column — no migration).
-  List queries (`cat=`, all heads) serve one `PAGE_MAX` (400) page ranked by
-  offer count, `&limit=&offset=` for the rest; `meta.cats[cat]` /
-  `meta.products` is the total. Upstream Results reveals 60 rows at a time.
+  List queries (`node=`, all heads) serve one `PAGE_MAX` (400) page ranked by
+  offer count, `&limit=&offset=` for the rest; `meta.bricks`/`meta.uncat` /
+  `meta.products` are the totals. Upstream Results reveals 60 rows at a time.
   **The whole query is server-side** (2026-07-25): `&sort=<SORT_FIELDS id
   |facet:key>&dir=&brand=a,b&min=&max=&rating=&sale=1&instock=1&facets=<json>
   &name=<free text>`
@@ -79,7 +79,7 @@ Two Claude Design projects feed this repo:
   all heads WITH a sort parses 14k rows at 144 ms, which only Browse's "All
   products" link hits. `failGroups`/`sortRows`/`fval` mirror Results' own
   predicate and comparator — if they drift, the screen's count and the served
-  total disagree. Boot's `window.onQuery({cat, sort, dir, filters, page})` is
+  total disagree. Boot's `window.onQuery({brick|dept|cat, sort, dir, filters, page})` is
   the one hook (upstream synced 2026-07-25, `onLoadMore` is gone): Results
   calls it debounced on every query change and for "Load more", and reads
   `total`/`fcounts` off the resolved value — they must NOT be read off
@@ -112,115 +112,95 @@ Two Claude Design projects feed this repo:
   FETCHED hit rather than a second 400-row fetch.
   `/api/catalog.json` remains a full dump for ops/tools only — the SPA must
   never call it, and it is **bearer-gated on `INGEST_TOKEN`** (7.2 MB per
-  hit at 14k rows); `tools/` send the token. Upstream is synced (2026-07-21): category counts and
-  presence read `CATALOG.meta.cats`, SignedHome "Biggest drops" ranks
+  hit at 14k rows); `tools/` send the token. Upstream is synced (2026-07-21): SignedHome "Biggest drops" ranks
   `window.CATALOG`, and SearchSuggest refreshes via boot's
   `window.onSuggestData(q, refresh)` hook; browse prefetches
-  `top=drop&perCat=1&limit=4`.
-- **Categories are dynamic** (2026-07-22): `worker/cats.json` is the
-  registry (`{cat: default icon}`, must be a superset of the prototype's
-  CATEGORIES — build.js enforces both directions). It gates CATMAP
-  promotion and admin PATCH cat, and `catMeta` serves it as `meta.icons`;
-  boot's `hydrateCatalog` appends server cats the prototype doesn't know
-  into `CATEGORIES`/`CAT_ICONS` in place, so browse/header/suggest/
-  onboarding all render them. New category = one line in cats.json + rows
-  that use it. No upstream edit. 31 cats as of 2026-07-25 (the original 10
-  were all electronics-ish, so a sport/pet/jewellery shop had nothing to
-  promote into).
-- **GPC departments** (2026-07-31, plans/gpc-departments.md): upstream's
-  browse/rail/suggest navigate a GS1 GPC layer (`GpcData.jsx`: DEPTS,
-  bricks, `go('results', {brick|dept, label?, count?})`). Our layer is
-  `worker/depts.json` — a NAVIGATION alias over `cat=`, not a stored
-  dimension: each dept is a list of rules `{b, name, icon, cat, syn, path,
-  facets?}` where `b` is a REAL GS1 GPC brick code (2026-07-31, validated
-  against the published EN schema by `node tools/gpc-check.mjs`, which
-  caches the 32 MB publication at the gitignored `tools/.gpc-en.json`;
-  `99…`-prefixed codes are deliberately synthetic — GPC 2020 has no brick
-  for Earbuds/Soundbars/Projectors), `cat` the backing server cat, `syn`
-  Norwegian suggest synonyms and `path` the display-only
-  `Segment › Family › Class` trail. Served as `meta.depts` by
-  `catMeta`; boot's `hydrateCatalog` rebuilds
-  DEPTS/brickBy/ALL_BRICKS/BRICK_CAT/BRICK_DEPT in place from it, joining
-  whole-cat counts from `meta.cats`, and EMPTIES `PRODMAP`/`CLS_CAT` — the
-  demo ids are served ids, and a stale PRODMAP direct match would pin a
-  brick page to the handful of demo rows instead of the whole backing cat.
-  **Sliced rules** (2026-07-31): a rule with `facets` (e.g. Headphones =
-  Audio sliced by `{type: ["Headphones"]}`) is a sub-category finer than a
-  cat. The pin is NOT a query dialect: boot's `gpcParams` injects it into
-  the nav's `history.state.params.facets` (the same seam Browse sub-chips
-  use — nav(), popstate and the deep-link boot path all seed it), Results
-  mounts with it as a real checked filter selection, so it filters the
-  client pool, renders in the rail, and rides `onQuery` server-side as
-  ordinary `facets=`. Clearing the checkbox on a slice page is therefore
-  just widening the filter — allowed, self-inflicted, recoverable. Sliced
-  counts can't come from `meta.cats` (derived facets are invisible to
-  SQL): `refreshDeptCounts` (hourly cron) computes each slice's total via
-  `listIds` — the exact served-page predicate — into `seed_meta` row 4,
-  `catMeta` merges it as `n` onto sliced rules only, and boot passes it
-  through (whole-cat rules stay bare so they can never disagree with
-  `meta.cats`; a fresh deploy shows 0 on sub-tiles for ≤1 h until the
-  first cron). build.js enforces: valid `cat`, unique brick codes/dept
-  ids, b/name/icon present, **every cats.json cat reachable from a
-  whole-cat rule** (the no-orphan guard), sliced facet keys declared in
-  facets.json for that cat, and **a sliced rule's cat whole-covered in the
-  SAME dept** — upstream's `deptProducts` falls back to whole cats, so a
-  cross-dept slice would silently claim its entire backing cat for the
-  dept page. Slice `type` values must match `worker/facetrules.js`
-  vocabulary EXACTLY (measured on the live catalog, not guessed — replay
-  like tools/score-cats.mjs). New dept/sub-category = a depts.json edit,
-  no upstream change. `/search` URLs carry
-  `dept=`/`brick=`/`label=`/`count=` (boot parseUrl/toUrl; `cat=` links
-  keep working); `ensureRoute` prefetches a brick's backing cat WITH its
-  pin (so the mount `onQuery` is a FETCHED hit) — for a dept, its 2
-  biggest backing cats — resolving the mapping off the cheap drops slice
-  on a cold deep-link. Still parked: EAN→brick classification as a stored
-  dimension — the EAN→GPC mapping lives in GS1 Verified (member API, no
-  credentials), and while every brick ≡ cat(+facets) it would change
-  nothing user-visible.
-  **Brick/dept pages are server-queried** (2026-07-31, upstream re-sync):
-  Results passes `{brick, dept, label}` through `onQuery`, and boot's
-  `scopeCat` translates the scope to its backing `cat=` via the registry —
-  brick pages (and single-cat depts) get the full server-side
-  sort/filter/total/fcounts pipeline; brick/dept never leak onto the query
-  string. The swap also empties the demo `BRICK_FACETS` (a demo per-brick
-  def would shadow the served `FACETS[cat]` defs the fcounts keys speak —
-  and a sliced page's pin must live in a def the rail renders, which is
-  also why a served per-brick def registry stays unbuilt). Remaining
-  degradation: a multi-cat "All <dept>" page resolves `null` (upstream's
-  host-can't-serve contract) and stays client-side over its prefetched 2
-  biggest cats — serving it needs a cat-set query the worker doesn't
-  have.
-  Demo-row vocabulary: build.js's `DEMO_TYPE` stamp now WINS over upstream
-  facets (`{...p.facets, type}`) — the 2026-07-31 sync gave demo rows their
-  own `type` strings ('Home console', 'Stick vacuum') that must not sit
-  beside facetrules' curated values in the rail.
-- **Facet filters** (2026-07-22, FILTERS-PLAN.md): `worker/facets.json`
-  is the per-cat facet registry, served as `meta.facets` by `catMeta`;
-  admin PATCH accepts a `facets` object per product. Upstream Results
-  renders a generic group per `window.FACETS[cat]` def (option counts
-  derive from values present, spec strings are the fallback via `fval`,
-  the old hardcoded NC filter is gone); boot's `hydrateCatalog` swaps the
-  served registry in wholesale. New filter = a facets.json entry (+ data
-  via enrich curls). No upstream edit. **All 31 cats declare facets and
-  most of their VALUES are derived from the product name** (2026-07-25,
-  `worker/facetrules.js`: per-cat regex tables → `{type, color, material,
-  size, volume, weight, audience, …}`), merged UNDER `meta.facets` in
-  `shapeRows` — explicit enrichment always wins. Derived, not stored, so a
-  rule fix reaches all 14k rows on the next deploy with no backfill; the
-  cost is that `catMeta`'s `meta.types` SQL aggregate (Browse type chips)
-  only counts stored values, and Browse falls back to counting the
-  hydrated slice. build.js fails if a rule derives a key facets.json
-  doesn't declare. Tune rules against a real crawl, never a sample —
-  replay `/api/catalog.json` (bearer-gated) through `deriveFacets` and read
-  the misses (`tools/score-cats.mjs` does exactly that for `classify` — copy it
-  for facets rather than hand-rolling a replay again).
+  `top=drop&perCat=1&limit=4` (perCat buckets by brick).
+- **Categorization is strict GS1 GPC** (2026-08-07, branch gpc-strict,
+  plans/gpc-strict.md): a product's category IS its 8-digit GPC brick code
+  (`meta.brick`, HEAD rows only — children inherit via the family walk),
+  written ONLY by the resolver pipeline (gtin → brick) or an admin pin
+  (`PATCH {brick}` sets `man: 1`; `{brick: null}` clears + re-queues).
+  **No name/breadcrumb/shop-floor guessing exists anywhere** — the regex
+  classifier, CATMAP and cats.json/depts.json are gone. No brick = the
+  visible, honest **"Ukategorisert"** bucket (searchable, PDP, prices; a
+  real browse dept; served as `node=uncat`). The pipeline: every GTIN
+  entering the system (ingest rows, eans.json bootstrap, admin alias)
+  enqueues in the D1 `gpc` table (gtin/brick/status/source/checked_at —
+  these five columns are the VbG LICENSING boundary, never store more);
+  `resolveGpcQueue` (hourly cron + bearer `POST /api/admin/gpc?n=`) drains
+  through `worker/gpc-resolver.js` — a STUB answering from
+  `worker/gpc-fixture.json` (+ env.GPC_FIXTURE) until Verified-by-GS1
+  credentials exist (GS1 Norway GRP API, batch POST, gpcCategoryCode;
+  swap the module body + VBG_* secrets, nothing else) — validates answers
+  against the shipped taxonomy, and stamps heads (`meta.man` blocks;
+  ingest also stamps already-resolved gtins so late-created rows are never
+  stranded). Promotion: any non-junk NAMED row goes live at once
+  (`JUNK_RE` fees/gift-cards is the only content gate; man pin,
+  demote-sticks, seeded hands-off, variant skip unchanged). GTIN capture:
+  scrape/discover/adtraction rows all carry `ean`; ingest teaches known
+  `p-*` rows their GTIN (eans row + meta.ean) so re-crawls raise
+  resolvability. `srcCat` is still captured (facet derivation + ops
+  diagnostics) but MUST never influence categorization.
+- **Taxonomy + display**: `worker/gpc.json` is the condensed official GPC
+  publication (tools/gpc-build.mjs, edition 2026-05: 45 segs / 162 fams /
+  938 classes / 5,318 bricks, ~347 KiB, checked in like a lockfile;
+  `--refresh` pulls the ref.gs1.org zip — a curated code going inactive on
+  an upgrade fails build.js). `worker/gpcno.json` is the Norwegian overlay:
+  `names` (display name/icon/syn per code, any level — uncurated codes
+  fall back to English GPC titles), `depts` (browse tiles; a tile's `b` is
+  one or more GPC codes, comma-joined, any level), `facetKeys` (GPC code →
+  facet RULESET id, resolution walks brick→class→family→segment).
+  Validate with `node tools/gpc-check.mjs`. Display derives at read time
+  (`shapeRows`): `cat` = the SEGMENT display name (row badges, client cat
+  pools, CATEGORIES and compare all key on it), `icon` = nearest curated
+  ancestor's, `path` = the Segment › Family › Class trail, plus `brick`.
+  `catMeta` serves `bricks` (histogram) / `uncat` / `tree` (stocked
+  4-level hierarchy, JS rollup — GPC codes are NOT prefix-hierarchical) /
+  `depts` (tiles with live histogram counts — no cron, seed_meta row 4 is
+  dead) / `facetKeys`. Queries: `node=<code[,code…]>|uncat` — bricks bind
+  the `idx_products_brick` expression index (EXPLAIN-guarded; same
+  identical-spelling rule as the old cat index), higher-level codes expand
+  to stocked bricks chunked under the D1 param cap. Boot (`hydrateCatalog`)
+  rebuilds DEPTS/brickBy/ALL_BRICKS/BRICK_UNDER from `meta.tree`, overrides
+  `window.brickProducts`/`deptProducts` with brick-truth pools, appends the
+  synthetic Ukategorisert dept ('uncat' pseudo-brick), maps display cats
+  back to segment codes (CAT_NODE), bridges `BRICK_CAT` = facetKeys (so
+  upstream's `FACETS[brickToCat(b)]` and the rebound `specKindOf` resolve),
+  and derives PDP breadcrumbs from the product's own brick vs the covering
+  tiles. New dept/tile/name = a gpcno.json edit, no upstream change.
+  Ops: `tools/gpc-coverage.mjs` (coverage %, per-shop GTIN capture,
+  uncurated-brick worklist), `tools/gpc-pin.mjs` (print-only brick-pin
+  curls for gtin-less rows). One-shot migration: seed_meta row 5 ('gpc1')
+  strips the regex-era cat/icon/kw/man + dead demo bricks from every row.
+- **Facet filters** (2026-07-22, FILTERS-PLAN.md; re-keyed by gpc-strict):
+  `worker/facets.json` is the facet registry — its keys are facet RULESET
+  ids (the old cat names live on as ids only); a product's ruleset comes
+  from its brick via gpcno.json `facetKeys` (`facetKeyOf`, most specific
+  wins). Served as `meta.facets` + `meta.facetKeys` by `catMeta`; admin
+  PATCH accepts a `facets` object per product. Upstream Results renders a
+  generic group per `window.FACETS[brickToCat(brick)]` def (boot bridges
+  `BRICK_CAT` = facetKeys); fcounts serve only when a node maps to a
+  single ruleset, else the rail is brand/price/avail (uncat always).
+  **Facet VALUES are derived from the product name + srcCat**
+  (`worker/facetrules.js` regex tables → `{type, color, material, size,
+  volume, weight, audience, …}`), merged UNDER `meta.facets` in
+  `shapeRows` — explicit enrichment always wins; derived, not stored, so
+  a rule fix reaches every row on the next deploy. `deriveFacets(row,
+  key)` takes the ruleset key explicitly (row.cat default keeps tests
+  working). build.js fails if a rule derives a key facets.json doesn't
+  declare, or a facetKeys value names no ruleset. Tune rules against a
+  real crawl, never a sample — replay `/api/catalog.json` (bearer-gated)
+  through `deriveFacets` and read the misses.
   Per-product `specs` ride the same
   meta-merge PATCH (bulk: `node tools/apply-specs.mjs specs.json`) — boot
   feeds `r.specs` into the prototype's SPECS, so the PDP Specifications
-  section renders for any product whose cat has a SPEC_KINDS schema
-  (proto/Specs.jsx); keys must match that schema — OR ship the
-  self-describing `{ groups: [{ label, rows: [[label, value], …] }] }`
-  form, which renders for ANY category, schema or not.
+  section renders for any product whose RULESET has a SPEC_KINDS schema
+  (proto/Specs.jsx; boot rebinds `specKindOf` through the brick →
+  facetKeys bridge since the schema keys are the old cat names); keys must
+  match that schema — OR ship the self-describing `{ groups: [{ label,
+  rows: [[label, value], …] }] }` form, which renders for ANY node,
+  schema or not.
   `node tools/fetch-specs.mjs` emits that form from Icecat Open
   (Norwegian datasheets by EAN, free tier) for every visible head that
   has no specs yet — curated prototype sheets keep their variant-bound
@@ -229,19 +209,20 @@ Two Claude Design projects feed this repo:
   `searchIds` matches over `json_remove(meta,'$.specs')` so sheet text
   can't pollute search).
 - **Adding products needs no upstream edit**: `worker/extra.json` holds
-  hand-written head rows (`id/name/brand/cat/icon/kw`; cat must be in
-  `worker/cats.json`) that build.js merges into seed.json — seeding,
+  hand-written head rows (`id/name/brand/kw`; category fields are stripped
+  at bake — the resolver/fixture categorizes) that build.js merges into
+  seed.json — seeding,
   discover.mjs and crawl.mjs pick them up with no other wiring. They ship
   with NO demo offers; add EAN(s) to `worker/eans.json` + page URLs to
   `tools/crawl-urls.json`, deploy (seed must land before ingest accepts
   the id), then `node tools/crawl.mjs` prices them. Offer-less/rating-less
   rows render as "No offers yet" / "No reviews yet" (upstream, synced
   2026-07-21).
-- **Product discovery is automatic** (2026-07-21): any source row with an
-  EAN we don't know becomes a `products` row on the spot — derived id
-  `ean-<digits>` (same EAN from two shops dedupes for free), `meta.hidden: 1`,
-  excluded from every user-facing query (search/cat/all-heads/catMeta/
-  catalog.json) but collecting offers + price history from day one.
+- **Product discovery is automatic** (2026-07-21; gpc-strict makes it
+  LIVE at once): any source row with an EAN we don't know becomes a
+  `products` row on the spot — derived id `ean-<digits>` (same EAN from
+  two shops dedupes for free), visible in Ukategorisert unless `JUNK_RE`
+  keeps it hidden, collecting offers + price history from day one.
   **`hidden` means not served, not merely unlisted** (2026-07-26): the
   exclusion lives in `rowsFor` itself, so `ids=` — the PDP's own fetch —
   drops them too, and `?hidden=1` (the ops backlog listing) is bearer-gated
@@ -256,13 +237,13 @@ Two Claude Design projects feed this repo:
   `slugId(brand, name)` → a `p-<slug>` id. It still merges offers across
   shops that name a product identically; where it doesn't, we get a real
   single-shop product instead of nothing. Trade-off: a shop renaming a
-  product strands the old row — re-home it with `POST /api/admin/alias`. **Open catalog (2026-07-22, OPEN-CATALOG-PLAN.md):** EAN→product
-  routing lives in the D1 `eans` table (bootstrapped from `worker/eans.json`,
-  `OR IGNORE` — runtime rows win); hidden rows **auto-promote** at ingest
-  when a source supplies a name + a category resolving to a
-  `worker/cats.json` cat — `meta.auto: 1`, fee/gift-card names blocked
-  (`JUNK_RE` — fees only since 2026-08-01), still-unresolved stays hidden
-  (that IS the junk filter). **Accessories are typed, not blocked**
+  product strands the old row — re-home it with `POST /api/admin/alias`. **Open catalog (2026-07-22, OPEN-CATALOG-PLAN.md; promotion
+  rewritten by gpc-strict 2026-08-07):** EAN→product routing lives in the
+  D1 `eans` table (bootstrapped from `worker/eans.json`, `OR IGNORE` —
+  runtime rows win); any non-junk NAMED row **goes live at ingest** into
+  Ukategorisert (`meta.auto: 1`) — only `JUNK_RE` (fees/gift cards) and
+  human demotions stay hidden. Categorization arrives separately from the
+  resolver (see the gpc-strict block above). **Accessories are typed, not blocked**
   (2026-08-01): facetrules' shared ACC pass runs ahead of every cat's
   `type` rules — a row the shop files under tilbehør/reservedeler/spare
   parts (name or breadcrumb LEAF only; parents are mixed menus, and a
@@ -274,70 +255,29 @@ Two Claude Design projects feed this repo:
   only when the cat's own rules stay silent, so the per-cat vocabulary
   shields "the noun IS the product" ("Case of…" Magic cards, "Long
   Sleeve" shirts, the comic "Cable" — all real rows the old blocklist
-  hid). Measure any term change with the same replay discipline as
-  CAT_RULES.
-  **Category resolution, in order (widened 2026-07-25 — this is what makes a
-  NEW shop go live with no config):** the `CATMAP` var (wrangler.jsonc,
-  per-shop `{raw srcCat → our cat}`) → `CAT_RULES` in worker/index.js, one
-  shared Norwegian retail vocabulary matched on the shop's own category label
-  → `CATMAP[shop]["*"]`, a reserved key giving a
-  single-category shop a floor. Only set `"*"` where the WHOLE shop is one
-  category; a general retailer must stay unmapped so the rules decide per
-  product — and that is **measurable**, so measure it: `node
-  tools/score-cats.mjs` replays the live `/api/catalog.json` through the working
-  tree's own `classify`/`CATMAP` and prints the label/unreadable/no-label split,
-  every row that would change category on the next crawl, how much of each
-  category came from a shop floor rather than the product, and per-shop floor
-  agreement (of a shop's rows whose OWN label we can read, how many land on the
-  floor's category anyway). **Run it before and after every CAT_RULES or floor
-  edit** — never on a sample, that has been wrong three times. Low floor
-  agreement usually means the VOCABULARY is broken, not that the shop is
-  general: three apparent general retailers were really `\bpapir`/`\bpenn`/
-  `maling` misreading art shops. 36 floors as of 2026-07-26, all at 61–100%;
-  eight shops under 50% lost theirs. Dropping a floor costs no live product
-  (ingest never un-promotes) — it only sends that shop's future
-  unreadable-label rows to the hidden backlog.
-  Growing the vocabulary beats adding CATMAP entries: rules help every shop,
-  a CATMAP entry helps one.
-  **`srcCat` is a PATH, and the category is NOT frozen** (2026-07-26,
-  plans/category-misclassification.md): `breadcrumbCat` keeps the shop's whole
-  breadcrumb (`"Leker > Figurer > TV- og filmkarakterer"`), and `classify`
-  splits it and walks **leaf → root**, taking the first crumb that resolves —
-  leaf-first because `Dame / Sko / Komfortsko` is Shoes, parents only speak
-  when the leaf is silent. `CAT_WEAK` crumbs (`Dame`, `Herre`, `Home`,
-  `Produkter`, `Nyankomne`…) are skipped entirely: they sit mid-path where
-  leaf-first reaches them before the department. `CAT_SKIP` tests the **leaf**,
-  not the whole path (a mid-path `Tilbehør` is only the menu the shop files it
-  under; testing the whole string lost 38 beanies under `KLÆR > Tilbehør > Luer
-  og pannebånd`) — accessory names promote too and get `type: Accessories`
-  from facetrules' ACC pass.
-  `breadcrumbCat` reads the breadcrumb as JSON-LD **or schema.org microdata**
-  (Japan Photo publishes only the latter — 638 rows arrived with no category at
-  all), and a crumb equal to the product NAME is dropped wherever it sits in the
-  path, not just at the leaf (Bergans' whole breadcrumb is `"Ally Map Pocket >
-  Black"`, and `pocket` in the Books vocabulary read it as a book).
-  Ingest **re-classifies live `auto` rows on every crawl**, so a vocabulary fix
-  reaches the whole catalog one crawl later instead of new rows only (keeping
-  the leaf and freezing `cat` is how TV came to hold 106 products of which 2
-  were televisions). `meta.man` — set automatically when an admin PATCH sets
-  `cat` — pins a row against the rules forever; demoted rows still never
-  re-promote; and re-classification only ever CHANGES a category, never
-  un-promotes, so a label that stops resolving can't yank a live PDP.
-  `deriveFacets` reads `name` **and** `srcCat` (the ablation in arXiv
-  1812.05774 found name+breadcrumb the best feature set; measured here it lifts
-  rows with a derived `type` 7,099 → 8,321).
-  The 63-label regression check in test/api.test.js is the guard on all of it —
-  one real shop label per failure mode and per word added. Extend it, never
-  weaken it, when touching CAT_RULES.
+  hid). Measure any term change against the live catalog
+  (replay `/api/catalog.json` through `deriveFacets`), never a sample.
+  **Category resolution is the resolver alone** (gpc-strict): CATMAP,
+  CAT_RULES, classify, the shop floors, tools/score-cats.mjs and the
+  155-case label suite are all gone. `srcCat` (the shop breadcrumb, JSON-LD
+  or microdata via `breadcrumbCat`, product-name crumbs dropped) is still
+  captured on every row — `deriveFacets` reads `name` AND `srcCat` (the
+  arXiv 1812.05774 ablation; facet VALUES are display data, not
+  categorization) and ops read it in triage — but it can never place a
+  product. `meta.man` — set automatically when an admin PATCH sets `brick`
+  — pins a row against the resolver forever; demoted rows never
+  re-promote.
   manual triage is deploy-free via the admin API (bearer = INGEST_TOKEN):
-  `PATCH /api/admin/products/:id` (meta merge, `hidden: null` promotes,
-  `hidden: 1` demotes — demoted auto rows never re-promote) and
+  `PATCH /api/admin/products/:id` (meta merge; `brick` pins a GPC brick,
+  `hidden: null` promotes, `hidden: 1` demotes — demoted auto rows never
+  re-promote) and
   `POST /api/admin/alias` `{ean, product_id[, meta]}` (maps the EAN and
   migrates the orphan `ean-*` row's offers/history/watches to the target;
   with `meta` it creates the target, e.g. a new `head~combo` variant child).
   Runbook: **ENRICHMENT.md**; `tools/enrich.mjs` prints ready-to-run curls,
-  `tools/group.mjs` clusters discovered rows into variant families and
-  prints grouping curls (print-only, human-confirmed).
+  `tools/gpc-pin.mjs` prints brick-pin curls from a curated `{id: brick}`
+  file, and `tools/group.mjs` clusters discovered rows into variant
+  families and prints grouping curls (print-only, human-confirmed).
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
   feeds, URLs in the `ADTRACTION_FEEDS` secret, rows emitted as `ean-*`

@@ -5,20 +5,22 @@ Self-contained: everything an enrichment run needs is in this file.
 ## Background (30 seconds)
 
 Sources (crawls, Adtraction feeds) auto-create any product they see whose
-EAN we don't have: a `products` row with id `ean-<digits>`, `meta.hidden: 1`.
-Hidden rows are invisible to users but collect real offers and price history
-from day one. Two promotion paths exist:
+EAN we don't have: a `products` row with id `ean-<digits>` (or `p-<slug>`
+without a barcode). **gpc-strict**: any non-junk NAMED row goes live at
+once into the honest "Ukategorisert" bucket (`meta.auto: 1`); only
+fees/gift cards (`JUNK_RE`) and human demotions stay `meta.hidden: 1`.
+Categorization is the resolver's job alone: the row's GTIN queues in the
+`gpc` table and Verified-by-GS1 (stub until credentials land) answers with
+an 8-digit GPC brick, which stamps `meta.brick` on the head. **No name or
+breadcrumb ever categorizes anything.** Two triage surfaces exist:
 
-- **Auto** (OPEN-CATALOG-PLAN B): a hidden row goes live by itself the
-  moment a source supplies name + brand + a source category that the
-  `CATMAP` var (wrangler.jsonc, per-shop `{raw source cat → our cat}`)
-  maps. Machine-promoted rows carry `meta.auto: 1`. Growing CATMAP is the
-  highest-leverage enrichment work — one mapping promotes every product in
-  that feed category, now and forever. Never map accessory categories;
-  unmapped = stays hidden, which is the junk filter.
-- **Manual** (this runbook): everything CATMAP can't decide. All writes go
-  through the admin API (bearer = `INGEST_TOKEN`, same token as ingest,
-  also in untracked `tools/.ingest-token`) — **no deploy needed**.
+- **Resolver backlog**: `node tools/gpc-coverage.mjs` — coverage %, per-shop
+  GTIN capture, and the uncurated-brick worklist (English titles needing
+  `worker/gpcno.json` names).
+- **Manual** (this runbook): junk triage, variant aliasing, and brick PINS
+  for rows the resolver can never reach (shops publishing no gtin). All
+  writes go through the admin API (bearer = `INGEST_TOKEN`, same token as
+  ingest, also in untracked `tools/.ingest-token`) — **no deploy needed**.
 
 ## The run
 
@@ -37,11 +39,10 @@ members one by one.
 
 ### 2. Triage every row into one of three buckets
 
-**Junk** (accessories, cases, ear pads, spare parts, mismatches): do
-nothing. It stays hidden and harmless. Optionally delete its entry from
-`tools/crawl-urls.json` so the crawler stops refreshing it. If a whole
-source category keeps producing junk, that's confirmation it must never
-enter CATMAP.
+**Junk** (fees, gift cards, priced landing pages that slipped the gate):
+demote with `{"hidden": 1}` — demoted rows never re-promote. Optionally
+delete the entry from `tools/crawl-urls.json` so the crawler stops
+refreshing it.
 
 **Variant of an existing catalog product** (a colour/size/regional SKU of
 a product or one of its `~` children) — run the alias curl with the real
@@ -60,33 +61,38 @@ already has an offer from the same shop, the target's wins. Re-key or
 drop the `ean-*` entry in `tools/crawl-urls.json` if the page is worth
 crawling.
 
-**Genuine new product** — run the promote curl with real values:
+**Categorize by hand** (the resolver answered `none`, or the row has no
+GTIN at all) — pin a real GPC brick:
 
 ```
 curl -sX PATCH "$BASE/api/admin/products/ean-4548736167902" \
   -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
-  -d '{"name":"Sony Bravia 3 55\" 4K Google TV","cat":"TV","icon":"tv",
+  -d '{"name":"Sony Bravia 3 55\" 4K Google TV","brick":"10001400",
        "kw":"tv led 4k google-tv 55 sony bravia fjernsyn","hidden":null}'
 ```
 
-- `hidden: null` deletes the hidden flag = go live; `hidden: 1` demotes
-  (also how to un-publish a bad auto-promotion — demoted rows are never
+- `brick`: an 8-digit GPC brick from the current publication — the API
+  400s on anything else (codes: `worker/gpc.json`, or the GPC browser at
+  gpc-browser.gs1.org). A hand-set brick pins `man: 1` — the resolver may
+  never overwrite it; `{"brick": null}` clears the pin and re-queues the
+  gtin. Display name/icon/trail all derive from the brick — there is
+  nothing else to fill in.
+- Bulk pins: a `{id: brick}` file through `node tools/gpc-pin.mjs pins.json`
+  (print-only curls, like this runbook).
+- `hidden: null` = go live; `hidden: 1` demotes (demoted rows are never
   re-promoted by the machine).
 - `name`: clean up the scraped shop title into a product name.
-- `cat`: must be one of the prototype's categories — the API 400s with
-  the authoritative list if you guess wrong.
-- `icon`: a **lucide icon name** (`"tv"`, `"headphones"`, `"gamepad-2"`,
-  `"smartphone"`, `"speaker"`, `"package"`…), NOT an emoji.
 - `kw`: free-text search keywords, English + Norwegian variants.
 - Optional `was`: original price in NOK if known — enables the drop-%
   badge. Omit when unsure.
 
 ### Facets (optional, any live product)
 
-Facets feed the per-category filters on Results (FILTERS-PLAN.md). Keys
-per category live in `worker/facets.json` (TV: `size`/`panel`/`refresh`,
-Audio: `anc`/`fit`, Phones: `refresh`). Numbers as numbers, bools as
-bools:
+Facets feed the per-ruleset filters on Results (FILTERS-PLAN.md). A
+product's ruleset comes from its brick (`worker/gpcno.json` facetKeys);
+keys per ruleset live in `worker/facets.json` (TV: `size`/`panel`/
+`refresh`, Audio: `anc`/`fit`, Phones: `refresh`). Numbers as numbers,
+bools as bools:
 
 ```
 curl -sX PATCH "$BASE/api/admin/products/<id>" \
