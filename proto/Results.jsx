@@ -1051,7 +1051,8 @@ function ProductPage({ go, id }) {
   const paths = window.productPaths ? productPaths(p) : [];
   const main = paths[0];
   const gbk = main ? brickBy[main.nav.brick] : null;
-  const _seen = new Set([p.id]);
+  const sim = window.pickSimilar ? pickSimilar(p, v, main) : null;
+  const _seen = new Set([p.id, ...(sim ? [sim.cheaper, sim.up].filter(Boolean).map(x => x.id) : [])]);
   const _dedup = (arr) => arr.filter(x => _seen.has(x.id) ? false : (_seen.add(x.id), true));
   const more = _dedup(main ? [...brickProducts(main.nav.brick), ...(CAT_OF[p.cat] || [])] : (CAT_OF[p.cat] || [])).slice(0, 4);
 
@@ -1199,6 +1200,8 @@ function ProductPage({ go, id }) {
             </div>}
           </div>
         </div>
+
+        {window.SimilarSection && <SimilarSection p={p} sim={sim} go={go}></SimilarSection>}
 
         <SpecsSection p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))}></SpecsSection>
 
