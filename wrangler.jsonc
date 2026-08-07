@@ -38,19 +38,6 @@
   // hourly offer refresh (worker scheduled handler); price_points stay
   // one-per-day via the upsert
   "triggers": { "crons": ["0 * * * *"] },
-  // Auto-promotion category map (OPEN-CATALOG-PLAN B): per-shop raw source
-  // category → prototype category, e.g.
-  // "CATMAP": { "Komplett": { "Mobiltelefoner": "Phones" } }
-  // This is now the FIRST of four steps, not the only one — CAT_RULES in
-  // worker/index.js (a shared Norwegian vocabulary, applied to the label and
-  // then to the product name) and the reserved "*" per-shop floor below cover
-  // everything nobody hand-mapped. Prefer extending CAT_RULES: a rule helps
-  // every shop, an entry here helps one. What still resolves to nothing stays
-  // hidden — that IS the junk filter, so never map accessory categories.
-  // Vocabulary observed 2026-07-22 from breadcrumb srcCats (Power, NetOnNet
-  // scrapes). Deliberately unmapped: accessories, smartwatches (no category
-  // for them), refurbished/outlet, generic parents ("Mobil og Smartklokker"),
-  // PC components.
   // HIDE_AUTOBUY: global auto-buy/buy-now kill switch, must match the
   // prototype's TWEAK_DEFAULTS.hideAutobuy (build.js enforces). Hides the MCP
   // buy tools, 404s /api/buy + PUT /api/autobuy, drops autobuy/purchases

@@ -5,14 +5,13 @@
 
 import seed from './seed.json' with { type: 'json' };
 import eansFile from './eans.json' with { type: 'json' };
-import CATS from './cats.json' with { type: 'json' }; // category registry: { cat: default icon } — THE list of valid cats, served to the UI via catMeta
-import FACETS from './facets.json' with { type: 'json' }; // facet registry: { cat: [facet defs] } — served via catMeta, drives the Results filter UI (FILTERS-PLAN.md)
-import DEPTS from './depts.json' with { type: 'json' }; // GPC department registry: navigation alias over cats — served verbatim via catMeta, boot swaps the prototype's demo GPC layer and joins counts from meta.cats (plans/gpc-departments.md)
+import FACETS from './facets.json' with { type: 'json' }; // facet registry: { rulesetId: [facet defs] } — served via catMeta, drives the Results filter UI; keys are facet RULESET ids since gpc-strict (gpcno.json facetKeys maps GPC codes onto them)
 import SHIPPING from './shipping.json' with { type: 'json' }; // per-shop shipping fallback: { shop: { flat, freeOver? } } — curated from shop terms pages, never guessed (plans/shipping-totals.md). Offer-level ship strings win; measured 2026-08-03 they cover 0.3% of offers, so this registry is the real source.
 import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
 import { sendPush } from './push.js';
 import GPC from './gpc.json' with { type: 'json' }; // condensed GS1 GPC taxonomy (tools/gpc-build.mjs) — segs/fams/classes/bricks, the ONLY category vocabulary (gpc-strict)
+import NO from './gpcno.json' with { type: 'json' }; // curated Norwegian overlay: names/icons/syn per GPC code, browse dept tiles, facetKeys (GPC code → facet ruleset id)
 import { resolveGtins, RESOLVER_SOURCE } from './gpc-resolver.js';
 
 const SCHEMA = [
@@ -73,15 +72,14 @@ const SCHEMA = [
   // over the 14k-row scan: raw `meta LIKE` 15 ms, +json_remove 21, +lower 25,
   // +the folds 85-100. The scan was never the problem; the folds were.
   'CREATE TABLE IF NOT EXISTS search_index (product_id TEXT PRIMARY KEY, sk TEXT NOT NULL, nm TEXT NOT NULL, br TEXT NOT NULL)',
-  // Expression index on the category. Every `cat=` listing filters on
-  // json_extract(meta,'$.cat'), which is not a column, so without this SQLite
-  // scans all 14k products to find one category's rows. Measured on prod D1:
-  // cat=Toys 35-44 -> 12-16 ms, rows_read 19,274 -> 6,968; the query now
-  // scales with the CATEGORY, not the catalog (Audio, 425 heads: 5 ms).
-  // Costs index maintenance on every products write, which is one extra btree
-  // on a 14k-row table. SQLite matches an expression index only when the query
-  // spells the expression identically — keep this and listIds' WHERE in sync.
-  `CREATE INDEX IF NOT EXISTS idx_products_cat ON products(json_extract(meta,'$.cat'))`,
+  // Expression index on the BRICK (gpc-strict — replaces idx_products_cat).
+  // Every node= listing filters on json_extract(meta,'$.brick'), which is not
+  // a column, so without this SQLite scans every product to find one brick's
+  // rows. Same rule as the old cat index: SQLite matches an expression index
+  // only when the query spells the expression identically — keep this and
+  // listIds'/rowsFor's WHEREs in sync (EXPLAIN-guarded in test/api.test.js).
+  'DROP INDEX IF EXISTS idx_products_cat',
+  `CREATE INDEX IF NOT EXISTS idx_products_brick ON products(json_extract(meta,'$.brick'))`,
 ].join(';\n'); // one statement per line (D1 exec splits on \n), ;-terminated (sqlite)
 // ponytail: schema bootstraps once per database; move to d1 migrations
 // when the schema first has to *change* on the deployed db
@@ -257,7 +255,7 @@ async function seedCatalog(db) {
   // one round trip for both markers: row 1 pins the seed hash, row 2 the
   // catalog version. This SELECT is on every request already — reading the
   // version here is what makes a catMeta cache hit cost nothing.
-  const mark = Object.fromEntries((await db.prepare('SELECT id, hash FROM seed_meta WHERE id <= 3').all()).results.map(r => [r.id, String(r.hash)]));
+  const mark = Object.fromEntries((await db.prepare('SELECT id, hash FROM seed_meta WHERE id <= 5').all()).results.map(r => [r.id, String(r.hash)]));
   // Row 3 pins the search-index build. Mismatched (fresh db, or FOLD/searchCols
   // edited) = install the triggers and refold every row, once, globally. Must
   // run BEFORE seeding below, or the seed's inserts predate the triggers.
@@ -265,6 +263,20 @@ async function seedCatalog(db) {
   if (mark[3] !== searchVer) {
     for (const sql of SEARCH_SQL) await db.prepare(sql).run();
     await db.prepare('INSERT INTO seed_meta (id, hash) VALUES (3, ?) ON CONFLICT(id) DO UPDATE SET hash = excluded.hash').bind(searchVer).run();
+  }
+  // gpc-strict one-shot (marker row 5): strip the regex-era category layer —
+  // stored cat/icon, the dead demo meta.brick rows (0 overlap with any real
+  // registry — leaving them would put products in WRONG GPC categories),
+  // cat-era man pins, and kw (it baked cat tokens into the search blob).
+  // AFTER the search-trigger block, so the meta rewrite refolds every search
+  // row. On a populated prod db this is one UPDATE over every row — pre-run
+  // the same statement (and the marker insert) via `wrangler d1 execute`
+  // before deploying if cold-start CPU is a concern; the marker makes the
+  // in-Worker copy a no-op. seed_meta row 4 (dept slice counts) is dead and
+  // simply never read again.
+  if (mark[5] !== 'gpc1') {
+    await db.prepare(`UPDATE products SET meta = json_remove(meta, '$.cat', '$.icon', '$.brick', '$.man', '$.kw')`).run();
+    await db.prepare("INSERT INTO seed_meta (id, hash) VALUES (5, 'gpc1') ON CONFLICT(id) DO UPDATE SET hash = excluded.hash").run();
   }
   // No version row yet = a db seeded before versioning existed (prod, on the
   // deploy that adds this) and not written since. Fall back to the seed hash:
@@ -348,135 +360,37 @@ const autoAdd = (r) => /^(ean-\d+|p-[a-z0-9-]+)$/.test(r.product_id) && typeof r
 const JUNK_RE = /avgift|gebyr|gavekort|frakt|service ?fee|håndtering/i;
 const kwOf = (...parts) => [...new Set(parts.join(' ').toLowerCase().match(/[\p{L}\d]+/gu) || [])].filter(t => t.length > 1).join(' ');
 
-// Category classification (OPEN-CATALOG B3, widened 2026-07-25). env.CATMAP
-// (exact per-shop raw string → cat) still wins where it's set, but hand-mapping
-// every breadcrumb label of every shop is precisely why 200+ researched shops
-// never went live: one new shop = dozens of unknown labels = nothing promotes.
-// These rules read the Norwegian retail vocabulary itself, so ANY shop — today's
-// and tomorrow's — promotes with zero config. First match wins, so the order is
-// specific → generic. Only cats.json cats may appear here (asserted below).
-const CAT_SKIP = /tilbehør|deksel|etui|reservedel|reservedeler|\bdeler\b|gavekort|frakt|tjeneste|outlet|kampanje/i;
-const CAT_RULES = [
-  // `lerret` alone is BOTH a projection screen and an artist's canvas — bare, it
-  // put 43 canvas prints in Projectors (1 of the 53 rows was a projector)
-  [/projektor|prosjektor|projeksjonslerret/i, 'Projectors'],
-  // \b-anchor `bok`: unanchored `e-?bok` matched the "ebok" inside Klokkebokser,
-  // Kakeboks and Plantebokser
-  [/lesebrett|läsplatt|\be-?bok|kindle|kobo/i, 'E-readers'],
-  // \b-anchor `konsoll`: bare it matched the furniture/bracket compounds
-  // Konsollbord (console table), hyllekonsoll, Høyttalerkonsoller — the word
-  // alone ("Konsoller") and spillkonsoll compounds are the gaming senses
-  [/playstation|xbox|nintendo|spill-?konsoll|\bkonsoll(er|en)?\b|gamepad|tv-?spill|dataspill|videospill|pc-?spill|gaming|\bps[45]\b/i, 'Gaming'],
-  // A televison crumb says `tv` on its own; every other `TV-<noun>` is furniture
-  // (TV-benk/bord/møbel — 30 rows) or merchandise ("TV- og filmkarakterer" — 14
-  // Pokémon figures). The lookahead is a list because the ambiguity is lexical.
-  [/\btv-?apparat|fjernsyn|television|\b[oq]led\b|\btv\b(?![\s-]*(og\s+(film|media)|benk|bord|møb|skap|hylle|karakter))/i, 'TV'],
-  [/hodetelefon|høyttaler|ørepropp|øretelefon|headset|soundbar|lydplanke|hi-?fi|forsterker|platespiller|lydanlegg|høretelefon/i, 'Audio'],
-  // bare `foto` swallowed "Fototapeter" (photo wallpaper, 22 rows) — anchor it
-  [/kamera|objektiv|fotoapparat|systemkamera|speilrefleks|\bdrone|blits|stativ.*foto|\bfoto\b|fotoutstyr|fotografi|fotoramm/i, 'Photo'],
-  [/laptop|bærbar|datamaskin|nettbrett|\bipad\b|macbook|chromebook|tastatur|harddisk|\bssd\b|grafikkort|prosessor|stasjonær|dataskjerm|\bpc\b|data\b/i, 'Computers'],
-  [/mobiltelefon|smarttelefon|\biphone\b|mobil\b/i, 'Phones'],
-  [/vaskemaskin|tørketrommel|oppvaskmaskin|kjøleskap|fryser|komfyr|stekeovn|platetopp|ventilator|hvitevare/i, 'Appliances'],
-  // (?<!sol)blender: a Solblender is a lens hood — the bare word filed 12 of
-  // them in Kitchen. kakeboks: a cake tin ("ebok" inside it once made it an
-  // E-reader; the \b fix left it stranded with no word of its own).
-  [/kaffe|espresso|airfryer|frityr|kjøkkenmaskin|(?<!sol)blender|mikrobølge|vannkoker|brødrister|stekepanne|\bgryte|kokekar|bestikk|servise|kjøkken(?!bord|stol)|\bpanne\b|\bkjele|\bwok|tallerken|\bkopp(er)?\b|\bkrus\b|servering|matboks|matbeholder|kakeboks|drikkeflaske|vannflaske|termokopp|termoflaske|termos(er)?\b|\bforkle\b|\bforklær\b|baking|kakepynt|kakelys|tallerk/i, 'Kitchen'],
-  // `lampebord`/`lampeskjerm`: a side table is furniture and a shade is a spare
-  // part, but Lighting is read first — "Lampebord & sidebord" put 70 side tables
-  // in Lighting at Chilli alone
-  [/lampe(?!bord)|belysning|lyspære|lyskilde|pendel|lysestake|utelys|\blys\b/i, 'Lighting'],
-  // tv-benk/mediabenk explicitly: the TV rule above now declines them, and a
-  // bare `benk` here would steal Garden's benches from the leaf-first walk.
-  // `skap`/`highboard`/`skjenk` are spelled out rather than a bare `\bskap\b`:
-  // Home's `oppbevaring` was reading 178 cabinets and highboards across
-  // Trademax/Chilli as storage, but `baderomsskap` really is Home.
-  [/(?<!hage)(?<!ute)(?<!tur)(?<!camping)møb(?:ler|el(?!pleie|beslag|hjul|knott))|sofa|\bstol\b|\bbord\b|\bseng(er)?\b|sengegavl|sengebenk|(?<!strand)madrass|\breol\b|\bhylle|kommode|skrivebord|spisebord|garderobe|soverom|\bstue\b|spisestue|spisegruppe|spisestol|lenestol|barstol|sengeramme|sengestamme|kontinentalseng|vitrine|nattbord|romdeler|tv-?\s?benk|mediabenk|oppbevaringsskap|klesskap|garderobeskap|vitrineskap|highboard|\bskjenk|sideboard|lampebord|sittepuff|fotskammel|veggspeil|sminkebord|toalettbord|konsollbord|avlastningsbord|gangbord/i, 'Furniture'],
-  [/\bhage|utemøbl|plante|gressklipper|\bgrill\b|grilltrekk|terrasse|blomst|\bfrø\b|uterom|parasoll|paviljong|basseng/i, 'Garden'],
-  // hobby paint/craft before Tools, or Panduro's craft paints read as housepaint.
-  // Art supplies are polysemous with Office the same way: measured at Tegne.no
-  // and Panduro, `\bpapir`/`blekk`/`\bpenn` read 54 rows of Copic markers,
-  // artist ink and drawing paper as stationery. The art words win here because
-  // Hobby is read first; a stationer's plain "Papir" still reaches Office.
-  [/hobby|\bgarn\b|(?<![a-zA-ZæøåÆØÅ])strikk(?!ede\b|et\b)|hekle|håndarbeid|scrapbook|\bperler\b|modellbygg|\bsying|stoff\b|oljemaling|akrylmaling|spraymaling|akvarell|vannmaling|\blerret(?!sbilde)|fargeblyant|broderi|klistremerk|kunstner|\btusj|markers|barnemaling|tekstilmaling|ansiktsmaling|linoleum|fargepigment|tegnepapir|kreppapir|krepp-papir|silkepapir|\bkritt\b|miniatyrspill|\bmalings?ett/i, 'Hobby'],
-  [/verktøy|\bdrill\b|bormaskin|skrutrekker|\bsag\b|maling|byggevare|jernvare|festemid|skruer|elektriker|rørlegger|\bstige\b|gardintrapp|vinkelsliper|\bspiker\b|beslag|møbelhjul|møbelknott|hylleknekt|verneutstyr|arbeidshansk/i, 'Tools'],
-  [/bildel|\bdekk\b|\bfelg|bilpleie|bilbatteri|motorolje|bilrekvisita|\bbil\b/i, 'Auto'],
-  // trenings-/spinningsykkel is gym equipment: 29 exercise bikes sat in Bikes.
-  // Bikes declines them, then Sport's `trening` reads the same crumb.
-  [/(?<!trenings)(?<!spinning)(?<!ergometer)syk(?:kel|ler)|sykling|landevei/i, 'Bikes'],
-  [/\bbaby|spedbarn|barnevogn|bleie|smokk|barnestol|graviditet|amming|smekke|\bstelle|tåteflask|bæresele|bæresjal|ammepute|gravidpute|babynest|nattpose|brystpumpe|samsoving/i, 'Baby'],
-  // NOT \bsko[a-zæøå]*\b: `ø` is not a word char, so JS puts a \b inside
-  // "Løskort" and 30 Pokémon singles became Shoes. Same for Skole/Skogstad.
-  // sko\b (suffix, not prefix) is safe from both AND reads every -sko compound
-  // the shops actually use: løpesko, badesko, vintersko, hverdagssko, piggsko…
-  // sko\b(?!-): a suspended hyphen ("Sko- og klesoppbevaring", "Sko-
-  // oppbevaring") means the compound's head comes later — read that instead
-  [/(?<!kabel)(?<!søyle)(?<!stolpe)sko(r|ene)?\b(?!-)|støvl|sandal|sneaker|\bboots\b|tøfler|fottøy|skotøy/i, 'Shoes'],
-  [/klokke|armbåndsur|smartklokke|lommeur|\bur\b/i, 'Watches'],
-  // `\bring` fires after æ/ø/å (not JS word chars): "Skismøring" and
-  // "Rengjøring" were Jewelry. `sølv\b` (not bare `sølv`): the fishing brand
-  // Sølvkroken pulled a whole tackle aisle in here.
-  [/smykk|øredobb|halskjede|anheng|\bcharm|gullsmed|diamant|\bperle|(?<![a-zA-ZæøåÆØÅ])ring(er)?\b|ørering|giftering|sølv\b|\bgull|sølje|ørepynt|\bkjede\b|armbånd|forlovelse|mansjettknapp|slipsnål/i, 'Jewelry'],
-  [/sminke|make-?up|hudpleie|parfyme|\bdufter\b(?! til hjem)|hårpleie|shampo|neglelakk|kosmetikk|skjønnhet|barbering|solkrem|\bpleie\b|leppe|øyenskygge|øyenbryn|maskara|mascara|gellack|\bnegle|bodylotion|kroppspleie|hår(skum|farge|produkt|strikk|pynt|bøyle|spenne|access)|foundation|concealer|highlighter|\bserum\b|ansikt|deodorant|selvbruning|\bprimer\b|dagkrem|nattkrem|\bbalsam\b|eyeliner|hårspray|\brouge\b|leppestift|rettetang|krølltang/i, 'Beauty'],
-  [/apotek|\bhelse|kosttilskudd|vitamin|protein|medisin|førstehjelp|munnpleie|tannbørste|\bkosthold|legemid|reseptfri|\bplaster\b|tannkrem|munnskyll|magnesium|kollagen|immunforsvar|rehabilit|restitusjon/i, 'Health'],
-  [/\bhund(?!re)|\bkatt|kjæledyr|dyrefôr|fôr|akvari|smådyr|\bhest\b|kanin|dyrebutikk|valp\b|kattesand|dyremat|\bkobbel|halsbånd|vinterdekken|pelspleie|villfugl/i, 'Pets'],
-  [/\bbok\b|(?<!lomme)bøker|roman|skjønnlitteratur|lydbok|tegneserie|\bmanga\b|litteratur|pocket/i, 'Books'],
-  [/kontor|\bpapir|skriver|blekk|\btoner\b|\bpenn|notatbok|skolesaker|emballasje|kalkulator|konvolutt/i, 'Office'],
-  // `figur`/`karakter`: the shop's own leaf for the reported Pokémon row is
-  // "TV- og filmkarakterer" — it says "figure" and we had no word for it
-  [/\bleke|\bleker\b|lego|brettspill|puslespill|kosedyr|\bbamse|\bdukke|\bfigur|actionfigur|samlefigur|karakter|byggesett|\bspill\b|squishmallow|plysj|samlekort|løskort|fotballkort|\bbrio\b|barbie|playmobil|rollespill|barnespill|aktivitetsleker|\bklosser\b|badelek|warhammer|terningsett|\bterninger\b/i, 'Toys'],
-  [/sport|trening|fitness|løping|\bski\b|langrenn|slalåm|fotball|\bgolf\b|svømming|\byoga\b|styrke|vekter|boksing|boksehansk|romaskin|crosstrainer|tredemølle|kondisjon|\bgoggles\b|skibrille|snøbrille|sportsbrille|skismøring|skivoks|glideprodukt|frisbee|discgolf|diskgolf|spinning|ergometer/i, 'Sport'],
-  [/friluft|\btur\b|\btelt\b|sovepose|ryggsekk|\bjakt\b|\bfiske|camping|klatring|villmark|\bagn\b|\bsluk\b|anorakk|hengekøye|tursekk|dagstursekk|turmøbl|campingmøbl|strandmadrass|reisehåndkl/i, 'Outdoor'],
-  // (?<!hånd)(?<!for)(?<!arbeids)klær: unanchored `klær` read Håndklær (towels),
-  // Forklær (aprons) and arbeidsklær (workwear) as clothing — ~40 towels alone
-  [/(?<!hånd)(?<!for)(?<!arbeids)klær|jakke|bukse|genser|skjorte|kjole|t-skjorte|undertøy|sokker|\blue(r)?\b|pannebånd|hansker|\bbelte\b|\bdress\b|shorts|strømpe|badetøy|badedrakt|\bcaps(er)?\b|mote\b|dame\b|herre\b|pyjamas|\bvest\b|skjørt|\bjeans\b|\bkåpe|frakk|solbrille|\bvotter\b|\bskjerf|heldress|håndveske|skulderveske|\bboxere?\b/i, 'Fashion'],
-  // suffix-compound textiles: Dundyner, Sengetepper, Kappelaken, Hotellputer,
-  // putevar/putetrekk all missed \b-anchored words and fell to a Soverom/floor
-  // Furniture. (?<!com)puter?\b: "Sykkelcomputer" is not a cushion.
-  [/støvsuger|smarthus|smart hjem|luftrenser|\bvifte|varmepumpe|strykejern|interiør|innredning|dekor|pynt|tekstil|gardin|tapet|(?<!com)puter?\b|putevar|putetrekk|teppe|oppbevaring|baderom|håndkl|rengjøring|renhold|klesvask|klespleie|tøymykner|vaskemiddel|sengetøy|dyne|oppvask|sengesett|laken\b|\bvase(r)?\b|\bposter(e|s)?\b|\bplakat|bordbrikke|\bduk(er)?\b|borddekking|dekkebrikke|lerretsbilde|duftlys|duftpinne|romspray|room ?spray|hjemmeduft|dufter til hjem|møbelpleie/i, 'Home'],
-];
-for (const [, c] of CAT_RULES) if (!CATS[c]) throw new Error(`CAT_RULES references unknown category "${c}" — add it to worker/cats.json`);
-// A shop category is a PATH ("Leker > Figurer > TV- og filmkarakterer"), so read
-// it as one: leaf first, falling back outward to the parents. Leaf-first is the
-// direction that matters — "Dame / Sko / Komfortsko" is Shoes, not Fashion — and
-// the parents only speak when the leaf says nothing ("Leker > … > Nyankomne").
-// CAT_SKIP still applies to the WHOLE label, not per crumb: "Tilbehør /
-// Skolisser / Brune skolisser" is an accessory no matter how specific the leaf.
-const CRUMB = /\s*(?:>|›|»|\||::|\/)\s*/;
-// Animal-department words only (not the full Pets rule: `halsbånd`/`fôr` in a
-// path must not drag a jewellery or food crumb to Pets — the department must).
-const PETS_DOM = /\bhund(?!re)|\bkatt|valp\b|kjæledyr|smådyr|villfugl|akvari|kanin|dyrebutikk/i;
-// Crumbs that are an audience or a navigation slot, never a department. They sit
-// in the MIDDLE of a path ("Smykker > Herre > Armbånd") where leaf-first reaches
-// them before the root, and `herre` would answer Fashion for a bracelet. Skipped
-// entirely, so the walk carries on outward to the crumb that means something.
-export const CAT_WEAK = /^((til )?(dame|herre|barn|han|henne)|barne|jente|gutt|unisex|kvinne|mann|junior|voksen|home|hjem|forside|start|produkter|nyheter|nyankomne|nyhet|alle produkter|tilbud|merker|brands?)$/i;
-export const classify = (label) => {
-  const s = String(label || '');
-  if (!s) return undefined;
-  const crumbs = s.split(CRUMB).map(c => c.trim()).filter(Boolean);
-  // "Dukker og Tilbehør" as the LEAF is a doll shelf, not an accessory shelf:
-  // strip the "og/& tilbehør" tail so the real half stays readable. Leaf only —
-  // a mid-path "Verktøy og tilbehør" under "Sminke >" must keep skipping, or
-  // eyelash curlers land in Tools. Compounds ("Barnevogntilbehør") still skip.
-  if (crumbs.length) crumbs[crumbs.length - 1] = crumbs.at(-1).replace(/\s*(?:og|&|,)\s*tilbehør\w*/gi, '') || crumbs.at(-1);
-  // CAT_SKIP applies to the LEAF, not the whole path: the leaf is what the
-  // product IS, and a mid-path "Tilbehør" only says the shop files it under an
-  // accessories menu. Testing the whole string cost "KLÆR > Tilbehør > Luer og
-  // pannebånd" — 38 beanies with a perfectly readable leaf. A single-crumb label
-  // is its own leaf, so those behave exactly as before. Chargers and cases
-  // promote too now — facetrules' ACC pass files them under `Accessories`.
-  if (!crumbs.length || CAT_SKIP.test(crumbs.at(-1))) return undefined;
-  // A pet-department crumb owns its whole path: under "Katt >" the leaf is
-  // "Leker" or "Shampoo og balsam", and leaf-first read those as Toys/Beauty —
-  // cat toys and dog shampoo are pet products wherever the shop shelves them.
-  if (crumbs.some(c => PETS_DOM.test(c))) return 'Pets';
-  for (let i = crumbs.length - 1; i >= 0; i--) {
-    if (CAT_WEAK.test(crumbs[i]) || CAT_SKIP.test(crumbs[i])) continue;
-    const cat = CAT_RULES.find(([re]) => re.test(crumbs[i]))?.[1];
-    if (cat) return cat;
+// ── GPC taxonomy helpers (gpc-strict) ──────────────────────────────────────
+// A product's category IS its 8-digit GPC brick (meta.brick), written only by
+// the resolver (worker/gpc-resolver.js) or an admin pin — never derived from
+// names or breadcrumbs. Everything display-shaped resolves at read time from
+// the condensed taxonomy (worker/gpc.json) + Norwegian overlay
+// (worker/gpcno.json). GPC codes are NOT prefix-hierarchical: every rollup
+// walks parent pointers through the taxonomy map.
+const gpcParent = (c) => GPC.bricks[c]?.[1] ?? GPC.classes[c]?.[1] ?? GPC.fams[c]?.[1];
+const gpcTitle = (c) => GPC.bricks[c]?.[0] ?? GPC.classes[c]?.[0] ?? GPC.fams[c]?.[0] ?? GPC.segs[c];
+const gpcName = (c) => NO.names[c]?.name ?? gpcTitle(c);
+// display icon: the code's own overlay entry, else its nearest curated
+// ancestor's, else the generic tag
+const gpcIcon = (c) => { for (let x = c; x; x = gpcParent(x)) if (NO.names[x]?.icon) return NO.names[x].icon; return 'tag'; };
+// "Segment › Family › Class" display trail for a brick (partial for higher levels)
+const gpcPath = (c) => { const t = []; for (let x = gpcParent(c); x; x = gpcParent(x)) t.unshift(gpcTitle(x)); return t.join(' \u203a ') || undefined; };
+// facet RULESET id for any GPC code: nearest facetKeys mapping walking up
+// brick → class → family → segment (worker/gpcno.json). The ids are
+// facets.json keys; a code with no mapping gets no facet rail.
+const facetKeyOf = (code) => { for (let c = code; c; c = gpcParent(c)) if (NO.facetKeys[c]) return NO.facetKeys[c]; return undefined; };
+// Expand a node= param (one or more GPC codes, comma-joined, any level) to
+// the set of STOCKED bricks it covers. `stocked` is the brick histogram's
+// keys — expansion via stocked-only keeps IN lists proportional to the
+// catalog, not to the taxonomy's 5,318 bricks.
+function bricksUnder(node, stocked) {
+  const out = new Set();
+  for (const code of String(node).split(',').map(c => c.trim()).filter(Boolean)) {
+    if (GPC.bricks[code]) { out.add(code); continue; }
+    for (const b of stocked) { for (let c = gpcParent(b); c; c = gpcParent(c)) if (c === code) { out.add(b); break; } }
   }
-  return undefined;
-};
+  return [...out];
+}
 
 async function ingest(db, rows, env) {
   // gpc-strict: every GTIN that enters the system queues for brick resolution
@@ -566,59 +480,28 @@ async function ingest(db, rows, env) {
       db.prepare(`UPDATE products SET meta = json_patch(meta, ?) WHERE id = ? AND json_extract(meta, '$.ean') IS NULL`).bind(JSON.stringify({ ean: k }), id),
     ]));
   }
-  // Auto-promotion (B3): a hidden row goes live the moment a source supplies
-  // name + a source category that env.CATMAP (JSON var, per-shop
-  // { "<shop>": { "<raw srcCat>": "<cat>" } }) maps to one of ours. meta.auto
-  // marks it machine-promoted; auto + still hidden = a human demoted it,
-  // never re-promote. Unmapped or blocklisted rows just stay hidden.
-  // …and it RE-classifies rows that are already live and still machine-owned
-  // (2026-07-26). The category used to be frozen at first promotion, so a
-  // vocabulary fix reached new rows only — which is how TV ended up holding 106
-  // products of which 2 were televisions. Facet values already self-heal at read
-  // time (facetrules.js); this gives `cat` the same property, one crawl behind.
-  // Re-classification only ever CHANGES a category, never un-promotes: a row
-  // whose label stops resolving keeps the cat it has rather than vanishing from
-  // under a live PDP and its watches.
-  // Brand is best-effort, not a gate: plenty of real shops (Lekeverden) never
-  // send one in their JSON-LD at all — promote anyway with a placeholder
-  // rather than leave a real, correctly-categorized product hidden forever.
-  const catmap = typeof env.CATMAP === 'string' ? JSON.parse(env.CATMAP) : (env.CATMAP || {});
+  // Promotion (gpc-strict): visibility no longer waits for a category — the
+  // brick comes from the resolver (or an admin pin), and until it does the
+  // row sits honestly in Ukategorisert. The junk gate (fees/gift cards/
+  // freight sold as "products") is the only content gate. Unchanged from the
+  // regex era: meta.man outranks everything, auto + still-hidden = a human
+  // demoted it (never re-promote), live + !auto = seeded/hand-written rows
+  // are not ours to touch, and variant children never promote on their own.
+  // srcCat is still captured — it feeds deriveFacets and ops diagnostics —
+  // but it must NEVER influence categorization; that is the whole point.
   const promoted = {};
   for (const r of rows) {
     const meta = metaOf[r.product_id];
     if (!meta || meta.family) continue;
     const hidden = stillHidden.has(r.product_id);
-    // hidden + auto = a human demoted it; never re-promote. live + !auto = a
-    // seeded or hand-written row, not ours to touch. meta.man = a human set the
-    // category by hand (admin PATCH), which outranks any rule forever.
     if (meta.man || (meta.auto ? hidden : !hidden)) continue;
+    if (!meta.name || JUNK_RE.test(meta.name)) continue;
     const brand = meta.brand ?? (r.brand ? String(r.brand) : null) ?? 'Unspecified';
     const srcCat = r.srcCat ?? meta.srcCat;
-    // CATMAP's exact per-shop mapping wins; the shared vocabulary rules cover
-    // every label nobody hand-mapped; and CATMAP's reserved "*" key is a
-    // single-category shop's floor (a pure bike shop whose pages send SKU
-    // codes instead of categories is still selling bikes).
-    // Deliberately NOT a fallback: the product NAME. Measured over a real
-    // 12,614-row crawl it decided only 101 rows (+0.8%), and most of those
-    // were things the curated CATMAP entries exist to EXCLUDE — PanzerGlass
-    // screen protectors under "Tilbehør", "Refurbished" iPhones, Hue
-    // lightstrips whose names end in "tv". A name fallback silently overrides
-    // that curation, which is worse than leaving 0.8% hidden.
-    // `real` = the row's own evidence (the shop's mapped label, or the shared
-    // vocabulary reading its category path). The floor is not evidence.
-    const real = catmap[r.shop]?.[srcCat] ?? classify(srcCat);
-    const cat = real ?? catmap[r.shop]?.['*'];
-    if (!meta.name || !CATS[cat] || JUNK_RE.test(meta.name)) continue;
-    // A shop floor may guess for a NEW row; it must never RE-FILE a live one.
-    // Without this, a product carried by two shops takes the category of
-    // whichever shop's row happens to land last in the batch — a board game
-    // stocked by both a toy shop and a game shop flipped Toys↔Gaming between
-    // crawls, and a floor silently outranked another shop's real label.
-    if (!hidden && !real) continue;
-    // Already live and already right — don't rewrite 14k rows per crawl
-    if (!hidden && meta.cat === cat && meta.srcCat === srcCat) continue;
+    // already live with an unchanged breadcrumb — don't rewrite 14k rows per crawl
+    if (!hidden && (srcCat == null || meta.srcCat === srcCat)) continue;
     const { hidden: _, ...rest } = meta;
-    promoted[r.product_id] = { ...rest, brand, cat, icon: CATS[cat], ...(srcCat ? { srcCat } : {}), kw: kwOf(meta.name, brand, cat), auto: 1 };
+    promoted[r.product_id] = { ...rest, brand, ...(srcCat ? { srcCat } : {}), kw: kwOf(meta.name, brand), auto: 1 };
     stillHidden.delete(r.product_id);
   }
   if (Object.keys(promoted).length) {
@@ -935,8 +818,9 @@ function shapeRows(prods, offs, pts, imgSet, shopPts) {
     let bestTotal, bestTotalShop;
     for (const o of po) if (o.total != null && (bestTotal == null || o.total < bestTotal)) { bestTotal = o.total; bestTotalShop = o.shop; }
     // name-derived facet values (worker/facetrules.js) under whatever
-    // enrichment actually stored — an explicit meta.facets value always wins
-    const derived = deriveFacets(m);
+    // enrichment actually stored — an explicit meta.facets value always wins.
+    // The ruleset comes from the brick (facetKeyOf); no brick = no ruleset.
+    const derived = deriveFacets(m, facetKeyOf(m.brick));
     // demo seed rating/reviews never ship — fake trust signals, same honesty
     // rule as the purged demo review cards. The real aggregate (meta.udom,
     // written by refreshReviewMeta) serves as `dom`, which is the ONLY thing
@@ -948,6 +832,12 @@ function shapeRows(prods, offs, pts, imgSet, shopPts) {
     const { rating: _demoRating, reviews: _demoReviews, udom, urating: _u1, ureviews: _u2, ...pub } = m;
     return {
       id, ...pub,
+      // display category is DERIVED from the brick at read time (gpc-strict):
+      // label/icon from the overlay (EN GPC title where uncurated), path the
+      // Segment › Family › Class trail. No brick = the honest bucket.
+      ...(m.brick
+        ? { cat: gpcName(m.brick), icon: gpcIcon(m.brick), path: gpcPath(m.brick) }
+        : { cat: 'Ukategorisert', icon: 'package-search' }),
       ...(udom ? { dom: udom, reviews: udom.n } : {}),
       facets: derived ? { ...derived, ...m.facets } : m.facets,
       img: imgSet.has(id) ? `/img/${id}` : undefined,
@@ -1018,14 +908,16 @@ async function rowsFor(db, ids, { expand = true, hidden = false } = {}) {
     : (await chunked(heads, async c => (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(c)})${vis}`).bind(...c).all()).results))
         .sort((a, b) => heads.indexOf(a.id) - heads.indexOf(b.id)); // caller's order is the ranking (sort=drop)
   if (expand) {
-    const cats = [...new Set(prods.filter(r => heads.includes(r.id)).map(r => JSON.parse(r.meta).cat).filter(Boolean))];
-    for (const cat of cats) {
+    // PDP neighbors are same-BRICK (gpc-strict) — precise by construction.
+    // Ukategorisert rows get none: "More in unsorted" would be a lie.
+    const bricks = [...new Set(prods.filter(r => heads.includes(r.id)).map(r => JSON.parse(r.meta).brick).filter(Boolean))];
+    for (const brick of bricks) {
       const got = new Set(prods.map(r => r.id));
       // NOT IN can't be paged under the param cap — over-fetch by rowid
       // (≤ got.size rows can collide) and drop the ones already present
       const cand = (await db.prepare(
-        `SELECT id, meta FROM products WHERE json_extract(meta, '$.cat') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()} ORDER BY rowid LIMIT ?`
-      ).bind(cat, got.size + 4).all()).results;
+        `SELECT id, meta FROM products WHERE json_extract(meta,'$.brick') = ? AND json_extract(meta, '$.family') IS NULL AND ${visible()} ORDER BY rowid LIMIT ?`
+      ).bind(brick, got.size + 4).all()).results;
       prods.push(...cand.filter(r => !got.has(r.id)).slice(0, 4));
     }
   }
@@ -1301,23 +1193,48 @@ function listFilters(p) {
 // 85 ms of it. Next, in order: stored facet values + a SQL ORDER BY.
 // Retained heap is ~440 B/row against a 128 MB isolate (a row without the meta
 // blob is ~280 B, if 100k-row categories ever arrive).
-async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = null, dir = 'asc', filters = null } = {}) {
-  const where = `json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')}${cat == null ? '' : " AND json_extract(p.meta, '$.cat') = ?"}`;
-  const bind = cat == null ? [] : [cat];
-  if (!sort && !filters && !cat) {
+async function listIds(db, { node = null, limit = PAGE_MAX, offset = 0, sort = null, dir = 'asc', filters = null } = {}) {
+  const base = `json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')}`;
+  // node= is one or more GPC codes (comma-joined, any level) or 'uncat'.
+  // uncat = the NULL bucket; a brick code binds directly (expression index);
+  // class/family/segment codes expand to the STOCKED bricks under them —
+  // chunked under D1's 100-param cap, one aggregate query per chunk.
+  let chunks = [{ where: base, bind: [] }];
+  let ruleset; // single facet ruleset for the node → fcounts served
+  if (node === 'uncat') {
+    chunks = [{ where: `${base} AND json_extract(p.meta,'$.brick') IS NULL`, bind: [] }];
+  } else if (node) {
+    const codes = String(node).split(',').map(c => c.trim()).filter(Boolean);
+    const keys = new Set(codes.map(facetKeyOf));
+    if (keys.size === 1) ruleset = [...keys][0];
+    let bricks = codes;
+    if (!codes.every(c => GPC.bricks[c])) {
+      const stocked = (await db.prepare(`SELECT DISTINCT json_extract(meta,'$.brick') AS b FROM products WHERE json_extract(meta,'$.brick') IS NOT NULL`).all()).results.map(r => String(r.b));
+      bricks = bricksUnder(node, stocked);
+    }
+    if (!bricks.length) return { ids: [], total: 0 };
+    chunks = [];
+    for (let i = 0; i < bricks.length; i += 90) {
+      const c = bricks.slice(i, i + 90);
+      chunks.push({ where: `${base} AND json_extract(p.meta,'$.brick') IN (${ph(c)})`, bind: c });
+    }
+  }
+  if (!sort && !filters && !node) {
     // untouched fast path: no sort, no filters, no facet counts to serve
     const { results } = await db.prepare(
-      `SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${where}
+      `SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${base}
        GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid LIMIT ? OFFSET ?`
-    ).bind(...bind, limit, offset).all();
+    ).bind(limit, offset).all();
     return { ids: results.map(r => r.id) };
   }
-  const { results } = await db.prepare(
-    `SELECT p.id, p.meta, MIN(o.price) AS best, COUNT(o.product_id) AS shops,
+  const results = (await Promise.all(chunks.map(ch => db.prepare(
+    `SELECT p.id, p.meta, p.rowid AS ri, MIN(o.price) AS best, COUNT(o.product_id) AS shops,
             MAX(CASE WHEN o.stock = 1 THEN 1 ELSE 0 END) AS stock, MAX(o.updated_at) AS updated
-     FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${where}
+     FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${ch.where}
      GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid`
-  ).bind(...bind).all();
+  ).bind(...ch.bind).all()))).flatMap(r => r.results);
+  // >1 chunk loses the global default rank — restore it (offer count, rowid)
+  if (chunks.length > 1) results.sort((a, b) => b.shops - a.shops || a.ri - b.ri);
   // Shipping aggregates need per-offer rows (shipCost is registry logic the
   // GROUP BY above can't see — same reason the facets run in JS), so fetch
   // them only when the query actually touches shipping. ~1 offer/product
@@ -1325,12 +1242,12 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
   // `cat` fetches it too: the rail's availability counts (meta.acounts) need
   // free/minEta on every row, and they ride every category response now
   let shipAgg = null;
-  if (cat || sort === 'total' || filters?.freeship || filters?.maxeta) {
-    const offs = await db.prepare(
-      `SELECT o.product_id, o.shop, o.price, o.ship, o.eta, o.stock FROM offers o JOIN products p ON p.id = o.product_id WHERE ${where}`
-    ).bind(...bind).all();
+  if (node || sort === 'total' || filters?.freeship || filters?.maxeta) {
+    const offs = (await Promise.all(chunks.map(ch => db.prepare(
+      `SELECT o.product_id, o.shop, o.price, o.ship, o.eta, o.stock FROM offers o JOIN products p ON p.id = o.product_id WHERE ${ch.where}`
+    ).bind(...ch.bind).all()))).flatMap(r => r.results);
     shipAgg = {};
-    for (const o of offs.results) {
+    for (const o of offs) {
       const a = shipAgg[o.product_id] ??= { free: false, minEta: Infinity };
       const sc = shipCost(o.shop, o.price, o.ship);
       if (sc === 0) a.free = true;
@@ -1344,24 +1261,24 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
   // per-cat only: the rail has no facets without one. Counted in a Map and
   // served as [value, count] PAIRS — a JSON object would stringify the
   // numeric axes (55 → "55") and the rail's option ids must keep their type
-  const fcounts = cat ? new Map() : null;
+  const fcounts = node && ruleset ? new Map() : null;
   // brand histogram + price bounds over the WHOLE category, in Results'
   // brandPool convention (facet selections applied, the non-facet block —
   // brand/price/dom/sale/stock/avail — deliberately not): the slider's max was
   // the max of whichever 400 rows were loaded (kr 100 on Toys, true max kr
   // 25k), and a brand outside the page never made the rail at all. Same drift
   // rule as failGroups vs Results' own predicate.
-  const brands = cat ? new Map() : null;
+  const brands = node ? new Map() : null;
   let plo = Infinity, phi = -Infinity;
   // availability counts in upstream's OWN convention: its availCounts reads
   // countPool — no filters applied at all — so these count the whole
   // category unfiltered, and the refine falls back client-side like the rest.
   // `fast` mirrors upstream's fixed ≤2-days AVAIL def (boot sends maxeta=2).
-  const acounts = cat ? { instock: 0, freeship: 0, fast: 0 } : null;
+  const acounts = node ? { instock: 0, freeship: 0, fast: 0 } : null;
   let rows = [];
   for (const x of results) {
     const m = JSON.parse(x.meta);
-    const derived = deriveFacets(m);
+    const derived = deriveFacets(m, facetKeyOf(m.brick));
     const r = {
       id: x.id, m, f: derived ? { ...derived, ...m.facets } : (m.facets || {}),
       best: x.best ?? undefined, shops: x.shops, stock: x.stock === 1, updated: x.updated || undefined,
@@ -1412,34 +1329,15 @@ async function listIds(db, { cat = null, limit = PAGE_MAX, offset = 0, sort = nu
 // when it isn't.
 async function topDropIds(db, { limit = 4, perCat = false } = {}) {
   const { results } = await db.prepare(
-    `SELECT p.id, json_extract(p.meta, '$.cat') AS cat FROM products p JOIN offers o ON o.product_id = p.id WHERE json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')} AND json_extract(p.meta, '$.was') > 0 GROUP BY p.id ORDER BY 1.0 - MIN(o.price) * 1.0 / json_extract(p.meta, '$.was') DESC`
+    `SELECT p.id, json_extract(p.meta, '$.brick') AS brick FROM products p JOIN offers o ON o.product_id = p.id WHERE json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')} AND json_extract(p.meta, '$.was') > 0 GROUP BY p.id ORDER BY 1.0 - MIN(o.price) * 1.0 / json_extract(p.meta, '$.was') DESC`
   ).all();
   if (!perCat) return results.slice(0, limit).map(r => r.id);
+  // perCat buckets by brick (gpc-strict); brickless rows only reach the
+  // global top — an Ukategorisert per-bucket would advertise the backlog
   const per = {};
   const ids = results.slice(0, limit).map(r => r.id);
-  for (const r of results) if (r.cat && (per[r.cat] = (per[r.cat] || 0) + 1) <= limit) ids.push(r.id);
+  for (const r of results) if (r.brick && (per[r.brick] = (per[r.brick] || 0) + 1) <= limit) ids.push(r.id);
   return [...new Set(ids)];
-}
-
-// Real counts for the registry's attribute-sliced dept rules (facet values are
-// derived, so SQL can't count them). Runs on the hourly cron, not the request
-// path — the free plan's ~40 ms CPU ceiling has no room for a per-request
-// derive over every sliced cat. Reuses listIds so the count is the exact
-// predicate the served brick page uses; stored in seed_meta row 4 (the same
-// marker table the seed hash and catalog version live in), read back by
-// catMeta. The version bump makes every isolate's memoised catMeta pick the
-// fresh numbers up.
-const sliceFilters = (facets) => ({ name: [], brands: [], min: 0, max: 0, dom: 0, sale: false, instock: false, facets });
-async function refreshDeptCounts(db) {
-  const counts = {};
-  for (const d of DEPTS) for (const r of d.rules) {
-    if (!r.facets) continue;
-    const { total } = await listIds(db, { cat: r.cat, limit: 0, filters: sliceFilters(r.facets) });
-    counts[r.b] = total;
-  }
-  await db.prepare('INSERT INTO seed_meta (id, hash) VALUES (4, ?) ON CONFLICT(id) DO UPDATE SET hash = excluded.hash').bind(JSON.stringify(counts)).run();
-  await bumpVer(db).run();
-  return counts;
 }
 
 // Global aggregates + per-category head counts — served as meta on every
@@ -1464,37 +1362,61 @@ async function catMeta(db, ver) {
   const hit = metaCache.get(db);
   if (ver && hit?.ver === ver) return hit.val;
   const heads = `FROM products WHERE json_extract(meta, '$.family') IS NULL AND ${visible()}`;
-  const [nRes, sRes, fRes, cRes, tRes, dRes] = await db.batch([
+  const [nRes, sRes, fRes, bRes] = await db.batch([
     db.prepare(`SELECT COUNT(*) AS n ${heads}`),
     // per-shop objective stats (plans/reviews-layer.md shop profiles v1):
     // offers tracked + price freshness — the shops count is this list's length
     db.prepare('SELECT shop, COUNT(*) AS n, MAX(updated_at) AS t FROM offers GROUP BY shop'),
     db.prepare('SELECT MAX(updated_at) AS t FROM offers'),
-    db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, COUNT(*) AS n ${heads} GROUP BY 1`),
-    // per-cat sub-category counts (facets.type) — Browse's type chips read
-    // these off CATALOG.meta so they don't depend on which rows are hydrated
-    db.prepare(`SELECT json_extract(meta, '$.cat') AS cat, json_extract(meta, '$.facets.type') AS t, COUNT(*) AS n ${heads} AND json_extract(meta, '$.facets.type') IS NOT NULL GROUP BY 1, 2`),
-    // sliced dept-rule counts, precomputed hourly by refreshDeptCounts —
-    // absent (fresh db, pre-first-cron) just means those rules ship no n
-    db.prepare('SELECT hash FROM seed_meta WHERE id = 4'),
+    // the whole category axis in ONE aggregate (gpc-strict): stocked-brick
+    // histogram + the NULL bucket (Ukategorisert). tree/depts derive from it
+    // in JS — O(stocked bricks), no cron, no seed_meta row
+    db.prepare(`SELECT json_extract(meta, '$.brick') AS b, COUNT(*) AS n ${heads} GROUP BY 1`),
   ]);
   const products = nRes.results[0].n;
   const shops = sRes.results.length;
   const shopStats = Object.fromEntries(sRes.results.map(r => [r.shop, { offers: r.n, updated: r.t ?? null }]));
   const freshest = fRes.results[0].t ?? null;
-  const results = cRes.results;
-  const tr = tRes.results;
-  const types = {};
-  for (const r of tr) if (r.cat) (types[r.cat] ??= {})[r.t] = r.n;
-  // sliced rules get their precomputed n; whole-cat rules stay bare (boot
-  // joins those from meta.cats, so they can never disagree with it)
-  let sliceN = {};
-  try { sliceN = JSON.parse(dRes.results[0]?.hash || '{}'); } catch (e) {}
-  const depts = DEPTS.map(d => ({ ...d, rules: d.rules.map(r => r.facets && sliceN[r.b] != null ? { ...r, n: sliceN[r.b] } : r) }));
-  // per-shop {flat, freeOver} for the basket optimizer's threshold-aware
-  // group shipping (plans/basket-optimizer.md) — per-offer shipCost is priced
-  // at the single item, so a basket crossing freeOver needs the raw rule
-  const val = { products, shops, shopStats, freshest, icons: CATS, facets: FACETS, depts, types, shipping: SHIPPING, cats: Object.fromEntries(results.filter(r => r.cat).map(r => [r.cat, r.n])) };
+  const bricks = {};
+  let uncat = 0;
+  for (const r of bRes.results) r.b == null ? uncat = r.n : bricks[String(r.b)] = r.n;
+  // stocked GPC hierarchy, 4 levels, counts rolled up — names from the
+  // overlay where curated, English GPC titles otherwise (decision: hybrid
+  // navigation). Sorted by size so browse renders the biggest first.
+  const nodes = {};
+  const tree = [];
+  for (const [b, n] of Object.entries(bricks)) {
+    const meta4 = GPC.bricks[b];
+    if (!meta4) continue; // brick unknown to this edition — counted in `bricks`, absent from the tree
+    const chain = [gpcParent(gpcParent(gpcParent(b))), gpcParent(gpcParent(b)), gpcParent(b), b];
+    let kids = tree;
+    for (const c of chain) {
+      let node = nodes[c];
+      if (!node) { node = nodes[c] = { code: c, name: gpcName(c), ...(NO.names[c]?.icon ? { icon: NO.names[c].icon } : {}), n: 0, children: [] }; kids.push(node); }
+      node.n += n;
+      kids = node.children;
+    }
+  }
+  const bySize = (l) => { l.sort((a, b) => b.n - a.n); l.forEach(x => { bySize(x.children); if (!x.children.length) delete x.children; }); };
+  bySize(tree);
+  // browse departments from the overlay tiles: a tile's b is one or more GPC
+  // codes (any level); its count is the stocked total under them — the same
+  // histogram the tree uses, so a tile number and its page can never disagree
+  const tileN = (b) => bricksUnder(b, Object.keys(bricks)).reduce((a, x) => a + (bricks[x] || 0), 0);
+  const depts = NO.depts.map(d => ({
+    id: d.id, name: d.name, icon: d.icon,
+    rules: d.tiles.map(t => {
+      const first = String(t.b).split(',')[0];
+      return { b: t.b, name: t.name ?? NO.names[first]?.name ?? gpcTitle(first), icon: t.icon ?? NO.names[first]?.icon ?? 'tag',
+        syn: t.syn ?? NO.names[first]?.syn ?? [], ...(gpcPath(first) ? { path: gpcPath(first) } : {}), n: tileN(t.b) };
+    }),
+  }));
+  // facet ruleset per stocked brick AND per tile code — boot's BRICK_CAT
+  // bridge reads this so upstream's FACETS[brickToCat(b)] resolves the defs
+  const facetKeys = {};
+  for (const b of Object.keys(bricks)) { const k = facetKeyOf(b); if (k) facetKeys[b] = k; }
+  for (const d of NO.depts) for (const t of d.tiles) { const k = facetKeyOf(String(t.b).split(',')[0]); if (k) facetKeys[t.b] = k; }
+  const val = { products, shops, shopStats, freshest, facets: FACETS, facetKeys, tree, depts, bricks, uncat, shipping: SHIPPING };
   if (ver) metaCache.set(db, { ver, val });
   return val;
 }
@@ -1701,7 +1623,7 @@ async function mcpTool(db, sid, name, a) {
       .map(p => [terms.filter(t => `${p.name} ${p.brand ?? ''} ${p.cat ?? ''} ${p.icon ?? ''}`.toLowerCase().includes(t)).length, p])
       .filter(([s]) => s > 0)
       .sort((x, y) => y[0] - x[0]);
-    if (!scored.length) return { results: [], hint: 'no matches — categories: ' + Object.keys((await catMeta(db, ver)).cats).join(', ') };
+    if (!scored.length) return { results: [], hint: 'no matches — departments: ' + (await catMeta(db, ver)).tree.map(t => t.name).join(', ') };
     return { results: scored.slice(0, 8).map(([, p]) => brief(p)) };
   }
 
@@ -2011,7 +1933,7 @@ export default {
     }
 
     // Query-based catalog: the SPA's lazy cache fetches slices from here.
-    // Precedence ids > q > top=drop > list (cat= or all heads).
+    // Precedence ids > q > top=drop > list (node= or all heads).
     if (route === 'GET /api/products') {
       const ver = await seedCatalog(db);
       const p = url.searchParams;
@@ -2060,7 +1982,7 @@ export default {
         // actually shows; `total` (matching rows) and `fcounts` (the category's
         // facet histogram) come back as meta — neither is computable from the
         // partial cache the screen holds.
-        const slice = await listIds(db, { cat: p.get('cat'), ...page });
+        const slice = await listIds(db, { node: p.get('node'), ...page });
         extra = { total: slice.total, fcounts: slice.fcounts || undefined, prange: slice.prange, brands: slice.brands || undefined, acounts: slice.acounts };
         products = await rowsFor(db, slice.ids, { expand: false });
       }
@@ -2137,7 +2059,7 @@ export default {
       const cur = await db.prepare('SELECT meta FROM products WHERE id = ?').bind(id).first();
       if (!cur) return json({ error: 'unknown product' }, 404);
       const patch = await request.json().catch(() => null);
-      const STR = ['name', 'brand', 'cat', 'icon', 'kw', 'family', 'vlabel'];
+      const STR = ['name', 'brand', 'kw', 'family', 'vlabel', 'brick'];
       const ok = patch && typeof patch === 'object' && !Array.isArray(patch) && Object.keys(patch).length
         && Object.entries(patch).every(([k, v]) =>
           (v === null && k !== 'name') // null deletes a key; a product always keeps a name
@@ -2146,13 +2068,20 @@ export default {
           || ((k === 'hidden' || k === 'auto' || k === 'man') && v === 1)
           || ((k === 'variants' || k === 'facets' || k === 'specs') && typeof v === 'object' && !Array.isArray(v)));
       if (!ok) return json({ error: 'bad patch' }, 400);
-      if (typeof patch.cat === 'string' && !CATS[patch.cat]) return json({ error: 'unknown cat', cats: Object.keys(CATS).sort() }, 400);
+      // gpc-strict: `brick` replaced `cat`/`icon` — display derives from the
+      // brick at read time. The code must exist in the shipped taxonomy.
+      if (typeof patch.brick === 'string' && !GPC.bricks[patch.brick.trim()]) return json({ error: 'unknown brick', hint: 'an 8-digit GPC brick code from the current publication (see worker/gpc.json)' }, 400);
       const meta = JSON.parse(cur.meta);
       for (const [k, v] of Object.entries(patch)) v === null ? delete meta[k] : meta[k] = typeof v === 'string' ? v.trim() : v;
-      // A hand-set category is a human decision — pin it, or the next crawl's
-      // re-classification would quietly overwrite the triage that fixed it.
-      // `man: null` in the patch hands the row back to the rules.
-      if (typeof patch.cat === 'string' && !('man' in patch)) meta.man = 1;
+      // A hand-set brick is a human decision — pin it, or the resolver would
+      // quietly overwrite the triage that fixed it. `brick: null` clears the
+      // pin too (unless the patch pins explicitly) and re-queues the gtin so
+      // the resolver answers again.
+      if (typeof patch.brick === 'string' && !('man' in patch)) meta.man = 1;
+      if (patch.brick === null) {
+        if (!('man' in patch)) delete meta.man;
+        if (meta.ean) await db.prepare("UPDATE gpc SET status = 'queued' WHERE gtin = ?").bind(meta.ean).run();
+      }
       await db.batch([db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id), bumpVer(db)]);
       return json({ ok: true, id, meta });
     }
@@ -2724,7 +2653,5 @@ export default {
     if (drained?.done) await bumpVer(db).run();
     // gtin→brick resolution rides the same hourly tick (gpc-strict)
     await resolveGpcQueue(db, env).catch(e => console.error(`gpc drain failed: ${e.message}`));
-    // sliced dept-rule counts (meta.depts n) refresh hourly off the same tick
-    await refreshDeptCounts(db).catch(e => console.error(`dept count refresh failed: ${e.message}`));
   },
 };

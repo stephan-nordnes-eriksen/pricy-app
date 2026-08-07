@@ -92,11 +92,6 @@ if (catalog.some(p => p.variants)) {
 // discover.mjs and crawl.mjs all see them with no further wiring.
 const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json'), 'utf8'));
 {
-  // worker/cats.json is the category registry — new cats go there, not
-  // upstream; boot appends server-known cats into the prototype's list
-  const CATS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'cats.json'), 'utf8'));
-  for (const c of ctx.CATEGORIES) if (!CATS[c]) throw new Error(`worker/cats.json is missing prototype category "${c}" — registry must be a superset`);
-  // a derived facet nobody declared is invisible (Results renders one group
   // shipping registry: a typo'd key would silently misprice every total the
   // shop serves, so the shape is enforced here (plans/shipping-totals.md)
   const SHIPPING = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'shipping.json'), 'utf8'));
@@ -106,51 +101,64 @@ const extra = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'extra.json')
       throw new Error(`worker/shipping.json "${shop}": expected { flat: number, freeOver?: number }`);
   }
 
-  // per facets.json def), and a def for an unknown cat never renders at all
+  // gpc-strict: worker/gpc.json (condensed GS1 taxonomy, tools/gpc-build.mjs)
+  // is THE category vocabulary; worker/gpcno.json overlays Norwegian display
+  // + browse tiles + facet-ruleset routing on it. Every referenced code must
+  // exist in the shipped edition — a publication upgrade that retires a
+  // curated code fails HERE, before it can ship.
+  const GPC = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'gpc.json'), 'utf8'));
+  if (!GPC.edition || !GPC.segs || !GPC.fams || !GPC.classes || !GPC.bricks) throw new Error('worker/gpc.json is malformed — regenerate with node tools/gpc-build.mjs');
+  const knownCode = (c) => GPC.segs[c] || GPC.fams[c] || GPC.classes[c] || GPC.bricks[c];
+  const NO = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'gpcno.json'), 'utf8'));
   const FACETS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'facets.json'), 'utf8'));
-  for (const c of Object.keys(FACETS)) if (!CATS[c]) throw new Error(`worker/facets.json has facets for unknown category "${c}"`);
-  for (const [c, keys] of Object.entries(RULE_KEYS)) {
-    const declared = new Set((FACETS[c] || []).map(d => d.key));
-    for (const k of keys) if (!declared.has(k)) throw new Error(`worker/facetrules.js derives "${k}" for ${c}, but worker/facets.json declares no such facet`);
+  for (const [c, v] of Object.entries(NO.names)) {
+    if (!knownCode(c)) throw new Error(`gpcno.json names: "${c}" is not a GPC ${GPC.edition} code`);
+    if (!v.name || !v.icon) throw new Error(`gpcno.json names: "${c}" needs name and icon`);
   }
-  // depts.json (GPC departments) is a navigation alias over cats — every
-  // rule must back onto a real cat, and every cat must stay reachable from
-  // at least one whole-cat rule or it vanishes from Browse/rail/suggest
-  const DEPTS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'depts.json'), 'utf8'));
   {
-    const bricks = new Set(), deptIds = new Set(), covered = new Set();
-    for (const d of DEPTS) {
-      if (!d.id || !d.name || !d.icon || !Array.isArray(d.rules) || !d.rules.length) throw new Error(`depts.json dept needs id/name/icon/rules: ${JSON.stringify(d.id)}`);
-      if (deptIds.has(d.id)) throw new Error(`depts.json duplicate dept id: ${d.id}`);
+    const deptIds = new Set(), tileCodes = new Set();
+    for (const d of NO.depts) {
+      if (!d.id || !d.name || !d.icon || !Array.isArray(d.tiles) || !d.tiles.length) throw new Error(`gpcno.json dept needs id/name/icon/tiles: ${JSON.stringify(d.id)}`);
+      if (deptIds.has(d.id)) throw new Error(`gpcno.json duplicate dept id: ${d.id}`);
       deptIds.add(d.id);
-      for (const r of d.rules) {
-        if (!r.b || !r.name || !r.icon) throw new Error(`depts.json rule needs b/name/icon: ${JSON.stringify(r)}`);
-        if (bricks.has(r.b)) throw new Error(`depts.json duplicate brick code: ${r.b}`);
-        bricks.add(r.b);
-        if (!CATS[r.cat]) throw new Error(`depts.json rule "${r.name}": unknown category "${r.cat}"`);
-        if (!r.facets && !r.label) covered.add(r.cat);
-        // a sliced rule pins facet selections the rail must be able to render
-        // (declared defs) and the client must be able to evaluate (deptProducts
-        // falls back to whole cats, so the slice's cat must be whole-covered in
-        // the SAME dept or the dept page would silently claim the whole cat)
-        if (r.facets) {
-          const declared = new Set((FACETS[r.cat] || []).map(x => x.key));
-          for (const [k, v] of Object.entries(r.facets)) {
-            if (!declared.has(k)) throw new Error(`depts.json sliced rule "${r.name}" pins facet "${k}" that worker/facets.json doesn't declare for ${r.cat}`);
-            if (!Array.isArray(v) || !v.length) throw new Error(`depts.json sliced rule "${r.name}": facet "${k}" must pin a non-empty value array`);
-          }
-          if (!d.rules.some(o => !o.facets && !o.label && o.cat === r.cat)) throw new Error(`depts.json sliced rule "${r.name}" needs a whole-cat rule for ${r.cat} in the same department (${d.id})`);
+      for (const t of d.tiles) {
+        const codes = String(t.b || '').split(',');
+        for (const c of codes) {
+          if (!knownCode(c)) throw new Error(`gpcno.json dept ${d.id}: tile code "${c}" is not a GPC ${GPC.edition} code`);
+          if (tileCodes.has(c)) throw new Error(`gpcno.json dept ${d.id}: tile code "${c}" appears in more than one tile`);
+          tileCodes.add(c);
         }
+        if (!(t.name && t.icon) && !(codes.length === 1 && NO.names[codes[0]])) throw new Error(`gpcno.json dept ${d.id}: tile ${t.b} has no name/icon and no names entry`);
       }
     }
-    for (const c of Object.keys(CATS)) if (!covered.has(c)) throw new Error(`depts.json leaves category "${c}" unreachable — it needs a whole-cat rule in some department`);
+  }
+  for (const [c, key] of Object.entries(NO.facetKeys)) {
+    if (!knownCode(c)) throw new Error(`gpcno.json facetKeys: "${c}" is not a GPC ${GPC.edition} code`);
+    if (!FACETS[key]) throw new Error(`gpcno.json facetKeys: "${c}" maps to "${key}", which worker/facets.json doesn't declare`);
+  }
+  // a derived facet nobody declared is invisible (Results renders one group
+  // per facets.json def) — RULE_KEYS' ids are facets.json keys since gpc-strict
+  for (const [c, keys] of Object.entries(RULE_KEYS)) {
+    const declared = new Set((FACETS[c] || []).map(d => d.key));
+    for (const k of keys) if (!declared.has(k)) throw new Error(`worker/facetrules.js derives "${k}" for ruleset ${c}, but worker/facets.json declares no such facet`);
+  }
+  // the stub resolver must cover every curated EAN with a REAL brick, so
+  // demo/dev rows categorize through the exact pipeline prod will use
+  const eanKey = (e) => String(e || '').replace(/\D/g, '').replace(/^0+/, '');
+  const FIXTURE = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'gpc-fixture.json'), 'utf8'));
+  for (const [g, b] of Object.entries(FIXTURE)) {
+    if (g.startsWith('//')) continue;
+    if (!GPC.bricks[b]) throw new Error(`gpc-fixture.json: "${g}" maps to "${b}", not a GPC ${GPC.edition} brick`);
+  }
+  const EANS = JSON.parse(fs.readFileSync(path.join(REPO, 'worker', 'eans.json'), 'utf8'));
+  for (const [pid, list] of Object.entries(EANS)) {
+    for (const e of list) if (!FIXTURE[eanKey(e)]) throw new Error(`worker/gpc-fixture.json is missing eans.json EAN ${e} (${pid}) — demo rows must resolve through the real pipeline`);
   }
   const ids = new Set([...catalog, ...children].map(p => p.id));
   for (const p of extra) {
-    if (!p.id || !p.name || !p.cat) throw new Error(`extra.json row needs id/name/cat: ${JSON.stringify(p)}`);
+    if (!p.id || !p.name) throw new Error(`extra.json row needs id/name: ${JSON.stringify(p)}`);
     if (p.id.includes('~')) throw new Error(`extra.json id "${p.id}" contains "~" (reserved for variant children)`);
     if (ids.has(p.id)) throw new Error(`extra.json duplicate/colliding id: ${p.id}`);
-    if (!CATS[p.cat]) throw new Error(`extra.json "${p.id}": unknown category "${p.cat}" (worker/cats.json knows: ${Object.keys(CATS).join(', ')})`);
     ids.add(p.id);
   }
 }
@@ -236,10 +244,15 @@ fs.writeFileSync(path.join(DIST, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 // route now, so nothing under dist/api/ may shadow it
 // specs ride along on head rows (children inherit via family, specsFor is
 // head-keyed) so the served catalog — not the client-baked table — is truth
+// gpc-strict: seed rows carry NO category — cat/icon (regex era), the
+// prototype's dead demo brick codes and cat-flavoured kw are stripped at
+// bake; meta.brick is written only by the resolver (fixture-answered for the
+// demo EANs), and display derives from it at read time.
+const bare = ({ cat, icon, brick, kw, ...p }) => p;
 fs.writeFileSync(path.join(REPO, 'worker', 'seed.json'), JSON.stringify([
-  ...catalog.map(p => ctx.SPECS[p.id] ? { ...p, specs: ctx.SPECS[p.id] } : p),
-  ...children,
-  ...extra.map(p => ({ offers: [], history: [], ...p })), // uniform row shape; real offers arrive via ingest
+  ...catalog.map(p => bare(ctx.SPECS[p.id] ? { ...p, specs: ctx.SPECS[p.id] } : p)),
+  ...children.map(bare),
+  ...extra.map(p => bare({ offers: [], history: [], ...p })), // uniform row shape; real offers arrive via ingest
 ]));
 for (const f of fs.readdirSync(path.join(REPO, 'vendor')).filter(f => f.endsWith('.js'))) {
   fs.copyFileSync(path.join(REPO, 'vendor', f), path.join(DIST, 'vendor', f));

@@ -698,7 +698,7 @@ const ACC_RE = new RegExp(NOT_INCL + String.raw`(?:\btilbehør|\baccessor|\bdeks
 // rows carry another noun or a typed leaf; widen only against a measured miss.
 const ACC_NOUN_RE = new RegExp(NOT_INCL + String.raw`(?:\blader\b|\bcharger|kabel|\bcable\b|\badapter|\bcase\b|\bcover\b|\betui\b|\bveske\b|(?<!\blong\s|\bshort\s)\bsleeve\b|\bstrap\b|\breim\b|\barmbånd)`, 'i');
 
-// Facets a category's rules can produce, for build.js's registry check.
+// Facets a ruleset can produce, for build.js's registry check.
 export const RULE_KEYS = Object.fromEntries(Object.entries(RULES).map(([cat, r]) => [cat, Object.keys(r)]));
 
 // Facet values readable off `name` — plus `srcCat`, the shop's own category path
@@ -706,9 +706,15 @@ export const RULE_KEYS = Object.fromEntries(Object.entries(RULES).map(([cat, r])
 // (arXiv 1812.05774, 94M items) found name unigrams COMBINED with navigational
 // breadcrumbs the best feature set, and measured here srcCat lifts rows with a
 // derived `type` from 7,099 to 8,319 (+17%) — Sport 169 → 386 — for no new data.
-// Values stay undefined when the category has no rules or nothing matched.
-export function deriveFacets({ name, cat, srcCat, brand }) {
-  const rules = RULES[cat];
+// Values stay undefined when the ruleset has no rules or nothing matched.
+// gpc-strict: RULES' keys are facet RULESET ids now, not categories — the
+// worker resolves a product's brick to a ruleset via gpcno.json facetKeys
+// (facetKeyOf) and passes it as `key`; the default keeps row-local callers
+// (tests, tools) working on rows that still carry a `cat`-shaped key. This is
+// display derivation only — it must never influence categorization.
+export function deriveFacets(row, key = row.cat) {
+  const { name, srcCat, brand } = row;
+  const rules = RULES[key];
   if (!rules || !name) return undefined;
   // Segments in priority order: name, then the srcCat LEAF, then its parents —
   // the same leaf-first walk classify() does. One concatenated blob let a

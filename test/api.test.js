@@ -832,7 +832,11 @@ test('catalog route seeds D1 on first request and serves the demo shape, ops-gat
   const want = seed[0];
   const got = cat.find(p => p.id === want.id);
   assert.strictEqual(got.name, want.name);
-  assert.strictEqual(got.cat, want.cat);
+  // gpc-strict: seed rows carry NO category — display derives from the brick
+  // the resolver stamps, and before any drain the row is honestly unsorted
+  assert.ok(!('cat' in want), 'seed rows must not bake a category');
+  assert.strictEqual(got.cat, 'Ukategorisert');
+  assert.strictEqual(got.icon, 'package-search');
   assert.deepStrictEqual(got.history, want.history.slice(-24), 'history must round-trip through price_points');
   assert.deepStrictEqual(new Set(got.offers.map(o => o.shop)), new Set(want.offers.map(o => o.shop)));
   assert.strictEqual(got.best, Math.min(...want.offers.map(o => o.price)), 'best derives from offers');
@@ -948,8 +952,10 @@ test('facet values derive from the product name, per category', async () => {
 // Query-based catalog: /api/products serves slices in the catalog.json row
 // shape — ids (expanded to family + neighbors), q (broad candidates, the
 // client re-filters), cat, top=drop; meta carries per-category head counts
-test('GET /api/products: ids expand to head + siblings + same-cat neighbors', async () => {
+test('GET /api/products: ids expand to head + siblings + same-brick neighbors', async () => {
   const call = api({ DB: d1() });
+  await call('/api/products?ids=iphone'); // seeds
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS }); // resolve demo gtins → bricks
   const res = await call('/api/products?ids=iphone~256-blue');
   assert.strictEqual(res.status, 200);
   const { meta, products } = await res.json();
@@ -958,40 +964,42 @@ test('GET /api/products: ids expand to head + siblings + same-cat neighbors', as
   assert.ok(ids.includes('iphone~256-blue'), 'requested child must be served');
   assert.ok(ids.includes('iphone'), 'child id must pull its head');
   assert.ok(ids.includes('iphone~128-blue'), 'head must pull every sibling child');
-  const neighbors = products.filter(p => !p.family && p.id !== 'iphone' && p.cat === 'Phones');
-  assert.ok(neighbors.length >= 1 && neighbors.length <= 4, 'same-cat head neighbors ride along for "More in {cat}"');
+  const neighbors = products.filter(p => !p.family && p.id !== 'iphone' && p.brick === '10001198');
+  assert.ok(neighbors.length >= 1 && neighbors.length <= 4, 'same-brick head neighbors ride along for "More in {cat}"');
 
   // row shape matches catalog.json (offers price-ordered, derived fields on)
   const head = products.find(p => p.id === 'iphone');
   assert.strictEqual(head.best, Math.min(...head.offers.map(o => o.price)));
   assert.deepStrictEqual(head.history, seed.find(p => p.id === 'iphone').history.slice(-24));
+  // display derives from the brick: Norwegian overlay name, GPC trail
+  assert.strictEqual(head.cat, 'Smarttelefoner');
+  assert.strictEqual(head.path, 'Communications › Communications › Mobile Communication Devices/Services');
 
-  // meta: global aggregates + per-cat head counts (children never counted)
+  // meta: global aggregates + the brick axis (gpc-strict)
   assert.strictEqual(meta.products, seed.filter(p => !p.family).length);
-  const wantCats = seed.filter(p => !p.family).reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), {});
-  assert.deepStrictEqual(meta.cats, wantCats, 'meta.cats counts heads only');
-  assert.ok(Object.keys(wantCats).every(c => meta.icons?.[c]), 'meta.icons (cats.json registry) must cover every seed cat');
-  assert.deepStrictEqual(meta.facets?.TV?.map(f => f.key), ['type', 'size', 'panel', 'res', 'refresh', 'platform'], 'meta.facets serves the facets.json registry');
-  assert.ok(meta.facets?.Kitchen?.some(f => f.key === 'type'), 'Kitchen serves its sub-category type facet');
-  assert.ok(Object.keys(meta.icons).every(c => meta.facets?.[c]?.length), 'every registered category declares at least one facet');
-  // GPC departments (worker/depts.json) ride catMeta verbatim — boot joins
-  // counts from meta.cats, so the registry itself must not fabricate any
+  assert.ok(meta.bricks['10001198'] >= 1, 'meta.bricks is the stocked-brick histogram');
+  assert.strictEqual(Object.values(meta.bricks).reduce((a, b) => a + b, 0) + meta.uncat, meta.products, 'bricks + uncat account for every head');
+  // tree: the stocked GPC hierarchy, 4 levels, overlay names where curated
+  const seg = meta.tree.find(t => t.code === '66000000');
+  assert.ok(seg, 'Communications segment is stocked (phones resolve there)');
+  assert.strictEqual(seg.name, 'Mobil og kommunikasjon', 'overlay names win over EN titles');
+  const findNode = (nodes, code) => { for (const n of nodes || []) { if (n.code === code) return n; const hit = findNode(n.children, code); if (hit) return hit; } };
+  const brickNode = findNode(meta.tree, '10001198');
+  assert.ok(brickNode, 'stocked bricks appear as tree leaves');
+  assert.strictEqual(brickNode.n, meta.bricks['10001198'], 'tree leaf counts equal the histogram');
+  assert.strictEqual(brickNode.name, 'Smarttelefoner');
+  // depts: overlay tiles, counts joined from the same histogram
   const drules = meta.depts?.flatMap(d => d.rules) || [];
-  assert.ok(meta.depts?.length >= 10 && drules.length, 'meta.depts serves the department registry');
-  assert.ok(drules.every(r => r.b && r.name && r.icon && meta.icons[r.cat]), 'every dept rule has b/name/icon and backs a registered category');
-  assert.ok(drules.every(r => r.n === undefined), 'dept rules carry no baked counts — whole-cat n joins meta.cats in boot, sliced n only exists after the cron');
-  const dcats = new Set(drules.filter(r => !r.facets && !r.label).map(r => r.cat));
-  assert.ok(Object.keys(meta.icons).every(c => dcats.has(c)), 'every registered category is reachable from a whole-cat dept rule');
-  // sliced rules pin facet selections the rail must know how to render
-  const dsliced = drules.filter(r => r.facets);
-  assert.ok(dsliced.length >= 10, 'the registry carries attribute-sliced sub-category rules');
-  assert.ok(dsliced.every(r => Object.keys(r.facets).every(k => meta.facets[r.cat]?.some(f => f.key === k))), 'every sliced facet key is declared for its cat');
-  // SUBCATS-PLAN: every Gaming head carries a curated facets.type (build.js
-  // stamps demo rows, extra.json rows bring their own) — one vocabulary, no
-  // 'Home console' spec strings leaking in beside 'Consoles'
-  const gtypes = new Set(seed.filter(p => !p.family && p.cat === 'Gaming').map(p => p.facets?.type));
-  assert.deepStrictEqual([...gtypes].sort(), ['Consoles', 'Controllers', 'Games', 'Handhelds'], 'Gaming heads: curated sub-category vocabulary');
-  assert.deepStrictEqual(meta.types?.Gaming, { Consoles: 6, Controllers: 5, Games: 3, Handhelds: 3 }, 'meta.types aggregates facets.type per cat for the Browse chips');
+  assert.ok(meta.depts?.length >= 10 && drules.length, 'meta.depts serves the overlay tiles');
+  assert.ok(drules.every(r => r.b && r.name && r.icon && Array.isArray(r.syn) && typeof r.n === 'number'), 'every tile has b/name/icon/syn and a served count');
+  const phones = drules.find(r => r.b === '10001198,10008506');
+  assert.strictEqual(phones.n, (meta.bricks['10001198'] || 0) + (meta.bricks['10008506'] || 0), 'a multi-code tile sums stocked bricks under its codes');
+  // facet registry + ruleset routing
+  assert.deepStrictEqual(meta.facets?.TV?.map(f => f.key), ['type', 'size', 'panel', 'res', 'refresh', 'platform'], 'meta.facets serves the facets.json ruleset registry');
+  assert.strictEqual(meta.facetKeys['10001198'], 'Phones', 'stocked bricks route to their facet ruleset');
+  assert.strictEqual(meta.facetKeys['10001181'], 'Audio', 'brick-level facetKeys win over ancestors');
+  // SUBCATS: build.js still stamps curated facets.type on demo rows
+  assert.strictEqual(seed.find(p => p.id === 'ps5').facets?.type, 'Consoles', 'demo rows keep their curated type facet');
 
   const many = await call('/api/products?ids=' + Array.from({ length: 101 }, (_, i) => 'x' + i).join(','));
   assert.strictEqual(many.status, 400, '>100 ids must 400');
@@ -1044,14 +1052,16 @@ test('GET /api/products: search ranks name matches above blob matches before tru
   const req = admin(env);
   // inserted worst-first, so rowid order is the exact opposite of the ranking
   const rows = [
-    ['7099910000001', { name: 'Sokkelist eik', brand: 'Acme', cat: 'Home', kw: 'ringmåler pynt' }], // blob only
-    ['7099910000002', { name: 'Skrujern 4 mm', brand: 'Ringo', cat: 'Tools', kw: 'skrujern' }],     // brand
-    ['7099910000003', { name: 'Armring i sølv', brand: 'Acme', cat: 'Jewelry', kw: 'armring' }],    // mid-word in name
-    ['7099910000004', { name: 'Ring i gull', brand: 'Acme', cat: 'Jewelry', kw: 'ring' }],          // word-start in name
+    ['7099910000001', { name: 'Sokkelist eik', brand: 'Acme', kw: 'ringmåler pynt' }], // blob only
+    ['7099910000002', { name: 'Skrujern 4 mm', brand: 'Ringo', kw: 'skrujern' }],     // brand
+    ['7099910000003', { name: 'Armring i sølv', brand: 'Acme', kw: 'armring' }],      // mid-word in name
+    ['7099910000004', { name: 'Ring i gull', brand: 'Acme', kw: 'ring' }],            // word-start in name
   ];
   for (const [ean, meta] of rows) {
+    // rows auto-promote at ingest (gpc-strict: visibility never waits for a
+    // category); the PATCH pins the kw the blob tier matches on
     await req('/api/ingest', 'POST', [{ product_id: 'ean-' + ean, shop: 'Power', price: 500, name: meta.name, brand: meta.brand }]);
-    await req('/api/admin/products/ean-' + ean, 'PATCH', { ...meta, hidden: null });
+    await req('/api/admin/products/ean-' + ean, 'PATCH', { kw: meta.kw });
   }
   const got = (await (await call('/api/products?q=ring')).json()).products.map(p => p.id).filter(id => id.startsWith('ean-70999100'));
   assert.deepStrictEqual(got, ['ean-7099910000004', 'ean-7099910000003', 'ean-7099910000002', 'ean-7099910000001'],
@@ -1069,21 +1079,49 @@ test('GET /api/products: top=drop ranks by real drop%, perCat covers every categ
     .sort((a, b) => b.drop - a.drop)[0];
   assert.strictEqual(products[0].id, wantTop.id, 'global top drop matches the seed-derived answer');
 
+  // perCat buckets by BRICK (gpc-strict): drain first so demo rows carry one
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS });
   const per = (await (await call('/api/products?top=drop&perCat=1&limit=2')).json()).products;
-  const cats = new Set(per.map(p => p.cat));
-  const seedCats = new Set(seed.filter(p => !p.family && p.was).map(p => p.cat));
-  assert.deepStrictEqual(cats, seedCats, 'perCat serves top drops for every category that has any');
+  const gotBricks = new Set(per.map(p => p.brick).filter(Boolean));
+  const fixture = require(path.join(__dirname, '..', 'worker', 'gpc-fixture.json'));
+  const eanKey = (e) => String(e).replace(/\D/g, '').replace(/^0+/, '');
+  const wantBricks = new Set(seed.filter(p => !p.family && p.was && eans[p.id]).map(p => fixture[eanKey(eans[p.id][0])]).filter(Boolean));
+  for (const b of wantBricks) assert.ok(gotBricks.has(b), `perCat must cover stocked brick ${b} (it has a was-priced row)`);
   assert.ok(per.every(p => !p.family));
 });
 
-test('GET /api/products: cat filters exactly, no params serves all heads', async () => {
+test('GET /api/products: node filters exactly at every level, no params serves all heads', async () => {
   const call = api({ DB: d1() });
-  const audio = (await (await call('/api/products?cat=Audio')).json()).products;
-  assert.strictEqual(audio.length, seed.filter(p => !p.family && p.cat === 'Audio').length);
-  assert.ok(audio.every(p => p.cat === 'Audio' && !p.family));
+  await call('/api/products'); // seeds
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS });
+  const fixture = require(path.join(__dirname, '..', 'worker', 'gpc-fixture.json'));
+  const eanKey = (e) => String(e).replace(/\D/g, '').replace(/^0+/, '');
+  const brickOf = (id) => eans[id] ? fixture[eanKey(eans[id][0])] : undefined;
+  const heads = seed.filter(p => !p.family);
+
+  // brick level: exactly the heads whose gtin resolved to that brick
+  const phones = (await (await call('/api/products?node=10001198')).json()).products;
+  assert.deepStrictEqual(phones.map(p => p.id).sort(), heads.filter(p => brickOf(p.id) === '10001198').map(p => p.id).sort());
+  assert.ok(phones.every(p => p.brick === '10001198' && !p.family));
+
+  // class level expands to stocked bricks under it: Video Game Consoles
+  // (65011000) covers both the non-portable (ps5/xbox) and portable
+  // (switch/steamdeck) console bricks
+  const consoles = (await (await call('/api/products?node=65011000')).json()).products;
+  assert.deepStrictEqual(consoles.map(p => p.id).sort(),
+    heads.filter(p => ['10003817', '10003818'].includes(brickOf(p.id))).map(p => p.id).sort());
+
+  // comma-joined multi-code node = the union
+  const both = (await (await call('/api/products?node=10003817,10003818')).json()).products;
+  assert.deepStrictEqual(both.map(p => p.id).sort(), consoles.map(p => p.id).sort());
+
+  // uncat = the honest bucket: every head with no resolved brick
+  const uncat = (await (await call('/api/products?node=uncat')).json()).products;
+  assert.deepStrictEqual(uncat.map(p => p.id).sort(), heads.filter(p => !brickOf(p.id)).map(p => p.id).sort());
+  assert.ok(uncat.every(p => p.cat === 'Ukategorisert' && !p.brick));
 
   const all = (await (await call('/api/products')).json()).products;
-  assert.strictEqual(all.length, seed.filter(p => !p.family).length, 'no params = every head');
+  assert.strictEqual(all.length, heads.length, 'no params = every head');
 });
 
 // PAGE_MAX bounded the response, but rowid decided WHICH rows you got: with
@@ -1099,15 +1137,15 @@ test('GET /api/products: list branches rank by offer count and page with limit/o
   const shopsFor = { '7099930000001': ['Power'], '7099930000002': ['Power', 'Elkjøp'], '7099930000003': ['Power', 'Elkjøp', 'Komplett'] };
   for (const [ean, shops] of Object.entries(shopsFor)) {
     await req('/api/ingest', 'POST', shops.map(shop => ({ product_id: 'ean-' + ean, shop, price: 500, name: 'Hundeseng ' + ean.slice(-1), brand: 'Acme' })));
-    await req('/api/admin/products/ean-' + ean, 'PATCH', { cat: 'Pets', hidden: null });
+    await req('/api/admin/products/ean-' + ean, 'PATCH', { brick: '10000736' });
   }
   const ids = async (qs) => (await (await call('/api/products?' + qs)).json()).products.map(p => p.id);
 
-  assert.deepStrictEqual(await ids('cat=Pets'), ['ean-7099930000003', 'ean-7099930000002', 'ean-7099930000001'],
+  assert.deepStrictEqual(await ids('node=10000736'), ['ean-7099930000003', 'ean-7099930000002', 'ean-7099930000001'],
     'most offers first — an offer-less or single-shop row must not outrank a three-shop one on insertion order');
-  assert.deepStrictEqual(await ids('cat=Pets&limit=2'), ['ean-7099930000003', 'ean-7099930000002'], 'limit takes the head of the ranking');
-  assert.deepStrictEqual(await ids('cat=Pets&limit=2&offset=2'), ['ean-7099930000001'], 'offset reaches the rest of the category');
-  assert.deepStrictEqual(await ids('cat=Pets&offset=99'), [], 'past the end is empty, not an error');
+  assert.deepStrictEqual(await ids('node=10000736&limit=2'), ['ean-7099930000003', 'ean-7099930000002'], 'limit takes the head of the ranking');
+  assert.deepStrictEqual(await ids('node=10000736&limit=2&offset=2'), ['ean-7099930000001'], 'offset reaches the rest of the category');
+  assert.deepStrictEqual(await ids('node=10000736&offset=99'), [], 'past the end is empty, not an error');
 
   // same paging on the all-heads branch, and the cap still holds
   const page1 = await ids('limit=5');
@@ -1138,54 +1176,54 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   ];
   for (const r of rows) {
     await req('/api/ingest', 'POST', r.shops.map(shop => ({ product_id: 'ean-' + r.ean, shop, price: r.price, name: r.name, brand: r.brand })));
-    await req('/api/admin/products/ean-' + r.ean, 'PATCH', { cat: 'Pets', hidden: null });
+    await req('/api/admin/products/ean-' + r.ean, 'PATCH', { brick: '10000736' });
   }
   const id = (ean) => 'ean-' + ean;
   const get = async (qs) => (await (await call('/api/products?' + qs)).json());
   const ids = async (qs) => (await get(qs)).products.map(p => p.id);
 
   // sort: the whole category is ordered before the page is cut
-  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=asc&limit=1'), [id('7099931000003')],
+  assert.deepStrictEqual(await ids('node=10000736&sort=best&dir=asc&limit=1'), [id('7099931000003')],
     'page 1 of "cheapest first" must be the cheapest in the CATEGORY, not of the default page');
-  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=desc&limit=1'), [id('7099931000001')], 'direction travels too');
-  assert.deepStrictEqual(await ids('cat=Pets&sort=name&dir=asc&limit=1'), [id('7099931000001')], 'text fields sort as text');
-  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=asc&limit=1&offset=1'), [id('7099931000002')], 'paging follows the sort');
+  assert.deepStrictEqual(await ids('node=10000736&sort=best&dir=desc&limit=1'), [id('7099931000001')], 'direction travels too');
+  assert.deepStrictEqual(await ids('node=10000736&sort=name&dir=asc&limit=1'), [id('7099931000001')], 'text fields sort as text');
+  assert.deepStrictEqual(await ids('node=10000736&sort=best&dir=asc&limit=1&offset=1'), [id('7099931000002')], 'paging follows the sort');
 
   // filters: stored (brand) and DERIVED (facetrules reads animal off the name)
-  assert.deepStrictEqual((await ids('cat=Pets&brand=Zoo&sort=best&dir=asc')).sort(), [id('7099931000002'), id('7099931000003')].sort());
-  assert.deepStrictEqual(await ids('cat=Pets&facets=' + encodeURIComponent('{"animal":["Cat"]}')), [id('7099931000002')],
+  assert.deepStrictEqual((await ids('node=10000736&brand=Zoo&sort=best&dir=asc')).sort(), [id('7099931000002'), id('7099931000003')].sort());
+  assert.deepStrictEqual(await ids('node=10000736&facets=' + encodeURIComponent('{"animal":["Cat"]}')), [id('7099931000002')],
     'a derived facet value must filter server-side — SQL cannot see it');
-  assert.deepStrictEqual(await ids('cat=Pets&min=200&max=600'), [id('7099931000002')], 'price bounds filter on the best offer');
-  assert.deepStrictEqual(await ids('cat=Pets&brand=Nobody'), [], 'no match is empty, not unfiltered');
+  assert.deepStrictEqual(await ids('node=10000736&min=200&max=600'), [id('7099931000002')], 'price bounds filter on the best offer');
+  assert.deepStrictEqual(await ids('node=10000736&brand=Nobody'), [], 'no match is empty, not unfiltered');
 
   // the rail's free-text refine (`name=`): every token in the NAME, whole
   // category — client-side it could only ever refine the loaded page
-  assert.deepStrictEqual(await ids('cat=Pets&name=hunde'), [id('7099931000001'), id('7099931000003')], 'substring of the name matches');
-  assert.deepStrictEqual(await ids('cat=Pets&name=' + encodeURIComponent('myk hundeseng')), [id('7099931000003')], 'every token must hit, order-free');
-  assert.deepStrictEqual(await ids('cat=Pets&name=Zoo'), [], 'brand is not name — the refine searches names only');
-  assert.deepStrictEqual(await ids('cat=Pets&name=hundefor'), [id('7099931000001')], 'ASCII typing must find "Hundefôr" — same fold as q=');
-  assert.deepStrictEqual(await ids('cat=Pets&name=' + encodeURIComponent('hundefôr')), [id('7099931000001')], 'and the accented spelling still works');
-  assert.strictEqual((await get('cat=Pets&name=hunde')).meta.total, 2, 'total counts the refined set');
-  assert.deepStrictEqual(await ids('cat=Pets&name=hunde&brand=Zoo'), [id('7099931000003')], 'refine stacks with the other filters');
+  assert.deepStrictEqual(await ids('node=10000736&name=hunde'), [id('7099931000001'), id('7099931000003')], 'substring of the name matches');
+  assert.deepStrictEqual(await ids('node=10000736&name=' + encodeURIComponent('myk hundeseng')), [id('7099931000003')], 'every token must hit, order-free');
+  assert.deepStrictEqual(await ids('node=10000736&name=Zoo'), [], 'brand is not name — the refine searches names only');
+  assert.deepStrictEqual(await ids('node=10000736&name=hundefor'), [id('7099931000001')], 'ASCII typing must find "Hundefôr" — same fold as q=');
+  assert.deepStrictEqual(await ids('node=10000736&name=' + encodeURIComponent('hundefôr')), [id('7099931000001')], 'and the accented spelling still works');
+  assert.strictEqual((await get('node=10000736&name=hunde')).meta.total, 2, 'total counts the refined set');
+  assert.deepStrictEqual(await ids('node=10000736&name=hunde&brand=Zoo'), [id('7099931000003')], 'refine stacks with the other filters');
 
   // totals and the rail's counts, over the whole category
-  const filtered = await get('cat=Pets&brand=Zoo');
+  const filtered = await get('node=10000736&brand=Zoo');
   assert.strictEqual(filtered.meta.total, 2, 'meta.total counts every matching row, not the page');
-  assert.strictEqual((await get('cat=Pets')).meta.total, 3);
-  const fc = (await get('cat=Pets')).meta.fcounts;
+  assert.strictEqual((await get('node=10000736')).meta.total, 3);
+  const fc = (await get('node=10000736')).meta.fcounts;
   assert.deepStrictEqual(fc.animal, [['Dog', 2], ['Cat', 1]], 'facet counts cover the category as [value, count] pairs (a JSON key would stringify numeric axes)');
-  assert.ok(!(await get('cat=Audio')).meta.fcounts.animal, 'histogram is per queried category');
+  assert.ok(!(await get('node=10001181')).meta.fcounts?.animal, 'histogram is per queried node');
   assert.strictEqual((await get('')).meta.fcounts, undefined, 'no category, no rail, no histogram');
 
   // cross-filtered: every OTHER group counts what's left, the group you picked
   // in keeps its own "what if I picked this too" numbers. A stale "Dog 2" next
   // to brand Zoo (which has one dog bed) was the whole complaint.
-  assert.deepStrictEqual((await get('cat=Pets&brand=Zoo')).meta.fcounts.animal, [['Dog', 1], ['Cat', 1]],
+  assert.deepStrictEqual((await get('node=10000736&brand=Zoo')).meta.fcounts.animal, [['Dog', 1], ['Cat', 1]],
     'a brand filter must re-count the facet groups');
-  const picked = await get('cat=Pets&facets=' + encodeURIComponent('{"animal":["Cat"]}'));
+  const picked = await get('node=10000736&facets=' + encodeURIComponent('{"animal":["Cat"]}'));
   assert.deepStrictEqual(picked.meta.fcounts.animal, [['Dog', 2], ['Cat', 1]],
     "a group is counted ignoring its OWN selection — else every unpicked value reads 0");
-  assert.deepStrictEqual((await get('cat=Pets&name=kattesand')).meta.fcounts.animal, [['Dog', 0], ['Cat', 1]],
+  assert.deepStrictEqual((await get('node=10000736&name=kattesand')).meta.fcounts.animal, [['Dog', 0], ['Cat', 1]],
     'a value with nothing left counts 0, it does not disappear (the rail drops a group under 2 values)');
 
   // price bounds + brand histogram over the whole category, in Results'
@@ -1193,10 +1231,10 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   // not — sliding the price slider must not move its own ends, and a brand
   // outside the loaded page (slider max kr 100 on Toys, true max kr 25k)
   // must still be listed.
-  assert.deepStrictEqual((await get('cat=Pets')).meta.prange, [100, 900], 'bounds span the category, not the page');
-  assert.deepStrictEqual((await get('cat=Pets')).meta.brands, [['Acme', 1], ['Zoo', 2]]);
-  assert.deepStrictEqual((await get('cat=Pets&min=200&max=600')).meta.prange, [100, 900], 'the price filter never shrinks its own slider');
-  assert.deepStrictEqual((await get('cat=Pets&brand=Zoo')).meta.brands, [['Acme', 1], ['Zoo', 2]], 'picking a brand keeps its siblings listed');
+  assert.deepStrictEqual((await get('node=10000736')).meta.prange, [100, 900], 'bounds span the category, not the page');
+  assert.deepStrictEqual((await get('node=10000736')).meta.brands, [['Acme', 1], ['Zoo', 2]]);
+  assert.deepStrictEqual((await get('node=10000736&min=200&max=600')).meta.prange, [100, 900], 'the price filter never shrinks its own slider');
+  assert.deepStrictEqual((await get('node=10000736&brand=Zoo')).meta.brands, [['Acme', 1], ['Zoo', 2]], 'picking a brand keeps its siblings listed');
   assert.deepStrictEqual(picked.meta.prange, [500, 500], 'a facet selection cross-filters the bounds');
   assert.deepStrictEqual(picked.meta.brands, [['Zoo', 1]], 'and the brand counts');
   assert.strictEqual((await get('')).meta.prange, undefined, 'no category, no rail, no bounds');
@@ -1204,7 +1242,7 @@ test('GET /api/products: sort and filters run over the whole category, not the p
   // the other branches keep their own semantics
   assert.ok((await ids('ids=' + id('7099931000001') + '&sort=best')).includes(id('7099931000001')), 'ids= ignores list params');
   assert.strictEqual((await get('q=hundeseng&sort=best')).meta.total, undefined, 'q= is not a paged list branch');
-  const bad = await get('cat=Pets&facets=' + encodeURIComponent('{oops'));
+  const bad = await get('node=10000736&facets=' + encodeURIComponent('{oops'));
   assert.strictEqual(bad.products.length, 3, 'an unparseable filter param must not 500 the listing');
 });
 
@@ -1225,22 +1263,22 @@ test('the name filter folds identically on both sides', () => {
 test('GET /api/products: a category beyond 100 heads survives the D1 param cap', async () => {
   const DB = d1();
   const call = api({ DB });
-  await call('/api/products?cat=Audio'); // trigger seeding first
+  await call('/api/products?node=10001181'); // trigger seeding first
   for (let i = 0; i < 120; i++) {
     await DB.prepare('INSERT INTO products (id, meta) VALUES (?, ?)')
-      .bind(`ean-cap${i}`, JSON.stringify({ name: `Cap Bud ${i}`, brand: 'Cap', cat: 'Audio' })).run();
+      .bind(`ean-cap${i}`, JSON.stringify({ name: `Cap Bud ${i}`, brand: 'Cap', brick: '10001181' })).run();
   }
-  const res = await call('/api/products?cat=Audio');
-  assert.strictEqual(res.status, 200, 'big cat slice must not throw (prod 1101, Audio at 124 heads)');
+  const res = await call('/api/products?node=10001181');
+  assert.strictEqual(res.status, 200, 'big node slice must not throw (prod 1101, Audio at 124 heads)');
   const { products } = await res.json();
-  assert.strictEqual(products.length, seed.filter(p => !p.family && p.cat === 'Audio').length + 120);
+  assert.strictEqual(products.length, 120, 'every brick row serves (seed rows have no brick without a drain)');
 
   // the expand path (ids=) pages its double-bound query + neighbor top-up too
   const one = await call('/api/products?ids=ean-cap5');
   assert.strictEqual(one.status, 200);
   const rows = (await one.json()).products;
   assert.ok(rows.some(p => p.id === 'ean-cap5'));
-  assert.ok(rows.length > 1, 'same-cat neighbors still ride along');
+  assert.ok(rows.length > 1, 'same-brick neighbors still ride along');
 });
 
 // 4e step 1: seed evolution — a new seed.json refreshes meta for every row
@@ -1285,17 +1323,16 @@ test('seed evolution: changed seed refreshes meta, leaves real offers alone, add
   assert.deepStrictEqual([honest.offers, honest.history], [[], []], 'non-virgin DB must not get demo offers/history');
 });
 
-test('scheduled with no sources configured freezes prices — only brick resolution moves', async () => {
+test('scheduled with no sources configured is a no-op — prices freeze until real rows arrive', async () => {
   const DB = d1();
   const call = api({ DB });
-  const before = await catBody(call); // seeds
+  await catBody(call); // seeds
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS }); // settle brick resolution first
+  const before = await catBody(call);
+  assert.ok(before.some(r => r.brick), 'the drain stamped fixture bricks');
   await worker.scheduled({ cron: '0 * * * *' }, { DB }, { waitUntil() {} });
   const after = await catBody(call);
-  // the gpc drain legitimately stamps meta.brick on fixture-resolved demo
-  // rows; everything else (prices, offers, history) must not move
-  const strip = (rows) => rows.map(({ brick, ...r }) => r);
-  assert.deepStrictEqual(strip(after), strip(before), 'no sources must mean no price/offer changes (the synthetic jiggle is gone)');
-  assert.ok(after.some(r => r.brick), 'the scheduled tick resolves queued gtins and stamps bricks');
+  assert.deepStrictEqual(after, before, 'no sources must mean no changes (the synthetic jiggle is gone)');
 });
 
 // ── gpc-strict: gtin→brick resolver queue, stamping, GTIN capture ─────────
@@ -1369,24 +1406,6 @@ test('a product created AFTER its gtin resolved is stamped at ingest, not never'
   assert.strictEqual(meta.brick, '10001400', 'ingest stamps already-resolved gtins itself');
 });
 
-test('sliced dept rules serve real cron-computed counts (refreshDeptCounts → seed_meta → catMeta)', async () => {
-  const DB = d1();
-  const call = api({ DB });
-  await call('/api/products?cat=Gaming&limit=1'); // seeds
-  await worker.scheduled({ cron: '0 * * * *' }, { DB }, { waitUntil() {} });
-  const { meta } = await (await call('/api/products?cat=Gaming&limit=1')).json();
-  const rules = meta.depts.flatMap(d => d.rules);
-  const sliced = rules.filter(r => r.facets);
-  assert.ok(sliced.every(r => typeof r.n === 'number'), 'every sliced rule carries a count after the cron');
-  assert.ok(rules.every(r => r.facets || r.n === undefined), 'whole-cat rules stay bare — boot joins meta.cats');
-  // the count is the exact predicate the served brick page uses, so the
-  // browse sub-tile number and the brick page's total can never disagree
-  const consoles = sliced.find(r => r.name === 'Consoles');
-  const page = await (await call('/api/products?cat=Gaming&sort=best&dir=asc&facets=' + encodeURIComponent(JSON.stringify(consoles.facets)))).json();
-  assert.ok(consoles.n > 0, 'demo Gaming rows include consoles');
-  assert.strictEqual(consoles.n, page.meta.total, 'sliced n equals the facet-filtered total');
-});
-
 // 4d: real price sources — env.SOURCES config, Adtraction XML feeds matched
 // by EAN (worker/eans.json), first-party JSON-LD scraping, freeze-on-failure.
 const eans = require(path.join(__dirname, '..', 'worker', 'eans.json'));
@@ -1397,6 +1416,24 @@ const withFetch = async (impl, fn) => {
   globalThis.fetch = impl;
   try { return await fn(); } finally { globalThis.fetch = real; }
 };
+
+test('dept tiles serve live histogram counts that equal their node page total', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/products?limit=1'); // seeds
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: OPS });
+  const { meta } = await (await call('/api/products?limit=1')).json();
+  const rules = meta.depts.flatMap(d => d.rules);
+  assert.ok(rules.every(r => typeof r.n === 'number'), 'every tile carries a count — no cron needed, the histogram is live');
+  // the count is the exact set the node page serves, so a browse tile number
+  // and its page total can never disagree
+  const tile = rules.find(r => r.b === '10001181');
+  assert.ok(tile.n > 0, 'demo rows include headphones');
+  const page = await (await call('/api/products?node=10001181&sort=best&dir=asc')).json();
+  assert.strictEqual(tile.n, page.meta.total, 'tile n equals the node page total');
+  // and the sum of bricks + uncat is the whole catalog (nothing double-hidden)
+  assert.strictEqual(Object.values(meta.bricks).reduce((x, y) => x + y, 0) + meta.uncat, meta.products);
+});
 
 test('parsePrice handles Norwegian and feed formats', () => {
   assert.strictEqual(parsePrice('2990'), 2990);
@@ -1445,15 +1482,17 @@ test('adtraction source: EAN-matched feed rows update offers with deep link; unk
   }, () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
 
   const after = await catBody(call);
-  assert.strictEqual(after.length, before.length, 'discovered products must stay out of the visible catalog');
+  assert.strictEqual(after.length, before.length + 1, 'a discovered product goes live at once (gpc-strict: Ukategorisert, not hidden)');
 
-  // the unknown EAN was discovered: hidden product with the feed's name + offer
-  const hidden = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products;
-  const noob = hidden.find(p => p.id === 'ean-7091234567890');
-  assert.ok(noob, 'an unknown feed EAN must create a hidden product');
+  const noob = after.find(p => p.id === 'ean-7091234567890');
+  assert.ok(noob, 'an unknown feed EAN must create a product');
   assert.strictEqual(noob.name, 'Not in catalog');
-  assert.strictEqual(noob.hidden, 1);
+  assert.strictEqual(noob.cat, 'Ukategorisert', 'no resolved brick yet — the honest bucket');
+  assert.strictEqual(noob.auto, 1);
   assert.deepStrictEqual(noob.offers.map(o => [o.shop, o.price, o.stock]), [['Komplett', 999, false]]);
+  // and its gtin queued for the resolver (the fixture doesn't know it → none)
+  const q = await DB.prepare("SELECT status FROM gpc WHERE gtin = '7091234567890'").first();
+  assert.ok(q, 'discovered gtins enqueue for brick resolution');
 
   const offer = after.find(p => p.id === pid).offers.find(o => o.shop === 'Komplett');
   assert.strictEqual(offer.price, 2490);
@@ -1464,6 +1503,7 @@ test('adtraction source: EAN-matched feed rows update offers with deep link; unk
   // freeze: every offer not fed this run keeps its stored price
   for (const p of after) for (const o of p.offers) {
     if (p.id === pid && o.shop === 'Komplett') continue;
+    if (p.id === 'ean-7091234567890') continue; // created this run
     const prev = before.find(q => q.id === p.id).offers.find(q => q.shop === o.shop);
     assert.strictEqual(o.price, prev.price, `${p.id}/${o.shop} had no feed row and must freeze`);
     assert.strictEqual(o.url, null, 'unfed offers have no deep link');
@@ -1966,7 +2006,7 @@ test('POST /api/ingest reads by the batch\'s ids, not the whole products table',
 // Discovery: an unknown `ean-<digits>` row carrying a name auto-creates a
 // hidden product — invisible in every user-facing query until enriched
 // (extra.json + deploy), listed for triage via ?hidden=1
-test('POST /api/ingest discovery: unknown ean- rows create hidden products, excluded until enriched', async () => {
+test('POST /api/ingest discovery: unknown ean- rows go live in Ukategorisert; junk stays hidden', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };
   const call = api(env);
@@ -1986,21 +2026,27 @@ test('POST /api/ingest discovery: unknown ean- rows create hidden products, excl
   // second shop, same EAN-derived id → merges onto the same product
   assert.strictEqual((await push([{ ...row, shop: 'CDON', price: 480 }])).status, 200);
 
+  // gpc-strict: a named non-junk discovery is LIVE at once, honestly unsorted
   const { meta, products } = await (await call('/api/products')).json();
-  assert.ok(!products.some(p => p.id === 'ean-7099999999991'), 'hidden products stay out of the all-heads listing');
-  assert.strictEqual(meta.products, before.products, 'catMeta count must not include hidden products');
-  assert.strictEqual((await (await call('/api/products?q=mystery')).json()).products.length, 0, 'hidden products must not be searchable');
-  assert.ok(!(await catBody(call)).some(p => p.id === 'ean-7099999999991'), 'hidden products stay out of the ops dump');
-
-  const widget = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products.find(p => p.id === 'ean-7099999999991');
-  assert.ok(widget, 'the hidden listing must surface the discovered product');
-  assert.strictEqual(widget.name, 'Mystery Widget 3000');
+  const widget = products.find(p => p.id === 'ean-7099999999991');
+  assert.ok(widget, 'the discovered product serves in the all-heads listing');
+  assert.strictEqual(meta.products, before.products + 1, 'catMeta counts it');
+  assert.strictEqual(meta.uncat, before.uncat + 1, 'it lands in the Ukategorisert bucket');
+  assert.strictEqual(widget.cat, 'Ukategorisert');
+  assert.strictEqual(widget.auto, 1);
   assert.strictEqual(widget.brand, 'Acme');
   assert.strictEqual(widget.ean, '7099999999991');
-  assert.strictEqual(widget.hidden, 1);
   assert.strictEqual(widget.best, 480, 'both shops merged onto one product');
   assert.strictEqual(widget.offers.length, 2);
   assert.deepStrictEqual(widget.history, [480], 'price history starts collecting from discovery');
+  assert.ok((await (await call('/api/products?q=mystery')).json()).products.some(p => p.id === 'ean-7099999999991'), 'and it is searchable');
+  assert.ok((await (await call('/api/products?node=uncat')).json()).products.some(p => p.id === 'ean-7099999999991'), 'the uncat node lists it');
+
+  // junk (fees/gift cards sold as products) is the one gate left — stays hidden
+  await push([{ product_id: 'ean-7099999999992', shop: 'Power', price: 49, name: 'Håndteringsavgift', brand: 'Power' }]);
+  assert.ok(!(await (await call('/api/products')).json()).products.some(p => p.id === 'ean-7099999999992'), 'a fee is not a product');
+  const hidden = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products;
+  assert.ok(hidden.some(p => p.id === 'ean-7099999999992'), 'junk sits in the ops backlog');
 });
 
 // OPEN-CATALOG-PLAN A: EAN routing through the D1 eans table + admin surface
@@ -2058,33 +2104,41 @@ test('eans table routes ingest rows; admin alias re-homes a discovered product a
   assert.strictEqual((await (await call('/api/products?hidden=1', { token: call.token })).json()).products.length, 0);
 });
 
-test('admin PATCH: validated meta merge — manual promote and demote without a deploy', async () => {
+test('admin PATCH: validated meta merge — brick pin, clear re-queues, demote without a deploy', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };
   const call = api(env);
   const req = admin(env);
   await admin(env)('/api/ingest', 'POST', [{ product_id: 'ean-7099999999992', shop: 'Power', price: 900, name: 'Acme Soundbar S1', brand: 'Acme' }]);
 
-  assert.strictEqual((await req('/api/admin/products/nope', 'PATCH', { cat: 'Audio' })).status, 404);
+  assert.strictEqual((await req('/api/admin/products/nope', 'PATCH', { brick: '10001436' })).status, 404);
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', {})).status, 400, 'empty patch');
-  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { cat: 'Lydplanker' })).status, 400, 'cat must be a real category');
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { cat: 'Audio' })).status, 400, 'cat is gone — the brick owns categorization');
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { brick: '12345678' })).status, 400, 'brick must exist in the shipped taxonomy');
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { bogus: 'x' })).status, 400, 'unknown keys rejected');
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { name: null })).status, 400, 'name cannot be deleted');
 
-  // promote: fill display meta, drop hidden
-  const res = await req('/api/admin/products/ean-7099999999992', 'PATCH', { name: 'Acme Soundbar S1', cat: 'Audio', icon: 'speaker', kw: 'soundbar lydplanke acme', hidden: null });
+  // brick pin: display derives from it, man pins against the resolver
+  const res = await req('/api/admin/products/ean-7099999999992', 'PATCH', { brick: '10001436' });
   assert.strictEqual(res.status, 200);
-  const promoted = (await (await call('/api/products?q=acme')).json()).products;
-  assert.strictEqual(promoted.length, 1, 'promoted product is searchable');
-  assert.strictEqual(promoted[0].cat, 'Audio');
-  assert.strictEqual(promoted[0].hidden, undefined);
-  assert.strictEqual(promoted[0].best, 900, 'collected offers ship with the promotion');
+  const pinned = (await (await call('/api/products?ids=ean-7099999999992')).json()).products.find(p => p.id === 'ean-7099999999992');
+  assert.strictEqual(pinned.cat, 'Høyttalersystemer', 'display label derives from the pinned brick');
+  assert.strictEqual(pinned.man, 1, 'a hand-set brick pins against the resolver');
+  assert.deepStrictEqual(pinned.facets, { type: 'Soundbars' }, 'the brick routes to the Audio ruleset, so the name derives a type');
+
+  // brick: null hands the row back to the resolver and re-queues its gtin
+  await DB.prepare("UPDATE gpc SET status = 'none', checked_at = 1 WHERE gtin = '7099999999992'").run();
+  assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { brick: null })).status, 200);
+  const cleared = (await (await call('/api/products?ids=ean-7099999999992', { token: call.token })).json()).products.find(p => p.id === 'ean-7099999999992');
+  assert.strictEqual(cleared.brick, undefined);
+  assert.strictEqual(cleared.man, undefined, 'clearing the brick clears the pin');
+  assert.strictEqual((await DB.prepare("SELECT status FROM gpc WHERE gtin = '7099999999992'").first()).status, 'queued', 'the gtin re-queues for the resolver');
 
   // facets: object-only meta merge that rides api rows (FILTERS-PLAN Phase B)
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { facets: ['x'] })).status, 400, 'facets must be an object');
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { facets: { anc: true, fit: 'over-ear' } })).status, 200);
   const withFacets = (await (await call('/api/products?ids=ean-7099999999992')).json()).products;
-  assert.deepStrictEqual(withFacets[0].facets, { type: 'Soundbars', anc: true, fit: 'over-ear' }, 'meta.facets rides /api/products rows, over the name-derived values');
+  assert.deepStrictEqual(withFacets[0].facets, { anc: true, fit: 'over-ear' }, 'meta.facets rides /api/products rows');
 
   // specs: same object-only merge — boot feeds it to the PDP Specifications section
   assert.strictEqual((await req('/api/admin/products/ean-7099999999992', 'PATCH', { specs: 'nope' })).status, 400, 'specs must be an object');
@@ -2103,7 +2157,7 @@ test('full spec sheets: detail fetches only, spec text never matches search', as
   const call = api(env);
   const req = admin(env);
   await req('/api/ingest', 'POST', [{ product_id: 'ean-7099999999993', shop: 'Power', price: 5999, name: 'Acme Frame 32', brand: 'Acme' }]);
-  await req('/api/admin/products/ean-7099999999993', 'PATCH', { name: 'Acme Frame 32', cat: 'TV', icon: 'tv', kw: 'frame acme', hidden: null });
+  await req('/api/admin/products/ean-7099999999993', 'PATCH', { kw: 'frame acme' }); // row auto-promoted at ingest
   // self-describing groups form (what tools/fetch-specs.mjs emits) — 'zebrafisk'
   // appears nowhere else in the catalog
   const sheet = { groups: [{ label: 'Generelt', rows: [['Produsent', 'Acme'], ['Fisk', 'zebrafisk']] }] };
@@ -2115,8 +2169,8 @@ test('full spec sheets: detail fetches only, spec text never matches search', as
   const byName = (await (await call('/api/products?q=frame')).json()).products;
   assert.strictEqual(byName.length, 1);
   assert.strictEqual(byName[0].specs, undefined, 'search rows are lean — no spec sheet');
-  const byCat = (await (await call('/api/products?cat=TV')).json()).products;
-  assert.ok(byCat.length && byCat.every(p => p.specs === undefined), 'cat rows are lean — no spec sheet');
+  const byNode = (await (await call('/api/products?node=uncat')).json()).products;
+  assert.ok(byNode.length && byNode.every(p => p.specs === undefined), 'node rows are lean — no spec sheet');
   const allHeads = (await (await call('/api/products')).json()).products;
   assert.ok(allHeads.length && allHeads.every(p => p.specs === undefined), 'all-heads rows are lean — no spec sheet');
 
@@ -2139,51 +2193,54 @@ test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed ke
   assert.strictEqual(row.name, 'Nintendo Switch 2', 'seed-owned keys still win on re-upsert');
 });
 
-// OPEN-CATALOG-PLAN B: auto-promotion — mapped source category = go live
-test('auto-promotion: a hidden row with name+CATMAP-mapped srcCat goes live (brand is best-effort, "Unspecified" if the source sends none); junk and unmapped stay hidden; demote sticks', async () => {
+// gpc-strict promotion: visibility never waits for a category. The junk gate
+// is the only content gate; demote-sticks and the ops PDP gating survive.
+test('promotion: a named row goes live in Ukategorisert at once; junk stays hidden; demote sticks', async () => {
   const DB = d1();
-  const env = { DB, INGEST_TOKEN: 'sekrit-token', CATMAP: { Power: { Mobiltelefoner: 'Phones' } } };
+  const env = { DB, INGEST_TOKEN: 'sekrit-token', GPC_FIXTURE: { 7099999999996: '10001178' } };
   const call = api(env);
   const req = admin(env);
   const push = (rows) => req('/api/ingest', 'POST', rows);
 
   assert.strictEqual((await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Pixel 9', srcCat: 42 }])).status, 400, 'non-string srcCat rejected');
 
-  // mapped category + name + brand → live, with icon/kw/auto stamped
-  await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Google Pixel 9 128 GB', brand: 'Google', srcCat: 'Mobiltelefoner' }]);
-  const live = (await (await call('/api/products?q=pixel 9')).json()).products.find(p => p.id === 'ean-7099999999993');
-  assert.ok(live, 'auto-promoted product must be searchable');
-  assert.strictEqual(live.cat, 'Phones');
-  assert.strictEqual(live.icon, 'smartphone');
-  assert.strictEqual(live.auto, 1);
-  assert.ok(live.kw.includes('google') && live.kw.includes('pixel') && live.kw.includes('phones'), `kw covers name+brand+cat: ${live.kw}`);
-
-  // no brand but mapped category → still goes live, brand falls back to
-  // "Unspecified"; unmapped srcCat → stays hidden; a FEE stays hidden — but an
-  // accessory name promotes now (2026-08-01) and types as Accessories
   await push([
-    { product_id: 'ean-7099999999994', shop: 'Power', price: 990, name: 'Nameless Phone', srcCat: 'Mobiltelefoner' },
-    { product_id: 'ean-7099999999995', shop: 'Power', price: 990, name: 'Acme Grunk', brand: 'Acme', srcCat: 'Diverse' },
-    { product_id: 'ean-7099999999996', shop: 'Power', price: 99, name: 'Pixel 9 deksel svart', brand: 'Google', srcCat: 'Mobiltelefoner' },
-    { product_id: 'ean-7099999999997', shop: 'Power', price: 49, name: 'Gavekort 500 kr', srcCat: 'Mobiltelefoner' },
+    { product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Google Pixel 9 128 GB', brand: 'Google', srcCat: 'Mobiltelefoner' },
+    { product_id: 'ean-7099999999994', shop: 'Power', price: 990, name: 'Nameless Phone' },
+    { product_id: 'p-bergans-slingsby-vindjakke', shop: 'Bergans', price: 1799, name: 'Bergans Slingsby Vindjakke', brand: 'Bergans', srcCat: 'Jakker og bukser' },
+    { product_id: 'ean-7099999999996', shop: 'Power', price: 99, name: 'Pixel 9 deksel svart', brand: 'Google', srcCat: 'Mobiltilbehør' },
+    { product_id: 'ean-7099999999997', shop: 'Power', price: 49, name: 'Gavekort 500 kr' },
+    { product_id: 'ean-7099999999998', shop: 'Power', price: 49, name: 'Håndteringsavgift' },
   ]);
+  const live = (await (await call('/api/products?q=pixel 9')).json()).products.find(p => p.id === 'ean-7099999999993');
+  assert.ok(live, 'a named row is live and searchable at once');
+  assert.strictEqual(live.cat, 'Ukategorisert', 'no resolved brick yet — the honest bucket, never a guess');
+  assert.strictEqual(live.auto, 1);
+  assert.strictEqual(live.srcCat, 'Mobiltelefoner', 'the breadcrumb is kept as diagnostics/facet input — it must NOT categorize');
+  assert.ok(live.kw.includes('google') && live.kw.includes('pixel'), `kw covers name+brand: ${live.kw}`);
   const brandless = (await (await call('/api/products?q=nameless phone')).json()).products.find(p => p.id === 'ean-7099999999994');
-  assert.ok(brandless, 'brandless-but-mapped product still auto-promotes');
-  assert.strictEqual(brandless.brand, 'Unspecified');
-  const deksel = (await (await call('/api/products?ids=ean-7099999999996')).json()).products[0];
-  assert.strictEqual(deksel?.facets?.type, 'Accessories', 'accessory names go live typed Accessories, not blocked');
+  assert.strictEqual(brandless?.brand, 'Unspecified', 'no brand → best-effort placeholder, still live');
+  const slug = (await (await call('/api/products?ids=p-bergans-slingsby-vindjakke')).json()).products.find(p => p.id === 'p-bergans-slingsby-vindjakke');
+  assert.ok(slug, 'gtin-free slug rows promote the same way');
+
+  // the fees/gift-cards gate is the ONE content gate left
   const hiddenIds = (await (await call('/api/products?hidden=1', { token: call.token })).json()).products.map(p => p.id);
-  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999995', 'ean-7099999999997'], 'unclassifiable rows and fees stay hidden');
+  assert.deepStrictEqual(hiddenIds.sort(), ['ean-7099999999997', 'ean-7099999999998'], 'fees and gift cards stay hidden');
+
+  // a resolved brick files the accessory under its REAL GPC brick, and the
+  // ruleset types it Accessories off the name
+  await call('/api/admin/gpc?n=500', { method: 'POST', token: call.token });
+  const deksel = (await (await call('/api/products?ids=ean-7099999999996')).json()).products.find(p => p.id === 'ean-7099999999996');
+  assert.strictEqual(deksel.brick, '10001178', 'Mobile Phone Cases — the resolver, not the name, categorized it');
+  assert.strictEqual(deksel.facets?.type, 'Accessories', 'the Phones ruleset types it off the name');
 
   // a human demotion out-ranks the machine: auto:1 + hidden:1 never re-promotes
   await req('/api/admin/products/ean-7099999999993', 'PATCH', { hidden: 1 });
   await push([{ product_id: 'ean-7099999999993', shop: 'Power', price: 9990, name: 'Google Pixel 9 128 GB', brand: 'Google', srcCat: 'Mobiltelefoner' }]);
   assert.ok(!(await (await call('/api/products?q=pixel 9')).json()).products.some(p => p.id === 'ean-7099999999993'), 'demoted product must not re-promote');
 
-  // …and demotion takes the PDP down too: `ids=` used to serve hidden rows in
-  // full, so a demoted product kept a working product page and the whole
-  // ean-* backlog was readable by guessing barcodes. Ops keeps its access
-  // through the bearer, which is now also required for the hidden listing.
+  // …and demotion takes the PDP down too: hidden means NOT SERVED, anywhere,
+  // except to the ops bearer
   const byId = async (opts) => (await (await call('/api/products?ids=ean-7099999999993', opts)).json()).products;
   assert.ok(!(await byId()).some(p => p.id === 'ean-7099999999993'), 'a demoted product must not be readable at its PDP url');
   assert.ok(!(await byId()).some(p => p.hidden === 1), 'no hidden row rides along in the PDP neighbour padding');
@@ -2191,72 +2248,6 @@ test('auto-promotion: a hidden row with name+CATMAP-mapped srcCat goes live (bra
   assert.strictEqual((await call('/api/products?hidden=1')).status, 401, 'the hidden listing is bearer-gated');
 });
 
-// The scale fix (2026-07-25): a brand-new shop with NO CATMAP entry at all must
-// still promote off its own Norwegian category labels, and a shop that publishes
-// no gtin must still produce products (slug-keyed) instead of nothing.
-test('a shop with no CATMAP entry promotes off the shared vocabulary, gtin-free rows included', async () => {
-  const DB = d1();
-  const env = { DB, INGEST_TOKEN: 'sekrit-token' }; // note: no CATMAP whatsoever
-  const call = api(env);
-  const push = (rows) => admin(env)('/api/ingest', 'POST', rows);
-
-  await push([
-    { product_id: 'p-bergans-slingsby-vindjakke', shop: 'Bergans', price: 1799, name: 'Bergans Slingsby Vindjakke', brand: 'Bergans', srcCat: 'Jakker og bukser' },
-    { product_id: 'ean-7099999999901', shop: 'Musti', price: 349, name: 'Royal Canin Adult 4 kg', brand: 'Royal Canin', srcCat: 'Hundefôr' },
-    { product_id: 'p-ukjent-dings', shop: 'Bergans', price: 99, name: 'Ukjent dings', brand: 'Acme', srcCat: 'Diverse' },
-    // the product NAME is deliberately not a fallback — a recognisable name
-    // under an unrecognisable label stays hidden
-    { product_id: 'ean-7099999999902', shop: 'Musti', price: 599, name: 'Trixie kattetre 120 cm', brand: 'Trixie', srcCat: 'Diverse' },
-    // shops sell fees as priced products; those are never products
-    { product_id: 'ean-7099999999903', shop: 'Musti', price: 49, name: 'Håndteringsavgift', brand: 'Musti', srcCat: 'Hundefôr' },
-  ]);
-
-  // token'd: half these ids are expected to stay hidden, and `ids=` only
-  // serves hidden rows to ops (the neighbour padding makes [0] unreliable too)
-  const of = async (id) => (await (await call(`/api/products?ids=${id}`, { token: call.token })).json()).products.find(p => p.id === id);
-  assert.strictEqual((await of('p-bergans-slingsby-vindjakke'))?.cat, 'Fashion', 'gtin-free slug row goes live off its category label');
-  assert.strictEqual((await of('ean-7099999999901'))?.cat, 'Pets');
-  assert.strictEqual((await of('ean-7099999999902'))?.hidden, 1, 'a good name under an unmapped label stays hidden');
-  assert.strictEqual((await of('ean-7099999999903'))?.hidden, 1, 'a handling fee is not a product');
-  assert.strictEqual((await of('p-ukjent-dings'))?.hidden, 1, 'nothing recognisable still stays hidden');
-
-  // CATMAP's "*" floor catches what neither the label nor the name recognises,
-  // but only for shops that declare it — and never ahead of a real match
-  const floor = { DB, INGEST_TOKEN: 'sekrit-token', CATMAP: { Bikeshop: { '*': 'Bikes' } } };
-  await admin(floor)('/api/ingest', 'POST', [
-    { product_id: 'p-pilo-dropout-d757', shop: 'Bikeshop', price: 249, name: 'Pilo Dropout D757', brand: 'Pilo' },
-    { product_id: 'p-agu-dwr-benvarmere', shop: 'Bikeshop', price: 399, name: 'AGU DWR Benvarmere', brand: 'AGU', srcCat: 'Hansker og votter' },
-  ]);
-  const floorOf = async (id) => (await (await api(floor)(`/api/products?ids=${id}`)).json()).products[0];
-  assert.strictEqual((await floorOf('p-pilo-dropout-d757'))?.cat, 'Bikes', 'unrecognisable row falls to the shop floor');
-  assert.strictEqual((await floorOf('p-agu-dwr-benvarmere'))?.cat, 'Fashion', 'a real category match still outranks the floor');
-
-  // the category's lucide icon name is not search text: every Furniture row
-  // carries icon "sofa", and must not turn up for a search on "sofa" unless
-  // the product itself says so
-  await push([{ product_id: 'p-uptown-matstol-white', shop: 'Trademax', price: 2799, name: 'Uptown matstol white', brand: 'Uptown', srcCat: 'Spisebord' }]);
-  const chair = await of('p-uptown-matstol-white');
-  assert.strictEqual(chair?.cat, 'Furniture');
-  assert.strictEqual(chair?.icon, 'sofa', 'precondition: the Furniture icon really is "sofa"');
-  const hits = (await (await call('/api/products?q=sofa')).json()).products;
-  assert.ok(!hits.some(p => p.id === 'p-uptown-matstol-white'), `icon name leaked into search: ${hits.map(p => p.id)}`);
-
-  // slug ids merge offers across shops the same way an EAN does
-  await push([{ product_id: 'p-bergans-slingsby-vindjakke', shop: 'Milrab', price: 1599, name: 'Bergans Slingsby Vindjakke', brand: 'Bergans', srcCat: 'Jakker og bukser' }]);
-  const merged = await of('p-bergans-slingsby-vindjakke');
-  assert.deepStrictEqual(merged.offers.map(o => o.shop).sort(), ['Bergans', 'Milrab']);
-});
-
-// Real shop labels pulled from a live /api/catalog.json, one per failure mode
-// that plans/category-misclassification.md found. This is the only thing between
-// a vocabulary edit and TV holding 106 products of which 2 are televisions.
-// Japan Photo publishes its breadcrumb as schema.org MICRODATA and nothing else,
-// so all 638 of its rows arrived with no category and were filed by its shop
-// floor. Bergans publishes one too — but its crumbs are the product name and a
-// colour, and left in, `pocket` in the Books vocabulary read "Ally Map Pocket"
-// as a book. See plans/category-misclassification.md.
-// Crawling a shop's WHOLE catalog is opt-in: without a recorded approval a
-// shop gets a development sample, however its entry was written.
 test('discover samples by default and only crawls in full when approved', async () => {
   const urls = Array.from({ length: 1000 }, (_, i) => `https://s.no/p/${i}`);
   const realFetch = globalThis.fetch;
@@ -2329,278 +2320,6 @@ test('breadcrumbCat reads microdata breadcrumbs, and a crumb that is the product
   assert.strictEqual(breadcrumbCat(micro(span('Ally Map Pocket')), 'Ally Map Pocket'), null);
 });
 
-test('classify reads a category PATH leaf-first, and the ambiguous tokens stay fixed', async () => {
-  const { classify } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'index.js')));
-  const cases = [
-    // the reported bug: "TV" inside a toy-merchandise label
-    ['TV- og filmkarakterer', 'Toys'],
-    ['Leker > Figurer > TV- og filmkarakterer', 'Toys'],
-    // …while real televisions still classify
-    ['OLED TV', 'TV'],
-    ['TV-apparater', 'TV'],
-    ['Hjem > TV og lyd > TV', 'TV'],
-    // TV-<noun> compounds are furniture, not televisions
-    ['TV-benk & mediabenk', 'Furniture'],
-    ['TV-benk, TV bord og mediamøbler', 'Furniture'],
-    // leaf beats parent: a shoe under a gender crumb is a shoe
-    ['Dame / Sko / Komfortsko', 'Shoes'],
-    ['Herre / Sneakers / Lave sneakers', 'Shoes'],
-    // …and a bare audience crumb never decides — this is Jewelry, not Fashion
-    ['Smykker > Herre > Armbånd', 'Jewelry'],
-    // parent speaks only when the leaf says nothing
-    ['Leker > Figurer > Nyankomne', 'Toys'],
-    ['Utemøbler > Utestoler > Hagestoler', 'Garden'],
-    // `ø` is not a word char, so \bsko[a-zæøå]*\b matched "skort" in "Løskort"
-    ['Singles (Løskort)', 'Toys'],
-    ['Skolesekker', undefined],
-    // `lerret` is a projection screen AND an artist's canvas — and a
-    // `lerretsbilde` is neither: it's a printed canvas hung on a wall (the
-    // 2026-07-27 eval read all 42 rows: Trademax/Chilli wall art, zero blanks)
-    ['Lerretsbilder', 'Home'],
-    ['Innredning > Bilder & kunst > Lerretsbilder', 'Home'],
-    ['Kunstnerlerret', 'Hobby'],
-    ['Projektorer', 'Projectors'],
-    // unanchored e-?bok matched the "ebok" inside these
-    ['Klokkebokser', 'Watches'],
-    ['Kakeboks', 'Kitchen'], // not an E-reader — and since 2026-08-02 it has its own word
-    ['Läsplattor', 'E-readers'],
-    // bare `foto` swallowed photo wallpaper
-    ['Fototapeter', 'Home'],
-    ['Digitale fotorammer', 'Photo'],
-    // vocabulary the catalog proved missing
-    ['Manga', 'Books'],
-    ['Luer og pannebånd', 'Fashion'],
-    ['Kopper og krus', 'Kitchen'],
-    ['Akvarell- & vannmaling', 'Hobby'],
-    ['Spisebord & kjøkkenbord', 'Furniture'],
-    // CAT_SKIP tests the LEAF, not the whole path: the leaf is what the product
-    // IS, a mid-path "Tilbehør" is just the menu the shop files it under
-    ['Tilbehør / Skolisser / Brune skolisser', undefined],
-    ['Tilbehør', undefined],
-    ['Annen / Reservedeler', undefined],
-    ['Sykkel tilbehør', undefined], // single crumb = its own leaf, unchanged
-    ['Mobil > Tilbehør > Deksel', undefined],
-    ['KLÆR > Tilbehør > Luer og pannebånd', 'Fashion'], // 38 beanies were lost here
-    // vocabulary the catalog proved missing (item 3)
-    ['Spisestue', 'Furniture'],
-    ['Spisegruppe', 'Furniture'],
-    ['Sengeramme & sengestamme', 'Furniture'],
-    // Home's `oppbevaring` beat a Furniture rule that had no word for a cabinet
-    // (178 highboards across Trademax/Chilli), while Lighting's `lampe` took the
-    // side tables — but a bathroom cabinet really is Home
-    ['Oppbevaring > Skap > Oppbevaringsskap', 'Furniture'],
-    ['Oppbevaringsskap', 'Furniture'],
-    ['Hjem > Rom > Stue > Oppbevaring > Skjenk', 'Furniture'],
-    ['Lampebord & sidebord', 'Furniture'],
-    ['Baderomsskap', 'Home'],
-    ['Belysning > Lamper > Lampeskjermer', 'Lighting'],
-    ['Hjem > Rom > Spiseplassen > Spisestoler', 'Furniture'],
-    ['Lenestoler', 'Furniture'],
-    ['Kontinentalsenger', 'Furniture'],
-    // art supplies vs stationery: `\bpapir`/`\bpenn`/`maling` read Copic markers,
-    // crepe paper and children's paint as Office/Tools at Tegne.no and Panduro
-    ['Mal & tegn > Penner & kritt > Tusjer & markers', 'Hobby'],
-    ['Krepp-papir', 'Hobby'],
-    ['Barnemaling', 'Hobby'],
-    ['Barn & junior > Barneselskap & karneval > Ansiktsmaling', 'Hobby'],
-    ['Miniatyrspill', 'Hobby'],
-    ['Kontor > Papir', 'Office'],          // a stationer's plain paper still lands
-    ['Tilbehør > Skrivesaker > Penner', 'Office'],
-    // the rest of the measured tail, one label per word added
-    ['Capser', 'Fashion'],
-    ['Votter', 'Fashion'],
-    ['Skjerf', 'Fashion'],
-    ['Dame / Tilbehør / Skuldervesker', 'Fashion'],
-    ['Solbriller', 'Fashion'],            // an accessory, NOT cosmetics
-    ['Utstyr > Briller og goggles > Goggles', 'Sport'],
-    ['Kondisjon / Romaskin', 'Sport'],
-    ['Tursko', 'Shoes'],
-    ['FRILUFT > Turutstyr > Termos og drikkeflasker', 'Kitchen'], // not Outdoor:
-    ['Termokopper', 'Kitchen'],           // as Outdoor it took ceramic mugs too
-    ['Utstyr > Sekker og bagger > Dagstursekker', 'Outdoor'],
-    ['Rollespill', 'Toys'],
-    ['Vann- og badelek', 'Toys'],
-    ['Sateng sengesett', 'Home'],
-    ['Innredning > Dekorasjon > Vaser', 'Home'],
-    ['Posters', 'Home'],
-    ['Dagkrem', 'Beauty'],
-    ['Hår > Hårspray', 'Beauty'],
-    // brand-only and navigation-only paths stay unreadable on purpose — that is
-    // what the hidden backlog is for, not something for a shop floor to guess at
-    ['Varemerker > Fjällräven', undefined],
-    ['Hjem > Produkter', undefined],
-    // ——— 2026-07-31, from the product-eval audit (one real label per fix) ———
-    // Fashion's unanchored `klær` read towels, aprons and workwear as clothing
-    ['Baderom > Håndklær og kluter > Håndklær', 'Home'],
-    ['Håndklær og kluter', 'Home'],
-    ['Forklær', 'Kitchen'],
-    ['Verneutstyr og arbeidsklær', 'Tools'],
-    // `\bring`/`sølv` fired inside Skismøring/Rengjøring/Sølvkroken
-    ['VINTERSPORT > Skismøring > Glideprodukter', 'Sport'],
-    ['Kjøkkenutstyr > Rengjøring', 'Home'],
-    ['Varemerker > Sølvkroken', undefined],
-    ['Ringer', 'Jewelry'],
-    ['Øreringer', 'Jewelry'],
-    ['Hjem > Smykker > Til herre > Mansjettknapper', 'Jewelry'], // "Til herre" is audience, not Fashion
-    // exercise bikes are gym gear, not bicycles
-    ['Kondisjon / Treningssykkel', 'Sport'],
-    ['Spinningsykkel', 'Sport'],
-    ['Terrengsykler', 'Bikes'],
-    // a pet-department crumb owns its whole path
-    ['Hjem > Katt > Leker', 'Pets'],
-    ['Start > Hund > Trening og Lek > Hundeleker > Myke Leker', 'Pets'],
-    ['Hjem > Hund > Hundepleie > Shampoo og balsam', 'Pets'],
-    ['Kobbel', 'Pets'],
-    ['Halsbånd', 'Pets'], // every halsbånd label in the live catalog is a dog collar (jewellers say halskjede)
-    // baby gear that sat in Fashion
-    ['Stelle', 'Baby'],
-    ['Tåteflasker', 'Baby'],
-    ['Bæresjal / Bæresele', 'Baby'],
-    ['Ammeputer/Gravidputer', 'Baby'],
-    // -sko/-støvel suffix compounds (the whole Skoringen shop sat in Fashion)
-    ['Badesko', 'Shoes'],
-    ['Sko > Sko dame > Fjellsko dame', 'Shoes'],
-    ['Gummistøvler', 'Shoes'],
-    ['Hverdagssko', 'Shoes'],
-    // garden structures that Furniture's `møbler` swallowed
-    ['Hagemøbler', 'Garden'],
-    ['Utemøbler', 'Garden'],
-    ['Hagemøbler > Paviljonger og parasoller', 'Garden'],
-    ['Start > Outdoor > Utstyr og Tilbehør > Turmøbler', 'Outdoor'],
-    ['Uterom > Strandmadrasser', 'Outdoor'],
-    ['Hjem, rengjøring og hvitevarer > Møbelbeslag > Bordben', 'Tools'],
-    ['Hjem > Rom > Møbelpleie > Hud', 'Home'],
-    // suffix-compound bedroom textiles fell to Furniture's Soverom
-    ['Soverom > Sengetepper', 'Home'],
-    ['Soverom > Putetrekk > Sateng putevar', 'Home'],
-    ['Soverom > Dyner > Dundyner', 'Home'],
-    ['Kappelaken', 'Home'],
-    ['Wiltontepper', 'Home'],
-    // …while real bedroom furniture stays Furniture
-    ['Modulsofa Isa', 'Furniture'],
-    ['Møbler > Senger > Senger med oppbevaring', 'Furniture'],
-    ['Sengegavler og sengebenker', 'Furniture'],
-    ['Sminkebord & toalettbord', 'Furniture'],
-    // home fragrance sold by perfume shops is decor, not cosmetics
-    ['Hjem > Parfyme > Duftlys', 'Home'],
-    ['Hjem > Dufter til hjemmet', 'Home'],
-    ['Innredning > Duft & Kroppspleie > Duftpinner', 'Home'],
-    ['Romspray', 'Home'],
-    ['Hjem > Renhold > Klesvask', 'Home'],
-    ['Innredning > Dekorasjon > Trefigurer', 'Home'],
-    // `strikk` (knitting) read hair ties, resistance bands and knitted sweaters
-    ['Hårstrikk', 'Beauty'],
-    ['Strikkede gensere', 'Fashion'],
-    ['Treningsstrikk', 'Sport'],
-    ['Strikkegarn', 'Hobby'],
-    // the measured tail, one label per word
-    ['SPORT & BALLSPILL > Leker og spill > Frisbee', 'Sport'],
-    ['Leker > Samleobjekter og merchandise > Fotballkort', 'Toys'],
-    ['PS5 spill', 'Gaming'],
-    ['Boxere', 'Fashion'],
-    ['Vesker', undefined], // deliberately unread: a bare bag shelf is camera pouches at Japan Photo and daypacks at Sport 1
-    ['Grilltrekk', 'Garden'],
-    ['Magnesium', 'Health'],
-    ['Dukker og Tilbehør', 'Toys'], // "og tilbehør" tail must not kill the doll shelf
-    ['Sminke > Verktøy og tilbehør > Vippetang', 'Beauty'], // …but only at the LEAF: mid-path accessory menus still skip
-    ['Reisehåndklær', 'Outdoor'],
-    ['Termoser', 'Kitchen'],
-    ['Termostøvler', 'Shoes'], // termos must not eat thermo boots
-    ['Produkter > Elektro og verktøy > Verktøy > Lodding > Kabelsko', 'Tools'], // kabelsko = cable lugs, not shoes
-    ['Søylesko', undefined], // post shoes are construction hardware, not footwear
-    ['FRILUFT > Sekker og bagger > Fritidssekker og vesker', 'Outdoor'], // a `vesker` leaf must not pull daypacks to Fashion
-    ['Kakepynt', 'Kitchen'],
-    ['Skåler og tallerker', 'Kitchen'],
-    ['Herre / Tilbehør / Lommebøker', undefined], // a wallet is not bøker
-    // suspended hyphen: "Sko-" means the compound's head comes later
-    ['Sko- og klesoppbevaring', 'Home'],
-    ['Andre rom > Entré og garderobe > Sko-oppbevaring', 'Home'],
-    ['Rettetang', 'Beauty'],
-    ['Krølltang', 'Beauty'],
-    ['Home > Fototilbehør > Tilbehør til kamera og objektiv > Solblender', undefined], // a lens hood is not a blender — unread, the shop floor decides
-    // `konsoll` compounds are furniture/brackets, not game machines
-    ['Stue > Bord > Konsollbord', 'Furniture'],
-    ['Gangbord', 'Furniture'],
-    ['Avlastningsbord & sidobord', 'Furniture'],
-    ['Produkter > Lyd og bilde > Høyttaler > Høyttalerkonsoller', 'Audio'],
-    ['Hylleplan & hyllekonsoll', 'Furniture'],
-    ['Spillkonsoller', 'Gaming'], // …while the gaming senses still read
-    ['Konsoller', 'Gaming'],
-  ];
-  for (const [label, want] of cases) {
-    assert.strictEqual(classify(label), want, `classify(${JSON.stringify(label)})`);
-  }
-});
-
-// The category used to be frozen at first promotion (meta.auto), so every rule
-// fix reached new rows only. Re-classification is what makes the fix above worth
-// anything to the 13,705 rows already in the catalog.
-test('a live auto row re-classifies on the next crawl; a hand-set cat is pinned; a demoted row stays down', async () => {
-  const DB = d1();
-  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
-  const call = api(env);
-  const push = (rows) => admin(env)('/api/ingest', 'POST', rows);
-  const of = async (id) => (await (await call(`/api/products?ids=${id}`, { token: call.token })).json()).products.find(p => p.id === id);
-
-  // lands in Toys off its leaf crumb
-  await push([{ product_id: 'ean-7099999999801', shop: 'Lekia', price: 299, name: 'Battle Figure Mewtwo', brand: 'Jazwares', srcCat: 'TV- og filmkarakterer' }]);
-  assert.strictEqual((await of('ean-7099999999801'))?.cat, 'Toys');
-
-  // the shop re-files it: the next crawl moves the live row, and refreshes the
-  // stored srcCat so the shop's own path stays current
-  await push([{ product_id: 'ean-7099999999801', shop: 'Lekia', price: 289, name: 'Battle Figure Mewtwo', brand: 'Jazwares', srcCat: 'Samlekort > Enkeltkort' }]);
-  const moved = await of('ean-7099999999801');
-  assert.strictEqual(moved.cat, 'Toys');
-  assert.strictEqual(moved.srcCat, 'Samlekort > Enkeltkort', 'the fresh path replaces the stale one');
-
-  // a hand-set category outranks the rules from then on
-  await push([{ product_id: 'ean-7099999999802', shop: 'Lekia', price: 99, name: 'Ukjent ting', brand: 'Acme', srcCat: 'Bøker' }]);
-  assert.strictEqual((await of('ean-7099999999802'))?.cat, 'Books');
-  await admin(env)('/api/admin/products/ean-7099999999802', 'PATCH', { cat: 'Hobby' });
-  assert.strictEqual((await of('ean-7099999999802'))?.man, 1, 'PATCHing cat pins the row');
-  await push([{ product_id: 'ean-7099999999802', shop: 'Lekia', price: 89, name: 'Ukjent ting', brand: 'Acme', srcCat: 'Bøker' }]);
-  assert.strictEqual((await of('ean-7099999999802'))?.cat, 'Hobby', 'a crawl must not overwrite human triage');
-
-  // a demoted row never comes back, re-classification or not
-  await admin(env)('/api/admin/products/ean-7099999999801', 'PATCH', { hidden: 1 });
-  await push([{ product_id: 'ean-7099999999801', shop: 'Lekia', price: 279, name: 'Battle Figure Mewtwo', brand: 'Jazwares', srcCat: 'Leker' }]);
-  assert.strictEqual((await of('ean-7099999999801'))?.hidden, 1, 'demote still sticks');
-
-  // and a row whose label stops resolving keeps its category rather than
-  // vanishing from under a live PDP
-  await push([{ product_id: 'ean-7099999999803', shop: 'Lekia', price: 199, name: 'Bamse', brand: 'Acme', srcCat: 'Kosedyr' }]);
-  assert.strictEqual((await of('ean-7099999999803'))?.cat, 'Toys');
-  await push([{ product_id: 'ean-7099999999803', shop: 'Lekia', price: 189, name: 'Bamse', brand: 'Acme', srcCat: 'Diverse' }]);
-  assert.strictEqual((await of('ean-7099999999803'))?.cat, 'Toys', 'an unresolvable label never un-promotes a live row');
-});
-
-// Caught on the first production crawl of the re-classification change: a board
-// game carried by both a toy shop and a game shop flipped Toys↔Gaming depending
-// on which shop's row landed last in the batch.
-test('a shop floor may promote a new row but must never re-file a live one', async () => {
-  const DB = d1();
-  const env = {
-    DB, INGEST_TOKEN: 'sekrit-token',
-    CATMAP: { Outland: { '*': 'Toys' }, Gamezone: { '*': 'Gaming' } },
-  };
-  const call = api(env);
-  const push = (rows) => admin(env)('/api/ingest', 'POST', rows);
-  const of = async (id) => (await (await call(`/api/products?ids=${id}`, { token: call.token })).json()).products.find(p => p.id === id);
-
-  // no srcCat anywhere: the toy shop's floor is the only signal, and it promotes
-  await push([{ product_id: 'ean-7099999999810', shop: 'Outland', price: 399, name: 'Jenga Brettspill', brand: 'Hasbro' }]);
-  assert.strictEqual((await of('ean-7099999999810'))?.cat, 'Toys', 'a floor still promotes a new row');
-
-  // the same product turns up at a shop with a different floor — it must not move
-  await push([{ product_id: 'ean-7099999999810', shop: 'Gamezone', price: 379, name: 'Jenga Brettspill', brand: 'Hasbro' }]);
-  assert.strictEqual((await of('ean-7099999999810'))?.cat, 'Toys', "another shop's floor must not re-file a live row");
-
-  // …but a real label from any shop still outranks what the floor guessed
-  await push([{ product_id: 'ean-7099999999810', shop: 'Gamezone', price: 369, name: 'Jenga Brettspill', brand: 'Hasbro', srcCat: 'Playstation 5 > Konsoll' }]);
-  assert.strictEqual((await of('ean-7099999999810'))?.cat, 'Gaming', 'a real category label still re-files');
-});
-
-// OPEN-CATALOG-PLAN C: alias can create a variant child on the fly (group.mjs)
 test('alias with meta creates a variant child: data re-homed, child rides its head', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };
@@ -2924,7 +2643,7 @@ test('served meta stays live across ingest, admin PATCH and alias (catMeta cache
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };
   const call = api(env);
   const req = admin(env);
-  const meta = async () => (await (await call('/api/products?cat=Pets&limit=1')).json()).meta;
+  const meta = async () => (await (await call('/api/products?node=10000522&limit=1')).json()).meta;
 
   // twice: the first request seeds, and seedCatalog deliberately returns no
   // version on a request that just wrote, so only the second one caches. A
@@ -2932,45 +2651,48 @@ test('served meta stays live across ingest, admin PATCH and alias (catMeta cache
   await meta();
   const base = await meta();
 
-  // 1. ingest — a brand-new shop must show up in meta.shops
+  // 1. ingest — a brand-new shop must show up in meta.shops, and the
+  // auto-promoted discovery moves products + the uncat bucket at once
   await req('/api/ingest', 'POST', [{ product_id: 'ean-7099920000001', shop: 'Dyrebutikken', price: 349, name: 'Hundeseng Deluxe', brand: 'Acme' }]);
   const afterIngest = await meta();
   assert.strictEqual(afterIngest.shops, base.shops + 1, 'a new shop must reach meta.shops without waiting for a TTL');
-  assert.strictEqual(afterIngest.products, base.products, 'the discovered row is hidden, so head count is unchanged');
+  assert.strictEqual(afterIngest.products, base.products + 1, 'the discovered row goes live (Ukategorisert)');
+  assert.strictEqual(afterIngest.uncat, base.uncat + 1, 'and the uncat count moves with it');
 
-  // 2. admin PATCH — promoting the hidden row must move the category count
-  await req('/api/admin/products/ean-7099920000001', 'PATCH', { cat: 'Pets', brand: 'Acme', kw: 'hundeseng', hidden: null });
+  // 2. admin PATCH — pinning a brick must move the histogram
+  await req('/api/admin/products/ean-7099920000001', 'PATCH', { brick: '10000522' });
   const afterPatch = await meta();
-  assert.strictEqual(afterPatch.products, base.products + 1, 'promotion must reach meta.products');
-  assert.strictEqual(afterPatch.cats.Pets, (base.cats.Pets ?? 0) + 1, 'promotion must reach meta.cats — this is what Browse counts');
+  assert.strictEqual(afterPatch.bricks['10000522'] ?? 0, (base.bricks['10000522'] ?? 0) + 1, 'a brick pin must reach meta.bricks — this is what Browse counts');
+  assert.strictEqual(afterPatch.uncat, base.uncat, 'and leave the uncat bucket');
 
   // 3. alias creating a target — another visible head
-  await req('/api/admin/alias', 'POST', { ean: '7099920000002', product_id: 'hundeseng~xl', meta: { name: 'Hundeseng Deluxe XL', cat: 'Pets' } });
+  await req('/api/admin/alias', 'POST', { ean: '7099920000002', product_id: 'hundeseng~xl', meta: { name: 'Hundeseng Deluxe XL' } });
   assert.strictEqual((await meta()).products, base.products + 2, 'an alias-created product must reach meta.products');
 });
 
-// The cat= listing filters on json_extract(meta,'$.cat'), which is not a
-// column — without the expression index SQLite scans all 14k products to serve
-// one category (measured on prod D1: 35-44 ms and 19,274 rows read, vs 12-16 ms
-// and 6,968 with it). Nothing else fails if it disappears; the page just gets
-// slower, which is exactly the kind of regression nobody notices.
-test('the cat= listing has an index to use, and uses it', async () => {
+// The node= listing filters on json_extract(meta,'$.brick'), which is not a
+// column — without the expression index SQLite scans every product to serve
+// one brick. Nothing else fails if it disappears; the page just gets slower,
+// which is exactly the kind of regression nobody notices.
+test('the node= listing has an index to use, and uses it — and the cat index is gone', async () => {
   const DB = d1();
   const call = api({ DB });
-  await call('/api/products?cat=Audio&limit=1'); // ensureSchema + seed
+  await call('/api/products?node=10001181&limit=1'); // ensureSchema + seed
 
-  const idx = await DB.prepare("SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'idx_products_cat'").first();
-  assert.ok(idx, 'idx_products_cat must be in SCHEMA');
+  const idx = await DB.prepare("SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'idx_products_brick'").first();
+  assert.ok(idx, 'idx_products_brick must be in SCHEMA');
+  assert.strictEqual(await DB.prepare("SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'idx_products_cat'").first(), null,
+    'the regex-era cat index must be dropped');
 
   // SQLite only matches an expression index when the query spells the
   // expression identically, so assert the PLAN, not just the index's existence
   const { results } = await DB.prepare(
     `EXPLAIN QUERY PLAN SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id
      WHERE json_extract(p.meta, '$.family') IS NULL AND json_extract(p.meta, '$.hidden') IS NOT 1
-       AND json_extract(p.meta, '$.cat') = 'Audio' GROUP BY p.id`
+       AND json_extract(p.meta,'$.brick') IN ('10001181') GROUP BY p.id`
   ).all();
   const plan = results.map(r => r.detail).join(' | ');
-  assert.match(plan, /idx_products_cat/, `cat= must SEARCH via the index, not SCAN products — got: ${plan}`);
+  assert.match(plan, /idx_products_brick/, `node= must SEARCH via the index, not SCAN products — got: ${plan}`);
 });
 
 // search_index is built by triggers, which only fire on writes that happen
@@ -2983,7 +2705,7 @@ test('search finds products that predate the index (the prod migration)', async 
   // rows in place before any request — no triggers exist yet, exactly like prod
   DB.exec('CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, meta TEXT NOT NULL)');
   await DB.prepare('INSERT INTO products (id, meta) VALUES (?, ?)')
-    .bind('legacy-1', JSON.stringify({ name: 'Trådløs Grønnkål Legacy', brand: 'Oldco', cat: 'Audio', kw: 'legacy' })).run();
+    .bind('legacy-1', JSON.stringify({ name: 'Trådløs Grønnkål Legacy', brand: 'Oldco', kw: 'legacy' })).run();
 
   const call = api({ DB });
   const ids = async (q) => (await (await call('/api/products?q=' + encodeURIComponent(q))).json()).products.map(p => p.id);
@@ -3042,7 +2764,7 @@ test('GET /api/products: offers carry shipCost/total, rows bestTotal; total sort
   for (const r of rows) {
     await req('/api/ingest', 'POST', r.offers.map(([shop, price, ship, eta, stock = 1]) =>
       ({ product_id: 'ean-' + r.ean, shop, price, ship, eta, stock, name: r.name, brand: 'Acme' })));
-    await req('/api/admin/products/ean-' + r.ean, 'PATCH', { cat: 'Pets', hidden: null });
+    await req('/api/admin/products/ean-' + r.ean, 'PATCH', { brick: '10002011' });
   }
   const id = (n) => 'ean-709993200000' + n;
   const get = async (qs) => (await (await call('/api/products?' + qs)).json());
@@ -3061,22 +2783,22 @@ test('GET /api/products: offers carry shipCost/total, rows bestTotal; total sort
 
   // Totalpris sort: A (item 1990 / total 2040) and C (item 2000 / total 2000)
   // swap places between the two sorts; unknown-shipping B rides its item price.
-  assert.deepStrictEqual(await ids('cat=Pets&sort=best&dir=asc'), [id(2), id(1), id(3)]);
-  assert.deepStrictEqual(await ids('cat=Pets&sort=total&dir=asc'), [id(2), id(3), id(1)],
+  assert.deepStrictEqual(await ids('node=10002011&sort=best&dir=asc'), [id(2), id(1), id(3)]);
+  assert.deepStrictEqual(await ids('node=10002011&sort=total&dir=asc'), [id(2), id(3), id(1)],
     'total sort must order by shipping-inclusive price where known, item price where not');
 
   // availability filters, whole-category, with meta.total riding along
-  assert.deepStrictEqual((await ids('cat=Pets&freeship=1')).sort(), [id(1), id(3)].sort(), 'freeship = a KNOWN free offer');
-  assert.strictEqual((await get('cat=Pets&freeship=1')).meta.total, 2);
-  assert.deepStrictEqual(await ids('cat=Pets&maxeta=2'), [id(1)], '"In stock" and "2–6 days" pass ≤2; no eta fails; an OUT-of-stock fast eta does not count');
-  assert.deepStrictEqual((await ids('cat=Pets&maxeta=5')).sort(), [id(1), id(3)].sort());
-  assert.deepStrictEqual(await ids('cat=Pets&freeship=1&maxeta=2'), [id(1)], 'availability filters stack');
+  assert.deepStrictEqual((await ids('node=10002011&freeship=1')).sort(), [id(1), id(3)].sort(), 'freeship = a KNOWN free offer');
+  assert.strictEqual((await get('node=10002011&freeship=1')).meta.total, 2);
+  assert.deepStrictEqual(await ids('node=10002011&maxeta=2'), [id(1)], '"In stock" and "2–6 days" pass ≤2; no eta fails; an OUT-of-stock fast eta does not count');
+  assert.deepStrictEqual((await ids('node=10002011&maxeta=5')).sort(), [id(1), id(3)].sort());
+  assert.deepStrictEqual(await ids('node=10002011&freeship=1&maxeta=2'), [id(1)], 'availability filters stack');
 
   // the rail's availability counts, whole-category and unfiltered (upstream's
   // own availCounts convention): B's fast eta is out of stock so it counts
   // nowhere, and an active filter must not change the numbers
-  assert.deepStrictEqual((await get('cat=Pets')).meta.acounts, { instock: 3, freeship: 2, fast: 1 });
-  assert.deepStrictEqual((await get('cat=Pets&freeship=1')).meta.acounts, { instock: 3, freeship: 2, fast: 1 },
+  assert.deepStrictEqual((await get('node=10002011')).meta.acounts, { instock: 3, freeship: 2, fast: 1 });
+  assert.deepStrictEqual((await get('node=10002011&freeship=1')).meta.acounts, { instock: 3, freeship: 2, fast: 1 },
     'counts ignore the active filters, like the screen counting its unfiltered pool');
   assert.strictEqual((await get('')).meta.acounts, undefined, 'no category, no rail, no counts');
 });
