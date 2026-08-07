@@ -972,7 +972,7 @@ test('GET /api/products: ids expand to head + siblings + same-brick neighbors', 
   assert.strictEqual(head.best, Math.min(...head.offers.map(o => o.price)));
   assert.deepStrictEqual(head.history, seed.find(p => p.id === 'iphone').history.slice(-24));
   // display derives from the brick: Norwegian overlay name, GPC trail
-  assert.strictEqual(head.cat, 'Smarttelefoner');
+  assert.strictEqual(head.cat, 'Mobil og kommunikasjon', 'display cat is the SEGMENT name — row badges/pools key on it');
   assert.strictEqual(head.path, 'Communications › Communications › Mobile Communication Devices/Services');
 
   // meta: global aggregates + the brick axis (gpc-strict)
@@ -2122,7 +2122,7 @@ test('admin PATCH: validated meta merge — brick pin, clear re-queues, demote w
   const res = await req('/api/admin/products/ean-7099999999992', 'PATCH', { brick: '10001436' });
   assert.strictEqual(res.status, 200);
   const pinned = (await (await call('/api/products?ids=ean-7099999999992')).json()).products.find(p => p.id === 'ean-7099999999992');
-  assert.strictEqual(pinned.cat, 'Høyttalersystemer', 'display label derives from the pinned brick');
+  assert.strictEqual(pinned.cat, 'Lyd og bilde', 'display cat derives from the pinned brick (segment name)');
   assert.strictEqual(pinned.man, 1, 'a hand-set brick pins against the resolver');
   assert.deepStrictEqual(pinned.facets, { type: 'Soundbars' }, 'the brick routes to the Audio ruleset, so the name derives a type');
 

@@ -16,6 +16,77 @@ const signedFullmakt = { signed: true, signedAt: '11 Jul 2026, 09:12', cap: 2000
 
 // jsdom has no fetch — stub the whole API surface boot.jsx talks to.
 // `session`/`me` seed the /api/me answer; every call lands in win.api.
+// ── gpc-strict emulation (mirrors the Worker: fixture-resolved bricks,
+// display derived from the brick, catMeta's tree/depts/facetKeys shapes) ──
+const GPCX = (() => {
+  const gpc = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'gpc.json'), 'utf8'));
+  const no = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'gpcno.json'), 'utf8'));
+  const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'gpc-fixture.json'), 'utf8'));
+  const eans = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'eans.json'), 'utf8'));
+  const eanKey = (e) => String(e).replace(/\D/g, '').replace(/^0+/, '');
+  const parent = (c) => gpc.bricks[c]?.[1] ?? gpc.classes[c]?.[1] ?? gpc.fams[c]?.[1];
+  const title = (c) => gpc.bricks[c]?.[0] ?? gpc.classes[c]?.[0] ?? gpc.fams[c]?.[0] ?? gpc.segs[c];
+  const name = (c) => no.names[c]?.name ?? title(c);
+  const segName = (b) => { let c = b, top = b; while ((c = parent(c))) top = c; return name(top); };
+  const icon = (c) => { for (let x = c; x; x = parent(x)) if (no.names[x]?.icon) return no.names[x].icon; return 'tag'; };
+  const pathOf = (c) => { const t = []; for (let x = parent(c); x; x = parent(x)) t.unshift(title(x)); return t.join(' › ') || undefined; };
+  const facetKeyOf = (c) => { for (let x = c; x; x = parent(x)) if (no.facetKeys[x]) return no.facetKeys[x]; return undefined; };
+  // head id → brick, through eans.json + the stub fixture (what the drain does)
+  const brickOf = {};
+  for (const [pid, list] of Object.entries(eans)) {
+    const head = pid.includes('~') ? pid.slice(0, pid.indexOf('~')) : pid;
+    for (const e of list) if (fixture[eanKey(e)]) brickOf[head] ??= fixture[eanKey(e)];
+  }
+  // ancestor code → bricks under it (over the fixture's bricks — the demo stock)
+  const under = {};
+  for (const b of new Set(Object.values(fixture))) for (let c = parent(b); c; c = parent(c)) (under[c] ??= []).push(b);
+  return { gpc, no, parent, title, name, icon, pathOf, facetKeyOf, brickOf, under, segName };
+})();
+function enrichRow(r) {
+  const head = r.family || r.id;
+  const brick = r.brick || (r.family ? undefined : GPCX.brickOf[head]);
+  return brick
+    ? { ...r, brick, cat: GPCX.segName(brick), icon: GPCX.icon(brick), path: GPCX.pathOf(brick) }
+    : { ...r, cat: 'Ukategorisert', icon: 'package-search' };
+}
+function serveMeta(heads, rows) {
+  const bricks = {};
+  let uncat = 0;
+  for (const r of heads) r.brick ? bricks[r.brick] = (bricks[r.brick] || 0) + 1 : uncat++;
+  const nodes = {}, tree = [];
+  for (const [b, n] of Object.entries(bricks)) {
+    const chain = [GPCX.parent(GPCX.parent(GPCX.parent(b))), GPCX.parent(GPCX.parent(b)), GPCX.parent(b), b];
+    let kids = tree;
+    for (const c of chain) {
+      let node = nodes[c];
+      if (!node) { node = nodes[c] = { code: c, name: GPCX.name(c), ...(GPCX.no.names[c]?.icon ? { icon: GPCX.no.names[c].icon } : {}), n: 0, children: [] }; kids.push(node); }
+      node.n += n;
+      kids = node.children;
+    }
+  }
+  const tileN = (b) => String(b).split(',').flatMap(c => GPCX.under[c] || [c]).reduce((a, x) => a + (bricks[x] || 0), 0);
+  const depts = GPCX.no.depts.map(d => ({
+    id: d.id, name: d.name, icon: d.icon,
+    rules: d.tiles.map(t => {
+      const first = String(t.b).split(',')[0];
+      return { b: t.b, name: t.name ?? GPCX.no.names[first]?.name ?? GPCX.title(first), icon: t.icon ?? GPCX.no.names[first]?.icon ?? 'tag',
+        syn: t.syn ?? GPCX.no.names[first]?.syn ?? [], ...(GPCX.pathOf(first) ? { path: GPCX.pathOf(first) } : {}), n: tileN(t.b) };
+    }),
+  }));
+  const facetKeys = {};
+  for (const b of Object.keys(bricks)) { const k = GPCX.facetKeyOf(b); if (k) facetKeys[b] = k; }
+  for (const d of GPCX.no.depts) for (const t of d.tiles) { const k = GPCX.facetKeyOf(String(t.b).split(',')[0]); if (k) facetKeys[t.b] = k; }
+  return {
+    products: heads.length,
+    shops: new Set(rows.flatMap(r => r.offers.map(o => o.shop))).size,
+    freshest: null,
+    bricks, uncat, tree, depts, facetKeys,
+    facets: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'facets.json'), 'utf8')),
+    shopStats: rows.flatMap(r => r.offers.map(o => o.shop)).reduce((m, sh) => ((m[sh] = { offers: (m[sh]?.offers || 0) + 1, updated: Date.now() - 3600e3 }), m), {}),
+    shipping: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'shipping.json'), 'utf8')),
+  };
+}
+
 function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts = [], storage, hideAutobuy = false, fcounts, reviews = [], catalogLag = 0 } = {}) {
   const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
   const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), {
@@ -43,24 +114,32 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
     const body = opts.body ? JSON.parse(opts.body) : undefined;
     win.api.push({ call: (opts.method || 'GET') + ' ' + u, body });
     if (u.startsWith('/api/products')) {
-      // emulate the Worker's query route over the seed rows (same shapes);
-      // a {meta, products} fixture serves its own meta verbatim
+      // emulate the gpc-strict Worker over the seed rows: bricks come from the
+      // stub fixture (the same resolution the real drain does), display
+      // cat/icon/path derive from the brick, meta serves the new shape
+      // (bricks/uncat/tree/depts/facetKeys). A {meta, products} fixture
+      // serves its own meta verbatim.
       const raw = catalog || CATALOG_JSON;
-      const rows = Array.isArray(raw) ? raw : raw.products;
+      const rows = (Array.isArray(raw) ? raw : raw.products).map(enrichRow);
       const heads = rows.filter(r => !r.family);
       const p = new URLSearchParams(u.split('?')[1] || '');
       let out;
       if (p.get('ids') != null) {
         const want = new Set(p.get('ids').split(',').filter(Boolean).map(id => id.includes('~') ? id.slice(0, id.indexOf('~')) : id));
         out = rows.filter(r => want.has(r.id) || want.has(r.family));
-        for (const c of new Set(out.filter(r => want.has(r.id)).map(r => r.cat))) {
-          out = out.concat(heads.filter(h => h.cat === c && !out.includes(h)).slice(0, 4)); // same-cat neighbors
+        for (const b of new Set(out.filter(r => want.has(r.id)).map(r => r.brick).filter(Boolean))) {
+          out = out.concat(heads.filter(h => h.brick === b && !out.includes(h)).slice(0, 4)); // same-brick neighbors
         }
       } else if (p.get('q') != null) {
         const toks = p.get('q').toLowerCase().split(/\s+/).filter(t => t.length >= 2);
         out = toks.length ? heads.filter(r => toks.some(t => `${r.name} ${r.brand} ${r.cat} ${r.kw || ''}`.toLowerCase().includes(t))) : [];
-      } else if (p.get('cat') != null) {
-        out = heads.filter(r => r.cat === p.get('cat'));
+      } else if (p.get('node') != null) {
+        const node = p.get('node');
+        if (node === 'uncat') out = heads.filter(r => !r.brick);
+        else {
+          const set = new Set(String(node).split(',').flatMap(c => GPCX.under[c] || [c]));
+          out = heads.filter(r => r.brick && set.has(r.brick));
+        }
       } else if (p.get('top') === 'drop') {
         const dr = r => r.was ? 1 - Math.min(...r.offers.map(o => o.price)) / r.was : -1;
         const sorted = [...heads].sort((a, b) => dr(b) - dr(a));
@@ -68,37 +147,20 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         out = sorted.slice(0, lim);
         if (p.get('perCat') === '1') {
           const per = {};
-          for (const r of sorted) if ((per[r.cat] = (per[r.cat] || 0) + 1) <= lim && !out.includes(r)) out.push(r);
+          for (const r of sorted) if (r.brick && (per[r.brick] = (per[r.brick] || 0) + 1) <= lim && !out.includes(r)) out.push(r);
         }
       } else {
         out = heads;
       }
-      const meta = (!Array.isArray(raw) && raw.meta) || {
-        products: heads.length,
-        shops: new Set(rows.flatMap(r => r.offers.map(o => o.shop))).size,
-        freshest: null,
-        cats: heads.reduce((m, r) => ((m[r.cat] = (m[r.cat] || 0) + 1), m), {}),
-        // the real worker always serves the facet registry (catMeta)
-        facets: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'facets.json'), 'utf8')),
-        // ...and the GPC department registry (boot swaps the demo layer)
-        depts: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'depts.json'), 'utf8')),
-        // ...and the per-cat sub-category counts (Browse type chips)
-        types: heads.reduce((m, r) => { const t = r.facets?.type; if (t) ((m[r.cat] ??= {})[t] = (m[r.cat][t] || 0) + 1); return m; }, {}),
-        // ...and per-shop objective stats (reviews layer: ShopPage fallback)
-        shopStats: rows.flatMap(r => r.offers.map(o => o.shop)).reduce((m, s) => ((m[s] = { offers: (m[s]?.offers || 0) + 1, updated: Date.now() - 3600e3 }), m), {}),
-        // ...and the shipping registry (basket optimizer's threshold-aware totals)
-        shipping: JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'shipping.json'), 'utf8')),
-      };
-      // list branches carry the query's own total (worker: meta.total)
-      // list branches carry the query's own total and, with a cat, the
-      // category-wide facet histogram as [value, count] pairs (worker: catMeta
-      // + listIds). `fcounts` is injectable so a test can serve a value no
-      // loaded row has — the whole point of counting server-side.
+      const meta = (!Array.isArray(raw) && raw.meta) || serveMeta(heads, rows);
       // catalogLag: resolve a macrotask late, so tiny responses (reviews)
       // land first — the real network order on a cold PDP load
       const send = d => catalogLag ? new Promise(r => setTimeout(r, catalogLag)).then(() => ok(d)) : ok(d);
       if (p.get('ids') || p.get('q') || p.get('top')) return send({ meta, products: out });
-      return send({ meta: { ...meta, total: out.length, ...(p.get('cat') && fcounts ? { fcounts } : {}) }, products: out });
+      // list branches carry the query's own total and, with a node, the
+      // scope's facet histogram as [value, count] pairs; `fcounts` is
+      // injectable so a test can serve a value no loaded row has
+      return send({ meta: { ...meta, total: out.length, ...(p.get('node') && fcounts ? { fcounts } : {}) }, products: out });
     }
     if (u.startsWith('/api/reviews')) {
       // served-review rows (worker reviewsFor shape); `reviews` boot option
@@ -478,8 +540,8 @@ test('PDP: Report a problem posts the report through the /api/report bridge', as
 test('PDP: similar products picks from the chained cat slice on a cold deep-link', async () => {
   const win = boot('http://pricy.test/product/xm5', { session: true });
   assert.ok(await until(() => q(win, '.simsec')), 'similar section missing');
-  assert.ok(win.api.some(a => a.call.startsWith('GET /api/products?') && /cat=Audio/.test(a.call)),
-    'PDP must chain-fetch its cat slice for the pickSimilar pool');
+  assert.ok(win.api.some(a => a.call.startsWith('GET /api/products?') && /node=10001181/.test(a.call)),
+    'PDP must chain-fetch its brick slice for the pickSimilar pool');
   const cards = qa(win, '.simcard');
   assert.ok(cards.length >= 1 && cards.length <= 2, 'expected one or two sim cards');
   // the picks must not repeat in the "More in" grid below
@@ -645,26 +707,27 @@ test('signed in: suggestions come from the served catalog, not the demo 8', asyn
   type(win, input, fresh.name);
   assert.ok(await until(() => qa(win, '.suggest__item').some(el => el.textContent.includes(fresh.name))),
     'served-catalog product missing from suggestions: ' + fresh.name);
-  // category suggestion: departments (served registry) with real counts, pick = dept scope
-  type(win, input, 'audio');
-  const audioCount = cat.filter(p => p.cat === 'Audio' && !p.family).length; // heads only — children stay out of CAT_OF
+  // category suggestion: departments (served overlay) with real counts, pick = dept scope
+  type(win, input, 'lyd');
+  // the dept count is the stocked-brick histogram under its tiles (heads only)
+  const audioCount = cat.filter(p => !p.family && GPCX.brickOf[p.id] === '10001181').length;
   const audioItem = await until(() =>
-    qa(win, '.suggest__item').find(el => /Audio & Headphones/.test(el.textContent) && el.textContent.includes(audioCount + ' products')));
-  assert.ok(audioItem, 'Audio department must show the real catalog count, not the demo string');
+    qa(win, '.suggest__item').find(el => /Lyd og hodetelefoner/.test(el.textContent) && el.textContent.includes(audioCount + ' products')));
+  assert.ok(audioItem, 'the audio department must show the real stocked count, not the demo string');
   audioItem.click();
   assert.ok(await until(() => win.location.pathname + win.location.search === '/search?dept=audio'),
     'department pick should open the department scope, not run a text query');
 });
 
 test('signed in: results rows open the product page', async () => {
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results rows missing');
   qa(win, '.rrow, .rcard')[0].click();
   assert.ok(await until(() => win.location.pathname.startsWith('/product/')), 'row click should open product');
 });
 
 test('results view switcher: compact rows render and the choice persists', async () => {
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow').length > 0), 'details rows missing (default view)');
   const compact = await until(() => qa(win, '.viewbar button').find(b => /compact/i.test(b.getAttribute('aria-label') || '')));
   assert.ok(compact, 'view switcher missing');
@@ -717,15 +780,13 @@ test('honest metrics: {meta, products} body renders the served aggregates', asyn
 
 test('rendered catalog comes from /api/products slices, not the baked constants', async () => {
   const served = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'))
-    .filter(p => p.cat !== 'Gaming') // dropped category must vanish from CAT_OF
-    .map(p => p.cat === 'Audio' ? { ...p, name: 'Fetched ' + p.name } : p);
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true, catalog: served });
+    .filter(p => !['lego', 'lego-roses'].includes(p.id)) // dropped rows must vanish from the pools
+    .map(p => GPCX.brickOf[p.family || p.id] === '10001181' ? { ...p, name: 'Fetched ' + p.name } : p);
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true, catalog: served });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const names = qa(win, '.rrow, .rcard').map(el => el.textContent);
   assert.ok(names.length && names.every(t => t.includes('Fetched ')), 'results must show the fetched names, got: ' + names[0]);
-  const cats = qa(win, '.catlink').map(el => el.textContent);
-  assert.ok(cats.length > 0, 'category filter list did not render');
-  assert.ok(!cats.some(t => t.includes('Gaming')), 'CAT_OF still lists the dropped Gaming category');
+  assert.ok(!win.CATALOG.some(p => p.id === 'lego'), 'dropped rows must not ride in from the baked constants');
 });
 
 // ---------- lazy catalog (query-based, no eager full load) ----------
@@ -771,9 +832,9 @@ test('lazy catalog: session ids (watches + recents + purchases) land in ONE ids=
 // serialisation and worker/index.js's listFilters() drift apart, the screen
 // silently gets an unfiltered page back.
 test('lazy catalog: onQuery puts Results’ sort and filters on the query string', async () => {
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
-  assert.ok(win.api.some(c => /\?cat=Audio&dir=asc&limit=400&offset=0&sort=best$/.test(c.call)),
+  assert.ok(win.api.some(c => /\?dir=asc&limit=400&node=10001181&offset=0&sort=best$/.test(c.call)),
     'the route prefetch must ask for the screen’s own default sort, got: ' + win.api.map(c => c.call).join(' | '));
 
   // the rail's free-text refine must travel too — client-side it would only
@@ -797,11 +858,11 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   type(win, box, '');
 
   const res = await win.onQuery({
-    cat: 'Audio', sort: 'best', dir: 'desc', page: 2,
+    brick: '10001181', sort: 'best', dir: 'desc', page: 2,
     filters: { q: 'buds', brands: ['Sony', 'Bose'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },
   });
   const call = win.api[win.api.length - 1].call;
-  for (const part of ['cat=Audio', 'sort=best', 'dir=desc', 'offset=800', 'limit=400', 'brand=Bose%2CSony', 'name=buds',
+  for (const part of ['node=10001181', 'sort=best', 'dir=desc', 'offset=800', 'limit=400', 'brand=Bose%2CSony', 'name=buds',
     'min=100', 'max=900', 'dom=2', 'sale=1', 'instock=1', 'facets=' + encodeURIComponent('{"nc":true,"size":[55,65]}')]) {
     assert.ok(call.includes(part), `onQuery must send ${part}, got: ${call}`);
   }
@@ -809,7 +870,7 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
 
   // availability (PROMPT 01): upstream's f.avail keys map onto the shipping
   // query params — 'fast' is the fixed ≤2-days def, 'instock' shares instock=
-  await win.onQuery({ cat: 'Audio', sort: 'total', filters: { avail: ['freeship', 'fast', 'instock'], brands: [], facets: {} } });
+  await win.onQuery({ brick: '10001181', sort: 'total', filters: { avail: ['freeship', 'fast', 'instock'], brands: [], facets: {} } });
   const avail = win.api[win.api.length - 1].call;
   for (const part of ['sort=total', 'freeship=1', 'maxeta=2', 'instock=1']) {
     assert.ok(avail.includes(part), `onQuery must send ${part} for f.avail, got: ${avail}`);
@@ -819,12 +880,12 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   // URL, not by log length: Results runs its own debounced onQuery on mount
   const hits = () => win.api.filter(c => c.call.includes('brand=Bose%2CSony')).length;
   const before = hits();
-  await win.onQuery({ cat: 'Audio', sort: 'best', dir: 'desc', page: 2, filters: { q: 'buds', brands: ['Bose', 'Sony'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
+  await win.onQuery({ brick: '10001181', sort: 'best', dir: 'desc', page: 2, filters: { q: 'buds', brands: ['Bose', 'Sony'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
   assert.strictEqual(hits(), before, 'a re-ordered but identical selection must not refetch');
 });
 
 test('lazy catalog: a PDP visit merges into the cache without evicting earlier slices', async () => {
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const audioCount = win.CATALOG.length;
   // navigate to a product outside Audio — its slice must merge, not replace
@@ -832,66 +893,67 @@ test('lazy catalog: a PDP visit merges into the cache without evicting earlier s
   win.dispatchEvent(new win.PopStateEvent('popstate'));
   assert.ok(await until(() => qa(win, '.orow').length > 0), 'PDP did not render');
   assert.ok(win.CATALOG.some(p => p.id === 'lego'), 'PDP product must be in the cache');
-  assert.ok(win.CATALOG.length > audioCount, 'earlier Audio slice must survive the merge');
-  assert.ok(win.CATALOG.filter(p => p.cat === 'Audio').length === audioCount, 'no Audio rows lost');
+  assert.ok(win.CATALOG.length > audioCount, 'earlier headphone slice must survive the merge');
+  assert.ok(win.CATALOG.filter(p => p.brick === '10001181' || p.family).length >= audioCount - 1, 'no headphone rows lost');
   // the merge upserts through an id index now — a stale one re-pushes rows it
   // should have found, which shows up here and nowhere else
   assert.strictEqual(new Set(win.CATALOG.map(p => p.id)).size, win.CATALOG.length,
     'every merged slice must upsert, never duplicate');
 });
 
-test('lazy catalog: browse shows FULL category counts (meta.cats) off its small drops slice', async () => {
+test('lazy catalog: browse shows FULL histogram counts (meta.bricks) off its small drops slice', async () => {
   const win = boot('http://pricy.test/browse', { session: true });
   assert.ok(await until(() => qa(win, '.dcard').length > 0), 'department cards did not render');
   assert.ok(win.api.some(c => /GET \/api\/products\?limit=4&perCat=1&top=drop/.test(c.call)),
-    'browse must prefetch the per-cat drops slice, got: ' + win.api.map(c => c.call).join(' | '));
+    'browse must prefetch the per-brick drops slice, got: ' + win.api.map(c => c.call).join(' | '));
   assert.ok(!win.api.some(c => c.call === 'GET /api/products'), 'browse must not fetch all heads anymore');
   const heads = CATALOG_JSON.filter(p => !p.family);
-  const audio = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Audio & Headphones');
-  const audioTotal = heads.filter(p => p.cat === 'Audio').length;
+  const audio = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Lyd og hodetelefoner');
+  const audioTotal = heads.filter(p => GPCX.brickOf[p.id] === '10001181').length;
   assert.ok(audio.textContent.includes(`${audioTotal} products`),
-    `Audio card must show the full served count (${audioTotal}), not the cache size — got: ` + audio.textContent);
-  // every dept in the served registry renders, even though the cache holds
-  // only the drops slice — incl. non-electronics depts whose cats have no rows yet
-  const DEPTS_REG = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'depts.json'), 'utf8'));
-  assert.strictEqual(qa(win, '.dcard').length, DEPTS_REG.length,
-    'every served department must render even though the cache holds a slice');
-  // a multi-cat dept sums its backing cats' served counts
-  const kitchen = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Kitchen & Appliances');
-  const kTotal = heads.filter(p => p.cat === 'Kitchen' || p.cat === 'Appliances').length;
-  assert.ok(kitchen.textContent.includes(`${kTotal} products`),
-    `Kitchen & Appliances must sum its backing cats (${kTotal}) — got: ` + kitchen.textContent);
+    `audio card must show the full served count (${audioTotal}), not the cache size — got: ` + audio.textContent);
+  // every overlay dept renders — plus the synthetic Ukategorisert dept — even
+  // though the cache holds only the drops slice
+  const NO_REG = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'gpcno.json'), 'utf8'));
+  assert.strictEqual(qa(win, '.dcard').length, NO_REG.depts.length + 1,
+    'every overlay department + Ukategorisert must render even though the cache holds a slice');
+  const uncard = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Ukategorisert');
+  assert.ok(uncard, 'the honest bucket is a real browse surface');
+  const uncatTotal = heads.filter(p => !GPCX.brickOf[p.id]).length;
+  assert.ok(uncard.textContent.includes(`${uncatTotal} products`), `Ukategorisert must count the brickless heads (${uncatTotal}) — got: ` + uncard.textContent);
   assert.ok(win.CATALOG.length < heads.length, 'the cache must hold only the drops slice');
 });
 
-test('dynamic categories: a served dept registry the prototype does not know renders, its cats join CATEGORIES', async () => {
-  const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8')).filter(p => !p.family);
-  const cats = products.reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), { Wearables: 5 });
-  const depts = [{ id: 'wear', name: 'Wearables', icon: 'watch', rules: [{ b: '10009999', name: 'Smart Watches', icon: 'watch', cat: 'Wearables', syn: ['smartklokke'], path: 'Communications › Communication Devices › Mobile Devices' }] }];
-  const meta = { products: products.length + 5, shops: 3, freshest: Date.now(), cats, icons: { Wearables: 'watch' }, depts };
+test('dynamic categories: served tree segments join CATEGORIES; the overlay depts replace the demo layer', async () => {
+  const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8')).filter(p => !p.family).map(enrichRow);
+  const meta = serveMeta(products, products);
   const win = boot('http://pricy.test/browse', { session: true, catalog: { meta, products } });
   assert.ok(await until(() => qa(win, '.dcard').length > 0), 'department cards did not render');
-  assert.ok(win.CATEGORIES.includes('Wearables'), 'served cat must join CATEGORIES in place');
-  assert.strictEqual(win.CAT_ICONS.Wearables, 'watch', 'served icon must land in CAT_ICONS');
-  assert.strictEqual(win.DEPTS.length, 1, 'served registry must replace the demo departments wholesale');
-  const card = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Wearables');
-  assert.ok(card, 'Wearables department card must render on browse');
-  assert.ok(card.textContent.includes('5 products'), 'card must show the served count, got: ' + card.textContent);
+  // segments of the stocked tree become the display categories, wholesale
+  const segNames = meta.tree.map(t => t.name);
+  assert.ok(segNames.every(n => win.CATEGORIES.includes(n)), 'every stocked segment must join CATEGORIES');
+  assert.ok(win.CATEGORIES.includes('Ukategorisert'), 'the honest bucket is a category too');
+  assert.ok(!win.CATEGORIES.includes('Audio'), 'the demo cat names are gone');
+  assert.strictEqual(win.CAT_ICONS['Mobil og kommunikasjon'], 'smartphone', 'overlay icons land in CAT_ICONS');
+  assert.strictEqual(win.DEPTS.length, meta.depts.length + 1, 'served overlay + Ukategorisert replace the demo departments wholesale');
+  const card = qa(win, '.dcard').find(el => el.querySelector('h3')?.textContent === 'Mobil og tilbehør');
+  assert.ok(card, 'overlay department card must render on browse');
 });
 
 // PDP breadcrumb over the served registry: boot's productPaths override —
 // demo PRODMAP is emptied, so paths must derive from meta.depts, slices only
 // when the row's own facet value confirms the pin
-test('PDP breadcrumb: dept › matching slice canonical, only verified paths in Also in', async () => {
+test('PDP breadcrumb: dept › the tile covering the product\'s own brick', async () => {
   const win = boot('http://pricy.test/product/xm5', { session: true });
   assert.ok(await until(() => q(win, '.pdp__crumb')), 'PDP did not render');
   const links = [...q(win, '.pdp__crumb').querySelectorAll('a')].map(a => a.textContent);
-  assert.deepStrictEqual(links.slice(0, 3), ['Home', 'Audio & Headphones', 'Headphones'],
-    'canonical path must be dept › the slice xm5 verifiably matches, got: ' + links.join(' › '));
+  assert.deepStrictEqual(links.slice(0, 3), ['Home', 'Lyd og hodetelefoner', 'Hodetelefoner'],
+    'canonical path is the dept › tile covering xm5\'s brick, got: ' + links.join(' › '));
+  // exactly one tile covers the headphones brick: the strip carries only the
+  // GPC chip, never an "Also in" claim to a scope the brick does not sit under
   const also = q(win, '.pdp__crumb-also');
-  assert.ok(also, 'Also-in strip must render');
-  assert.deepStrictEqual([...also.querySelectorAll('a')].map(a => a.textContent), ['Audio & Headphones', 'Audio'],
-    'only the whole-cat brick may list under Also in — non-matching slices (Earbuds, Speakers…) must not');
+  assert.ok(also && also.querySelector('.gpcinfo'), 'the GPC chip rides the crumb strip');
+  assert.ok(!/Also in/.test(also.textContent), 'no Also-in claims when a single tile covers the brick');
 });
 
 // FILTERS-PLAN: data-driven per-category facet filters on Results
@@ -900,12 +962,12 @@ const h4Title = h => h.querySelector('span')?.textContent ?? h.textContent;
 const facetGrp = (win, title) => qa(win, '.filters__grp').find(g => { const h = g.querySelector('h4'); return h && h4Title(h) === title; });
 
 test('facet filters: TV renders spec-derived option groups, clicking filters rows, NC gone outside Audio', async () => {
-  const win = boot('http://pricy.test/search?cat=TV', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001400', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const size = facetGrp(win, 'Screen size');
   assert.ok(size, 'Screen size facet group must render for cat=TV');
   const opts = [...size.querySelectorAll('.check')].map(el => el.textContent);
-  assert.ok(opts[0].startsWith('48″') && opts[1].startsWith('55″'), 'options must be parsed+unit labels, numeric ascending, got: ' + opts.join(' | '));
+  assert.ok(opts[0].startsWith('55″') && opts[1].startsWith('65″'), 'options must be parsed+unit labels, numeric ascending, got: ' + opts.join(' | '));
   assert.ok(facetGrp(win, 'Panel'), 'Panel facet group must render');
   assert.ok(!qa(win, '.check, .fpill').some(el => el.textContent.includes('Noise cancelling')), 'hardcoded NC filter must be gone outside Audio');
 
@@ -923,7 +985,7 @@ test('facet filters: TV renders spec-derived option groups, clicking filters row
 // It now prefers the served histogram — the seam where the worker's
 // [value, count] pairs meet the screen.
 test('facet filters: the rail offers category-wide values the loaded rows do not have', async () => {
-  const win = boot('http://pricy.test/search?cat=TV', {
+  const win = boot('http://pricy.test/search?brick=10001400', {
     session: true,
     fcounts: { size: [[55, 3], [65, 9], [98, 42]] }, // 98″ is in no loaded row
   });
@@ -940,139 +1002,134 @@ test('sub-categories: dept cards chip their rules, a sub-tile lands on the brick
   const win = boot('http://pricy.test/browse', { session: true });
   assert.ok(await until(() => qa(win, '.dcard').length > 0), 'department cards did not render');
   // a non-electronics dept is reachable with its registry sub-categories
-  const sport = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Sport & Outdoor');
-  assert.ok(sport, 'Sport & Outdoor card must render');
+  const sport = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Sport og friluft');
+  assert.ok(sport, 'Sport og friluft card must render');
   assert.deepStrictEqual([...sport.querySelectorAll('.mchip')].map(el => el.textContent),
-    ['Sports & Training', 'Strength training', 'Ski & snow', 'Sportswear', '+5'], 'card chips are the dept rules (sliced sub-categories included)');
+    ['Sport og trening', 'Styrketrening', 'Ski og snø', 'Treningsklær', '+3'], 'card chips are the overlay tiles');
 
-  // open card expands the sub-category panel; a sub-tile navigates to the brick
+  // open card expands the sub-category panel; a sub-tile navigates to its node
   const gaming = qa(win, '.dcard').find(t => t.querySelector('h3')?.textContent === 'Gaming');
   gaming.click();
   assert.ok(await until(() => q(win, '.dxp')), 'expand panel must open');
-  qa(win, '.subtile').find(el => el.textContent.includes('Gaming')).click();
-  assert.ok(await until(() => win.location.pathname + win.location.search === '/search?brick=10001139'),
-    'sub-tile must land on the brick scope URL');
-  // the brick page shows the backing category through the served bridge
-  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
+  qa(win, '.subtile').find(el => el.textContent.includes('Spillkonsoller')).click();
+  assert.ok(await until(() => win.location.pathname === '/search' && win.location.search.includes('brick=65011000')),
+    'sub-tile must land on its node URL (a class-level GPC code here), got: ' + win.location.search);
+  // the node page pools by the products' own bricks (both console bricks)
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'node results did not render');
 });
 
-test('GPC departments: brick deep-link renders backing cat, dept rail + GPC trail; Norwegian synonyms suggest', async () => {
-  const win = boot('http://pricy.test/search?brick=10001448', { session: true });
+test('GPC: brick deep-link renders its own rows, dept rail + GPC trail; Norwegian synonyms suggest', async () => {
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
-  assert.ok(win.CATALOG.some(p => p.cat === 'Audio'), 'the backing Audio slice must be prefetched');
+  assert.ok(win.CATALOG.some(p => p.brick === '10001181'), 'the brick slice must be prefetched');
   // rail: the owning department heads the Category group; the GPC chip beside
-  // the title shows the served classification path
-  assert.ok(await until(() => qa(win, '.catlink--hd').some(el => el.textContent.includes('Audio & Headphones'))),
+  // the title shows the real classification trail
+  assert.ok(await until(() => qa(win, '.catlink--hd').some(el => el.textContent.includes('Lyd og hodetelefoner'))),
     'owner dept must head the category rail');
   const trail = q(win, '.gpcinfo');
-  assert.ok(trail && trail.textContent.includes('#10001448') && trail.textContent.includes('Home Audio Equipment'),
-    'GPC trail must render the served classification path, got: ' + (trail && trail.textContent));
+  assert.ok(trail && trail.textContent.includes('#10001181') && trail.textContent.includes('Communication Accessories'),
+    'GPC trail must render the real classification path, got: ' + (trail && trail.textContent));
 
-  // dept deep-link renders too (prefetches its biggest backing cats)
+  // dept deep-link renders too (prefetches its biggest tiles)
   const win2 = boot('http://pricy.test/search?dept=computing', { session: true });
   assert.ok(await until(() => qa(win2, '.rrow, .rcard').length > 0), 'dept results did not render');
 
-  // header suggest matches the registry's Norwegian synonyms — a sliced
-  // sub-category rule (Headphones) is a first-class suggestion now
+  // header suggest matches the overlay's Norwegian synonyms
   const input = q(win2, '.app-hdr__search input');
   input.focus();
   type(win2, input, 'hodetelefoner');
-  const item = await until(() => qa(win2, '.suggest__item').find(el => el.textContent.includes('Headphones')));
-  assert.ok(item, 'Norwegian synonym must surface the sliced brick suggestion');
+  const item = await until(() => qa(win2, '.suggest__item').find(el => el.textContent.includes('Hodetelefoner')));
+  assert.ok(item, 'Norwegian synonym must surface the brick suggestion');
   item.click();
   assert.ok(await until(() => win2.location.pathname + win2.location.search === '/search?brick=10001181'),
     'brick pick must open the brick scope');
 });
 
-test('GPC scopes are served: onQuery translates brick/dept to the backing cat query', async () => {
-  const win = boot('http://pricy.test/search?brick=10001448', { session: true });
+test('GPC scopes are served natively: brick rides node= verbatim; multi-tile depts stay client-side', async () => {
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'brick results did not render');
-  const audioCount = CATALOG_JSON.filter(p => !p.family && p.cat === 'Audio').length;
+  const hpCount = CATALOG_JSON.filter(p => !p.family && GPCX.brickOf[p.id] === '10001181').length;
   const f = { q: '', brands: [], min: '', max: '', dom: 0, sale: false, instock: false, facets: {} };
-  // a brick query rides its backing cat — total is the category-wide count,
-  // not the page length, and brick/dept never leak onto the query string
-  const r = await win.onQuery({ brick: '10001448', sort: 'best', dir: 'asc', filters: f, page: 0 });
-  assert.strictEqual(r.total, audioCount, 'brick scope must serve the backing category total');
-  assert.ok(win.api.some(c => c.call === 'GET /api/products?cat=Audio&dir=asc&limit=400&offset=0&sort=best'),
-    'brick query must translate to a plain cat= list query, got: ' + win.api.map(c => c.call).join(' | '));
-  // a single-cat dept serves the same way; a multi-cat dept resolves null
-  // (upstream contract: the screen keeps client-side sort/filter)
-  const rd = await win.onQuery({ dept: 'audio', sort: 'best', dir: 'asc', filters: f, page: 0 });
-  assert.strictEqual(rd && rd.total, audioCount, 'single-cat dept scope must be served');
+  const r = await win.onQuery({ brick: '10001181', sort: 'best', dir: 'asc', filters: f, page: 0 });
+  assert.strictEqual(r.total, hpCount, 'brick scope must serve the brick total');
+  assert.ok(win.api.some(c => c.call === 'GET /api/products?dir=asc&limit=400&node=10001181&offset=0&sort=best'),
+    'brick query must ride node= verbatim, got: ' + win.api.map(c => c.call).join(' | '));
+  // a single-tile dept collapses to its tile's node; a multi-tile dept
+  // resolves null (upstream contract: the screen keeps client-side sort/filter)
+  const rb = await win.onQuery({ dept: 'books', sort: 'best', dir: 'asc', filters: f, page: 0 });
+  assert.strictEqual(typeof (rb && rb.total), 'number', 'single-tile dept scope must be served');
   const rm = await win.onQuery({ dept: 'computing', sort: 'best', dir: 'asc', filters: f, page: 0 });
-  assert.strictEqual(rm, null, 'multi-cat dept scope must resolve null and stay client-side');
+  assert.strictEqual(rm, null, 'multi-tile dept scope must resolve null and stay client-side');
+  // the honest bucket is a scope too
+  const ru = await win.onQuery({ brick: 'uncat', sort: 'best', dir: 'asc', filters: f, page: 0 });
+  assert.strictEqual(ru.total, CATALOG_JSON.filter(p => !p.family && !GPCX.brickOf[p.id]).length, 'uncat rides as node=uncat');
 });
 
-test('GPC sliced sub-category: the registry pin rides nav state as a real filter selection', async () => {
-  // Consoles = the Gaming cat sliced by facets.type — the pin must reach
-  // history.state.params.facets (Results seeds f from it), so the client pool
-  // filters to consoles, the rail shows Type checked, and the prefetch query
-  // carries facets= server-side. No GPC-specific query path anywhere.
-  const win = boot('http://pricy.test/search?brick=10003817', { session: true });
-  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'sliced brick results did not render');
-  const want = CATALOG_JSON.filter(p => !p.family && p.cat === 'Gaming' && p.facets?.type === 'Consoles').length;
-  assert.ok(want >= 2 && want < CATALOG_JSON.filter(p => !p.family && p.cat === 'Gaming').length, 'seed sanity: consoles are a strict subset of Gaming');
+test('GPC class node: the page pools exactly the bricks under the class — no pins, no guesses', async () => {
+  // Spillkonsoller = class 65011000; its rows are whatever products RESOLVED
+  // to the console bricks (both portable and non-portable) — nothing else
+  const win = boot('http://pricy.test/search?brick=65011000', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'class node results did not render');
+  const want = CATALOG_JSON.filter(p => !p.family && ['10003817', '10003818'].includes(GPCX.brickOf[p.id])).length;
+  assert.ok(want >= 2, 'seed sanity: consoles resolved to real bricks');
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want),
-    'the pool must respect the pin — consoles only, not the whole backing cat (got ' + qa(win, '.rrow, .rcard').length + ', want ' + want + ')');
-  const type = facetGrp(win, 'Type');
-  assert.ok(type && [...type.querySelectorAll('.check')].some(el => el.textContent.startsWith('Consoles') && el.classList.contains('is-on')),
-    'the pinned Type value must render checked in the rail');
-  assert.ok(win.api.some(c => c.call.startsWith('GET /api/products?cat=Gaming') && c.call.includes('facets=' + encodeURIComponent(JSON.stringify({ type: ['Consoles'] })))),
-    'the prefetched slice query must carry the pin server-side, got: ' + win.api.map(c => c.call).join(' | '));
+    'the pool must be the bricks under the class (got ' + qa(win, '.rrow, .rcard').length + ', want ' + want + ')');
+  assert.ok(win.api.some(c => c.call.includes('node=65011000')), 'the prefetch queries the class node server-side');
 });
 
-test('sub-categories: the Type facet groups a category under one curated vocabulary', async () => {
-  const win = boot('http://pricy.test/search?cat=Gaming', { session: true });
+test('sub-categories: the Type facet groups a node under one curated vocabulary', async () => {
+  const win = boot('http://pricy.test/search?brick=65011000', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const grp = facetGrp(win, 'Type');
-  assert.ok(grp, 'Type facet group must render for cat=Gaming');
+  assert.ok(grp, 'Type facet group must render (the class routes to the Gaming ruleset)');
   const opts = [...grp.querySelectorAll('.check')].map(el => el.textContent);
-  assert.ok(opts.some(o => o.startsWith('Consoles')) && opts.some(o => o.startsWith('Controllers')), 'curated sub-cats must surface, got: ' + opts.join(' | '));
+  assert.ok(opts.some(o => o.startsWith('Consoles')) && opts.some(o => o.startsWith('Handhelds')), 'curated sub-cats must surface, got: ' + opts.join(' | '));
   assert.ok(!opts.some(o => o.includes('console')), 'demo spec strings (Home console…) must not leak in beside the curated values: ' + opts.join(' | '));
-  const want = win.CATALOG.filter(p => p.cat === 'Gaming' && p.facets?.type === 'Controllers').length;
-  assert.ok(want >= 2, 'seed sanity: at least two controller rows');
-  [...grp.querySelectorAll('.check')].find(el => el.textContent.startsWith('Controllers')).click();
-  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want), 'Controllers must filter to exactly the controller rows');
+  const pool = win.CATALOG.filter(p => !p.family && ['10003817', '10003818'].includes(p.brick));
+  const want = pool.filter(p => p.facets?.type === 'Handhelds').length;
+  assert.ok(want >= 1, 'seed sanity: at least one handheld in the pool');
+  [...grp.querySelectorAll('.check')].find(el => el.textContent.startsWith('Handhelds')).click();
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length === want), 'Handhelds must filter to exactly the handheld rows');
 });
 
 test('facet filters: a variant-axis key (storage) derives options from the axes and matches any option', async () => {
-  // served registry (worker/facets.json shape): Phones get a storage facet —
-  // no product carries a storage spec/facet value, the variant axes supply it
-  const products = CATALOG_JSON.filter(p => !p.family && p.cat === 'Phones');
-  const meta = { products: products.length, shops: 3, freshest: Date.now(), cats: { Phones: products.length }, facets: { Phones: [{ key: 'storage', label: 'Storage', type: 'options', unit: 'GB' }] } };
-  const win = boot('http://pricy.test/search?cat=Phones', { session: true, catalog: { meta, products } });
+  // served registry (worker/facets.json shape): the Phones ruleset gets a
+  // storage facet — no product carries a storage spec/facet value, the
+  // variant axes supply it
+  const products = CATALOG_JSON.filter(p => !p.family && GPCX.brickOf[p.id] === '10001198').map(enrichRow);
+  const meta = { ...serveMeta(products, products), facets: { Phones: [{ key: 'storage', label: 'Storage', type: 'options', unit: 'GB' }] } };
+  const win = boot('http://pricy.test/search?brick=10001198', { session: true, catalog: { meta, products } });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const grp = facetGrp(win, 'Storage');
-  assert.ok(grp, 'Storage facet group must render for cat=Phones');
+  assert.ok(grp, 'Storage facet group must render for the phones brick');
   const opts = [...grp.querySelectorAll('.check')].map(el => el.textContent);
   assert.ok(opts.some(o => o.startsWith('128 GB')) && opts.some(o => o.startsWith('256 GB')), 'axis option ids must surface as numeric GB options, got: ' + opts.join(' | '));
-  // axis-derived 128s plus rows carrying an explicit storage facet array (a55)
   const kept = products.filter(p => (p.variants?.axes || []).some(a => a.id === 'storage' && a.options.some(o => o.id === '128')) || [].concat(p.facets?.storage || []).includes(128));
-  assert.ok(kept.length > 0 && kept.length < products.length, 'seed sanity: 128 GB must split the cat');
+  assert.ok(kept.length > 0 && kept.length < products.length, 'seed sanity: 128 GB must split the pool');
   [...grp.querySelectorAll('.check')].find(el => el.textContent.startsWith('128 GB')).click();
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length === kept.length), '128 GB must keep every phone whose storage axis offers 128, got ' + qa(win, '.rrow, .rcard').length + ' want ' + kept.length);
 });
 
-test('facet filters: served meta.facets replaces the baked registry; cats without defs get no groups', async () => {
-  const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8')).filter(p => !p.family);
-  const cats = products.reduce((m, p) => ((m[p.cat] = (m[p.cat] || 0) + 1), m), {});
-  const meta = { products: products.length, shops: 3, freshest: Date.now(), cats, facets: { TV: [{ key: 'panel', label: 'Panel tech', type: 'options' }] } };
-  const win = boot('http://pricy.test/search?cat=TV', { session: true, catalog: { meta, products } });
+test('facet filters: served meta.facets replaces the baked registry; nodes without a ruleset get no groups', async () => {
+  const products = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8')).filter(p => !p.family).map(enrichRow);
+  const meta = { ...serveMeta(products, products), facets: { TV: [{ key: 'panel', label: 'Panel tech', type: 'options' }] } };
+  const win = boot('http://pricy.test/search?brick=10001400', { session: true, catalog: { meta, products } });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   assert.ok(facetGrp(win, 'Panel tech'), 'served facet def must render');
   assert.ok(!facetGrp(win, 'Screen size'), 'baked TV defs must be replaced wholesale by the served registry');
-  assert.strictEqual(win.FACETS.Audio, undefined, 'baked cats absent from the served registry must be dropped');
+  assert.strictEqual(win.FACETS.Audio, undefined, 'baked rulesets absent from the served registry must be dropped');
 
-  // a cat absent from the SERVED registry gets no groups (every real cat
-  // declares facets since 2026-07-25, so the stub registry is the fixture)
-  const toys = boot('http://pricy.test/search?cat=Toys', { session: true, catalog: { meta, products } });
+  // a node whose ruleset is absent from the SERVED registry gets no facet
+  // groups (the toys segment routes to the Toys ruleset, which this stub
+  // registry does not declare)
+  const toys = boot('http://pricy.test/search?brick=86010000', { session: true, catalog: { meta, products } });
   assert.ok(await until(() => qa(toys, '.rrow, .rcard').length > 0), 'toys results did not render');
   const titles = qa(toys, '.filters__grp').map(g => { const h = g.querySelector('h4'); return h && h4Title(h); }).filter(Boolean);
-  assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Folkedommen', 'Show only', 'Availability'], 'no facet groups for a cat without defs (Availability is universal, not a facet), got: ' + titles.join(' | '));
+  assert.deepStrictEqual(titles, ['Category', 'Brand', 'Price (kr)', 'Folkedommen', 'Show only', 'Availability'], 'no facet groups for a node without served defs (Availability is universal, not a facet), got: ' + titles.join(' | '));
 });
 
 test('filter search: narrows groups, no-match message clears back', async () => {
-  const win = boot('http://pricy.test/search?cat=Gaming', { session: true });
+  const win = boot('http://pricy.test/search?brick=65011000', { session: true });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const grpTitles = () => qa(win, '.filters__grp h4').map(h4Title);
   const search = q(win, '.filters__search input');
@@ -1173,7 +1230,7 @@ test('result rows render the served Folkedommen aggregate with no review rows lo
     dom: { n: 42, c: { worth: [40, 1, 1], durable: [38, 2, 2], described: [41, 0, 1] },
       t: [['God lyd', 18, 1], ['Blir varm', 5, 0]] },
   });
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true, catalog: served });
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true, catalog: served });
   assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
   const rows = qa(win, '.rrow, .rcard');
   const xm5 = rows.find(el => el.textContent.includes('WH-1000XM5'));
@@ -1223,8 +1280,11 @@ test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise
 });
 
 test('PDP specs render from the served catalog, not the baked design table', async () => {
+  // served sheets are the self-describing groups form (what tools/fetch-specs
+  // emits) — the schema-bound flat form died with the legacy cat names, which
+  // is a known degradation until the upstream re-sync
   const served = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'))
-    .map(p => p.id !== 'xm5' ? p : { ...p, specs: { ...p.specs, fit: 'Served-fit' } });
+    .map(p => p.id !== 'xm5' ? p : { ...p, specs: { groups: [{ label: 'Sound', rows: [['Fit', 'Served-fit']] }] } });
   const win = boot('http://pricy.test/product/xm5', { session: true, catalog: served });
   assert.ok(await until(() => q(win, '#pdp-specs')), 'specs section missing on the PDP');
   const rows = qa(win, '#pdp-specs .srow').map(el => el.textContent);
@@ -1234,13 +1294,13 @@ test('PDP specs render from the served catalog, not the baked design table', asy
 test('PDP specs: groups-shaped served specs render for a cat with no SPEC_KINDS schema', async () => {
   const seed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'worker', 'seed.json'), 'utf8'));
   const served = seed.concat([{
-    id: 'ean-777', name: 'Acme Airfryer', brand: 'Acme', cat: 'Kitchen', icon: 'chef-hat', kw: '',
+    id: 'ean-777', name: 'Acme Airfryer', brand: 'Acme', brick: '10001981', kw: '',
     specs: { groups: [{ label: 'Cooking', rows: [['Capacity', '5.5 L'], ['Power', '1700 W'], ['Missing', null]] }] },
     offers: [], history: [],
   }]);
   const win = boot('http://pricy.test/product/ean-777', { session: true, catalog: served });
   assert.ok(await until(() => q(win, '#pdp-specs')), 'groups-shaped specs section missing on the PDP');
-  assert.match(q(win, '#pdp-specs .specs__note').textContent, /Kitchen/, 'kindLabel must fall back to the cat');
+  assert.match(q(win, '#pdp-specs .specs__note').textContent, /Hvitevarer og apparater/, 'kindLabel must fall back to the display cat (segment name)');
   const rows = qa(win, '#pdp-specs .srow').map(el => el.textContent);
   assert.ok(rows.some(t => t.includes('Capacity') && t.includes('5.5 L')), 'group rows must render label + value, got: ' + rows.join(' | '));
   assert.ok(rows.some(t => t.includes('Missing') && t.includes('—')), 'null values must render as —');
@@ -1388,7 +1448,7 @@ test('removing a watch PUTs the new list to /api/watches', async () => {
 });
 
 test('results row Watch price button adds a real watch (PUT /api/watches)', async () => {
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow__save').length > 0), 'row watch buttons missing');
   const btn = qa(win, '.rrow__save')[0];
   btn.click();
@@ -1489,7 +1549,7 @@ test('marketing email toggle in Privacy saves as a settings patch', async () => 
 // ---------- compare ----------
 
 test('compare: mark two results, tray appears, Compare opens the side-by-side page', async () => {
-  const win = boot('http://pricy.test/search?cat=Audio', { session: true });
+  const win = boot('http://pricy.test/search?brick=10001181', { session: true });
   assert.ok(await until(() => qa(win, '.rrow .cmpbtn, .rcard .cmpbtn').length >= 2), 'compare buttons missing on results');
   assert.ok(!q(win, '.ctray'), 'tray must be hidden with nothing marked');
   // re-query after each click — marking re-renders the rows, detaching old nodes
@@ -1516,12 +1576,13 @@ test('compare: mark two results, tray appears, Compare opens the side-by-side pa
 });
 
 test('compare: a product from another category is refused with a notice', async () => {
-  const win = boot('http://pricy.test/search?q=sony', { session: true }); // sony spans Audio/Gaming/TV
+  const win = boot('http://pricy.test/search?q=sony', { session: true }); // sony spans audio + gaming segments
   assert.ok(await until(() => qa(win, '.cmpbtn').length >= 2), 'compare buttons missing on results');
-  qa(win, '.cmpbtn')[0].click();
+  const btnIn = (name) => qa(win, '.rrow, .rcard').find(el => el.textContent.includes(name))?.querySelector('.cmpbtn');
+  btnIn('WH-1000XM5').click(); // Lyd og bilde
   assert.ok(await until(() => q(win, '.ctray')), 'tray did not appear');
-  qa(win, '.cmpbtn:not(.is-on)')[0].click();
-  assert.ok(await until(() => q(win, '.ctray__notice')), 'cross-category add should show the notice');
+  btnIn('PlayStation 5').click(); // Data og gaming
+  assert.ok(await until(() => q(win, '.ctray__notice')), 'cross-segment add should show the notice');
   assert.strictEqual(qa(win, '.ctray__item').length, 1, 'the mismatched product must not be added');
 });
 

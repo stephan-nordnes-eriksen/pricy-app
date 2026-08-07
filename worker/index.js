@@ -370,6 +370,11 @@ const kwOf = (...parts) => [...new Set(parts.join(' ').toLowerCase().match(/[\p{
 const gpcParent = (c) => GPC.bricks[c]?.[1] ?? GPC.classes[c]?.[1] ?? GPC.fams[c]?.[1];
 const gpcTitle = (c) => GPC.bricks[c]?.[0] ?? GPC.classes[c]?.[0] ?? GPC.fams[c]?.[0] ?? GPC.segs[c];
 const gpcName = (c) => NO.names[c]?.name ?? gpcTitle(c);
+// a row's display `cat` is its SEGMENT's display name — coarse on purpose:
+// it is what row badges, client cat pools (p.cat === cat), CATEGORIES and
+// compare grouping all key on, and the segment level is the one that stays
+// stable across the 5,318-brick tail. Fine labels live on brick pages.
+const gpcSegName = (brick) => { let c = brick, s = brick; while ((c = gpcParent(c))) s = c; return gpcName(s); };
 // display icon: the code's own overlay entry, else its nearest curated
 // ancestor's, else the generic tag
 const gpcIcon = (c) => { for (let x = c; x; x = gpcParent(x)) if (NO.names[x]?.icon) return NO.names[x].icon; return 'tag'; };
@@ -836,7 +841,7 @@ function shapeRows(prods, offs, pts, imgSet, shopPts) {
       // label/icon from the overlay (EN GPC title where uncurated), path the
       // Segment › Family › Class trail. No brick = the honest bucket.
       ...(m.brick
-        ? { cat: gpcName(m.brick), icon: gpcIcon(m.brick), path: gpcPath(m.brick) }
+        ? { cat: gpcSegName(m.brick), icon: gpcIcon(m.brick), path: gpcPath(m.brick) }
         : { cat: 'Ukategorisert', icon: 'package-search' }),
       ...(udom ? { dom: udom, reviews: udom.n } : {}),
       facets: derived ? { ...derived, ...m.facets } : m.facets,

@@ -469,6 +469,9 @@ function parseUrl(session) {
 // ponytail: session-lifetime cache, no TTL — add staleness when prices
 // moving mid-session matters.
 const FETCHED = new Map();
+// ancestor GPC code → stocked bricks under it (rebuilt per hydrate from
+// meta.tree; GPC codes are not prefix-hierarchical, so this IS the rollup)
+const BRICK_UNDER = {};
 function fetchProducts(params) {
   const qs = new URLSearchParams(Object.entries(params).sort()).toString();
   if (FETCHED.has(qs)) return FETCHED.get(qs);
@@ -488,7 +491,7 @@ function ensureRoute(name, params = {}) {
   // ascending) — the screen re-queries with its sort on mount, and a prefetch
   // of a different slice would just be a second 400-row fetch per visit
   else if (name === 'results' && (params.brick || params.dept)) return gpcRoute(params);
-  else if (name === 'results') wants.push(params.query ? { q: params.query } : listQuery({ cat: params.cat, sort: 'best', dir: 'asc' }));
+  else if (name === 'results') wants.push(params.query ? { q: params.query } : listQuery({ node: scopeNode(params), sort: 'best', dir: 'asc' }));
   // server adds family + same-cat neighbors; reviews ride the same prefetch.
   // pickSimilar/"More in" pool: the ids= fetch only carries ≤4 arbitrary
   // neighbors, so chain the cat slice (same FETCHED key as the results
@@ -496,8 +499,8 @@ function ensureRoute(name, params = {}) {
   // pays the extra roundtrip)
   else if (name === 'product') return Promise.all([
     fetchProducts({ ids: params.id }).then(() => {
-      const cat = prodById(params.id.split('~')[0])?.cat;
-      return cat ? fetchProducts(listQuery({ cat, sort: 'best', dir: 'asc' })) : null;
+      const brick = prodById(params.id.split('~')[0])?.brick;
+      return brick ? fetchProducts(listQuery({ node: brick, sort: 'best', dir: 'asc' })) : null;
     }).catch(() => {}),
     fetchReviews(params.id),
   ]);
@@ -513,62 +516,51 @@ function ensureRoute(name, params = {}) {
   else if (name === 'account') return fetchMyReviews();
   else if (name === 'compare') {
     const first = CompareStore.prods()[0];
-    if (first) wants.push({ cat: first.cat }); // CmpAdd candidates are same-category
+    if (first && first.brick) wants.push(listQuery({ node: first.brick })); // CmpAdd candidates are same-brick
   }
   return Promise.all(wants.map(w => fetchProducts(w).catch(() => {})));
 }
 
-// GPC scopes (brick/dept) prefetch their backing category slices. The
-// brick→cat mapping lives in the served registry (meta.depts, on every
-// /api/products response) — a cold deep-link resolves it off home's cheap
-// drops slice first. Never rejects, like ensureRoute's other wants.
-// ponytail: a dept prefetches only its 2 biggest backing cats (400-row
-// pages each); the rest hydrate as the shopper narrows.
+// GPC scopes (brick/dept) prefetch their own node slices (gpc-strict: the
+// scope IS the server query — no cat translation). A cold deep-link first
+// pulls home's cheap drops slice so meta.tree/depts hydrate the registry.
+// Never rejects, like ensureRoute's other wants.
+// ponytail: a dept prefetches only its 2 biggest tiles (400-row pages
+// each); the rest hydrate as the shopper narrows.
 async function gpcRoute(params) {
-  if (!CATALOG.meta?.depts) await fetchProducts({ top: 'drop', limit: 3 }).catch(() => {});
-  const counts = CATALOG.meta?.cats || {};
-  const rules = (CATALOG.meta?.depts || []).flatMap(d => params.dept ? (d.id === params.dept ? d.rules : []) : d.rules.filter(r => r.b === params.brick));
-  // a sliced brick prefetches its pinned slice — the same query the screen's
-  // mount onQuery sends (pin seeded via gpcParams), so it lands as a FETCHED hit
-  const pin = params.brick ? rules[0]?.facets : undefined;
-  const cats = [...new Set(rules.map(r => r.cat).filter(Boolean))].sort((a, b) => (counts[b] || 0) - (counts[a] || 0)).slice(0, 2);
-  await Promise.all(cats.map(c => fetchProducts(listQuery({ cat: c, sort: 'best', dir: 'asc', filters: pin ? { facets: pin } : {} })).catch(() => {})));
+  if (!CATALOG.meta?.tree) await fetchProducts({ top: 'drop', limit: 3 }).catch(() => {});
+  const nodes = params.brick ? [params.brick]
+    : ((window.DEPTS || []).find(d => d.id === params.dept)?.rules || [])
+      .slice().sort((a, b) => (b.n || 0) - (a.n || 0)).slice(0, 2).map(r => r.b);
+  await Promise.all(nodes.map(n => fetchProducts(listQuery({ node: n, sort: 'best', dir: 'asc' })).catch(() => {})));
 }
 
-// A sliced brick navigates with its registry pin as a real filter selection:
-// Results seeds f.facets from history.state.params.facets (the same seam
-// Browse's sub-chips use), so the pin filters the client pool, renders
-// checked in the rail, and rides onQuery to the server as ordinary facets —
-// no GPC-specific query path anywhere. Deep copy: Results must never share
-// object identity with the registry.
-function gpcParams(name, params) {
-  if (name !== 'results' || !params.brick || params.facets) return params;
-  const r = (CATALOG.meta?.depts || []).flatMap(d => d.rules).find(x => x.b === params.brick);
-  return r?.facets ? { ...params, facets: JSON.parse(JSON.stringify(r.facets)) } : params;
+// PDP breadcrumb paths (upstream productPaths, GpcData.jsx): the demo
+// version resolves via PRODMAP, which hydrateCatalog empties — derive from
+// the product's OWN brick instead: every dept tile whose codes cover the
+// brick emits Dept › Tile. Ukategorisert/brickless rows get no breadcrumb —
+// "More in unsorted" navigation would be a lie.
+// Specs/Compare key their schemas on SPEC_KIND_BY_CAT, whose keys are the
+// LEGACY cat names — which live on as the facet RULESET ids (gpc-strict).
+// specKindOf is a top-level function declaration (a mutable global), so
+// rebind it to resolve through the product's brick → ruleset bridge; the
+// demo id overrides keep working, brickless rows fall through to null
+// (groups-form sheets render regardless).
+if (typeof specKindOf === 'function') {
+  specKindOf = (p) => SPEC_KIND_OVERRIDE[p.id] || (p.brick && SPEC_KIND_BY_CAT[BRICK_CAT[p.brick]]) || null;
 }
 
-// PDP breadcrumb paths (upstream productPaths, GpcData.jsx): the demo version
-// resolves via PRODMAP, which hydrateCatalog empties — so with the served
-// registry in, derive paths from meta.depts instead: every rule backing
-// p.cat, slices only when the product's own facet value confirms the pin
-// (upstream's honesty rule; values are exact facetrules vocabulary, so no
-// case folding), finest match first so the breadcrumb prefers Dept › Slice
-// over Dept › whole category.
 const demoPaths = window.productPaths;
 window.productPaths = (p) => {
-  const depts = CATALOG.meta?.depts;
-  if (!depts) return demoPaths(p);
+  if (!CATALOG.meta?.tree) return demoPaths(p);
+  if (!p.brick) return [];
   const out = [];
-  for (const d of depts) for (const r of d.rules) {
-    if (r.cat !== p.cat) continue;
-    if (r.facets) {
-      const ok = Object.entries(r.facets).every(([k, want]) => {
-        const v = window.fval && fval(p, k);
-        return v !== undefined && [].concat(v).some(x => want.includes(x));
-      });
-      if (!ok) continue;
-      out.unshift({ dept: d, sub: r.name, nav: { brick: r.b, ...(r.n != null ? { count: r.n } : {}) } });
-    } else out.push({ dept: d, sub: r.name, nav: { brick: r.b } });
+  for (const d of window.DEPTS || []) for (const r of d.rules) {
+    const codes = String(r.b).split(',');
+    const hit = codes.includes(p.brick) || codes.some(c => (BRICK_UNDER[c] || []).includes(p.brick));
+    if (!hit) continue;
+    const bk = brickBy[r.b];
+    out.push({ dept: d, sub: bk?.name || p.cat, nav: { brick: r.b, ...(r.n != null ? { count: r.n } : {}) } });
   }
   return out;
 };
@@ -616,8 +608,8 @@ window.onSuggestData = (q, refresh) => {
 // compute from a partial cache — they come back per query, never off
 // CATALOG.meta (any later ids=/q= fetch replaces that wholesale).
 const PAGE = 400; // worker PAGE_MAX
-const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
-  ...(cat ? { cat } : {}),
+const listQuery = ({ node, sort, dir, filters: f = {}, page = 0 }) => ({
+  ...(node ? { node } : {}),
   ...(sort ? { sort, dir: dir || 'asc' } : {}),
   // the rail's free-text refine (name only) — `name=`, not `q=`, which is the
   // header's blob search; without it the refine would see one 400-row page
@@ -646,24 +638,29 @@ const listQuery = ({ cat, sort, dir, filters: f = {}, page = 0 }) => ({
 // (`if (dead || !r) return`). "Load more" is a click, not a keystroke — never
 // held, or the button would stall for half a second.
 const REFINE_MIN = 3, REFINE_HOLD = 400;
-// GPC scopes translate to the backing cat= via the served registry (every
-// brick backs exactly one cat; a dept only when all its rules agree).
-// Resolving null is upstream's "host can't serve this scope" contract — the
-// screen falls back to client-side sort/filter over the cache, as before.
-// ponytail: multi-cat "All <dept>" pages stay client-side; serving them
-// needs a cat-set query the worker doesn't have.
-const scopeCat = (q) => {
-  if (!q.brick && !q.dept) return q.cat;
-  const rules = (CATALOG.meta?.depts || []).flatMap(d => q.dept ? (d.id === q.dept ? d.rules : []) : d.rules.filter(r => r.b === q.brick));
-  const cats = [...new Set(rules.map(r => r.cat).filter(Boolean))];
-  return cats.length === 1 ? cats[0] : undefined;
+// GPC scopes are NATIVE server queries now (gpc-strict): a brick param —
+// an exact brick, a comma-joined tile, any-level code, or the 'uncat'
+// pseudo-brick — travels verbatim as node=. A dept collapses to its single
+// tile where it has one; multi-tile "All <dept>" pages resolve null
+// (upstream's "host can't serve this scope" contract — the screen falls
+// back to client-side sort/filter over deptProducts' pool). Legacy cat=
+// scopes have no server translation anymore and resolve null too.
+const CAT_NODE = {}; // display segment name → segment code (hydrateCatalog)
+const scopeNode = (q) => {
+  if (q.brick) return q.brick;
+  if (q.dept) {
+    const d = (window.DEPTS || []).find(x => x.id === q.dept);
+    return d && d.rules.length === 1 ? d.rules[0].b : undefined;
+  }
+  if (q.cat) return q.cat === 'Ukategorisert' ? 'uncat' : CAT_NODE[q.cat];
+  return undefined;
 };
 let held = null;
 window.onQuery = (q) => {
   if (held) { clearTimeout(held.t); held.res(null); held = null; }
-  const cat = scopeCat(q);
-  if ((q.brick || q.dept) && !cat) return Promise.resolve(null);
-  const go = () => fetchProducts(listQuery({ ...q, cat })).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts, prange: (d.meta || {}).prange, brands: (d.meta || {}).brands, acounts: (d.meta || {}).acounts }));
+  const node = scopeNode(q);
+  if ((q.brick || q.dept || q.cat) && !node) return Promise.resolve(null);
+  const go = () => fetchProducts(listQuery({ ...q, node })).then(d => ({ total: (d.meta || {}).total, fcounts: (d.meta || {}).fcounts, prange: (d.meta || {}).prange, brands: (d.meta || {}).brands, acounts: (d.meta || {}).acounts }));
   const n = String((q.filters || {}).q || '').trim().length;
   if (q.page || !n || n >= REFINE_MIN) return go();
   return new Promise(res => { held = { res, t: setTimeout(() => { held = null; res(go()); }, REFINE_HOLD) }; });
@@ -721,7 +718,6 @@ function App() {
     ensureRoute(name, params).then(() => {
       if (t !== navSeq) return;
       if (name === 'product') recordRecent(params.id); // after the fetch: prodById needs the row
-      params = gpcParams(name, params); // after ensureRoute: needs the served registry
       const url = toUrl(name, params);
       // mirror upstream AppRouter: park scrollY on the outgoing entry so Back
       // restores it, and carry {name, params} on the new entry — Results seeds
@@ -817,7 +813,7 @@ function App() {
         // an entry without params state (pre-boot deep link) gets the pin
         // seeded here; entries pushed by nav() already carry it — and their
         // rfilters (the user's own edits) must win, so never overwrite
-        if (!(history.state || {}).params) try { history.replaceState({ ...history.state, name: s.name, params: gpcParams(s.name, s.params) }, ''); } catch (e) {}
+        if (!(history.state || {}).params) try { history.replaceState({ ...history.state, name: s.name, params: s.params }, ''); } catch (e) {}
         setScreen(s);
         // after the async swap renders (upstream AppRouter does the same double-rAF)
         requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, scrollY)));
@@ -951,50 +947,97 @@ function hydrateCatalog(data) {
   }
   // per-shop {flat, freeOver} shipping rules for threshold-aware basket math
   if (CATALOG.meta?.shipping) window.SHIPPING = CATALOG.meta.shipping;
-  // Dynamic categories: server cats the prototype doesn't know join
-  // CATEGORIES in place (same array object as window.CATEGORIES, so every
-  // lexical reader — browse tiles, header menu, suggest, onboarding — sees
-  // them); tile icons ride meta.icons, upstream's own entries win.
-  Object.keys(CATALOG.meta?.cats || {}).forEach(c => {
-    if (!CATEGORIES.includes(c)) { CATEGORIES.push(c); CAT_ICONS[c] = CATALOG.meta.icons?.[c] || 'tag'; }
-  });
   // Facet registry: served worker/facets.json replaces the baked upstream
   // demo FACETS in place (guarded — no-op until the prototype defines it).
+  // Keys are facet RULESET ids since gpc-strict; the served facetKeys map
+  // (below, into BRICK_CAT) is what routes a brick to its ruleset.
   if (window.FACETS && CATALOG.meta?.facets) {
     Object.keys(window.FACETS).forEach(k => delete window.FACETS[k]);
     Object.assign(window.FACETS, CATALOG.meta.facets);
   }
-  // GPC departments: the served registry (worker/depts.json) replaces
-  // GpcData's demo layer in place — DEPTS/brickBy/ALL_BRICKS/BRICK_CAT/
-  // BRICK_DEPT are shared top-level consts, so mutate, never reassign.
-  // Rule counts join with meta.cats (each rule backs one whole cat).
-  // PRODMAP/CLS_CAT are emptied: the demo ids ARE served ids, and a stale
-  // PRODMAP direct match would pin a brick page to the handful of demo rows
-  // instead of the whole backing category (brickProducts prefers direct).
-  if (window.DEPTS && CATALOG.meta?.depts && CATALOG.meta?.cats) {
-    const counts = CATALOG.meta.cats;
+  // GPC layer (gpc-strict): the served STOCKED taxonomy (meta.tree, real
+  // 4-level GPC hierarchy with counts) + overlay dept tiles (meta.depts)
+  // replace GpcData's demo layer in place — DEPTS/brickBy/ALL_BRICKS/
+  // BRICK_CAT/BRICK_DEPT are shared top-level consts, so mutate, never
+  // reassign. Products carry a REAL p.brick now, so boot overrides
+  // window.brickProducts/deptProducts (window seams, like productPaths)
+  // with brick-truth pools; PRODMAP/CLS_CAT stay emptied — the demo maps
+  // are dead. BRICK_CAT becomes the brick → facet-RULESET bridge
+  // (upstream's FACETS[brickToCat(b)] then resolves the right defs).
+  if (window.DEPTS && CATALOG.meta?.tree && CATALOG.meta?.bricks) {
+    const meta = CATALOG.meta;
     DEPTS.length = 0; ALL_BRICKS.length = 0;
-    // BRICK_FACETS too: the registry reuses demo brick codes, and a demo
-    // per-brick def would shadow the served FACETS[cat] defs whose keys are
-    // what the served fcounts speak
-    for (const o of [brickBy, PRODMAP, BRICK_CAT, CLS_CAT, BRICK_DEPT, window.BRICK_FACETS || {}]) Object.keys(o).forEach(k => delete o[k]);
-    for (const d of CATALOG.meta.depts) {
+    for (const o of [brickBy, PRODMAP, BRICK_CAT, CLS_CAT, BRICK_DEPT, BRICK_UNDER, window.BRICK_FACETS || {}]) Object.keys(o).forEach(k => delete o[k]);
+    Object.assign(BRICK_CAT, meta.facetKeys || {});
+    // walk the stocked tree: one brickBy entry per stocked brick with its
+    // REAL seg/fam/cls, class siblings populated (upstream's catNavModel
+    // renders those as the rail), and BRICK_UNDER mapping every ancestor
+    // code to the stocked bricks below it (GPC codes are not
+    // prefix-hierarchical — this map is the client's rollup).
+    for (const seg of meta.tree) for (const fam of seg.children || []) for (const cls of fam.children || []) {
+      const clsRef = { code: cls.code, name: cls.name, bricks: [] };
+      for (const bk of cls.children || []) {
+        const entry = {
+          code: bk.code, name: bk.name, icon: bk.icon || cls.icon || fam.icon || seg.icon || 'tag', n: bk.n,
+          syn: [], seg: { code: seg.code, name: seg.name, icon: seg.icon || 'tag' }, fam: { code: fam.code, name: fam.name }, cls: clsRef,
+        };
+        clsRef.bricks.push(entry);
+        brickBy[bk.code] = entry; ALL_BRICKS.push(entry);
+        for (const anc of [cls.code, fam.code, seg.code]) (BRICK_UNDER[anc] ??= []).push(bk.code);
+      }
+    }
+    // overlay dept tiles: a tile's b (one or more GPC codes, comma-joined,
+    // any level) gets its own brickBy entry so Browse chips and the rail
+    // resolve display; the served n is the histogram total under its codes
+    for (const d of meta.depts || []) {
       const dep = { id: d.id, name: d.name, icon: d.icon, rules: [], n: 0, segs: [] };
       for (const r of d.rules) {
-        const [seg = '', fam = '', cls = ''] = String(r.path || '').split(' › ');
-        // sliced rules (r.facets) carry their cron-computed n; whole-cat rules
-        // join the live cats histogram. A slice never adds to dep.n — its rows
-        // already sit inside its whole-cat sibling (build.js enforces one).
-        const n = r.facets ? (r.n ?? 0) : (counts[r.cat] || 0);
-        const bk = { code: r.b, name: r.name, icon: r.icon, n, syn: r.syn || [], seg: { code: r.b, name: seg, icon: r.icon }, fam: { name: fam }, cls: { code: r.b, name: cls, bricks: [] } };
-        brickBy[r.b] = bk; ALL_BRICKS.push(bk);
-        BRICK_CAT[r.b] = r.cat;
+        brickBy[r.b] ??= (() => {
+          const [seg = '', fam = '', cls = ''] = String(r.path || '').split(' › ');
+          const bk = { code: r.b, name: r.name, icon: r.icon, n: r.n, syn: r.syn || [], seg: { code: r.b, name: seg, icon: r.icon }, fam: { name: fam }, cls: { code: r.b, name: cls, bricks: [] } };
+          ALL_BRICKS.push(bk);
+          return bk;
+        })();
+        brickBy[r.b].syn = r.syn || brickBy[r.b].syn;
         if (!BRICK_DEPT[r.b]) BRICK_DEPT[r.b] = dep;
-        dep.rules.push(r.facets && r.n != null ? { b: r.b, n: r.n } : { b: r.b });
-        if (!r.facets) dep.n += n;
+        dep.rules.push({ b: r.b, n: r.n });
       }
+      // dept total: UNIQUE stocked bricks under all tiles (tiles can overlap
+      // — e-readers' class is inside the PC tile's class)
+      dep.n = [...new Set(d.rules.flatMap(r => String(r.b).split(',').flatMap(c => BRICK_UNDER[c] || (meta.bricks[c] != null ? [c] : []))))].reduce((a, b2) => a + (meta.bricks[b2] || 0), 0);
       DEPTS.push(dep);
     }
+    // Ukategorisert: a real, honest browse surface for everything the
+    // resolver hasn't answered — a synthetic dept with the pseudo-brick
+    // 'uncat' (scopeNode sends it as node=uncat; the pool override below
+    // serves the brickless rows)
+    const un = { code: 'uncat', name: 'Ukategorisert', icon: 'package-search', n: meta.uncat || 0, syn: [], seg: { code: 'uncat', name: 'Ukategorisert', icon: 'package-search' }, fam: { name: '' }, cls: { code: 'uncat', name: 'Ukategorisert', bricks: [] } };
+    brickBy.uncat = un; ALL_BRICKS.push(un);
+    const udep = { id: 'ukategorisert', name: 'Ukategorisert', icon: 'package-search', rules: [{ b: 'uncat', n: meta.uncat || 0 }], n: meta.uncat || 0, segs: [] };
+    BRICK_DEPT.uncat = udep;
+    DEPTS.push(udep);
+    // brick-truth pools (window seams — GpcData's own PRODMAP/cat fallbacks
+    // are demo logic): a scope's rows are exactly the rows whose OWN brick
+    // sits under the scope's codes. Heads only, like _gpool.
+    const pool = () => CATALOG.filter(p => !p.family);
+    window.brickProducts = (code) => {
+      if (code === 'uncat') return pool().filter(p => !p.brick && !p.hidden);
+      const set = new Set(String(code).split(',').flatMap(c => BRICK_UNDER[c] || [c]));
+      return pool().filter(p => p.brick && set.has(p.brick));
+    };
+    window.deptProducts = (id) => {
+      const d = DEPTS.find(x => x.id === id);
+      return d ? [...new Set(d.rules.flatMap(r => window.brickProducts(r.b)))] : [];
+    };
+  }
+  // Dynamic categories: display entries for onboarding/suggest come from the
+  // stocked segments + the honest bucket; upstream's own demo entries are
+  // replaced wholesale (their cat names no longer exist anywhere).
+  if (CATALOG.meta?.tree) {
+    CATEGORIES.length = 0;
+    Object.keys(CAT_NODE).forEach(k => delete CAT_NODE[k]);
+    for (const seg of CATALOG.meta.tree) { CATEGORIES.push(seg.name); CAT_ICONS[seg.name] = seg.icon || 'tag'; CAT_NODE[seg.name] = seg.code; }
+    if (CATALOG.meta.uncat) { CATEGORIES.push('Ukategorisert'); CAT_ICONS.Ukategorisert = 'package-search'; }
   }
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
@@ -1062,7 +1105,7 @@ Promise.all([
   if (s.name === 'product') recordRecent(s.params.id);
   // a deep link has no history entry state — seed it so Results can read
   // params.facets (sliced-brick pin) exactly like a pushed nav
-  try { history.replaceState({ ...history.state, name: s.name, params: gpcParams(s.name, s.params) }, ''); } catch (e) {}
+  try { history.replaceState({ ...history.state, name: s.name, params: s.params }, ''); } catch (e) {}
   ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
   if (loggedIn) setupPush(); // subscriptions are session-bound, no point earlier
 });
