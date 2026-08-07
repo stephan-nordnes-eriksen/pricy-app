@@ -20,21 +20,31 @@ function pickSimilar(p, v, main) {
   const stock = x => (x.stock !== false ? 1 : 0);
   // cheaper: best-liked option below the current price (in stock first)
   const cheaper = pool.filter(x => x.best < ref)
-    .sort((a, b) => (stock(b) - stock(a)) || ((b.rating || 0) - (a.rating || 0)) || (b.best - a.best))[0] || null;
+    .sort((a, b) => (stock(b) - stock(a)) || (simScore(b) - simScore(a)) || (b.best - a.best))[0] || null;
   // step up: at least as well liked, priced above — smallest jump among the best liked
-  const up = pool.filter(x => x.best > ref && (x.rating || 0) >= (p.rating || 0))
-    .sort((a, b) => (stock(b) - stock(a)) || ((b.rating || 0) - (a.rating || 0)) || (a.best - b.best))[0] || null;
+  const up = pool.filter(x => x.best > ref && simScore(x) >= simScore(p))
+    .sort((a, b) => (stock(b) - stock(a)) || (simScore(b) - simScore(a)) || (a.best - b.best))[0] || null;
   return (cheaper || up) ? { cheaper, up, ref } : null;
 }
 
+// Trust score on the Folkedommen 0–1 scale: live products carry p.dom
+// (read via domScore, which also folds in real reviews); demo data may
+// only have a 0–5 rating — normalize that as the fallback.
+function simScore(x) {
+  const s = window.domScore ? domScore(x) : undefined;
+  return s != null ? s : (x.rating || 0) / 5;
+}
+// same tier cuts as the Folkedommen sort/filter (verdictWord)
+const simTier = s => s >= .85 ? 3 : s >= .6 ? 2 : s >= .4 ? 1 : 0;
+
 function simWhy(x, p, role) {
-  const xr = x.rating || 0, pr = p.rating || 0;
+  const xs = simScore(x), ps = simScore(p);
   if (role === 'cheap') {
-    if (xr > pr) return 'Better liked by owners — for less';
-    if (xr >= pr - 0.2) return 'Nearly as well liked';
+    if (xs > ps) return 'Better liked by owners — for less';
+    if (simTier(xs) >= simTier(ps)) return 'Nearly as well liked';
     return 'The budget pick in this category';
   }
-  return xr > pr ? 'Better liked by owners' : 'Liked just as well';
+  return xs > ps ? 'Better liked by owners' : 'Liked just as well';
 }
 
 function SimilarCard({ x, p, role, refPrice, go }) {
