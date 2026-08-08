@@ -2178,6 +2178,23 @@ test('full spec sheets: detail fetches only, spec text never matches search', as
   assert.strictEqual(bySpec.length, 0, 'spec sheet text must not pollute search matching');
 });
 
+test('uncat SQL fast path: filterless sort pages in SQL with total/brands/prange', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  // boot's mount prefetch shape — must not need the whole-node JS pass
+  const body = await (await call('/api/products?node=uncat&sort=best&dir=asc')).json();
+  const prices = body.products.map(p => p.best);
+  const present = prices.filter(v => v != null);
+  assert.ok(present.length, 'uncat has priced rows');
+  assert.deepStrictEqual(present, [...present].sort((a, b) => a - b), 'sorted by best ascending');
+  const firstBlank = prices.findIndex(v => v == null);
+  if (firstBlank !== -1) assert.ok(prices.slice(firstBlank).every(v => v == null), 'blanks sort last');
+  assert.ok(body.meta.total >= body.products.length, 'total counts the whole node');
+  assert.ok(Array.isArray(body.meta.brands) && body.meta.brands.every(b => Array.isArray(b) && b.length === 2), 'brands served as [value, count] pairs');
+  assert.ok(!body.meta.prange || (body.meta.prange[0] <= body.meta.prange[1]), 'prange is [lo, hi]');
+});
+
 test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed keys still win', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };

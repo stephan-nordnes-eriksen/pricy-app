@@ -1232,6 +1232,46 @@ async function listIds(db, { node = null, limit = PAGE_MAX, offset = 0, sort = n
     ).bind(limit, offset).all();
     return { ids: results.map(r => r.id) };
   }
+  // ponytail: SQL fast path for the two nodes too big to shape in JS — uncat
+  // (~50k rows post-crawl) and all-heads. Parsing every meta blob per request
+  // is 100+ ms CPU, and the free-plan isolate dies at ~10; filterless queries
+  // (boot's mount prefetch and every sort click) don't need the JS pass at
+  // all, since neither node serves fcounts. Sort whitelist mirrors sortRows:
+  // blanks last either direction, tie = offer-count rank. Known drift, all
+  // marginal: name/brand collate binary not 'nb' (æøå order), total falls
+  // back to item price (bestTotal covers 0.3% of offers), rating/facet sorts
+  // and any filter still take the JS path — those on uncat stay over budget
+  // until the paid plan or a SQL filter dialect.
+  const BEST = 'MIN(o.price)', WAS = `json_extract(p.meta,'$.was')`;
+  const SQL_SORT = {
+    best: BEST, total: BEST,
+    drop: `CASE WHEN ${WAS} AND ${BEST} THEN ROUND((1.0 - ${BEST} / CAST(${WAS} AS REAL)) * 100.0) END`,
+    save: `CASE WHEN ${WAS} IS NOT NULL AND ${BEST} IS NOT NULL THEN ${WAS} - ${BEST} END`,
+    updated: 'MAX(o.updated_at)', shops: 'COUNT(o.product_id)',
+    reviews: `json_extract(p.meta,'$.udom.n')`,
+    name: `json_extract(p.meta,'$.name') COLLATE NOCASE`,
+    brand: `json_extract(p.meta,'$.brand') COLLATE NOCASE`,
+  };
+  if (!filters && (node === 'uncat' || !node) && (!sort || SQL_SORT[sort])) {
+    const w = chunks[0].where;
+    const ord = sort
+      ? `(${SQL_SORT[sort]} IS NULL OR ${SQL_SORT[sort]} = ''), ${SQL_SORT[sort]} ${dir === 'desc' ? 'DESC' : 'ASC'}, COUNT(o.product_id) DESC, p.rowid`
+      : 'COUNT(o.product_id) DESC, p.rowid';
+    const [page, count, brandRows, pr] = await Promise.all([
+      db.prepare(`SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${w}
+                  GROUP BY p.id ORDER BY ${ord} LIMIT ? OFFSET ?`).bind(limit, offset).all(),
+      db.prepare(`SELECT COUNT(*) AS n FROM products p WHERE ${w}`).first(),
+      node ? db.prepare(`SELECT json_extract(p.meta,'$.brand') AS b, COUNT(*) AS n FROM products p
+                         WHERE ${w} AND json_extract(p.meta,'$.brand') IS NOT NULL AND json_extract(p.meta,'$.brand') != '' GROUP BY b`).all() : null,
+      node ? db.prepare(`SELECT MIN(t.b) AS lo, MAX(t.b) AS hi FROM (SELECT ${BEST} AS b FROM products p
+                         JOIN offers o ON o.product_id = p.id WHERE ${w} GROUP BY p.id) t`).first() : null,
+    ]);
+    return {
+      ids: page.results.map(r => r.id), total: count.n,
+      brands: brandRows && brandRows.results.map(r => [r.b, r.n]).sort((a, b) => a[0].localeCompare(b[0])),
+      prange: pr && pr.lo != null ? [pr.lo, pr.hi] : undefined,
+    };
+  }
   const results = (await Promise.all(chunks.map(ch => db.prepare(
     `SELECT p.id, p.meta, p.rowid AS ri, MIN(o.price) AS best, COUNT(o.product_id) AS shops,
             MAX(CASE WHEN o.stock = 1 THEN 1 ELSE 0 END) AS stock, MAX(o.updated_at) AS updated
