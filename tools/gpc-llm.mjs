@@ -7,7 +7,11 @@
 // GS1 resolver overwrites (and clears the mark) once credentials exist.
 // Deploy the worker first: the PATCH validator must accept `llm: 1`.
 //
-//   node tools/gpc-llm.mjs [--dry] [--limit N] [--batch N]
+//   node tools/gpc-llm.mjs [--cli] [--dry] [--limit N] [--batch N]
+//
+// --cli shells out to `claude -p` (Claude Code subscription login, no API
+// key needed) instead of the SDK; bulk runs burn subscription usage caps,
+// so prefer an API key for the full 52k backfill and --cli for chunks.
 //
 // Reads the paged node=uncat listing (NOT /api/catalog.json — the full dump
 // exceeds the free-plan CPU ceiling at 52k rows), so re-running after an
@@ -16,6 +20,8 @@
 // for the PATCHes.
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { spawn } from 'node:child_process';
 import Anthropic from '@anthropic-ai/sdk';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname);
@@ -25,6 +31,7 @@ const num = (f, d) => Number(process.argv[process.argv.indexOf(f) + 1]) || d;
 const DRY = arg('--dry');
 const LIMIT = num('--limit', Infinity);
 const BATCH = num('--batch', 40);
+const CLI = arg('--cli');
 const CONC = 4; // ponytail: fixed pool; the prompt cache is warmed by batch 0 before fan-out
 
 // Model answers are JSON, possibly fenced or wrapped in prose — take the
@@ -84,6 +91,34 @@ ${outline}`;
 
 const client = new Anthropic();
 
+async function askSDK(lines) {
+  const msg = await client.messages.create({
+    model: 'claude-sonnet-5',
+    max_tokens: 8000,
+    output_config: { effort: 'medium' }, // bulk classification — high adds thinking cost, not accuracy
+    system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
+    messages: [{ role: 'user', content: lines }],
+  });
+  return msg.content.filter(b => b.type === 'text').map(b => b.text).join('');
+}
+
+// Claude Code headless mode on the subscription login. cwd = tmpdir so the
+// harness doesn't load this repo's CLAUDE.md into every call.
+function askCLI(lines) {
+  return new Promise((resolve, reject) => {
+    const env = { ...process.env };
+    delete env.ANTHROPIC_API_KEY; // a set key shadows the claude.ai login
+    const c = spawn('claude', ['-p', '--model', 'claude-sonnet-5', '--output-format', 'text'],
+      { cwd: os.tmpdir(), env });
+    let out = '', err = '';
+    c.stdout.on('data', d => out += d);
+    c.stderr.on('data', d => err += d);
+    c.on('error', reject);
+    c.on('close', code => code ? reject(new Error(err.trim() || `claude exited ${code}`)) : resolve(out));
+    c.stdin.end(`${SYSTEM}\n\nProducts:\n${lines}`);
+  });
+}
+
 async function patchBrick(id, brick) {
   const res = await fetch(`${base}/api/admin/products/${encodeURIComponent(id)}`, {
     method: 'PATCH',
@@ -98,14 +133,7 @@ let done = 0, hit = 0, skip = 0, bad = 0;
 async function runBatch(batch) {
   const lines = batch.map(p => JSON.stringify({ id: p.id, name: p.name, brand: p.brand, srcCat: p.srcCat })).join('\n');
   try {
-    const msg = await client.messages.create({
-      model: 'claude-sonnet-5',
-      max_tokens: 8000,
-      output_config: { effort: 'medium' }, // bulk classification — high adds thinking cost, not accuracy
-      system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: lines }],
-    });
-    const answer = parseAnswer(msg.content.filter(b => b.type === 'text').map(b => b.text).join(''));
+    const answer = parseAnswer(await (CLI ? askCLI(lines) : askSDK(lines)));
     for (const p of batch) {
       const brick = answer[p.id];
       if (!brick) { skip++; continue; }
