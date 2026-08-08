@@ -594,7 +594,8 @@ async function stampBricks(db, valid) {
   });
   if (writes.length) {
     await db.batch(writes.map(([id, brick]) =>
-      db.prepare('UPDATE products SET meta = json_patch(meta, ?) WHERE id = ?').bind(JSON.stringify({ brick }), id)));
+      // llm: null — a real resolver answer erases the interim LLM guess mark
+      db.prepare('UPDATE products SET meta = json_patch(meta, ?) WHERE id = ?').bind(JSON.stringify({ brick, llm: null }), id)));
   }
   return writes.length;
 }
@@ -2113,7 +2114,7 @@ export default {
           (v === null && k !== 'name') // null deletes a key; a product always keeps a name
           || (STR.includes(k) && typeof v === 'string' && v.trim())
           || (k === 'was' && Number.isInteger(v) && v > 0)
-          || ((k === 'hidden' || k === 'auto' || k === 'man') && v === 1)
+          || ((k === 'hidden' || k === 'auto' || k === 'man' || k === 'llm') && v === 1)
           || ((k === 'variants' || k === 'facets' || k === 'specs') && typeof v === 'object' && !Array.isArray(v)));
       if (!ok) return json({ error: 'bad patch' }, 400);
       // gpc-strict: `brick` replaced `cat`/`icon` — display derives from the
