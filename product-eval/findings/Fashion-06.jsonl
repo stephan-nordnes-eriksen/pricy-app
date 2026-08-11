@@ -1,0 +1,301 @@
+{"id":"ean-5715305794428","status":"ok"}
+{"id":"ean-5715721429232","status":"ok"}
+{"id":"ean-5715826283586","status":"ok"}
+{"id":"ean-5715872951866","status":"ok"}
+{"id":"ean-5715516678463","status":"ok"}
+{"id":"ean-5715676054503","status":"ok"}
+{"id":"ean-5715517404146","status":"ok"}
+{"id":"ean-5715517422430","status":"ok"}
+{"id":"ean-5715675724889","status":"ok"}
+{"id":"ean-5715723666246","status":"ok"}
+{"id":"ean-5715675704799","status":"ok"}
+{"id":"ean-5715872030448","status":"ok"}
+{"id":"ean-5715676033980","status":"ok"}
+{"id":"ean-5715723891372","status":"ok"}
+{"id":"ean-5715726830590","status":"ok"}
+{"id":"ean-5715515699070","status":"ok"}
+{"id":"ean-5715515908097","status":"ok"}
+{"id":"ean-5715872030684","status":"ok"}
+{"id":"ean-5715517633287","status":"ok"}
+{"id":"ean-5715831273008","status":"ok"}
+{"id":"ean-5715872137567","status":"ok"}
+{"id":"ean-5715830881181","status":"ok"}
+{"id":"ean-5715721304317","status":"ok"}
+{"id":"ean-5715721291754","status":"ok"}
+{"id":"ean-5715517463518","status":"ok"}
+{"id":"ean-5715723573483","status":"ok"}
+{"id":"ean-5715517388705","status":"ok"}
+{"id":"ean-5715308216088","status":"ok"}
+{"id":"ean-5715510043946","status":"ok"}
+{"id":"ean-5715225244942","status":"ok"}
+{"id":"ean-5715225244973","status":"ok"}
+{"id":"ean-5715421832844","status":"ok"}
+{"id":"ean-5715421830499","status":"ok"}
+{"id":"ean-5715425760556","status":"ok"}
+{"id":"ean-5715517838576","status":"ok"}
+{"id":"ean-5715723326843","name":"Name It - Ulltrøye Wang Flower Coconut Milk - 92","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets","current":{},"suggested":{"type":"Knitwear & hoodies","material":"Wool"},"why":"srcCat 'Ulltrøye' (wool sweater) derives nothing; sibling rows with srcCat 'Genser' get Knitwear & hoodies"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies","material":"Wool"}}}}
+{"id":"ean-5715732216104","name":"Name It - Ulltrøye Wang Flower Coral Blush - 92","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets","current":{},"suggested":{"type":"Knitwear & hoodies","material":"Wool"},"why":"srcCat 'Ulltrøye' (wool sweater) derives nothing"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies","material":"Wool"}}}}
+{"id":"ean-5715675725213","status":"ok"}
+{"id":"ean-5715723628718","status":"ok"}
+{"id":"ean-5715721291211","status":"ok"}
+{"id":"ean-5715515698547","status":"ok"}
+{"id":"p-patagonia-nano-puff-hoody-dame","name":"Nano Puff Hoody dame","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat leaf 'Dunjakker og isolasjonsjakker' is a jacket group; Norwegian '…jakker' leaves do not derive type"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-devold-nansen-cap-olive","name":"Nansen Cap Olive","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a cap; srcCat leaf 'Luer' (beanies/caps)"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-devold-nansen-wool-mitten","status":"ok"}
+{"id":"p-mountain-works-nations-down-parka-unisex-black","name":"Nations Down Parka Unisex Black","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"a down parka, srcCat leaf 'Dunjakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-7391998637037","status":"ok"}
+{"id":"p-rab-nebula-pro-oxblood-red","name":"Nebula Pro Oxblood Red","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat 'Dun- og isolasjonsjakker' is an insulated-jacket group"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-barbour-nelson-ss-shirt-bleached-olive","status":"ok"}
+{"id":"p-rab-neutrino-pro-hoody","name":"Neutrino Pro Hoody","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"facets are empty; srcCat leaf 'Dunjakker og isolasjonsjakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-new-balance-new-balance-480-sneaker-hvit-bb480lba","name":"New Balance 480 Sneaker Hvit BB480LBA","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"a sneaker from Skoringen (shoe retailer); srcCat 'Sneax / SNEAX Udsalg N / Dame' — 'Dame' is weak, 'Sneax' is unmapped so nothing resolved to Shoes"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-new-balance-new-balance-574-sneakers-bla-ml574evn","name":"New Balance 574 Sneakers Blå ML574EVN","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"sneakers; srcCat 'Sneax / Nyheter / Dame' has no crumb that resolves"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-rab-nexus-hoody-wmns","name":"Nexus Hoody Wmns","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat leaf 'Fleecejakker og ulljakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-nff-nff-det-norske-landslaget-fotball-t-skjorte-junior","status":"ok"}
+{"id":"p-devold-nibba-man-jacket-night","status":"ok"}
+{"id":"p-nike-nike-challenger-swoosh-men-s-dri-fit-running-shorts","name":"Nike Challenger Swoosh Men's  Dri-FIT Running Shorts","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf both say Shorts; 'Shorts' is a live value in this category, so these rows are invisible under the Shorts filter"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-nike-nike-dri-fit-race-women-s-running-s","status":"ok"}
+{"id":"p-nike-nike-essential-bralette-bikini-set","status":"ok"}
+{"id":"p-nike-nike-mixed-hairbands-9-pk","name":"NIKE MIXED HAIRBANDS 9 PK","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"hairbands; srcCat 'Tilbehør > Annet' is too vague to derive from"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-4000821350052","name":"Nip- Tåteflaske Baby Bil 250ml - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Baby","why":"'Tåteflaske' is a baby feeding bottle; srcCat 'Tåteflasker' is unmapped so the Guttelus rows fell through to Fashion"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"ean-4000821350076","name":"Nip- Tåteflaske Baby Luftballong 250ml - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Baby","why":"baby feeding bottle, srcCat 'Tåteflasker'"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"ean-4000821350649","name":"Nip- Tåteflaske Glass Bambi Gul 240ml - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Baby","why":"glass baby bottle, srcCat 'Tåteflasker'"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"ean-4000821350557","name":"Nip- Tåteflaske Star 150ml - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Baby","why":"baby feeding bottle, srcCat 'Tåteflasker'"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"p-noe-collection-noe-collection-korte-damestovletter-svart-5254500710","name":"NOË Collection Korte damestøvletter Svart 5254500710","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'damestøvletter' = women's ankle boots; srcCat 'Dame / Støvletter / Biker Boot' — 'Støvletter' is unmapped"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-noe-collection-noe-collection-stovel-svart-5255500910","name":"NOË Collection Støvel Svart 5255500910","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Støvel' = boot; srcCat 'Dame / Støvletter / Gaucho Boot'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-noe-collection-noe-collection-vinterstovel-brun-5266500230","name":"NOË Collection Vinterstøvel Brun 5266500230","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Vinterstøvel' = winter boot; srcCat 'Dame / Støvletter / Platåstøvletter'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-noe-noe-korte-damestovletter-svart-ni028807zs","name":"noë Korte damestøvletter Svart NI028807ZS","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"women's ankle boots; srcCat 'Dame / Støvletter / Lave støvletter'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-craft-nor-core-warm-baselayer-set-j","status":"ok"}
+{"id":"p-smartwool-nordic-full-cushion-crew-socks-black","status":"ok"}
+{"id":"ean-1","name":"Nordic Kids - Vårlue Bomull Grønn - 0-1 år","status":"issue","issues":[{"kind":"price","severity":"high","field":"offers","current":[["Guttelus",329],["Bikeshop",1724]],"suggested":null,"why":"a kr 329 cotton baby spring hat cannot also cost kr 1724 at a bike shop — two unrelated products merged onto the same row"},{"kind":"metadata","severity":"med","field":"id","current":"ean-1","suggested":null,"why":"'1' is not an EAN; every source row publishing the placeholder gtin '1' dedupes onto this single product"}],"fix":{"rule":"ingest must reject source EANs shorter than 8 digits (and all-zero/placeholder ones) instead of routing them to ean-<digits> — 'ean-1' currently merges every shop's placeholder gtin into one product"}}
+{"id":"ean-7031582366126","status":"ok"}
+{"id":"ean-7031582366898","status":"ok"}
+{"id":"p-bergans-of-norway-nordmarka-merino-high-neck-jumper-genser-dame","name":"Nordmarka Merino High Neck Jumper genser dame","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"T-shirts & tops","suggested":"Knitwear & hoodies","why":"name says 'Jumper genser' and srcCat leaf is 'Ullgensere' (wool sweaters); the combined crumb 'Gensere og t-skjorter' matched t-shirts first"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies"}}}}
+{"id":"ean-7031582464457","status":"ok"}
+{"id":"p-mammut-nordwand-advanced-hs-hooded-women-azalea","name":"Nordwand Advanced HS Hooded Women Azalea","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat leaf 'Skalljakker' (shell jackets)"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-norrliv-norrliv-herrestovletter-brun-5424500731","name":"Norrliv Herrestøvletter Brun 5424500731","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"men's ankle boots; srcCat 'Herre / TEX-membran / Støvletter'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-norrliv-norrliv-korte-damestovletter-svart-5264503310","name":"Norrliv Korte damestøvletter Svart 5264503310","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"women's ankle boots; srcCat 'Dame / TEX-membran / Støvletter'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-norrliv-norrliv-lange-damestovletter-svart-5214500610","name":"Norrliv Lange damestøvletter Svart 5214500610","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"women's long boots; srcCat 'Dame / TEX-membran / Støvletter'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-norrliv-norrliv-stovel-svart-5255501310","name":"Norrliv Støvel Svart 5255501310","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Støvel' = boot; srcCat 'Dame / Støvletter / Chelsea-støvletter'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-norrliv-norrliv-vinterstovel-svart-5265504810","name":"Norrliv Vinterstøvel Svart 5265504810","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"winter boot; srcCat 'Dame / Støvletter / Vinterstøvletter & Vintersko'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-norrona-norrona-senja-flex1-5-shorts-m-s-caviar","status":"ok"}
+{"id":"p-norrona-norrona-women-s-senja-aero90-vest-snow-white","status":"ok"}
+{"id":"p-harkila-norse-jakke-hunting-green-shadow-brun","status":"ok"}
+{"id":"p-northpeak-northpeak-birk-hansker-junior","status":"ok"}
+{"id":"p-northpeak-northpeak-high-waist-bikinitruse-dame","status":"ok"}
+{"id":"p-northpeak-northpeak-huk-shorts-junior","name":"Northpeak Huk shorts junior","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf 'Bukser og shorts barn' say shorts; 'Shorts' is a live value in this category"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-northpeak-northpeak-snomann-julegenser-dame","status":"ok"}
+{"id":"p-northpeak-northpeak-steinkjer-regnbukse-dame","status":"ok"}
+{"id":"p-northpeak-northpeak-strandafjell-fleecejakke-dame","status":"ok"}
+{"id":"p-northpeak-northpeak-strandafjell-fleecejakke-herre","status":"ok"}
+{"id":"p-northpeak-northpeak-svartisen-piggsko-herre","name":"Northpeak Svartisen piggsko herre","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'piggsko' = studded/spiked shoes; srcCat 'Piggsko herre' is unmapped"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-northpeak-northpeak-vossafjell-3-lags-skalljakke-dame","name":"Northpeak Vossafjell 3-lags skalljakke dame","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"a 3-layer shell jacket; srcCat leaf 'Skalljakker herre'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-northpeak-northpeak-orsta-regnbukse-junior","name":"Northpeak Ørsta regnbukse junior","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'regnbukse' = rain trousers; srcCat leaf 'Regnbukser barn'"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"p-snow-peak-nsd-logo-l-s-t-shirt-black","status":"ok"}
+{"id":"p-numskull-jaws-da-dum-christmas-jumper","name":"Numskull Jaws DA DUM Christmas Jumper","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Numskull","why":"the name opens with the brand; 'Unspecified' is Outland's placeholder"}],"fix":{"patch":{"brand":"Numskull"}}}
+{"id":"ean-5715235013620","status":"ok"}
+{"id":"p-oakley-o-bark-2-0-blackout","status":"ok"}
+{"id":"p-oneill-o-neill-retro-sokker-2-pk","status":"ok"}
+{"id":"p-o-neill-o-neill-shorty-boxertruser-2-pk-dame","status":"ok"}
+{"id":"p-andre-merkevarer-obs-bygg-handlenett","name":"Obs BYGG handlenett","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 17 store-branded carrier net sold by the shop it is named after, filed under 'Verneutstyr og arbeidsklær' — shop merchandise, nothing to price-compare"},{"kind":"brand","severity":"med","field":"brand","current":"ANDRE MERKEVARER","suggested":null,"why":"'ANDRE MERKEVARER' (= other brands) is an Obs feed placeholder, not a brand"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-lundhags-ocke-ms-forest-green-charcoal","name":"Ocke Ms Forest Green/Charcoal","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat leaf 'Skalljakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-odiin-odiin-herrestovletter-svart-5423502410","name":"Odiin Herrestøvletter Svart 5423502410","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"men's ankle boots; srcCat 'Herre / Støvletter / Lave støvletter'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-okidoki-okidoki-evenes-skijakke-barn","name":"Okidoki Evenes skijakke barn","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"a ski jacket; srcCat 'Vinterjakker barn'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-craft-ol-norway-thermal-hat","status":"ok"}
+{"id":"ean-7068600036860","name":"Oliane Organic håndkle lys blå","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a bath towel; srcCat 'Baderom > Håndklær og kluter > Håndklær' — bathroom textiles belong in Home, not clothing"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":null,"why":"colour sibling of p-kid-oliane-organic-handkle-olivengronn (same towel, different colour, unwired)"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"p-kid-oliane-organic-handkle-olivengronn","name":"Oliane Organic håndkle olivengrønn","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a bath towel; srcCat 'Baderom > Håndklær og kluter > Håndklær'"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"p-kid-oliane-organic-klut-beige","name":"Oliane Organic klut beige","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a washcloth; srcCat 'Baderom > Håndklær og kluter > Vaskekluter'"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":null,"why":"colour sibling of ean-7068600070536 (hvit) and ean-7068600036846 (lys blå), all kr 70, unwired"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"ean-7068600070536","name":"Oliane Organic klut hvit","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a washcloth; srcCat 'Baderom > Håndklær og kluter > Vaskekluter'"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"ean-7068600036846","name":"Oliane Organic klut lys blå","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a washcloth; srcCat 'Baderom > Håndklær og kluter > Vaskekluter'"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"p-devold-ona-heavy-woman-sock-2pk","name":"ONA HEAVY WOMAN SOCK 2PK","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says WOMAN"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-nike-one-classic-t-skjorte","status":"ok"}
+{"id":"p-one-cool-cat-socks-40-46","status":"ok"}
+{"id":"p-only-only-astra-denimskjort","name":"Only Astra Denimskjørt","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Dresses & skirts","why":"'skjørt' = skirt; srcCat is the useless crumb 'Home' so only the name carries it"}],"fix":{"patch":{"facets":{"type":"Dresses & skirts"}}}}
+{"id":"p-only-only-madison-blush-jeans","status":"ok"}
+{"id":"ean-5715910023937","status":"ok"}
+{"id":"ean-5715912066949","status":"ok"}
+{"id":"p-only-only-rene-strikkegenser","status":"ok"}
+{"id":"p-only-only-robyn-denimshorts","name":"Only Robyn Denimshorts","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Shorts","why":"name says denimshorts"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-only-only-ruby-rugby-pique","status":"ok"}
+{"id":"p-oppblasbar-vest-3-6-ar-tpu-materiale","name":"OPPBLÅSBAR VEST 3-6 ÅR - TPU MATERIALE.","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Toys","why":"an inflatable swim vest for 3-6 year olds; the shop's own crumb is 'Home > Leker' (toys) — 'vest' pulled it into clothing and even set facets.type Jackets"},{"kind":"name","severity":"low","field":"name","current":"OPPBLÅSBAR VEST 3-6 ÅR - TPU MATERIALE.","suggested":"Oppblåsbar vest 3-6 år - TPU-materiale","why":"ALL CAPS boilerplate with a trailing period"}],"fix":{"patch":{"cat":"Toys","icon":"toy-brick","name":"Oppblåsbar vest 3-6 år - TPU-materiale"}}}
+{"id":"p-norheim-oppdal-2-lags-ullsett-barn","status":"ok"}
+{"id":"p-bergans-oppdal-insulated-shell-pants-women","status":"ok"}
+{"id":"p-bergans-of-norway-oppdal-insulated-skalljakke-dame","name":"Oppdal Insulated skalljakke dame","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"name says skalljakke, srcCat leaf 'Vinterjakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-7031582331087","status":"ok"}
+{"id":"p-bergans-of-norway-oslo-wool-w-coat","name":"Oslo Wool W Coat","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"a wool coat; srcCat leaf 'Fleecejakker og ulljakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-810165745346","name":"Osprey Duro™ 1.5 Run Hydration Vest","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Sport","why":"a running hydration pack (bottles + storage), not a garment; no srcCat at all, so 'Vest' in the name decided it"},{"kind":"facets","severity":"med","field":"facets.type","current":"Jackets","suggested":null,"why":"it is a pack, not a jacket"}],"fix":{"patch":{"cat":"Sport","icon":"dumbbell","facets":{"type":null}}}}
+{"id":"p-hestra-otra","name":"Otra","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Otra","suggested":"Otra hansker","why":"the name is a bare model word with no product noun; 'Otra' is also a sunglasses brand elsewhere in this shard. srcCat 'Tilbehør > Hansker og votter' says gloves"}],"fix":{"patch":{"name":"Otra hansker"}}}
+{"id":"ean-9508842822527","status":"ok"}
+{"id":"ean-9505333688853","status":"ok"}
+{"id":"ean-9501619629626","status":"ok"}
+{"id":"ean-9504848999980","name":"Otra Eyewear Zoya Blue Light Glasses","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Blue","suggested":null,"why":"'Blue Light' is the lens filter type, not the frame colour"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-wiley-x-ovation-smoke-grey-matte-black","status":"ok"}
+{"id":"ean-7391998741901","status":"ok"}
+{"id":"ean-7391998127491","name":"Oversized poplinskjorte","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Shirts & blouses","why":"srcCat 'Dame > Skjorter & bluser > Skjorter'"}],"fix":{"patch":{"facets":{"type":"Shirts & blouses"}}}}
+{"id":"ean-7391998519470","status":"ok"}
+{"id":"ean-7391998635316","status":"ok"}
+{"id":"ean-7391998535364","name":"Oxfordskjorte regular fit","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Shirts & blouses","why":"srcCat 'Herre > Skjorter > Oxfordskjorter'"}],"fix":{"patch":{"facets":{"type":"Shirts & blouses"}}}}
+{"id":"p-patagonia-p-6-label-trad-cap-black","name":"P-6 Label Trad Cap Black","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a cap; srcCat leaf 'Capser'"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-patagonia-p-6-logo-lopro-trucker-hat-white-w-bear-brown","name":"P-6 Logo LoPro Trucker Hat White w/Bear Brown","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a trucker cap; srcCat leaf 'Capser'"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-patagonia-p-6-logo-trucker-hat-navy-blue","name":"P-6 Logo Trucker Hat Navy Blue","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a trucker cap; srcCat leaf 'Capser'"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-patagonia-p-6-logo-trucker-hat-svart","name":"P-6 Logo Trucker Hat Svart","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a trucker cap; srcCat leaf 'Capser'"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-ulvang-pace-tee-ws-sunshine","status":"ok"}
+{"id":"p-panama-jack-panama-jack-korte-damestovletter-svart-felina-igloo-tra","name":"Panama Jack Korte damestøvletter Svart Felina Igloo Tra","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"women's ankle boots; srcCat 'Dame / TEX-membran / Støvletter'"},{"kind":"name","severity":"low","field":"name","current":"Panama Jack Korte damestøvletter Svart Felina Igloo Tra","suggested":null,"why":"name looks truncated ('Tra' = Travelling)"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-panama-jack-panama-jack-korte-damestovletter-svart-pauline-trav-b2","name":"Panama Jack Korte damestøvletter Svart Pauline Trav B2","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"women's ankle boots; srcCat 'Dame / Støvletter / Vinterstøvletter & Vintersko'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-pansexual-pride-suspenders","status":"ok"}
+{"id":"p-parajumpers-parajumpers-cobra-boy-blue-navy","status":"ok"}
+{"id":"ean-7031581667217","name":"Pasvik Lady Hunting Boot High","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"a hunting boot; srcCat 'Home > Turklær > Black' is Bergans' own colour path with no usable crumb"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-patachou-patachou-kjole-mini-girl-special-occasion-inverno-2025","status":"ok"}
+{"id":"p-patachou-patachou-kjole-newborn-soft-inverno-2025","status":"ok"}
+{"id":"ean-195699082380","status":"ok"}
+{"id":"ean-192964418783","status":"ok"}
+{"id":"ean-198077555261","status":"ok"}
+{"id":"ean-198077539124","name":"Patagonia - Fleecejakke Micro D Snap-T Aquatic Blue - 92","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Fleecejakke' + srcCat 'Jakker'; the English 'Jacket' derives Jackets but the Norwegian compound does not"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-198077559825","name":"Patagonia - Fleecejakke Micro D Snap-T Quiet Violet - 110-116","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Fleecejakke' + srcCat 'Jakker'"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":null,"why":"same Micro D Snap-T fleece as ean-198077539124 in another colour/size, unwired"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-198077777489","name":"Patagonia - Fleecejakke R1 Air Full-Zip Quiet Violet - 110-116","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Fleecejakke' + srcCat 'Jakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-198077773276","name":"Patagonia - Fleecevest Micro D Snap-T Aquatic Blue - 92","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"a fleece vest under srcCat 'Jakker'; other vests in this shard carry type Jackets"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-198077435792","status":"ok"}
+{"id":"ean-198077274209","status":"ok"}
+{"id":"ean-195699291331","status":"ok"}
+{"id":"ean-198077565673","status":"ok"}
+{"id":"ean-196924884854","status":"ok"}
+{"id":"p-patagonia-patagonia-m-s-classic-retro-x-vest-dark-natural-w-basin-gree","status":"ok"}
+{"id":"p-pbs-pbs-skisele","name":"PBS skisele","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Socks & hosiery","suggested":null,"why":"a ski harness/leash for teaching kids to ski — the value came from the srcCat leaf 'Varmesokker, varmesåler og annet', i.e. the shop's catch-all shelf"},{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Sport","why":"winter-sport equipment, not clothing; srcCat starts 'VINTERSPORT > Tilbehør'"}],"fix":{"patch":{"cat":"Sport","icon":"dumbbell","facets":{"type":null}}}}
+{"id":"p-amundsen-peak-full-zip-mens-faded-navy","status":"ok"}
+{"id":"p-amundsen-peak-knickers-mens-white","status":"ok"}
+{"id":"p-pelsdusk-til-lue-imitasjon-8cm-sort","name":"Pelsdusk til lue - Imitasjon - 8cm - Sort","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Hobby","why":"a faux-fur pom-pom sold as a sewing/craft notion by Tegne.no; srcCat is just the product name repeated so 'lue' (beanie) decided it"}],"fix":{"patch":{"cat":"Hobby","icon":"palette"}}}
+{"id":"p-laksen-pentland-vest-fleece-wool-lava","status":"ok"}
+{"id":"p-bjorn-borg-performance-boxer-3-pk-bokser-herre","status":"ok"}
+{"id":"p-pierre-robert-pierre-robert-invisible-micro-high-waist-truse","status":"ok"}
+{"id":"p-pierre-robert-pierre-robert-sport-collection-boxer-herre","status":"ok"}
+{"id":"p-pierre-robert-pierre-robert-superundertoy","status":"ok"}
+{"id":"ean-6411254954249","name":"Piirto Unikko Gjestehåndkle 30x50 cm, Off-white/Charcoal","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a Marimekko guest towel; srcCat 'Tekstil & Tepper > Baderomtekstiler > Håndklær & Badelaken' is home textiles"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"p-barbour-pima-cotton-crew-agave-green","status":"ok"}
+{"id":"p-kids-dream-store-pippi-langstrompe-umbrella","name":"Pippi Langstrømpe, Umbrella","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Socks & hosiery","suggested":"Accessories","why":"it is an umbrella — 'strømpe' inside the character name Pippi Langstrømpe (Longstocking) matched the hosiery rule"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7325549883253","status":"ok"}
+{"id":"p-poc-poc-women-s-essential-enduro-shorts-uranium-black","status":"ok"}
+{"id":"p-odlo-polyknit-light-eco-svart","status":"ok"}
+{"id":"p-kid-pom-pom-handkle-multi-beige","name":"Pom Pom håndkle multi beige","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a towel; srcCat 'Håndklær' — bathroom textiles belong in Home"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"ean-7391998561318","name":"Poplinsbluse","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Shirts & blouses","why":"srcCat 'Bluser' (blouses)"}],"fix":{"patch":{"facets":{"type":"Shirts & blouses"}}}}
+{"id":"p-energetics-portia-1-2-shorts-dame","name":"Portia 1/2 shorts dame","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf both say Shorts"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-harkila-power-liner-handskar-dark-olive","status":"ok"}
+{"id":"p-therm-ic-power-set-uni-s-pack-1200-varmesokker","status":"ok"}
+{"id":"p-alaska-1795-predator-lady-pants-dark-mud","name":"Predator Lady Pants Dark Mud","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says Lady"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-adidas-originals-premium-essentials-shorts","name":"Premium Essentials Shorts","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf both say Shorts"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-carinthia-prg-2-0-olivengronn","name":"PRG 2.0 Olivengrønn","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat 'Skalljakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-pride-truckers-hat-black","status":"ok"}
+{"id":"p-craft-pro-control-impact-singlet-w","status":"ok"}
+{"id":"p-probuilder-probuilder-orepropper-10-pk","name":"Probuilder ørepropper 10 -pk","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Tools","why":"earplugs (hearing protection) from Obs Bygg; srcCat 'Verneutstyr og arbeidsklær' — the 'arbeidsklær' half pulled PPE into clothing"}],"fix":{"patch":{"cat":"Tools","icon":"wrench"}}}
+{"id":"p-black-diamond-progression-mitts-black-black","status":"ok"}
+{"id":"p-evoc-protector-vest-lite-men-black","name":"Protector Vest Lite Men Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Bikes","why":"an EVOC back-protector vest (MTB body armour), not a garment; srcCat is just the brand name 'Evoc' so 'Vest' decided it"},{"kind":"facets","severity":"med","field":"facets.type","current":"Jackets","suggested":null,"why":"protective equipment, not a jacket"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","facets":{"type":null}}}}
+{"id":"p-arcteryx-proton-hoody-w","name":"Proton Hoody W","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"facets are empty; srcCat 'Dunjakker og isolasjonsjakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-prym-opphengsstropper-til-jakker-3stk-imitert-skinn-mix","name":"Prym Opphengsstropper til jakker 3stk - imitert skinn - Mix","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Hobby","why":"Prym hanging loops are a sewing notion sold by a craft shop; srcCat is the product name repeated and 'jakker' decided it"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Prym","why":"the name opens with the brand"}],"fix":{"patch":{"cat":"Hobby","icon":"palette","brand":"Prym"}}}
+{"id":"ean-854702002448","name":"Puj - Kopp med krok Gul - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Baby","why":"a toddler cup; srcCat 'Kopper og tutekopper' (cups and sippy cups) is unmapped"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"ean-7391998388410","status":"ok"}
+{"id":"ean-7391998784113","status":"ok"}
+{"id":"p-puma-puma-ca-pro-lux-sneaker-hvid-387488","name":"Puma CA Pro Lux Sneaker Hvid 387488","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"a sneaker from Skoringen; srcCat 'Sneax / SNEAX Udsalg N / Dame' has no crumb that resolves"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-puma-puma-element-tennissokker-3-pk-herre","status":"ok"}
+{"id":"p-puma-puma-hipster-2-pk-dame","name":"Puma hipster 2-pk dame","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Underwear & nightwear","why":"srcCat 'Truser dame' (women's briefs)"}],"fix":{"patch":{"facets":{"type":"Underwear & nightwear"}}}}
+{"id":"p-puma-puma-mass-merchant-hettejakke-dame","status":"ok"}
+{"id":"p-puma-puma-mass-merchant-shorts-herre","name":"Puma Mass Merchant shorts herre","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf 'Shorts herre' both say shorts"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-puma-puma-teamrise-logo-junior","status":"ok"}
+{"id":"ean-7391998154305","status":"ok"}
+{"id":"ean-7391998644868","status":"ok"}
+{"id":"ean-7333569088381","name":"Pyjamasbukse","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Underwear & nightwear","why":"srcCat 'Pyjamasbukser'; the identically named ean-7333569289139 does carry the value"}],"fix":{"patch":{"facets":{"type":"Underwear & nightwear"}}}}
+{"id":"ean-7333569289139","status":"ok"}
+{"id":"ean-7391998026244","status":"ok"}
+{"id":"ean-7391998704487","status":"ok"}
+{"id":"ean-7070084061108","name":"På Stell Kjøkkenhåndkle 2pcs","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"kitchen towels (2-pack) — a home textile; srcCat 'Foreldre & barn > Badetid > Håndklær og tepper' is Blivakker's shelf, not the product"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"ean-5425031170495","name":"Quut -  Sandleke Sunnylove - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Toys","why":"'Sandleke' = sand toy; srcCat 'Badeleker' (bath toys) is unmapped, so a Guttelus row fell through to Fashion"},{"kind":"brand","severity":"med","field":"brand","current":"Scrunch","suggested":"Quut","why":"the name opens with 'Quut'; Scrunch is a different brand"}],"fix":{"patch":{"cat":"Toys","icon":"toy-brick","brand":"Quut"}}}
+{"id":"p-bergans-rabot-alpine-3l-shell-pants-women","status":"ok"}
+{"id":"ean-7031582517863","name":"Rabot Light Down Vest Women","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"ean-7031582517863","suggested":"p-bergans-rabot-light-down-vest-women","why":"identical product, name and price (kr 2699) as p-bergans-rabot-light-down-vest-women — one row came from the Bergans shop by EAN, the other from Sport 1 by slug; merging them gives the PDP two real offers instead of two one-offer pages"}],"fix":{"alias":{"ean":"7031582517863","product_id":"p-bergans-rabot-light-down-vest-women"}}}
+{"id":"p-bergans-rabot-light-down-vest-women","status":"ok"}
+{"id":"p-bergans-rabot-lt-windbreaker-w-jacket","status":"ok"}
+{"id":"ean-7031582535089","status":"ok"}
+{"id":"p-bergans-rabot-v2-3l-w-jacket","status":"ok"}
+{"id":"p-bergans-rabot-v2-softshell-w-pants","status":"ok"}
+{"id":"p-swix-racex-dry-half-zip-w","status":"ok"}
+{"id":"p-swix-racex-halfzip-superundetoyoverdel-dame","name":"RaceX Halfzip superundetøyoverdel dame","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"RaceX Halfzip superundetøyoverdel dame","suggested":"RaceX Halfzip superundertøyoverdel dame","why":"'superundetøyoverdel' is missing an r — the misspelling also makes the row unfindable by the correct search term"}],"fix":{"patch":{"name":"RaceX Halfzip superundertøyoverdel dame"}}}
+{"id":"p-swix-racex-merino-pants-ullbukse-herre","status":"ok"}
+{"id":"p-oakley-radar-ev-path-polished-black-shallo-water-polarized","status":"ok"}
+{"id":"p-kari-traa-ragnhild-fleecejakke-dame","name":"Ragnhild fleecejakke dame","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'fleecejakke' + srcCat leaf 'Fleecejakker og ulljakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-ralph-lauren-ralph-lauren-strandkjole","name":"Ralph Lauren \"Strandkjole\"","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Ralph Lauren \"Strandkjole\"","suggested":"Ralph Lauren Strandkjole","why":"stray quote marks carried over from the shop's listing"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Dresses & skirts","why":"'kjole' = dress; srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"name":"Ralph Lauren Strandkjole","facets":{"type":"Dresses & skirts"}}}}
+{"id":"p-ralph-lauren-ralph-lauren-badeshorts","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-bayport-jakke","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-bedford-shorts","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-cardigan","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-collegegenser","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-denim-kjole","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-denimskjort","name":"Ralph Lauren Denimskjørt","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Dresses & skirts","why":"'skjørt' = skirt; srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"facets":{"type":"Dresses & skirts"}}}}
+{"id":"p-ralph-lauren-ralph-lauren-full-zip","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-gavesett","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-hettegenser","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-hettejakke","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-jersey-pique","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-joggesett","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-kabelstrikk","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-kortermet-linskjorte","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-kortermet-rugby-pique","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-linskjorte","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-pique","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-polo-overall","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-portland-skalljakke","name":"Ralph Lauren Portland Skalljakke","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'skalljakke' = shell jacket; srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-ralph-lauren-ralph-lauren-preppy-shorts","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-prepster-shorts","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-sett","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-skjorte","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-skorts","name":"Ralph Lauren Skorts","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Dresses & skirts","why":"a skort (skirt-shorts); srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"facets":{"type":"Dresses & skirts"}}}}
+{"id":"p-ralph-lauren-ralph-lauren-sokker","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-strikkegenser-flagg","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-t-skjorte","status":"ok"}
+{"id":"p-ralph-lauren-ralph-lauren-t-skjorte-flagg","status":"ok"}
+{"id":"p-harkila-rannoch-hws-shooting-jacket-willow-green","status":"ok"}
+{"id":"ean-5059526376927","status":"ok"}
+{"id":"p-ulvang-rav-kiby-ws-fig-vanilla-woodrose","status":"ok"}
+{"id":"p-ravenclaw-t-shirt-l","status":"ok"}
+{"id":"p-ray-ban-rb3671ch-polished-black-on-silver-gradient-gold-chromance","status":"ok"}
+{"id":"p-ray-ban-rb3765-legend-gold-green","status":"ok"}
+{"id":"ean-7391998143200","status":"ok"}
+{"id":"ean-6438557210339","status":"ok"}
+{"id":"ean-6438429321699","status":"ok"}
+{"id":"ean-6438429164012","status":"ok"}
+{"id":"ean-6438429596943","status":"ok"}
+{"id":"ean-6438429882145","name":"Reima - Regnjakke Vatten Black - 104","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Regnjakke' = rain jacket; srcCat 'Regntøy'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-6438557179797","name":"Reima - Solhatt Mustekala Lilac Amethyst - 44-46cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Solhatt' = sun hat; facets are empty"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-6438429332930","name":"Reima - Turbukse Silta Antibite 2-i-1 - 122","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Turbukse' = hiking trousers; srcCat 'Utebukse'"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-6438557242194","name":"Reima - Vinterbukse Leikisti Black - 92","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Vinterbukse' = winter trousers; srcCat 'Utebukse'"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-6438429859949","name":"Reima - Vinterbukse Proxima Reimatec Navy - 98","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Vinterbukse' = winter trousers; srcCat 'Utebukse'"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-6438429904731","status":"ok"}
+{"id":"ean-6438557106151","status":"ok"}
+{"id":"ean-6438557242354","status":"ok"}
+{"id":"ean-6438557242828","status":"ok"}
+{"id":"ean-6438429830290","status":"ok"}
+{"id":"ean-6438429852940","status":"ok"}
+{"id":"ean-6438557306018","status":"ok"}
+{"id":"ean-6438557035901","status":"ok"}
+{"id":"ean-6438557259222","status":"ok"}
+{"id":"p-reima-reima-beanie-dimma-navy","status":"ok"}
+{"id":"p-reima-reima-booties-antura-navy","name":"Reima Booties; Antura Navy","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"Reima booties are baby footwear; srcCat is the useless crumb 'Home' so nothing contradicted the Fashion default"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-reima-reima-booties-anturoin-lilac-amethyst","name":"Reima Booties; Anturoin Lilac Amethyst","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"baby booties; srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-reima-reima-dunjakke-paimio-green-clay","name":"Reima Dunjakke; Paimio Green Clay","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets","current":{"color":"Green"},"suggested":{"type":"Jackets","material":"Down"},"why":"'Dunjakke' = down jacket; neither the type nor the down material derives from the Norwegian compound"}],"fix":{"patch":{"facets":{"type":"Jackets","material":"Down"}}}}
+{"id":"p-reima-reima-dunjakker-kupponen-lilac-amethyst","name":"Reima Dunjakker; Kupponen Lilac Amethyst","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets","current":{},"suggested":{"type":"Jackets","material":"Down","color":"Purple"},"why":"'Dunjakker' = down jacket, 'Lilac Amethyst' is a purple colourway; facets are empty"}],"fix":{"patch":{"facets":{"type":"Jackets","material":"Down","color":"Purple"}}}}
+{"id":"p-reima-reima-fleece-jakke-tarpeen-navy","status":"ok"}
+{"id":"p-reima-reima-fleecejakke-moomin-kramgo-stone-green","name":"Reima Fleecejakke - Moomin Kramgo - Stone Green","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Fleecejakke' as one word derives nothing, while the sibling 'Reima Fleece Jakke; Tarpeen Navy' does get Jackets"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-reima-reima-hansker-sormin-melange-grey","status":"ok"}
+{"id":"p-reima-reima-lue-tantsu-pale-rose","status":"ok"}
+{"id":"p-reima-reima-raincoat-vesi-pale-rose","name":"Reima Raincoat; Vesi Pale Rose","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"a raincoat; facets are empty and srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-reima-reima-regndress-rapakko-navy","status":"ok"}
+{"id":"p-reima-reima-regnsett-tihku-blooming-lilac","name":"Reima Regnsett - Tihku - Blooming Lilac","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-reima-reima-regnsett-tihku-blooming-lilac","why":"three top-level rows are the same Reima Tihku rain set in different colours (Blooming Lilac, Earthy Beige, Denim Blue), none wired as variants"}],"fix":{"group":{"head":"p-reima-reima-regnsett-tihku-blooming-lilac","members":["p-reima-reima-regnsett-tihku-earthy-beige","p-reima-reima-tihku-regnsett-denim-blue"],"axis":"color"}}}
+{"id":"p-reima-reima-regnsett-tihku-earthy-beige","name":"Reima Regnsett - Tihku - Earthy Beige","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-reima-reima-regnsett-tihku-blooming-lilac","why":"colour variant of the Reima Tihku rain set, sitting as its own top-level row"}],"fix":{"group":{"head":"p-reima-reima-regnsett-tihku-blooming-lilac","members":["p-reima-reima-regnsett-tihku-earthy-beige","p-reima-reima-tihku-regnsett-denim-blue"],"axis":"color"}}}
+{"id":"p-reima-reima-regnvotter-puro-navy","name":"Reima Regnvotter; Puro Navy","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Regnvotter' = rain mittens; other mitten rows in this shard carry Accessories"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-reima-reima-regnvotter-puro-rose-blush","name":"Reima Regnvotter; Puro Rose Blush","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Regnvotter' = rain mittens"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":null,"why":"colour sibling of p-reima-reima-regnvotter-puro-navy, unwired"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-reima-reima-sneakers-ekana-navy","name":"Reima Sneakers - Ekana - Navy","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"sneakers; srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-reima-reima-sneakers-ekana-stone-green","name":"Reima Sneakers - Ekana - Stone Green","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"sneakers; srcCat is the useless crumb 'Home'"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":null,"why":"colour sibling of p-reima-reima-sneakers-ekana-navy, unwired"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-reima-reima-softshell-bukser-valmis-soft-black","status":"ok"}
+{"id":"p-reima-reima-softshell-dress-alkava-misty-violet","name":"Reima Softshell Dress - Alkava - Misty Violet","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Dresses & skirts","suggested":null,"why":"Reima Alkava is a softshell overall — the shop writes the Norwegian 'dress' (= coverall/suit), which the English word matched as a frock; sibling 'Regndress' rows correctly derive nothing"}],"fix":{"patch":{"facets":{"type":null}}}}
+{"id":"p-reima-reima-softshell-dress-mjosa-green-clay","name":"Reima Softshell Dress; Mjosa Green Clay","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Dresses & skirts","suggested":null,"why":"Reima Mjosa is a softshell overall; Norwegian 'dress' = coverall, not a frock"}],"fix":{"patch":{"facets":{"type":null}}}}
+{"id":"p-reima-reima-stovler-mumi-magisk-airy-blue","name":"Reima Støvler - Mumi Magisk - Airy Blue","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Støvler' = boots; srcCat is the useless crumb 'Home'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-reima-reima-sydvest-rainy-blooming-lilac","name":"Reima Sydvest - Rainy - Blooming Lilac","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"p-reima-reima-sydvest-rainy-blooming-lilac","why":"same Reima Rainy sou'wester as p-reima-reima-sydvest-rainy-rose-blush in another colour, both kr 229, unwired"}],"fix":{"group":{"head":"p-reima-reima-sydvest-rainy-blooming-lilac","members":["p-reima-reima-sydvest-rainy-rose-blush"],"axis":"color"}}}
+{"id":"p-reima-reima-sydvest-rainy-rose-blush","name":"Reima Sydvest - Rainy - Rose Blush","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"p-reima-reima-sydvest-rainy-blooming-lilac","why":"colour variant of the Reima Rainy sou'wester"}],"fix":{"group":{"head":"p-reima-reima-sydvest-rainy-blooming-lilac","members":["p-reima-reima-sydvest-rainy-rose-blush"],"axis":"color"}}}
+{"id":"p-reima-reima-tihku-regnsett-denim-blue","name":"Reima Tihku Regnsett - Denim Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-reima-reima-regnsett-tihku-blooming-lilac","why":"third colour of the Reima Tihku rain set; the word order differs ('Tihku Regnsett' vs 'Regnsett - Tihku') so it also slugged to a separate id"}],"fix":{"group":{"head":"p-reima-reima-regnsett-tihku-blooming-lilac","members":["p-reima-reima-regnsett-tihku-earthy-beige","p-reima-reima-tihku-regnsett-denim-blue"],"axis":"color"}}}
+{"id":"p-reima-reima-vantti-softshell-jakke-barn","status":"ok"}
+{"id":"_summary","shard":"Fashion-06","checked":300,"ok":185,"issues":115,"by_kind":{"category":43,"facets":64,"variant":10,"brand":4,"name":5,"duplicate":1,"junk":1,"price":1,"metadata":1},"high":40,"rule_gaps":["No footwear vocabulary: 'støvlett/støvel/vinterstøvel/sneaker(s)/sneax/piggsko/booties/hunting boot' all stay in Fashion — 22 rows here, 15 of them from Skoringen, which is a pure shoe retailer and has no CATMAP '*' floor","Norwegian '…jakke/…jakker' leaves ('Skalljakker', 'Dunjakker og isolasjonsjakker', 'Fleecejakke', 'Vinterjakker', 'Regnjakke') do not derive facets.type Jackets, while the English 'Jacket' does — ~23 rows","Ull-compounds ('Ullsokker', 'Ullongs', 'Ullbukse', 'Ulljakke', 'Ullbody', 'Ulltrøye', 'ullsett') do not derive material Wool, while 'Ull' as a separate word does — ~25 rows, all Name It/Guttelus","'Shorts' derives facets.type Trousers whenever the breadcrumb is 'Bukser … > Shorts', so shorts are invisible under the Shorts filter that other rows populate","Bathroom/home textiles ('håndkle', 'gjestehåndkle', 'klut/vaskeklut', 'kjøkkenhåndkle', breadcrumb 'Baderom > Håndklær') land in Fashion instead of Home","Baby feeding gear ('tåteflaske', 'kopper og tutekopper') and bath toys ('badeleker', 'sandleke') are unmapped, so Guttelus rows fall through to Fashion instead of Baby/Toys","Substring matching on hosiery/sock words misfires: 'Pippi Langstrømpe' (an umbrella) → Socks & hosiery, and a ski harness shelved under 'Varmesokker …' → Socks & hosiery","Ingest accepts placeholder EANs: 'ean-1' is a live product merging a kr 329 baby hat with an unrelated kr 1724 Bikeshop row"],"notes":"Category assignment inside Fashion is fine (clothing is clothing), but everything adjacent to clothing leaks in: 22 shoe rows, 8 towels, 5 baby-feeding items, 2 toys, PPE, a sewing notion and a bike protector — 43 of the 115 findings. Structurally, ~90 Guttelus/KappAhl rows are one EAN per size+colour with the variant suffix in the name and no vlabel/family, and the Junior Barneklær and Ralph Lauren blocks all publish srcCat 'Home' plus the brand repeated at the head of every name; neither is worth per-row fixes but both are why so many facets are empty. Images are missing on ~45% of rows, expected for sampled shops."}

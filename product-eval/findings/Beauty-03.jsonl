@@ -1,0 +1,301 @@
+{"id":"p-fantasy-make-up-temasett-heks-magi","name":"Fantasy Make-Up Temasett - Heks/Magi","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Hobby","why":"children's face-paint theme set from an art-supply shop; srcCat 'Male > Hobby og barnemaling > Ansiktsmaling'"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Fantasy Make-Up","why":"brand field holds the placeholder \"Unspecified\"; the name states the brand"}],"fix":{"patch":{"cat":"Hobby","brand":"Fantasy Make-Up"}}}
+{"id":"ean-840026668262","name":"Fenty Beauty Fenty Cheeks Suede Power Blush Matte Daiquiri Dip 4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-840026668262","why":"Fenty Cheeks Suede Power Blush 4g in two shades/finishes — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-840026668262","members":["ean-840026676144"],"axis":"color"}}}
+{"id":"ean-840026676144","status":"ok"}
+{"id":"ean-816657022353","status":"ok"}
+{"id":"ean-8056860210303","status":"ok"}
+{"id":"ean-3540550009452","status":"ok"}
+{"id":"ean-7391593004425","name":"Five Oceans Fabric Freshener Rain On Sandalwood Travel 100ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"fabric/room freshener, srcCat \"Romspray\" (room spray) — a home fragrance product, not personal care"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-7391593004289","status":"ok"}
+{"id":"ean-7391593004401","name":"Five Oceans Wool Dryer Balls 4pcs","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Home","why":"wool dryer balls for the tumble dryer; srcCat \"Hjem > Renhold > Klesvask\" (home > cleaning > laundry)"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-850053154300","name":"Flamingo Estate Mini Three Sisters Set 3 x 113g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"set of 3 mini scented candles; srcCat \"Hjem > Parfyme > Duftlys\" (candles)"},{"kind":"facets","severity":"low","field":"facets.type","current":"Fragrance","suggested":null,"why":"\"Fragrance\" was derived from the Duftlys crumb; the type facet belongs to the Beauty registry and is moot once the row moves to Home"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-kid-floral-bow-skummende-handsape-multi","status":"ok"}
+{"id":"ean-840047213007","status":"ok"}
+{"id":"ean-840047213380","status":"ok"}
+{"id":"ean-840047213076","name":"Florence by Mills Low-Key Calming Peel Off Mask 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Florence by Mills Low-Key Calming Peel Off Mask 50 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Florence by Mills Low-Key Calming Peel Off Mask 50 ml"}}}
+{"id":"ean-6418414038740","status":"ok"}
+{"id":"ean-6418414038825","status":"ok"}
+{"id":"ean-6418414038474","status":"ok"}
+{"id":"ean-6418414039358","status":"ok"}
+{"id":"ean-6290360379531","status":"ok"}
+{"id":"ean-6290360377810","status":"ok"}
+{"id":"ean-6290360375113","status":"ok"}
+{"id":"ean-6290360372396","status":"ok"}
+{"id":"ean-4009384301594","status":"ok"}
+{"id":"ean-8717496449351","status":"ok"}
+{"id":"ean-8717496446060","name":"FUGAZZI In Love With The Cocos Eau de Parfum 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"FUGAZZI In Love With The Cocos Eau de Parfum 50 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"FUGAZZI In Love With The Cocos Eau de Parfum 50 ml"}}}
+{"id":"ean-8717496449658","status":"ok"}
+{"id":"ean-8717496449566","status":"ok"}
+{"id":"ean-8717496449603","status":"ok"}
+{"id":"ean-6430070610719","status":"ok"}
+{"id":"ean-6430070610702","status":"ok"}
+{"id":"ean-6430070611396","status":"ok"}
+{"id":"ean-8809211653294","status":"ok"}
+{"id":"p-miniatyrhobby-gamemaster-primer-desert-arid-wastes","name":"GameMaster Primer Desert & Arid Wastes","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Hobby","why":"miniature/model paint primer sold by Gamezone; \"Primer\" pulled it into the makeup vocabulary"},{"kind":"brand","severity":"med","field":"brand","current":"Miniatyrhobby","suggested":"GameMaster","why":"\"Miniatyrhobby\" is the retailer, the brand is GameMaster (stated in the name)"},{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":null,"why":"a model-paint primer is not face makeup"}],"fix":{"patch":{"cat":"Hobby","brand":"GameMaster"}}}
+{"id":"ean-3600542607544","name":"Garnier Ambre Solaire Sensitive Advanced Kids Hypoallergenic Spray SPF50+ 150ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sun care","why":"Ambre Solaire kids sun spray SPF50+"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-3600541116542","status":"ok"}
+{"id":"ean-3600541938519","status":"ok"}
+{"id":"p-garnier-garnier-pomegranate-sheet-mask-trio-3x28g","status":"ok"}
+{"id":"ean-3600542597883","name":"Garnier PureActive Salicylic Anti-Imperfection Daily UV Fluid SPF50+  40ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sun care","why":"daily UV fluid SPF50+"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-3600541945029","status":"ok"}
+{"id":"ean-3600542097147","status":"ok"}
+{"id":"ean-3600542596077","name":"Garnier Vitamin C* Glow-Boosting Daily UV Fluid SPF50+ Glow 40ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sun care","why":"daily UV fluid SPF50+"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-711376140015","status":"ok"}
+{"id":"ean-4099702004047","status":"ok"}
+{"id":"ean-3551440589114","status":"ok"}
+{"id":"ean-7702018851324","status":"ok"}
+{"id":"ean-3614274139167","status":"ok"}
+{"id":"ean-3614274164671","name":"Giorgio Armani Luminous Silk Foundation 4.1 4.1","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Giorgio Armani Luminous Silk Foundation 4.1","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Giorgio Armani Luminous Silk Foundation 4.1"}}}
+{"id":"ean-7640164032924","status":"ok"}
+{"id":"ean-7640164031361","name":"Gisada Titanium Eau de Parfum 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Gisada Titanium Eau de Parfum 50 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Gisada Titanium Eau de Parfum 50 ml"}}}
+{"id":"ean-3274872512627","status":"ok"}
+{"id":"ean-7350170173985","name":"GLAS Cornelia Gold Blush Sunglasses 0,0 +","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"sunglasses, srcCat \"Solbriller\" — eyewear is a Fashion accessory"},{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":null,"why":"\"Blush\" is the frame colour here, not a makeup type"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7350142348748","name":"GLAS Ella Gold Sunglasses Strength 0 +","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"sunglasses, srcCat \"Solbriller\""},{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"Strength 0","why":"GLAS Ella Gold Sunglasses Strength 0 / 1.0 / 2.0 (ean-7350142348755, ean-7350142348779) are the same frame in three reading strengths, sitting as separate top-level rows; group on axis size once the category is fixed"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7350142348755","name":"GLAS Ella Gold Sunglasses Strength 1.0 +","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"sunglasses; srcCat is only \"Salg og tilbud > Outlet > Outlet Accessories\""}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7350142348779","name":"GLAS Ella Gold Sunglasses Strength 2.0 +","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"sunglasses; srcCat is only \"Salg og tilbud > Outlet > Outlet Accessories\""}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7350142348847","name":"GLAS Ella Silver Readers Strength 3.0 +","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"reading glasses; srcCat is only \"Salg og tilbud > Outlet > Outlet Accessories\""}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7350170173657","name":"GLAS Jennifer Gold Sunglasses 2,0 +","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"sunglasses, srcCat \"Smykker & tilbehør > Solbriller & Briller > Solbriller\""}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7090038340400","status":"ok"}
+{"id":"ean-6430057131114","status":"ok"}
+{"id":"ean-7072463142705","status":"ok"}
+{"id":"ean-7072463142880","status":"ok"}
+{"id":"ean-7072463142743","status":"ok"}
+{"id":"ean-7072463140954","status":"ok"}
+{"id":"ean-9356353000985","name":"Goldfield & Banks Ingenious Ginger 50ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Fragrance","why":"Goldfield & Banks perfume, srcCat \"Premium > Dufter\""}],"fix":{"patch":{"facets":{"type":"Fragrance"}}}}
+{"id":"ean-9356353001784","name":"Goldfield & Banks Pacific Rock Flower 100ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Fragrance","why":"perfume, srcCat \"Dufter > Duftfamilie > Friske dufter\""}],"fix":{"patch":{"facets":{"type":"Fragrance"}}}}
+{"id":"ean-9356353000497","name":"Goldfield & Banks Sunset Hour 100ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Fragrance","why":"perfume, srcCat \"Florale dufter\""}],"fix":{"patch":{"facets":{"type":"Fragrance"}}}}
+{"id":"ean-4021609028833","status":"ok"}
+{"id":"ean-4021609520061","name":"Goldwell StyleSign Lightweight Fluid 150ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Hair care","why":"Goldwell StyleSign styling fluid, srcCat \"Goldwell > StyleSign > Curls & Waves\""}],"fix":{"patch":{"facets":{"type":"Hair care"}}}}
+{"id":"ean-4021609520023","name":"Goldwell StyleSign Root Boost Spray 200ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Hair care","why":"Goldwell StyleSign root boost spray"}],"fix":{"patch":{"facets":{"type":"Hair care"}}}}
+{"id":"ean-5711914190712","name":"Gosh Copenhagen Eye Bright'n Conceal 001 Nude 001 Nude","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Gosh Copenhagen Eye Bright'n Conceal 001 Nude","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Gosh Copenhagen Eye Bright'n Conceal 001 Nude"}}}
+{"id":"ean-843246110085","status":"ok"}
+{"id":"ean-843246100437","status":"ok"}
+{"id":"ean-843246180415","name":"Grande Cosmetics GrandePOP Plumping Blush Mauvesicle 10g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-843246180415","why":"Grande Cosmetics GrandePOP Plumping Blush 10g in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-843246180415","members":["ean-843246180439"],"axis":"color"}}}
+{"id":"ean-843246180439","status":"ok"}
+{"id":"ean-843246140013","status":"ok"}
+{"id":"ean-7350031365887","name":"Great Earth Magnesiumpulver 200g","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Health","why":"magnesium powder food supplement, srcCat \"Magnesium\""}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"ean-3614228958578","status":"ok"}
+{"id":"ean-8005610481081","status":"ok"}
+{"id":"ean-737052339207","status":"ok"}
+{"id":"ean-3346472000108","status":"ok"}
+{"id":"ean-3346470439870","name":"GUERLAIN Contour G 24 Lip/Pen 03 Le Brun Tonka 1,40g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-3346470439870","why":"GUERLAIN Contour G 24 Lip/Pen 1,40g, shades 03 and 04 — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-3346470439870","members":["ean-3346470439863"],"axis":"color"}}}
+{"id":"ean-3346470439863","status":"ok"}
+{"id":"ean-3346470436602","status":"ok"}
+{"id":"ean-3346470441118","status":"ok"}
+{"id":"ean-3346470622562","status":"ok"}
+{"id":"ean-3346470436572","status":"ok"}
+{"id":"ean-3346470618824","status":"ok"}
+{"id":"ean-3346470437876","status":"ok"}
+{"id":"ean-3346470149212","name":"Guerlain Shalimar L'Éssence EdP 30ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-3346470149212","why":"Guerlain Shalimar L’Éssence EdP in 30ml and 90ml — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-3346470149212","members":["ean-3346470149236"],"axis":"size"}}}
+{"id":"ean-3346470149236","status":"ok"}
+{"id":"ean-3346470440227","status":"ok"}
+{"id":"ean-3346470435681","status":"ok"}
+{"id":"ean-3346470442542","name":"GUERLAIN Terracotta Le Teint Glow Fluid Foundation 5W 35ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-3346470442542","why":"GUERLAIN Terracotta Le Teint Glow Fluid Foundation 35ml in four shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-3346470442542","members":["ean-3346470442429","ean-3346470442412","ean-3346470442450"],"axis":"color"}}}
+{"id":"ean-3346470442429","status":"ok"}
+{"id":"ean-3346470442412","status":"ok"}
+{"id":"ean-3346470442450","status":"ok"}
+{"id":"ean-3346470435629","status":"ok"}
+{"id":"ean-85715324290","status":"ok"}
+{"id":"ean-5900525078797","status":"ok"}
+{"id":"ean-7392907873300","name":"Hair Accessories Hair Accessories Hair Clips Long 12pcs","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":null,"suggested":"Hair Accessories Hair Clips Long 12pcs","why":"the house-brand name is repeated twice at the start of the product name"}],"fix":{"patch":{"name":"Hair Accessories Hair Clips Long 12pcs"}}}
+{"id":"ean-7090041582231","status":"ok"}
+{"id":"ean-5065011100007","status":"ok"}
+{"id":"ean-5060743581278","name":"Hairburst Mesh Wash Bag Pink","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Cleansing","suggested":"Tools","why":"a mesh wash bag is an accessory; \"Wash\" in the name derived a skincare cleansing type. srcCat is \"Sminke > Verktøy og tilbehør > Toalettvesker\""}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-5060743581469","status":"ok"}
+{"id":"ean-5714628000568","status":"ok"}
+{"id":"ean-5714628000629","name":"Hairlust Final Touch™ Hair Spray 150 ml 150 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Hairlust Final Touch™ Hair Spray 150 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Hairlust Final Touch™ Hair Spray 150 ml"}}}
+{"id":"ean-8809532221523","status":"ok"}
+{"id":"ean-5099821001919","status":"ok"}
+{"id":"ean-8809481761828","status":"ok"}
+{"id":"ean-8809481761910","status":"ok"}
+{"id":"ean-3614273574976","status":"ok"}
+{"id":"ean-3614274114133","name":"Helena Rubinstein Replasty Eye Bandage 15 ml 15 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Helena Rubinstein Replasty Eye Bandage 15 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Helena Rubinstein Replasty Eye Bandage 15 ml"}}}
+{"id":"ean-8470001977793","name":"Heliocare Pigment Solution Fluid SPF50 50ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sun care","why":"SPF50 sun fluid, srcCat \"Hudpleie > Solprodukter\""}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"p-helly-hansen-workwear-helly-hansen-work-hh-lifa-merino-balaclava-camo","name":"Helly Hansen Work HH Lifa Merino Balaclava Camo","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"merino balaclava (headwear); srcCat \"Outdoor > Klær > Luer, Capser og Hatter > Balaklava og Ansiktsmasker\" — the leaf crumb \"Ansiktsmasker\" read as beauty face masks"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7350124791951","status":"ok"}
+{"id":"ean-7350124790848","name":"Hickap Fire Eyes Cream Shadow Stardust 4,5g","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Moisturisers","suggested":"Eyes","why":"cream eyeshadow; \"Cream\" derived a moisturiser type, srcCat is \"Øyne\""}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-7350124790732","status":"ok"}
+{"id":"ean-7350124791548","status":"ok"}
+{"id":"ean-7350124790404","status":"ok"}
+{"id":"ean-7350124791623","status":"ok"}
+{"id":"ean-9359407000306","status":"ok"}
+{"id":"ean-506336331171","status":"ok"}
+{"id":"ean-5060339331256","name":"Holistic Silk Pure Mulberry Silk Anti-Ageing Pillowcase - White","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Home","why":"silk pillowcase; srcCat \"Hjem > Til henne\" gives no product crumb"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-5060339331225","name":"Holistic Silk Velvet Hot Water Bottle - Jade","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Home","why":"velvet hot water bottle; the breadcrumb is only the brand path"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-85715267269","name":"Hollister Canyon Sky for Her Eau de Parfum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Hollister Canyon Sky for Her Eau de Parfum 30 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Hollister Canyon Sky for Her Eau de Parfum 30 ml"}}}
+{"id":"ean-810063695514","name":"Hourglass Ambient Lighting Edit Brush Dragon Dragon","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Hourglass Ambient Lighting Edit Brush Dragon","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Hourglass Ambient Lighting Edit Brush Dragon"}}}
+{"id":"ean-877231003823","name":"Hourglass Arch Brow Sculpting Pencil Warm Blonde Warm Blonde","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Hourglass Arch Brow Sculpting Pencil Warm Blonde","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Hourglass Arch Brow Sculpting Pencil Warm Blonde"}}}
+{"id":"ean-850004373217","name":"Hourglass Curator Eyeshadow Mod Mod","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Hourglass Curator Eyeshadow Mod","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Hourglass Curator Eyeshadow Mod"}}}
+{"id":"ean-7090050870367","status":"ok"}
+{"id":"ean-7090050870350","status":"ok"}
+{"id":"ean-7090050870121","status":"ok"}
+{"id":"ean-7090050870992","status":"ok"}
+{"id":"ean-7090050870176","status":"ok"}
+{"id":"ean-7090050871517","status":"ok"}
+{"id":"ean-3614228220903","status":"ok"}
+{"id":"ean-3616304691645","status":"ok"}
+{"id":"ean-3616306970649","name":"Hugo Boss The Scent for Him Intense Eau de Parfum 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Hugo Boss The Scent for Him Intense Eau de Parfum 100 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Hugo Boss The Scent for Him Intense Eau de Parfum 100 ml"}}}
+{"id":"ean-8809422534160","name":"Huxley Cream; More Than Moist 50ml 50ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Huxley Cream; More Than Moist 50ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Huxley Cream; More Than Moist 50ml"}}}
+{"id":"ean-6429830174998","status":"ok"}
+{"id":"p-nofo-handkrem-nofo","status":"ok"}
+{"id":"p-l-oreal-paris-harfarging-casting-creme-gloss","status":"ok"}
+{"id":"ean-761318452515","name":"HÅRFØNER SMOOTH BRILLIANCE AC","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":null,"suggested":"Revlon Hårføner Smooth Brilliance AC","why":"ALL-CAPS feed boilerplate with no brand in the name"}],"fix":{"patch":{"name":"Revlon Hårføner Smooth Brilliance AC"}}}
+{"id":"ean-8809525931316","status":"ok"}
+{"id":"ean-8806190728067","status":"ok"}
+{"id":"ean-5060945315923","name":"ICONIC LONDON Lip Mousse Cloud Kiss Matte Show Off Show Off","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"ICONIC LONDON Lip Mousse Cloud Kiss Matte Show Off","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"},{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Lips","why":"facets.type 'Hair care' is wrong for a lip mousse"}],"fix":{"patch":{"name":"ICONIC LONDON Lip Mousse Cloud Kiss Matte Show Off","facets":{"type":"Lips"}}}}
+{"id":"ean-5060490924977","status":"ok"}
+{"id":"ean-5060490921693","name":"ICONIC LONDON Sheer Blush Power Pink Power Pink","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"ICONIC LONDON Sheer Blush Power Pink","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"ICONIC LONDON Sheer Blush Power Pink"}}}
+{"id":"ean-5060490923550","name":"Iconic London Sheer Bronze Caramel Glow 12,5ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"Iconic London bronzer, srcCat \"Outlet Sminke\""}],"fix":{"patch":{"facets":{"type":"Face makeup"}}}}
+{"id":"ean-5060945310461","status":"ok"}
+{"id":"ean-5704699876407","name":"Id Hair Colour Bomb Cold Silver 1001 200ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-5704699876407","why":"Id Hair Colour Bomb 200ml in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-5704699876407","members":["ean-5704699878258"],"axis":"color"}}}
+{"id":"ean-5704699878258","status":"ok"}
+{"id":"ean-5704699876766","status":"ok"}
+{"id":"ean-7340074775491","status":"ok"}
+{"id":"ean-7340074775477","status":"ok"}
+{"id":"ean-7340074775125","status":"ok"}
+{"id":"ean-7340074775118","status":"ok"}
+{"id":"ean-7340074775187","name":"IDA WARG Beauty Silver Mask 300 ml 300 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"IDA WARG Beauty Silver Mask 300 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"},{"kind":"price","severity":"low","field":"best","current":40,"suggested":null,"why":"kr 40 for a 300 ml hair mask while the brand’s 250 ml shampoos are kr 209-259 in the same shard — likely a mis-scraped sample/clearance price"}],"fix":{"patch":{"name":"IDA WARG Beauty Silver Mask 300 ml"}}}
+{"id":"ean-7340074775163","status":"ok"}
+{"id":"ean-7340074716326","status":"ok"}
+{"id":"ean-7340074752010","status":"ok"}
+{"id":"ean-7340074712564","status":"ok"}
+{"id":"ean-7340074751518","status":"ok"}
+{"id":"ean-7340074750030","name":"IDUN Minerals Mascara Vatn Waterproof 38°C Black Black","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"IDUN Minerals Mascara Vatn Waterproof 38°C Black","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"IDUN Minerals Mascara Vatn Waterproof 38°C Black"}}}
+{"id":"ean-7340074735068","status":"ok"}
+{"id":"ean-7340074717071","status":"ok"}
+{"id":"ean-7340074774098","status":"ok"}
+{"id":"ean-7340074730063","status":"ok"}
+{"id":"ean-7340074741144","status":"ok"}
+{"id":"ean-7340074750184","status":"ok"}
+{"id":"ean-7340074741120","status":"ok"}
+{"id":"ean-7340074744046","status":"ok"}
+{"id":"ean-7340074780075","status":"ok"}
+{"id":"ean-810021402291","status":"ok"}
+{"id":"ean-810021403557","name":"IGK Extra Love Conditioner 236 ml 236 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"IGK Extra Love Conditioner 236 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"IGK Extra Love Conditioner 236 ml"}}}
+{"id":"ean-810021404530","name":"IGK Good Behavior Smoothing Spray 241 ml 241 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"IGK Good Behavior Smoothing Spray 241 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Hair care","why":"hair smoothing spray, no type derived"}],"fix":{"patch":{"name":"IGK Good Behavior Smoothing Spray 241 ml","facets":{"type":"Hair care"}}}}
+{"id":"ean-813614020223","status":"ok"}
+{"id":"ean-8809714721469","status":"ok"}
+{"id":"ean-810110851559","status":"ok"}
+{"id":"ean-810110850217","status":"ok"}
+{"id":"ean-839174010559","status":"ok"}
+{"id":"ean-18084055076","status":"ok"}
+{"id":"ean-5056683107296","status":"ok"}
+{"id":"ean-5056683107326","status":"ok"}
+{"id":"ean-7333352078803","name":"IsaDora Contour Kajal 66 Dark Blue 1,2g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-7333352078803","why":"IsaDora Contour Kajal 1,2g in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-7333352078803","members":["ean-7333352078858"],"axis":"color"}}}
+{"id":"ean-7333352078858","status":"ok"}
+{"id":"ean-7333352084927","name":"IsaDora No Compromise Matte Powder 66 Warm Beige 66 Warm Beige","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"IsaDora No Compromise Matte Powder 66 Warm Beige","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"IsaDora No Compromise Matte Powder 66 Warm Beige"}}}
+{"id":"ean-7317852252154","name":"IsaDora Perfect Moisture Lipstick 215 Classic Red 4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-7317852252154","why":"IsaDora Perfect Moisture Lipstick in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-7317852252154","members":["ean-7317852252222"],"axis":"color"}}}
+{"id":"ean-7317852252222","status":"ok"}
+{"id":"ean-7333352079138","status":"ok"}
+{"id":"ean-7333352085054","status":"ok"}
+{"id":"ean-7333352080028","status":"ok"}
+{"id":"ean-7333352084651","status":"ok"}
+{"id":"ean-7333352085177","status":"ok"}
+{"id":"ean-8809686384204","status":"ok"}
+{"id":"ean-8809800940125","status":"ok"}
+{"id":"p-isola-isola-g-primer-1l-flaske","name":"Isola G-primer - 1l flaske","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Tools","why":"concrete/mortar primer; srcCat \"Trelast og byggevarer > Byggevarer > Mørtel og støp > Primer\" is unambiguously building materials"},{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":null,"why":"a 1 litre building primer is not face makeup"}],"fix":{"patch":{"cat":"Tools"}}}
+{"id":"ean-3423470481297","status":"ok"}
+{"id":"ean-3423470300154","status":"ok"}
+{"id":"ean-3423222090593","status":"ok"}
+{"id":"ean-3423222105884","status":"ok"}
+{"id":"ean-3605971992735","status":"ok"}
+{"id":"ean-3605973098411","name":"IT Cosmetics Do It All Sheer Tint Face Balm Light Warm 215 18g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-3605973098411","why":"IT Cosmetics Do It All Sheer Tint Face Balm 18g in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-3605973098411","members":["ean-3605973098473"],"axis":"color"}}}
+{"id":"ean-3605973098473","status":"ok"}
+{"id":"ean-3605971979309","name":"It Cosmetics Your Skin But Better CC+ Cream SPF50+ 08 Medium 32ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-3605971979309","why":"It Cosmetics Your Skin But Better CC+ Cream SPF50+ 32ml in five shades (the last row comes from Kicks without the size in the name) — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-3605971979309","members":["ean-3605971979422","ean-3605972602732","ean-3605972572288","ean-3605972602695"],"axis":"color"}}}
+{"id":"ean-3605971979422","status":"ok"}
+{"id":"ean-3605972602732","status":"ok"}
+{"id":"ean-3605972572288","status":"ok"}
+{"id":"ean-3605972602695","name":"IT Cosmetics Your Skin But Better CC+ SPF50+ Deep Honey Deep Honey","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"IT Cosmetics Your Skin But Better CC+ SPF50+ Deep Honey","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"CC cream, only spf was derived"}],"fix":{"patch":{"name":"IT Cosmetics Your Skin But Better CC+ SPF50+ Deep Honey","facets":{"type":"Face makeup"}}}}
+{"id":"ean-8809728080576","status":"ok"}
+{"id":"ean-644216023431","name":"J Beverly Hills Molding Putty 53 ml 53 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"J Beverly Hills Molding Putty 53 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Hair care","why":"hair molding putty, no type derived"}],"fix":{"patch":{"name":"J Beverly Hills Molding Putty 53 ml","facets":{"type":"Hair care"}}}}
+{"id":"ean-5710404974412","status":"ok"}
+{"id":"ean-670959114235","status":"ok"}
+{"id":"ean-670959120595","name":"jane iredale ColorLuxe High Impact Lip Glaze Flush 5ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-670959120595","why":"jane iredale ColorLuxe High Impact Lip Glaze 5ml in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-670959120595","members":["ean-670959120601"],"axis":"color"}}}
+{"id":"ean-670959120601","name":"jane iredale ColorLuxe High ImpactLip Glaze Juicy 5ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"jane iredale ColorLuxe High Impact Lip Glaze Juicy 5ml","why":"missing space: \"High ImpactLip Glaze\""},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Lips","why":"lip glaze; the sibling row ean-670959120595 has type Lips"}],"fix":{"patch":{"name":"jane iredale ColorLuxe High Impact Lip Glaze Juicy 5ml","facets":{"type":"Lips"}}}}
+{"id":"ean-670959330383","status":"ok"}
+{"id":"ean-670959116017","status":"ok"}
+{"id":"ean-670959116369","name":"jane iredale Hydropure Hyaluronic Lip Gloss Sangria 3,75ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-670959116369","why":"jane iredale Hydropure Hyaluronic Lip Gloss 3,75ml in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-670959116369","members":["ean-670959116406"],"axis":"color"}}}
+{"id":"ean-670959116406","status":"ok"}
+{"id":"ean-670959117274","status":"ok"}
+{"id":"ean-670959118301","name":"jane iredale Purematch Liquid Concealer 4N LIight 5ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-670959118301","why":"jane iredale Purematch Liquid Concealer 5ml in two shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-670959118301","members":["ean-670959118349"],"axis":"color"}}}
+{"id":"ean-670959118349","status":"ok"}
+{"id":"ean-670959115539","name":"jane iredale PurePressed Blush #Qeen Bee 3,2g","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"jane iredale PurePressed Blush #Queen Bee 3,2g","why":"shade name misspelled \"#Qeen Bee\" in the feed"}],"fix":{"patch":{"name":"jane iredale PurePressed Blush #Queen Bee 3,2g"}}}
+{"id":"ean-670959122568","name":"Jane Iredale Skintuition Brightening Under Eye Concealer DP13","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-670959122568","why":"Jane Iredale Skintuition Brightening Under Eye Concealer in three shades — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-670959122568","members":["ean-670959122599","ean-670959122452"],"axis":"color"}}}
+{"id":"ean-670959122599","status":"ok"}
+{"id":"ean-670959122452","status":"ok"}
+{"id":"ean-810053570906","status":"ok"}
+{"id":"ean-810053570982","status":"ok"}
+{"id":"ean-8435415082938","status":"ok"}
+{"id":"ean-8435415114776","status":"ok"}
+{"id":"ean-8435415115032","status":"ok"}
+{"id":"ean-8435415113984","status":"ok"}
+{"id":"ean-8435415052382","status":"ok"}
+{"id":"ean-851543001012","status":"ok"}
+{"id":"ean-3386460119252","status":"ok"}
+{"id":"ean-669558002654","status":"ok"}
+{"id":"ean-74469513371","status":"ok"}
+{"id":"ean-74469513357","name":"Joico Blonde Life Violet Conditioner 250ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-74469513357","why":"Joico Blonde Life Violet Conditioner in 250ml and 1000ml — separate top-level rows, no family/vlabel wiring"}],"fix":{"group":{"head":"ean-74469513357","members":["ean-74469513371"],"axis":"size"}}}
+{"id":"ean-74469509169","status":"ok"}
+{"id":"ean-5712163183272","status":"ok"}
+{"id":"ean-719346628372","status":"ok"}
+{"id":"ean-3760022736031","status":"ok"}
+{"id":"ean-3760022730299","status":"ok"}
+{"id":"ean-3770000002782","status":"ok"}
+{"id":"ean-3760022731432","name":"Juliette Has a Gun Not a Perfume Superdose 100ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Fragrance","why":"Juliette Has a Gun Not a Perfume Superdose, srcCat \"Dufter > Duftfamilie\""}],"fix":{"patch":{"facets":{"type":"Fragrance"}}}}
+{"id":"ean-5010934004765","status":"ok"}
+{"id":"ean-8809695240577","status":"ok"}
+{"id":"ean-7350022453333","name":"K9 Competition Copperness Shampoo Fargeforsterkende hvit 300 ml","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Pets","why":"dog grooming shampoo from Dyrekassen; srcCat \"Hjem > Hund > Hundepleie > Shampoo og balsam\""}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"ean-3386460133876","status":"ok"}
+{"id":"ean-3386460087285","status":"ok"}
+{"id":"ean-3386460101837","status":"ok"}
+{"id":"ean-3386460161602","status":"ok"}
+{"id":"ean-3386460161572","status":"ok"}
+{"id":"ean-3386460059121","status":"ok"}
+{"id":"ean-3386460059183","status":"ok"}
+{"id":"ean-3386460168656","status":"ok"}
+{"id":"ean-4021609307792","status":"ok"}
+{"id":"ean-42435679","status":"ok"}
+{"id":"ean-4021609860259","status":"ok"}
+{"id":"ean-4021609850755","status":"ok"}
+{"id":"ean-3474636400188","name":"KÉRASTASE Discipline Bain Fluidealiste Shampoo 250 ml 250 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"KÉRASTASE Discipline Bain Fluidealiste Shampoo 250 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"KÉRASTASE Discipline Bain Fluidealiste Shampoo 250 ml"}}}
+{"id":"ean-3474637059132","name":"KÉRASTASE Masque Chroma Filler 200 ml 200 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"KÉRASTASE Masque Chroma Filler 200 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Hair care","why":"hair masque, no type derived"}],"fix":{"patch":{"name":"KÉRASTASE Masque Chroma Filler 200 ml","facets":{"type":"Hair care"}}}}
+{"id":"ean-3474637155001","status":"ok"}
+{"id":"ean-9339341016977","status":"ok"}
+{"id":"ean-9339341033677","status":"ok"}
+{"id":"ean-7310640412105","name":"KICKS Beauty Glitter Hair Tensil Silver Silver","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"KICKS Beauty Glitter Hair Tensil Silver","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"KICKS Beauty Glitter Hair Tensil Silver"}}}
+{"id":"ean-7310640376315","status":"ok"}
+{"id":"ean-3605971125263","status":"ok"}
+{"id":"ean-3700194712259","status":"ok"}
+{"id":"ean-3605972966025","status":"ok"}
+{"id":"ean-3605971634321","status":"ok"}
+{"id":"ean-3605972042248","status":"ok"}
+{"id":"ean-3700194717728","status":"ok"}
+{"id":"ean-3700194714628","status":"ok"}
+{"id":"ean-3700194719159","status":"ok"}
+{"id":"ean-4935421778909","status":"ok"}
+{"id":"ean-3605970366018","status":"ok"}
+{"id":"ean-3605971770357","status":"ok"}
+{"id":"ean-3605970265953","status":"ok"}
+{"id":"ean-3605975054439","status":"ok"}
+{"id":"ean-3605971188237","status":"ok"}
+{"id":"p-kiehl-s-kiehl-s-super-multi-corrective-eye-zone-treatment","status":"ok"}
+{"id":"ean-3605975099676","status":"ok"}
+{"id":"ean-3605973079632","status":"ok"}
+{"id":"ean-3700194712068","status":"ok"}
+{"id":"ean-4936968827433","status":"ok"}
+{"id":"ean-3605972791276","status":"ok"}
+{"id":"ean-3605972256201","status":"ok"}
+{"id":"ean-8059385008172","name":"Kiko Milano High Pigment Eyeshadow 27 Matte Brown Mahogany 1,5 g 27 Matte Brown Mahogany 1,5 g","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Kiko Milano High Pigment Eyeshadow 27 Matte Brown Mahogany 1,5 g","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Kiko Milano High Pigment Eyeshadow 27 Matte Brown Mahogany 1,5 g"}}}
+{"id":"ean-8059385035116","name":"Kiko Milano One Magic Touch Lip Stylo 12 Under my spell 2.5 g 12 Under my spell 2.5 g","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Kiko Milano One Magic Touch Lip Stylo 12 Under my spell 2.5 g","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Kiko Milano One Magic Touch Lip Stylo 12 Under my spell 2.5 g"}}}
+{"id":"ean-8059385019499","name":"Kiko Milano Unlimited Double Touch Lipstick 112 Satin Peach Rose 112 Satin Peach Rose","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Kiko Milano Unlimited Double Touch Lipstick 112 Satin Peach Rose","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Kiko Milano Unlimited Double Touch Lipstick 112 Satin Peach Rose"}}}
+{"id":"ean-4971650801506","name":"Kiku-Masamune Sake Skin Care Foaming Face Wash 200g","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Cleansing","why":"foaming face wash; srcCat \"Hudpleie > Ansikt > Rens > Mousse\" is facial cleansing, not hair care"}],"fix":{"patch":{"facets":{"type":"Cleansing"}}}}
+{"id":"ean-3700550245025","name":"Kilian Angels' Share Paradis Extrait de Parfum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"Kilian Angels' Share Paradis Extrait de Parfum 30 ml","why":"Kicks rows repeat the variant label at the end of the name ('… 50 ml 50 ml'); a variant suffix with no vlabel/family"}],"fix":{"patch":{"name":"Kilian Angels' Share Paradis Extrait de Parfum 30 ml"}}}
+{"id":"ean-3700550218173","status":"ok"}
+{"id":"ean-3700550218203","status":"ok"}
+{"id":"ean-3700550242000","status":"ok"}
+{"id":"ean-3700550235934","status":"ok"}
+{"id":"ean-3700550220466","status":"ok"}
+{"id":"ean-3700550218418","status":"ok"}
+{"id":"ean-3700550224730","status":"ok"}
+{"id":"ean-3700550234678","status":"ok"}
+{"id":"ean-810039596395","name":"KimChi Chic Balm Chica Balm Balm Grape Soda 13ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":null,"suggested":"KimChi Chic Chica Balm Grape Soda 13ml","why":"\"Balm\" repeated three times: \"KimChi Chic Balm Chica Balm Balm Grape Soda\""}],"fix":{"patch":{"name":"KimChi Chic Chica Balm Grape Soda 13ml"}}}
+{"id":"_summary","shard":"Beauty-03","checked":300,"ok":220,"issues":80,"by_kind":{"category":17,"brand":2,"variant":16,"facets":24,"name":34,"price":1},"high":20,"rule_gaps":["CAT_RULES: the crumb 'Ansiktsmasker' (balaclavas/face masks under KLÆR) resolves to Beauty — cost a Helly Hansen merino balaclava","CAT_RULES: a 'Primer' leaf crumb sends building primer (Mørtel og støp) and miniature-paint primer to Beauty","CAT_RULES: household rows sold by beauty shops (laundry dryer balls, fabric/room freshener, scented candles, silk pillowcase, hot water bottle) stay in Beauty — 'Renhold/Klesvask', 'Romspray', 'Duftlys' should win over the shop floor","facetrules Beauty: 'Blush' / 'Cream' / 'Wash' anywhere in the name derive type regardless of the product (sunglasses 'Gold Blush' → Face makeup, cream eyeshadow → Moisturisers, mesh wash bag → Cleansing, sake face wash → Hair care)","facetrules Beauty: løsvipper / lashes / øyenbrynsblyant rows derive no type at all (7 rows here) — 'Løsvipper', 'Lashes', 'Øyenbryn' should map to Eyes","facetrules Beauty: SPF/sun rows only derive spf, not type=Sun care ('Ambre Solaire', 'Daily UV Fluid', 'Solprodukter')","scrape: every Kicks row arrives with no srcCat and with the variant label appended twice to the name ('… 50 ml 50 ml', '… Mod Mod') — 24 rows in this shard"],"notes":"Core Blivakker/Parfymeri beauty rows are in good shape; nearly all damage is non-beauty stock that beauty shops carry (eyewear, laundry, candles, dog shampoo, building primer) plus the Kicks feed’s duplicated name suffix and missing breadcrumbs. Half the shard still has no product image (img:0), which is a crawl/approval gap rather than a per-product fix."}

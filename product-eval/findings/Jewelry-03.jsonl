@@ -1,0 +1,301 @@
+{"id":"p-mestergull-kjede-double","status":"ok"}
+{"id":"p-mestergull-kjede-flerfarget-gull","status":"ok"}
+{"id":"p-mestergull-kjede-gult-gull","status":"ok"}
+{"id":"p-efva-attling-kjede-gult-gull","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-kjede-gult-gull","status":"ok"}
+{"id":"p-mg-diamonds-kjede-hvitt-gull","status":"ok"}
+{"id":"p-mestergull-kjede-hvitt-gull","status":"ok"}
+{"id":"p-efva-attling-kjede-hvitt-gull","status":"ok"}
+{"id":"p-sylvsmidja-kjede-m-krok-85cm-beltestakk","name":"kjede m. krok 85cm beltestakk,","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"kjede m. krok 85cm beltestakk,","suggested":"Kjede m. krok 85cm beltestakk","why":"trailing comma from the shop's truncated title, name starts lowercase"}],"fix":{"patch":{"name":"Kjede m. krok 85cm beltestakk"}}}
+{"id":"ean-7350012345678","name":"Kjede med kabinkroker for boksesekk","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Sport","why":"chain with cabin hooks for a punching bag, srcCat 'Boksing / Tilbehør Boksesekk' from Sporttema; only the word 'kjede' put it in Jewelry"},{"kind":"facets","severity":"med","field":"facets.type","current":"Necklaces","suggested":null,"why":"not a necklace; derived from 'Kjede' in the name"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-van-bergen-kjede-mix","status":"ok"}
+{"id":"p-van-bergen-kjede-stal","status":"ok"}
+{"id":"p-viventy-kjede-solv","status":"ok"}
+{"id":"p-efva-attling-kjede-solv","status":"ok"}
+{"id":"p-georg-jensen-kjede-solv","status":"ok"}
+{"id":"p-mestergull-kjede-solv","status":"ok"}
+{"id":"p-sif-jakobs-kjede-solv","status":"ok"}
+{"id":"p-gid-kjede-solv","status":"ok"}
+{"id":"p-mg-basic-kjede-solv","status":"ok"}
+{"id":"p-mestergull-kjede-solv-roseforg","name":"KJEDE SØLV ROSÈFORG.","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"KJEDE SØLV ROSÈFORG.","suggested":"Kjede sølv rosèforgylt","why":"ALL CAPS with a truncated abbreviation; every sibling Mestergull row is title case"}],"fix":{"patch":{"name":"Kjede sølv rosèforgylt"}}}
+{"id":"p-efva-attling-kjede-a-green-dream","status":"ok"}
+{"id":"p-tom-wood-kjede-ada-slim-forgylt-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-akoyaperle-7-7-5-mm-hvitt-gull","name":"Kjede, Akoyaperle 7-7,5 mm hvitt gull","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.stone","current":null,"suggested":"Pearl","why":"'Akoyaperle' + srcCat 'Perlekjeder'; the rule only matches 'perle(r)' as a separate word, not compounds"}],"fix":{"patch":{"facets":{"stone":"Pearl"}}}}
+{"id":"p-efva-attling-kjede-anemone","status":"ok"}
+{"id":"p-david-andersen-kjede-anker-1-1-mm-hvitt-gull","status":"ok"}
+{"id":"p-selected-by-david-andersen-kjede-anker-1-3-mm-gult-gull","status":"ok"}
+{"id":"p-david-andersen-kjede-anker-3-mm-forgylt-solv","status":"ok"}
+{"id":"p-susanne-friis-bjorner-kjede-barokke-perler-forgylt-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-blomst-diamanter-0-32-ct","status":"ok"}
+{"id":"p-flora-kjede-blaveis","status":"ok"}
+{"id":"p-flora-kjede-blaveis-lukket","status":"ok"}
+{"id":"p-sif-jakobs-kjede-borsa-pianura-solv","status":"ok"}
+{"id":"p-dulong-kjede-catena","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-kjede-collier-anker-35-45-42-40-cm","name":"Kjede, Collier Anker 35 - 45/42/40 cm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Collier Anker 35","why":"same chain sold in three length sets at the same price (1750), sitting as three top-level rows"}],"fix":{"group":{"head":"p-ole-lynggaard-copenhagen-kjede-collier-anker-35-45-42-40-cm","members":["p-ole-lynggaard-copenhagen-kjede-collier-anker-35-80-50-cm","p-ole-lynggaard-copenhagen-kjede-collier-anker-35-90-80-60-cm"],"axis":"size"}}}
+{"id":"p-ole-lynggaard-copenhagen-kjede-collier-anker-35-80-50-cm","name":"Kjede, Collier Anker 35 - 80/50 cm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Collier Anker 35","why":"length variant of p-ole-lynggaard-copenhagen-kjede-collier-anker-35-45-42-40-cm"}]}
+{"id":"p-ole-lynggaard-copenhagen-kjede-collier-anker-35-90-80-60-cm","name":"Kjede, Collier Anker 35 - 90/80/60 cm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Collier Anker 35","why":"length variant of p-ole-lynggaard-copenhagen-kjede-collier-anker-35-45-42-40-cm"}]}
+{"id":"p-selected-by-david-andersen-kjede-cordell-3-3-mm-gult-gull","status":"ok"}
+{"id":"p-susanne-friis-bjorner-kjede-cuban-link","status":"ok"}
+{"id":"p-tom-wood-kjede-curb-medium-forgylt-solv","status":"ok"}
+{"id":"p-tom-wood-kjede-curb-medium-solv","status":"ok"}
+{"id":"p-tom-wood-kjede-curb-slim-solv","status":"ok"}
+{"id":"p-georg-jensen-kjede-daisy-11-mm-2025-forgylt-solv","status":"ok"}
+{"id":"p-georg-jensen-kjede-daisy-forgylt-solv-4-blomster","status":"ok"}
+{"id":"p-nanis-kjede-dancing-in-the-rain-elite-pave-diamanter","status":"ok"}
+{"id":"p-efva-attling-kjede-day-pearl-stars","status":"ok"}
+{"id":"p-efva-attling-kjede-fro-forgylt-solv","status":"ok"}
+{"id":"p-georg-jensen-kjede-fusion-0-05-ct-multi","status":"ok"}
+{"id":"p-georg-jensen-kjede-fusion-0-19-ct-pave-multi","status":"ok"}
+{"id":"p-georg-jensen-kjede-fusion-apen-0-22-ct-multi","status":"ok"}
+{"id":"p-sophie-bille-brahe-kjede-grande-orangerie-de-perle","status":"ok"}
+{"id":"p-gellner-kjede-gra-tahitiperler-9-10-mm","name":"Kjede, Grå Tahitiperler 9-10 mm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.stone","current":null,"suggested":"Pearl","why":"'Tahitiperler' are pearls; compound not matched by the pearl rule"}],"fix":{"patch":{"facets":{"stone":"Pearl"}}}}
+{"id":"p-georg-jensen-kjede-heart-2026-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-hjerte-mini-forgylt-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-hjerte-mini-mint-barn","name":"Kjede, Hjerte mini mint - Barn","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Hjerte mini - Barn","why":"colour variant of p-david-andersen-kjede-hjerte-mini-rosa-barn (same product, same price, name carries the colour suffix)"}]}
+{"id":"p-david-andersen-kjede-hjerte-mini-rosa-barn","name":"Kjede, Hjerte mini rosa - Barn","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Hjerte mini - Barn","why":"mint and rosa are the same children's enamel heart necklace at kr 1890"}],"fix":{"group":{"head":"p-david-andersen-kjede-hjerte-mini-rosa-barn","members":["p-david-andersen-kjede-hjerte-mini-mint-barn"],"axis":"color"}}}
+{"id":"p-rikke-harsheim-kjede-hjertesmykke-granat","name":"Kjede, Hjertesmykke Granat","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.stone","current":null,"suggested":"Gemstone","why":"'Granat' (garnet) is a stone; sibling rows with topas do get Gemstone"}],"fix":{"patch":{"facets":{"stone":"Gemstone"}}}}
+{"id":"p-rikke-harsheim-kjede-hjertesmykke-rokkvarts","name":"Kjede, Hjertesmykke Røkkvarts","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.stone","current":null,"suggested":"Gemstone","why":"'Røkkvarts' (smoky quartz) is a stone; 'Milky Kvarts' on another row does resolve"}],"fix":{"patch":{"facets":{"stone":"Gemstone"}}}}
+{"id":"p-rikke-harsheim-kjede-hjertesmykke-sky-blue-topas","status":"ok"}
+{"id":"p-tom-wood-kjede-id-plate-solv","status":"ok"}
+{"id":"p-tom-wood-kjede-jil-forgylt-solv","status":"ok"}
+{"id":"p-susanne-friis-bjorner-kjede-krystall-lys-rosa","status":"ok"}
+{"id":"p-nanis-kjede-libera-2-ledd","status":"ok"}
+{"id":"p-efva-attling-kjede-little-miss-butterfly","status":"ok"}
+{"id":"p-efva-attling-kjede-love-bead-bla-topas","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-kjede-love-collier-mini-60-cm","status":"ok"}
+{"id":"p-georg-jensen-kjede-mercy-swirl-solv","status":"ok"}
+{"id":"p-georg-jensen-kjede-moonlight-grapes-0-09-ct","status":"ok"}
+{"id":"p-georg-jensen-kjede-moonlight-grapes-lang-gult-gull","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-kjede-my-little-world-collier-anker-45-42-40","status":"ok"}
+{"id":"p-flora-kjede-natt-og-dag-lilla-2022","status":"ok"}
+{"id":"p-pomellato-kjede-nudo-mini-london-blue-topas","status":"ok"}
+{"id":"p-pomellato-kjede-nudo-mini-milky-kvarts","status":"ok"}
+{"id":"p-pomellato-kjede-nudo-mini-sky-blue-topas","status":"ok"}
+{"id":"p-georg-jensen-kjede-offspring-forlop","status":"ok"}
+{"id":"p-georg-jensen-kjede-offspring-loops-sma","status":"ok"}
+{"id":"p-georg-jensen-kjede-offspring-med-diamanter-liten-gult-gull","status":"ok"}
+{"id":"p-georg-jensen-kjede-offspring-medium-solv","status":"ok"}
+{"id":"p-georg-jensen-kjede-offspring-stor-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-panser-1-7-mm-forgylt-solv","name":"Kjede, Panser 1,7 mm forgylt sølv","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Panser forgylt sølv","why":"same loose panser chain in 1,7 / 3,3 / 4,7 mm gauges as three top-level rows"}],"fix":{"group":{"head":"p-david-andersen-kjede-panser-1-7-mm-forgylt-solv","members":["p-david-andersen-kjede-panser-3-3-mm-forgylt-solv","p-david-andersen-kjede-panser-4-7-mm-forgylt-solv"],"axis":"size"}}}
+{"id":"p-david-andersen-kjede-panser-3-3-mm-forgylt-solv","name":"Kjede, Panser 3,3 mm forgylt sølv","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Panser forgylt sølv","why":"gauge variant of p-david-andersen-kjede-panser-1-7-mm-forgylt-solv"}]}
+{"id":"p-david-andersen-kjede-panser-4-7-mm-forgylt-solv","name":"Kjede, Panser 4,7 mm forgylt sølv","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Panser forgylt sølv","why":"gauge variant of p-david-andersen-kjede-panser-1-7-mm-forgylt-solv"}]}
+{"id":"p-dulong-kjede-piccolo-bloom-gult-gull","status":"ok"}
+{"id":"p-dulong-kjede-piccolo-calma-gult-gull","status":"ok"}
+{"id":"p-flora-kjede-prestekrage","status":"ok"}
+{"id":"p-georg-jensen-kjede-reflect","status":"ok"}
+{"id":"p-georg-jensen-kjede-reflect-halsring","status":"ok"}
+{"id":"p-efva-attling-kjede-ring-around","status":"ok"}
+{"id":"p-tom-wood-kjede-rope","status":"ok"}
+{"id":"p-sif-jakobs-kjede-savona-forgylt-solv","status":"ok"}
+{"id":"p-sif-jakobs-kjede-serpente-forgylt-solv","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-kjede-shooting-stars-collier-80-cm","status":"ok"}
+{"id":"p-georg-jensen-kjede-signature-diamonds-0-10-ct-hvitt-gull","status":"ok"}
+{"id":"p-georg-jensen-kjede-signature-diamonds-0-22-ct","status":"ok"}
+{"id":"p-georg-jensen-kjede-signature-diamonds-0-22-ct-hvitt-gull","status":"ok"}
+{"id":"p-flora-kjede-smorblomst","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-kjede-snor-dobbelt-design-kamel-og-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-sommerfugl-mini-hvit-barn","name":"Kjede, Sommerfugl mini hvit - Barn","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Sommerfugl mini - Barn","why":"hvit and mint are the same children's butterfly necklace at kr 1890"}],"fix":{"group":{"head":"p-david-andersen-kjede-sommerfugl-mini-hvit-barn","members":["p-david-andersen-kjede-sommerfugl-mini-mint-barn"],"axis":"color"}}}
+{"id":"p-david-andersen-kjede-sommerfugl-mini-mint-barn","name":"Kjede, Sommerfugl mini mint - Barn","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Sommerfugl mini - Barn","why":"colour variant of p-david-andersen-kjede-sommerfugl-mini-hvit-barn"}]}
+{"id":"p-susanne-friis-bjorner-kjede-stjerner-matt-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-fiskene-20-02-20-03-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-jomfruen-sjogronn-24-08-23-09","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-krepsen-22-06-22-07","name":"Kjede, Stjernetegn Krepsen 22.06 - 22.07","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"p-david-andersen-kjede-stjernetegn-krepsen-22-06-22-07","suggested":"p-david-andersen-kjede-stjernetegn-krepsen-22-06-22-07-solv","why":"same shop, same price (1490), same zodiac necklace — the shop renamed it with a ' sølv' suffix and the slug id stranded the old row; the -solv row has the image"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-david-andersen-kjede-stjernetegn-krepsen-22-06-22-07-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-loven-sjogronn-23-07-23-08","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-skorpionen-24-10-22-11","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-skytten-midnattsbla-23-11-21-12","name":"Kjede, Stjernetegn Skytten midnattsblå 23.11 - 21.12","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Stjernetegn Skytten","why":"enamel colour variant of p-david-andersen-kjede-stjernetegn-skytten-sjogronn-23-11-21-12 (same sign, same kr 2490)"}]}
+{"id":"p-david-andersen-kjede-stjernetegn-skytten-sjogronn-23-11-21-12","name":"Kjede, Stjernetegn Skytten sjøgrønn 23.11 - 21.12","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Stjernetegn Skytten","why":"same Skytten necklace in two enamel colours as two top-level rows"}],"fix":{"group":{"head":"p-david-andersen-kjede-stjernetegn-skytten-sjogronn-23-11-21-12","members":["p-david-andersen-kjede-stjernetegn-skytten-midnattsbla-23-11-21-12"],"axis":"color"}}}
+{"id":"p-david-andersen-kjede-stjernetegn-tvillingene-midnattsbla-22-05-21-06","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-vannmannen-21-01-19-02","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-vekten-24-09-23-10","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-vaeren-21-03-20-04-solv","status":"ok"}
+{"id":"p-david-andersen-kjede-stjernetegn-vaeren-midnattsbla-21-03-20-04","status":"ok"}
+{"id":"p-efva-attling-kjede-strings-of-pearls-solv","status":"ok"}
+{"id":"p-gellner-kjede-sydhavsperler-7-12-mm-og-diamanter","status":"ok"}
+{"id":"p-efva-attling-kjede-take-no-shit","status":"ok"}
+{"id":"p-nanis-kjede-terre-lontane-gronn-aventurin","name":"Kjede, Terre Lontane - Grønn Aventurin","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.stone","current":null,"suggested":"Gemstone","why":"aventurine is a stone; the sibling 'Hvit Månesten' row does resolve"}],"fix":{"patch":{"facets":{"stone":"Gemstone"}}}}
+{"id":"p-nanis-kjede-terre-lontane-hvit-manesten","status":"ok"}
+{"id":"p-pomellato-kjede-together-klave-med-diamanter-0-85-ct","status":"ok"}
+{"id":"p-david-andersen-kjede-veiviser-kompass-bla-emalje","status":"ok"}
+{"id":"p-selected-by-david-andersen-kjede-veneziansk-0-7-mm-gult-gull","name":"Kjede, Veneziansk 0,7 mm gult gull","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Veneziansk gult gull","why":"gauge variant of p-selected-by-david-andersen-kjede-veneziansk-0-9-mm-gult-gull"}]}
+{"id":"p-selected-by-david-andersen-kjede-veneziansk-0-9-mm-gult-gull","name":"Kjede, Veneziansk 0,9 mm gult gull","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Veneziansk gult gull","why":"same yellow-gold venetian chain in 0,7 / 0,9 / 1,2 mm as three top-level rows"}],"fix":{"group":{"head":"p-selected-by-david-andersen-kjede-veneziansk-0-9-mm-gult-gull","members":["p-selected-by-david-andersen-kjede-veneziansk-0-7-mm-gult-gull","p-selected-by-david-andersen-kjede-veneziansk-1-2-mm-gult-gull"],"axis":"size"}}}
+{"id":"p-selected-by-david-andersen-kjede-veneziansk-0-9-mm-hvitt-gull","status":"ok"}
+{"id":"p-selected-by-david-andersen-kjede-veneziansk-1-0-mm-forgylt","status":"ok"}
+{"id":"p-selected-by-david-andersen-kjede-veneziansk-1-0-mm-solv","status":"ok"}
+{"id":"p-selected-by-david-andersen-kjede-veneziansk-1-2-mm-gult-gull","name":"Kjede, Veneziansk 1,2 mm gult gull","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Veneziansk gult gull","why":"gauge variant of p-selected-by-david-andersen-kjede-veneziansk-0-9-mm-gult-gull"}]}
+{"id":"p-susanne-friis-bjorner-kjede-viklet-med-ametyst-granitt-iolitt","status":"ok"}
+{"id":"p-susanne-friis-bjorner-kjede-viklet-med-fargestener","status":"ok"}
+{"id":"p-georg-jensen-kjede-vivianna-torun","status":"ok"}
+{"id":"p-georg-jensen-kjede-weft-enkelt-solv","status":"ok"}
+{"id":"p-efva-attling-kjede-micro-blink-topas-bla","name":"Kjede,, Micro Blink Topas blå","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Kjede,, Micro Blink Topas blå","suggested":"Kjede, Micro Blink Topas blå","why":"doubled comma from the shop title"}],"fix":{"patch":{"name":"Kjede, Micro Blink Topas blå"}}}
+{"id":"p-klondike-klondike-0-06-ct","status":"ok"}
+{"id":"p-klondike-klondike-0-14-ct","status":"ok"}
+{"id":"p-klondike-klondike-0-20-ct","status":"ok"}
+{"id":"p-kmc-kmc-e9-silver-kjede","name":"KMC e9 Silver Kjede","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Bikes","why":"KMC e9 is a 9-speed bicycle chain sold by Bikeshop at kr 375; 'Silver' is the finish and 'Kjede' the chain — no srcCat to correct it"},{"kind":"facets","severity":"med","field":"facets.type","current":"Necklaces","suggested":null,"why":"not a necklace"}],"fix":{"patch":{"cat":"Bikes"}}}
+{"id":"p-sylvsmidja-knapp","status":"ok"}
+{"id":"p-knapp-454181-2-hulls-11mm-83-antikk-solv","name":"Knapp 454181 - 2-hulls 11mm - 83 Antikk sølv","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Hobby","why":"kr 11 sewing button from Tegne.no, srcCat 'Sy og Strikk > Knapper > Metallknapper i rør' — sewing supplies are Hobby, not bunad silver"}],"fix":{"patch":{"cat":"Hobby"}}}
+{"id":"p-knapp-454185-oyeknapp-20mm-83-antikk-solv","name":"Knapp 454185 - Øyeknapp 20mm 83 Antikk sølv","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Hobby","why":"kr 22 sewing shank button from Tegne.no (same Sy og Strikk range as 454181)"}],"fix":{"patch":{"cat":"Hobby"}}}
+{"id":"p-sylvsmidja-knapp-830-oksidert-solv","status":"ok"}
+{"id":"p-sylvsmidja-knapp-i-830-oksidert-solv-16-mm","status":"ok"}
+{"id":"p-sylvsmidja-knapp-rogaland-i-830-hvitt-solv-19-mm","name":"Knapp Rogaland i 830 hvitt sølv 19 mm","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.material","current":"Gold","suggested":"Silver","why":"name says '830 hvitt sølv' (white silver); 'hvitt' alone was read as hvitt gull"}],"fix":{"patch":{"facets":{"material":"Silver"}}}}
+{"id":"p-lokal-bunad-knapp-solv","status":"ok"}
+{"id":"p-folke-helle-knapp-solv","status":"ok"}
+{"id":"p-sylvsmidja-knapp-til-kniv-17-mm-oksidert","status":"ok"}
+{"id":"p-sylvsmidja-knapp-hvit-19-mm","status":"ok"}
+{"id":"p-sylvsmidja-knapp-m-botn-hvit-15-mm","status":"ok"}
+{"id":"p-sylvsmidja-knapp-oksidert-17-mm","status":"ok"}
+{"id":"p-sylvsmidja-knivstal-oks","name":"knivstål, oks","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"knivstål, oks","suggested":"Knivstål, oksidert","why":"shop title truncated mid-word (sibling rows read 'oksidert')"}],"fix":{"patch":{"name":"Knivstål, oksidert"}}}
+{"id":"p-konval-konval-stor-spisekniv","name":"Konval, Stor Spisekniv","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver flatware (large dinner knife) from Mestergull's 'Produkter' breadcrumb; cutlery is Kitchen"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-gaveartikler-kopp-bamse-med-to-handtak-og-tut-fortinnet","name":"Kopp bamse med to håndtak og tut, fortinnet","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Baby","why":"tinned teddy-bear drinking cup with two handles and a spout — a christening gift for an infant; only the 'Smykkeskrin' crumb pulled it into Jewelry"},{"kind":"facets","severity":"med","field":"facets.type","current":"Boxes & care","suggested":null,"why":"not a jewellery box; derived from the shop's Smykkeskrin crumb"},{"kind":"brand","severity":"med","field":"brand","current":"Gaveartikler","suggested":null,"why":"'Gaveartikler' (gift items) is the shop's department, not a brand"}],"fix":{"patch":{"cat":"Baby"}}}
+{"id":"ean-7068600061886","name":"Korita Innvendig fester for gardinstang gull","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Home","why":"inner bracket for a curtain rod, srcCat 'Gardinskinner & tilbehør' at Kid Interiør; 'gull' (the finish) is what read as jewellery"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sylvsmidja-korslauv-rogaland-stk-kvit","status":"ok"}
+{"id":"p-montblanc-kortholder-meisterstuck-6-kort","name":"Kortholder, Meisterstück - 6 kort","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Fashion","why":"Montblanc leather card holder, srcCat 'Tilbehør > Skinnprodukter' — bags/accessories are Fashion"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-montblanc-kortholder-sartorial-5-kort","name":"Kortholder, Sartorial - 5 kort","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Fashion","why":"Montblanc leather card holder, srcCat 'Tilbehør > Skinnprodukter'"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-panduro-jewellery-kreolringer-o30-mm-5-par-gullfargede","name":"Kreolringer Ø30 mm 5 par gullfargede","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Hobby","why":"5 pairs of hoop findings from Panduro, srcCat '… > Grunnmaterialer > Øredobber' — jewellery-making raw material, not wearable jewellery"}],"fix":{"patch":{"cat":"Hobby"}}}
+{"id":"p-by-olea-lara-oreringer-i-925-solv","status":"ok"}
+{"id":"p-felix-lars-ring-i-925-solv","status":"ok"}
+{"id":"ean-194250066777","name":"Laura Mercier Caviar Smoothing Matte Lipstick 750 Mauve Charmeuse 750 Mauve Charmeuse","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Beauty","why":"lipstick from Kicks with no srcCat; 'Charmeuse' matched the charm vocabulary"},{"kind":"name","severity":"med","field":"name","current":"Laura Mercier Caviar Smoothing Matte Lipstick 750 Mauve Charmeuse 750 Mauve Charmeuse","suggested":"Laura Mercier Caviar Smoothing Matte Lipstick 750 Mauve Charmeuse","why":"shade repeated twice in the feed title"}],"fix":{"patch":{"cat":"Beauty","name":"Laura Mercier Caviar Smoothing Matte Lipstick 750 Mauve Charmeuse"}}}
+{"id":"p-by-olea-leah-oreringer-i-gullfarget-stal","status":"ok"}
+{"id":"p-leifheit-leifheit-moppeklut-clean-twist-xl","name":"Leifheit moppeklut Clean Twist XL","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Home","why":"mop cloth, srcCat 'Hjem og interiør > Rengjøring > Vaskeartikler' at Obs — cleaning supplies"},{"kind":"facets","severity":"med","field":"facets.type","current":"Rings","suggested":null,"why":"not a ring"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-felix-leon-halssmykke-i-925-solv","status":"ok"}
+{"id":"p-lillemor-lillemor-anretningsgaffel","name":"Lillemor, Anretningsgaffel","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver serving fork from Mestergull's flatware range; breadcrumb is only 'Produkter'"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-lillemor-lillemor-paispade","name":"Lillemor, Paispade","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver pie server — cutlery, not jewellery"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-by-olea-lily-oreringer-i-stal","status":"ok"}
+{"id":"p-by-olea-lina-halssmykke-i-925-forgylt-solv","status":"ok"}
+{"id":"p-by-olea-line-halssmykke-i-stal","status":"ok"}
+{"id":"p-kid-linnenstory-m-smykkeskrin-m-glidelas-natur","status":"ok"}
+{"id":"p-kid-linnenstory-smykkeskrin-natur","status":"ok"}
+{"id":"p-kid-linnenstory-smykkeskrin-olivengronn","status":"ok"}
+{"id":"p-romerikssolv-lommekniv","name":"LOMMEKNIV","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Outdoor","why":"a pocket knife (silver-handled giftware from Mestergull); knives are not jewellery"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-sylvsmidja-lommekniv-med-to-blad-haugrud-60","name":"Lommekniv med to blad, haugrud 60","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Outdoor","why":"two-bladed pocket knife; the shop's own crumb ('Hårpynt') is wrong too"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-by-olea-louisa-halssmykke-i-925-forgylt-solv-med-ferskvannsperle","status":"ok"}
+{"id":"p-by-olea-louisa-halssmykke-i-925-forgylt-solv-med-ferskvannsperle-og-hv","status":"ok"}
+{"id":"p-dima-louise-diamantring-i-585-hvitt-gull-0-18-ct","status":"ok"}
+{"id":"p-by-olea-lucy-armring-hjerte-i-gullfarget-stal","status":"ok"}
+{"id":"p-lokensolv-loken-ring-i-925-forgylt-solv","status":"ok"}
+{"id":"p-lokensolv-loken-sprette-med-heng-i-925-forgylt-solv","status":"ok"}
+{"id":"p-lokensolv-loken-oredobber-i-925-forgylt-solv","status":"ok"}
+{"id":"p-van-bergen-las-hvitt-gull","status":"ok"}
+{"id":"p-van-bergen-las-solv","status":"ok"}
+{"id":"p-sylvsmidja-lasemekanisme-til-veskelas","status":"ok"}
+{"id":"p-madonna-madonna-0-15-ct","status":"ok"}
+{"id":"p-madonna-madonna-0-25-ct","status":"ok"}
+{"id":"p-bjorklund-majken-halssmykke-i-375-gult-gull","status":"ok"}
+{"id":"p-sylvsmidja-maljepynt","status":"ok"}
+{"id":"p-sylvsmidja-maljer","status":"ok"}
+{"id":"p-sylvsmidja-maljer-aust-agder-filigran-sma-med-lauv-kvit-forgylt","status":"ok"}
+{"id":"p-sylvsmidja-maljer-sogn-askoy-oksidert","status":"ok"}
+{"id":"p-sylvsmidja-mansj-knappar-gravert-blaklok","name":"mansj.knappar gravert, blåklok","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"mansj.knappar gravert, blåklok","suggested":"Mansjettknappar gravert, blåklokke","why":"shop title truncated mid-word ('blåklok' = blåklokke)"}],"fix":{"patch":{"name":"Mansjettknappar gravert, blåklokke"}}}
+{"id":"p-sylvsmidja-mansj-knappar-dobbel-oksider","name":"mansj.knappar, dobbel, oksider","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"mansj.knappar, dobbel, oksider","suggested":"Mansjettknappar, dobbel, oksidert","why":"truncated at 30 chars mid-word"}],"fix":{"patch":{"name":"Mansjettknappar, dobbel, oksidert"}}}
+{"id":"p-sylvsmidja-mansj-knappar-oksidert","status":"ok"}
+{"id":"p-mestergull-mansjettknapp-gult-gull","status":"ok"}
+{"id":"p-mestergull-mansjettknapp-hvitt-gull","status":"ok"}
+{"id":"p-mister-mansjettknapp-metall","status":"ok"}
+{"id":"p-sylvsmidja-mansjettknapp-solv","status":"ok"}
+{"id":"p-mestergull-mansjettknapp-solv","status":"ok"}
+{"id":"p-lokal-bunad-mansjettknapp-solv","status":"ok"}
+{"id":"p-sylvsmidja-mansjettknappar-ostfold-830-oksidert-solv","status":"ok"}
+{"id":"p-sylvsmidja-mansjettknapper-830-forgylt-solv","status":"ok"}
+{"id":"p-sylvsmidja-mansjettknapper-telemark-i-830-oksidert-solv-19-mm","status":"ok"}
+{"id":"p-david-andersen-mansjettknapper-deco-onyx","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-mansjettknapper-drop-solv","status":"ok"}
+{"id":"p-sylvsmidja-mansjettknapper-firklover-oksidert","status":"ok"}
+{"id":"p-montblanc-mansjettknapper-glittery-glass","status":"ok"}
+{"id":"p-david-andersen-mansjettknapper-klassisk-knute-forgylt-solv","status":"ok"}
+{"id":"p-selected-by-david-andersen-mansjettknapper-knute-gult-gull","status":"ok"}
+{"id":"p-georg-jensen-mansjettknapper-men-s-classic-oval","status":"ok"}
+{"id":"p-georg-jensen-mansjettknapper-men-s-classic-square","status":"ok"}
+{"id":"p-montblanc-mansjettknapper-mother-of-pearl-star","status":"ok"}
+{"id":"p-selected-by-david-andersen-mansjettknapper-oval-gult-gull","status":"ok"}
+{"id":"p-david-andersen-mansjettknapper-runde-polert-gult-gull","status":"ok"}
+{"id":"p-ole-lynggaard-copenhagen-mansjettknapper-signet","status":"ok"}
+{"id":"p-montblanc-mansjettknapper-star","status":"ok"}
+{"id":"p-by-olea-marianne-halssmykke-i-stal","status":"ok"}
+{"id":"p-by-olea-martine-armring-i-gullfarget-stal","status":"ok"}
+{"id":"p-bjorklund-mary-diamantring-i-375-hvitt-gull-0-196-ct","name":"Mary diamantring i 375 hvitt gull 0,196 ct","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Rings","why":"'diamantring' in the name and srcCat 'Diamantringer'; only the bare crumb 'Ringer' derives the type today"}],"fix":{"patch":{"facets":{"type":"Rings"}}}}
+{"id":"p-felix-matheo-brunt-armband-i-skinn-og-stal","status":"ok"}
+{"id":"p-by-olea-maud-armring-i-gullfarget-stal","status":"ok"}
+{"id":"p-warne-maxima-1-hurtigfeste-ultra-hoy","name":"Maxima 1\" Hurtigfeste Ultra Høy","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Outdoor","why":"Warne riflescope quick-detach mount, srcCat 'Fester, Ringer og Baser' at Widforss — the crumb 'Ringer' is scope rings, not jewellery"},{"kind":"facets","severity":"med","field":"facets.type","current":"Rings","suggested":null,"why":"scope rings, not finger rings"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-warne-maxima-1-hoy","name":"Maxima 1\" Høy","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Outdoor","why":"riflescope ring, srcCat 'Start > Jakt > Optikk > Fester, Ringer og Baser'"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-warne-maxima-horizontal-stalringer-qd-for-weaver-34-mm-medium-hoyde-9","name":"Maxima Horizontal stålringer QD for Weaver 34 mm, medium høyde 9,5 mm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Outdoor","why":"Weaver scope rings, srcCat 'Start > Jakt > Optikk > Fester, ringer og baser' at Milrab"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-medaka-kuroiwa-is-impervious-to-my-charms-11","name":"Medaka Kuroiwa Is Impervious to My Charms 11","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Books","why":"manga volume 11 from Outland, srcCat 'Manga'; 'Charms' in the title matched the jewellery vocabulary"}],"fix":{"patch":{"cat":"Books"}}}
+{"id":"p-panduro-jewellery-mellomdel-rund-gull-100-stk","name":"Mellomdel rund gull 100 stk.","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Hobby","why":"100 round spacer beads from Panduro (srcCat 'Metall') — bead-craft component sold by the bag, not a wearable item"}],"fix":{"patch":{"cat":"Hobby"}}}
+{"id":"p-lokal-bunad-mellomsolje","status":"ok"}
+{"id":"p-by-olea-merete-armband-i-gullfarget-stal-burgunder","status":"ok"}
+{"id":"p-by-olea-merete-halssmykke-i-gullfarget-stal-bla","status":"ok"}
+{"id":"p-metall-vegghook-maur-gull","name":"Metall Vegghook Maur Gull","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Home","why":"ant-shaped metal wall hook from Trademax, srcCat 'Stumtjener' (coat stand); 'Gull' is the finish"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-metallspenne-501205-20mm-82-solv","name":"Metallspenne 501205 - 20mm - 82 Sølv","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Hobby","why":"kr 31 sewing buckle from Tegne.no's craft range; 'Sølv' is the colour code"}],"fix":{"patch":{"cat":"Hobby"}}}
+{"id":"p-by-olea-mette-ring-i-925-forgylt-solv","status":"ok"}
+{"id":"p-kid-milly-smykkeskrin-m-glidelas-lys-bla","status":"ok"}
+{"id":"p-tyrihans-mimmi-39-silkeskjerf","name":"Mimmi 39 silkeskjerf","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Fashion","why":"silk scarf; it sits under the shop's Bunadsølv menu but the product is a garment accessory"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-sylvsmidja-min-forste-stal-oksidert","status":"ok"}
+{"id":"p-by-olea-miriam-ring-i-gullfarget-stal","status":"ok"}
+{"id":"p-mockberg-mockberg-amour-hoops-oreringer-i-gullfarget-stal-small","status":"ok"}
+{"id":"ean-7340223607635","name":"Mockberg Aura Bold Bangle armring i gullfarget stål (large)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Aura Bold Bangle","why":"colour/size variant of the Aura Bold Bangle family (steel vs gold-plated, small vs large) sitting as four top-level rows"}]}
+{"id":"ean-7340223607611","name":"Mockberg Aura Bold Bangle armring i gullfarget stål (small)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Aura Bold Bangle","why":"colour/size variant of the Aura Bold Bangle family"}]}
+{"id":"p-mockberg-mockberg-aura-bold-bangle-armring-i-stal-large","name":"Mockberg Aura Bold Bangle armring i stål (large)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Aura Bold Bangle","why":"four rows, all kr 1299: steel/gold-plated x small/large, none wired as variants"}],"fix":{"group":{"head":"p-mockberg-mockberg-aura-bold-bangle-armring-i-stal-large","members":["p-mockberg-mockberg-aura-bold-bangle-armring-i-stal-small","ean-7340223607635","ean-7340223607611"],"axis":"color"}}}
+{"id":"p-mockberg-mockberg-aura-bold-bangle-armring-i-stal-small","name":"Mockberg Aura Bold Bangle armring i stål (small)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Aura Bold Bangle","why":"size variant of p-mockberg-mockberg-aura-bold-bangle-armring-i-stal-large"}]}
+{"id":"p-mockberg-mockberg-aura-perle-gullfargede-oreringer-i-stal","status":"ok"}
+{"id":"p-mockberg-mockberg-belle-gullfarget-smykkesett-i-stal","status":"ok"}
+{"id":"ean-7340223619461","status":"ok"}
+{"id":"ean-7350089046912","status":"ok"}
+{"id":"p-mockberg-mockberg-butterfly-gullfargede-oredobber-i-stal","name":"Mockberg Butterfly gullfargede øredobber i stål","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-mockberg-mockberg-butterfly-gullfargede-oredobber-i-stal","suggested":"merge target for ean-7340223620801","why":"identical name and price (kr 499) as the Klokker.no EAN row — same product listed twice because one shop published no gtin"}]}
+{"id":"ean-7340223620801","name":"Mockberg Butterfly gullfargede øredobber i stål","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"ean-7340223620801","suggested":"p-mockberg-mockberg-butterfly-gullfargede-oredobber-i-stal","why":"same product as the Bjørklund slug row (identical name, kr 499); re-home the EAN so the two shops' offers merge"}],"fix":{"alias":{"ean":"7340223620801","product_id":"p-mockberg-mockberg-butterfly-gullfargede-oredobber-i-stal"}}}
+{"id":"ean-7350089042907","status":"ok"}
+{"id":"p-mockberg-mockberg-darling-halssmykke-i-gullfarget-stal","status":"ok"}
+{"id":"p-mockberg-mockberg-deco-ribbed-silver-ring-str-60","status":"ok"}
+{"id":"ean-7350089046967","status":"ok"}
+{"id":"ean-7340223608120","status":"ok"}
+{"id":"p-mockberg-mockberg-love-gold-studs-oredobber-i-gullfarget-stal-medium","status":"ok"}
+{"id":"p-mockberg-mockberg-lunar-green-oreringer-i-gullfarget-messing-large","status":"ok"}
+{"id":"p-mockberg-mockberg-midnight-gold-ring-str-54-999","name":"Mockberg Midnight Gold ring (str 54)999","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Mockberg Midnight Gold ring (str 54)999","suggested":"Mockberg Midnight Gold ring (str 54)","why":"trailing '999' is scraped price/SKU noise glued to the title"}],"fix":{"patch":{"name":"Mockberg Midnight Gold ring (str 54)"}}}
+{"id":"p-mockberg-mockberg-pave-everyday-hoops-oreringer-i-gullfarget-stal-smal","status":"ok"}
+{"id":"p-mockberg-mockberg-pave-precious-hoops-oreringer-i-gullfarget-stal-smal","status":"ok"}
+{"id":"ean-7340223606751","status":"ok"}
+{"id":"p-mockberg-mockberg-shiny-jolie-gullfarget-smykkesett-i-stal","status":"ok"}
+{"id":"p-mockberg-mockberg-sleek-bangle-armring-i-gullfarget-stal-small","name":"Mockberg Sleek Bangle armring i gullfarget stål (small)","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-mockberg-mockberg-sleek-bangle-armring-i-gullfarget-stal-small","suggested":"merge target for ean-7350089042495","why":"identical name and price (kr 799) as the Klokker.no EAN row"}]}
+{"id":"ean-7350089042495","name":"Mockberg Sleek Bangle armring i gullfarget stål (small)","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"ean-7350089042495","suggested":"p-mockberg-mockberg-sleek-bangle-armring-i-gullfarget-stal-small","why":"same product as the Bjørklund slug row; re-home the EAN to merge the offers"}],"fix":{"alias":{"ean":"7350089042495","product_id":"p-mockberg-mockberg-sleek-bangle-armring-i-gullfarget-stal-small"}}}
+{"id":"p-mockberg-mockberg-snake-chain-armband-i-gullfarget-stal-small","status":"ok"}
+{"id":"p-mockberg-mockberg-sweetheart-gold-bracelet-armband-i-gullfarget-stal-m","status":"ok"}
+{"id":"p-mockberg-mockberg-tennis-armband-i-gullfarget-stal-small","status":"ok"}
+{"id":"p-mockberg-mockberg-tennis-halssmykke-i-gullfarget-stal","name":"Mockberg Tennis halssmykke i gullfarget stål","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Tennis halssmykke","why":"gold-plated and plain steel versions of the same necklace (both kr 999) as two top-level rows"}],"fix":{"group":{"head":"p-mockberg-mockberg-tennis-halssmykke-i-gullfarget-stal","members":["ean-7350089049883"],"axis":"color"}}}
+{"id":"ean-7350089049883","name":"Mockberg Tennis halssmykke i stål","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Tennis halssmykke","why":"steel colourway of p-mockberg-mockberg-tennis-halssmykke-i-gullfarget-stal"}]}
+{"id":"p-mockberg-mockberg-thin-rope-armband-i-gullfarget-stal-medium","name":"Mockberg Thin Rope armbånd i gullfarget stål (medium)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Thin Rope armbånd","why":"gold-plated and steel versions of the same medium bracelet (both kr 499)"}],"fix":{"group":{"head":"p-mockberg-mockberg-thin-rope-armband-i-gullfarget-stal-medium","members":["ean-7350089043287"],"axis":"color"}}}
+{"id":"ean-7350089043287","name":"Mockberg Thin Rope armbånd i stål (medium)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Thin Rope armbånd","why":"steel colourway of p-mockberg-mockberg-thin-rope-armband-i-gullfarget-stal-medium"}]}
+{"id":"p-mockberg-mockberg-thin-rope-halssmykke-i-stal","status":"ok"}
+{"id":"ean-7350089044277","status":"ok"}
+{"id":"p-mockberg-mockberg-treasure-gold-ring-str-56","status":"ok"}
+{"id":"p-mockberg-mockberg-treasure-hoops-oreringer-i-gullfarget-stal-large","name":"Mockberg Treasure Hoops øreringer i gullfarget stål (large)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Treasure Hoops (large)","why":"gold-plated and steel versions of the same large hoop (both kr 899)"}],"fix":{"group":{"head":"p-mockberg-mockberg-treasure-hoops-oreringer-i-gullfarget-stal-large","members":["p-mockberg-mockberg-treasure-hoops-oreringer-i-stal-large"],"axis":"color"}}}
+{"id":"p-mockberg-mockberg-treasure-hoops-oreringer-i-stal-large","name":"Mockberg Treasure Hoops øreringer i stål (large)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Mockberg Treasure Hoops (large)","why":"steel colourway of p-mockberg-mockberg-treasure-hoops-oreringer-i-gullfarget-stal-large"}]}
+{"id":"p-mockberg-mockberg-twirl-armband-i-gullfarget-stal-small","status":"ok"}
+{"id":"ean-7340223601459","status":"ok"}
+{"id":"p-mockberg-mockberg-wavy-petite-gold-ring-str-54","status":"ok"}
+{"id":"p-mockberg-mockberg-x-kenza-nisrine-armring-i-gullfarget-stal-large","status":"ok"}
+{"id":"ean-7340223617221","status":"ok"}
+{"id":"p-sylvsmidja-monogramspenne","status":"ok"}
+{"id":"p-felix-morten-armband-i-sort-skinn-og-stal","status":"ok"}
+{"id":"ean-7340225110447","status":"ok"}
+{"id":"ean-7340225103777","status":"ok"}
+{"id":"p-bjorklund-muranoglass-hjerte-lysebla","status":"ok"}
+{"id":"p-bjorklund-muranoglass-kule-hvit","status":"ok"}
+{"id":"p-bjorklund-muranoglass-kule-turkis","status":"ok"}
+{"id":"p-martha-martha-barnegaffel","name":"Märtha, Barnegaffel","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver child's fork from Mestergull's Märtha flatware pattern; cutlery is Kitchen"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-mitt-forste-solvbestikk-martha-min-forste-solvskje","name":"Märtha, Min første Sølvskje","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver christening spoon — flatware, brand is literally 'MITT FØRSTE SØLVBESTIKK' (my first silver cutlery)"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-martha-martha-syltetoyskje","name":"Märtha, Syltetøyskje","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver jam spoon — flatware"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-mane-mane-stor-spisekniv","name":"Måne, Stor Spisekniv","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver dinner knife — flatware"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-sylvsmidja-navnestal-hvit-m-forgylte-lau","name":"navnestål, hvit m.forgylte lau","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"navnestål, hvit m.forgylte lau","suggested":"Navnestål, hvit m. forgylte lauv","why":"shop title truncated at 30 chars mid-word ('lau' = lauv)"}],"fix":{"patch":{"name":"Navnestål, hvit m. forgylte lauv"}}}
+{"id":"p-neutrik-neutrik-xlr-hann-solv","name":"Neutrik XLR-hann Sølv","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Jewelry","suggested":"Audio","why":"kr 29 male XLR connector from Kjell & Company, srcCat 'XLR'; 'Sølv' is the housing colour"}],"fix":{"patch":{"cat":"Audio"}}}
+{"id":"p-bjorklund-nina-oreringer-i-375-gult-gull","status":"ok"}
+{"id":"p-dima-nora-alliansering-i-585-gult-gull-0-21-ct","name":"Nora alliansering i 585 gult gull 0,21 ct","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Rings","why":"'alliansering' + srcCat 'Allianseringer'; the sibling row with the full 'Ringer > Allianseringer' path does get the type"}],"fix":{"patch":{"facets":{"type":"Rings"}}}}
+{"id":"p-dima-nora-alliansering-i-585-gult-gull-0-49-ct","name":"Nora alliansering i 585 gult gull 0,49 ct","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Rings","why":"'alliansering' in the name, srcCat 'Allianseringer'"}],"fix":{"patch":{"facets":{"type":"Rings"}}}}
+{"id":"p-dima-nora-alliansering-i-585-hvitt-gull-0-60-ct","status":"ok"}
+{"id":"p-dima-nora-alliansering-i-585-hvitt-gull-1-0-ct","name":"Nora alliansering i 585 hvitt gull 1,0 ct","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Rings","why":"'alliansering' in the name, srcCat 'Allianseringer'"}],"fix":{"patch":{"facets":{"type":"Rings"}}}}
+{"id":"p-by-olea-nora-halssmykke-i-gullfarget-stal","status":"ok"}
+{"id":"p-felix-nokkelring-skinn-mork-bla","name":"Nøkkelring skinn mørk blå","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Fashion","why":"leather keyring (srcCat is just 'Hjem'); an accessory, not jewellery"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-montblanc-nokkelring-meisterstuck","name":"Nøkkelring, Meisterstück","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Fashion","why":"Montblanc leather keyring, srcCat 'Tilbehør > Skinnprodukter'"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-ole-lynggaard-copenhagen-nal-gult-gull","status":"ok"}
+{"id":"p-folke-helle-nal-solv","status":"ok"}
+{"id":"p-gid-nal-solv","status":"ok"}
+{"id":"p-odel-odel-koldtgaffel","name":"Odel, Koldtgaffel","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver cold-cuts fork — flatware from Mestergull's 'Produkter' breadcrumb"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-oldemor-oldemor-isskje-barneskje","name":"Oldemor, Isskje/Barneskje","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Jewelry","suggested":"Kitchen","why":"silver ice-cream/child spoon — flatware"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"_summary","shard":"Jewelry-03","checked":300,"ok":219,"issues":81,"by_kind":{"category":33,"variant":25,"facets":15,"name":9,"duplicate":5,"brand":1},"high":16,"rule_gaps":["'kjede' in a name still resolves to Jewelry even when the leaf crumb is clearly another department (Boksing/Tilbehør Boksesekk → Sport, Gardinskinner → Home) or there is no crumb at all (KMC bike chain from Bikeshop → Bikes)","a 'Ringer'/'ringer' crumb under Jakt > Optikk (riflescope rings/mounts) resolves to Jewelry — needs a Jakt/Optikk guard, 3 Warne rows here","'Knapper'/'Metallspenne' under 'Sy og Strikk' and Panduro's 'Grunnmaterialer' (bead/finding craft supplies) resolve to Jewelry instead of Hobby","metal-colour words alone ('gull', 'Sølv', 'Silver') promote non-jewellery rows into Jewelry: a curtain bracket, a wall hook, an XLR connector, a mop cloth","'Charms' in a book title matched the jewellery vocabulary and the crumb 'Manga' is unmapped → a manga volume sits in Jewelry","silver flatware sold by jewellers (spisekniv, gaffel, skje, paispade, koldtgaffel) has no rule and lands in Jewelry instead of Kitchen — 8 rows here, all from Mestergull's contentless 'Produkter' breadcrumb","facetrules stone: pearl compounds (Akoyaperle, Tahitiperler) and gemstone names (granat, røkkvarts, aventurin) are missed, while the separate words 'perler'/'topas' hit","facetrules type: 'diamantring'/'alliansering' and the crumbs Diamantringer/Allianseringer do not derive type=Rings (only a bare 'Ringer' crumb does)"],"notes":"Core jewellery (David-Andersen, Mestergull, Bjørklund, Sylvsmidja bunadsølv) is in good shape; nearly all damage is at the edges — 33 rows are not jewellery at all, most of them dragged in by a metal-colour word or the word 'kjede'/'ringer'. Two structural weaknesses beyond the rules: Mockberg is listed twice (Bjørklund slug rows vs Klokker.no EAN rows) so colour/size siblings and two exact duplicates sit as separate top-level rows with no variant wiring, and 133 of 300 rows have no image because these shops are only sampled. Mestergull's crawl also yields near-useless names ('Kjede Sølv' x8, 'KLONDIKE 0,14 ct.') and 'Produkter' as the whole breadcrumb, which is why its rows are the worst-classified in the shard."}

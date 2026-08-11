@@ -1,0 +1,301 @@
+{"id":"p-bergans-of-norway-cecilie-wool-hood-ulljakke-dame","name":"Cecilie Wool Hood ulljakke dame","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS OF NORWAY","suggested":"Bergans of Norway","why":"same brand appears in this shard as 'Bergans of Norway' and 'BERGANS' - three spellings fragment the brand filter"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"p-cep-cep-run-sleeves-calf-5-0-women-white","status":"ok"}
+{"id":"p-odlo-ceramiwarm-wmn-dark-sapphire","name":"Ceramiwarm Wmn Dark Sapphire","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"'Wmn' in the name is the women's marker; the audience vocabulary only knows Women/Dame"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-exped-chair-kit-mw-navy","status":"ok"}
+{"id":"p-hurtta-chill-stopper-65-cm","name":"Chill Stopper 65 cm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"Hurtta dog coat, srcCat 'Vinterdekken' is the shop's dog winter-rug shelf; sized in cm back length"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-camelbak-chute-mag-1l-charcoal-2020","status":"ok"}
+{"id":"p-tactacam-clamp-mount","status":"ok"}
+{"id":"p-rohnisch-clara-cropped-slate-green","status":"ok"}
+{"id":"p-vildmark-classic-0-5l-orange","status":"ok"}
+{"id":"p-blue-fox-classic-gilded-vibrax-bfgd2-6g-gdrt","status":"ok"}
+{"id":"p-brynje-classic-headover-sand","status":"ok"}
+{"id":"p-okuma-classic-pro-lc-xpd-30-rh","status":"ok"}
+{"id":"p-victorinox-classic-sd-yellow","status":"ok"}
+{"id":"p-stanley-classic-trigger-action-travel-mug-0-47l-polar","name":"Classic Trigger-Action Travel Mug 0.47L Polar","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Camping gear","why":"srcCat 'Termokopper' is unmapped while the sibling leaf 'Termos' derives Camping gear"}],"fix":{"patch":{"facets":{"type":"Camping gear"}}}}
+{"id":"ean-7031582431381","status":"ok"}
+{"id":"p-seeland-climate-hybrid-pine-green","status":"ok"}
+{"id":"p-black-diamond-climbon-lotion-creme-68ml-2-3-oz","name":"ClimbOn Lotion Creme 68ml (2.3 Oz)","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Black","suggested":null,"why":"a skin lotion has no colour; 'Black' was read out of the brand crumb srcCat 'Black Diamond'"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-muchachomalo-clinton-monica-affair-2pk-svart-bla","name":"Clinton Monica Affair 2pk Svart/Blå","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Fashion","why":"srcCat 'Boxere' - a 2-pack of boxer briefs, no outdoor use"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-sweet-protection-clockwork-max-rig-reflect-obsidian-matte-crystal-purp","status":"ok"}
+{"id":"p-sea-to-summit-clothesline-black","status":"ok"}
+{"id":"p-exped-cloudburst-25-dark-olive","status":"ok"}
+{"id":"p-on-cloudflyer-womens-magenta-mulberry","name":"Cloudflyer Womens Magenta/Mulberry","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Løpesko' - road running shoes, not hiking/camping/fishing/hunting"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-cmp-cmp-kamsel-mid-wmn-wp-sabbia","name":"CMP Kamsel Mid Wmn Wp Sabbia","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets","current":null,"suggested":"type Footwear, audience Women, waterproof true","why":"name states 'Mid' boot, 'Wmn' and 'Wp'; srcCat is only the brand crumb so nothing derived"}],"fix":{"patch":{"facets":{"type":"Footwear","audience":"Women","waterproof":true}}}}
+{"id":"p-black-diamond-co-mini-tube-0-5-oz","status":"ok"}
+{"id":"p-coleman-coleman-oak-canyon-4-familietelt","status":"ok"}
+{"id":"p-coleman-coleman-performance-gas-500-gassboks","status":"ok"}
+{"id":"p-coleman-coleman-rechargeable-quickpump","name":"COLEMAN RECHARGEABLE QUICKPUMP","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"COLEMAN RECHARGEABLE QUICKPUMP","suggested":"Coleman Rechargeable QuickPump","why":"ALL CAPS feed name"}],"fix":{"patch":{"name":"Coleman Rechargeable QuickPump"}}}
+{"id":"p-cloud7-collar-mauerpark-xs-xl-olive","name":"Collar Mauerpark XS-XL Olive","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"srcCat 'Halsbånd' - a Cloud7 dog collar"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-minifinder-collar-red","name":"Collar Red","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"srcCat 'Peilehalsbånd' - a GPS tracking collar for a dog"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-color-kids-color-kids-jr-jacket-colorblock-woodrose","status":"ok"}
+{"id":"p-color-kids-color-kids-jr-ski-jacket-colorbl-nuthatch","status":"ok"}
+{"id":"p-lowa-combat-boot-gtx-wide-xl-black","status":"ok"}
+{"id":"p-viking-comfort-technology-sole","status":"ok"}
+{"id":"p-dog-copenhagen-comfort-walk-air-harness-l-orange-sun","name":"Comfort Walk Air Harness L Orange Sun","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"DOG Copenhagen dog harness, srcCat 'Seler'"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-dog-copenhagen-comfort-walk-go-harness-m-hunting-green","name":"Comfort Walk Go Harness M Hunting Green","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"DOG Copenhagen dog harness, srcCat 'Seler'"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-klattermusen-communicator-pocket-2-0-burnt-russet","status":"ok"}
+{"id":"p-therm-a-rest-compressible-pillow-cinch-r-warp-speed","status":"ok"}
+{"id":"ean-7031582534426","status":"ok"}
+{"id":"p-paikka-cooling-blanket-60cm-cabbage","name":"Cooling Blanket 60Cm Cabbage","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"PAIKKA dog cooling mat, srcCat 'Kjøleputer'"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-mammut-cord-pos-4m-oransje","status":"ok"}
+{"id":"p-black-diamond-cosmo-300-headlamp-aqua","name":"Cosmo 300 Headlamp Aqua","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Black","suggested":"Blue","why":"the name says Aqua; 'Black' came from the brand crumb srcCat 'Black Diamond'"}],"fix":{"patch":{"facets":{"color":"Blue"}}}}
+{"id":"p-exped-couloir-40-svart","status":"ok"}
+{"id":"p-rapala-countdown-elite-5-5cm-gdmt","name":"CountDown Elite 5,5cm GDMT","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same lure, same 5,5cm size, only the colour code differs (GDMT / GDPY) - two top-level rows"}],"fix":{"group":{"head":"p-rapala-countdown-elite-5-5cm-gdmt","members":["p-rapala-countdown-elite-5-5cm-gdpy"],"axis":"color"}}}
+{"id":"p-rapala-countdown-elite-5-5cm-gdpy","name":"CountDown Elite 5,5cm GDPY","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of CountDown Elite 5,5cm GDMT"}],"fix":{"group":{"head":"p-rapala-countdown-elite-5-5cm-gdmt","members":["p-rapala-countdown-elite-5-5cm-gdpy"],"axis":"color"}}}
+{"id":"p-rapala-countdown-elite-7-5cm-gdmn","status":"ok"}
+{"id":"p-rapala-countdown-s-11cm-rt","name":"COUNTDOWN S 11CM RT","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"COUNTDOWN S 11CM RT","suggested":"CountDown S 11cm RT","why":"ALL CAPS feed name; the sibling rows use mixed case"}],"fix":{"patch":{"name":"CountDown S 11cm RT"}}}
+{"id":"p-rapala-countdown-s-5cm-chl","name":"COUNTDOWN S 5CM CHL","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"COUNTDOWN S 5CM CHL","suggested":"CountDown S 5cm CHL","why":"ALL CAPS feed name"}],"fix":{"patch":{"name":"CountDown S 5cm CHL"}}}
+{"id":"p-coxa-carry-coxa-carry-velcro-patches-x-4-white-black","status":"ok"}
+{"id":"p-craft-craft-hypervent-run-cap-white","status":"ok"}
+{"id":"p-craft-craft-men-s-pro-trail-shorts-black-black","status":"ok"}
+{"id":"p-craft-craft-nor-adv-nordic-training-jacket-2-w-white-blaze","status":"ok"}
+{"id":"p-craft-craft-nor-adv-nordic-training-speed-jacket-m-blaze-white","status":"ok"}
+{"id":"p-craft-craft-nor-adv-subz-ls-2-w-white-blaze","status":"ok"}
+{"id":"p-craft-craft-nor-neck-tube-blaze","status":"ok"}
+{"id":"p-swedteam-crest-duffel-bag-ivy-green","status":"ok"}
+{"id":"p-crispi-crispi-jaktstovel-kongsvoll-efx-dame-black","status":"ok"}
+{"id":"p-crispi-crispi-swat-evo-sort","status":"ok"}
+{"id":"p-crispi-crispi-valdres-gtx-orange","status":"ok"}
+{"id":"p-crocs-crocs-toddler-classic-clog-black","name":"Crocs Toddler Classic Clog Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"toddler casual clog, srcCat is only the brand crumb 'Crocs'"},{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Kids","why":"'Toddler' in the name is unmapped in the audience vocabulary"},{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant pair with p-crocs-crocs-toddler-classic-clog-lavender (same model, Black / Lavender)"}],"fix":{"patch":{"cat":"Shoes","facets":{"audience":"Kids"}}}}
+{"id":"p-crocs-crocs-toddler-classic-clog-lavender","name":"Crocs Toddler Classic Clog Lavender","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"toddler casual clog, srcCat is only the brand crumb"},{"kind":"facets","severity":"low","field":"facets","current":null,"suggested":"audience Kids, color Purple","why":"'Toddler' and 'Lavender' both stated in the name, neither derived"},{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of p-crocs-crocs-toddler-classic-clog-black"}],"fix":{"patch":{"cat":"Shoes","facets":{"audience":"Kids","color":"Purple"}}}}
+{"id":"p-crocs-crocs-unisex-classic-lined-shorty-black","name":"Crocs Unisex Classic Lined Shorty Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"lined casual Crocs boot, srcCat is only the brand crumb"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-rapala-crushcity-the-kickman-10cm-4-p-3pk","status":"ok"}
+{"id":"p-deerhunter-cumberland-knitted-beanie-reversible-orange","status":"ok"}
+{"id":"p-chevalier-cumulus-pant","name":"Cumulus Pant","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Pant' in the name; srcCat is only the brand crumb"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"p-daiwa-daiwa-wilderness-game-bag-1","status":"ok"}
+{"id":"p-dale-of-norway-dale-of-norway-cortina-knee-sock-pink-red","status":"ok"}
+{"id":"p-savotta-day-backpack-202-17l","status":"ok"}
+{"id":"p-houdini-daybreak-cap-blue-illusion","status":"ok"}
+{"id":"p-osprey-daylite-blue-spikemoss-alkaline","status":"ok"}
+{"id":"p-osprey-daylite-carry-on-wheeled-duffel-40l-black","status":"ok"}
+{"id":"p-osprey-daylite-packing-cube-medium-black","status":"ok"}
+{"id":"p-osprey-daylite-waist","name":"Daylite Waist","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"OSPREY","suggested":"Osprey","why":"the other six Osprey rows in this shard store 'Osprey'"}],"fix":{"patch":{"brand":"Osprey"}}}
+{"id":"ean-7031582533047","status":"ok"}
+{"id":"p-carinthia-defence-6-olivengronn","name":"Defence 6 Olivengrønn","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sleeping","why":"srcCat '4-sesongsposer' (4-season sleeping bags) is unmapped while 'Liggeunderlag' derives Sleeping"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-devold-devold-daily-merino-light-sock-3pk-flood-mix","status":"ok"}
+{"id":"p-devold-devold-endurance-merino-beanie-ink","status":"ok"}
+{"id":"p-devold-devold-expedition-headover-black","status":"ok"}
+{"id":"p-devold-devold-men-s-heroy-pant-caviar","status":"ok"}
+{"id":"p-devold-devold-men-s-tuvegga-merino-longs-cayenne","status":"ok"}
+{"id":"p-devold-devold-multi-heavy-woman-sock-dark-grey","name":"Devold Multi Heavy Woman Sock Dark Grey","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"'Woman' (singular) in the name is unmapped"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-devold-devold-nansen-kid-sock-grey-melange","name":"Devold NANSEN KID SOCK Grey Melange","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Devold NANSEN KID SOCK Grey Melange","suggested":"Devold Nansen Kid Sock Grey Melange","why":"ALL CAPS chunk mid-name"}],"fix":{"patch":{"name":"Devold Nansen Kid Sock Grey Melange"}}}
+{"id":"p-devold-devold-nansen-wool-sock-arrowwood","name":"Devold Nansen Wool Sock Arrowwood","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"a sock is not a top/baselayer; the shard's other Devold/Falke socks derive Accessories"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-devold-devold-women-s-breeze-merino-150-singlet-chalk-pink","status":"ok"}
+{"id":"p-devold-devold-women-s-breeze-merino-150-t-shirt-dawn","status":"ok"}
+{"id":"p-devold-devold-women-s-daily-merino-medium-sock-3pk-beetroot-mix","status":"ok"}
+{"id":"p-devold-devold-women-s-endurance-merino-130-tee-fog","status":"ok"}
+{"id":"p-nikko-stirling-diamond-2-5-10x50-no4-dot-belyst","status":"ok"}
+{"id":"p-didriksons-didriksons-kids-slaskeman-set-4-ocean-mint","status":"ok"}
+{"id":"p-didriksons-didriksons-kids-southwest-8-dusty-azalea","name":"Didriksons Kids' Southwest 8 Dusty Azalea","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same rain jacket, same price, only the colourway differs from the Navy row"}],"fix":{"group":{"head":"p-didriksons-didriksons-kids-southwest-8-dusty-azalea","members":["p-didriksons-didriksons-kids-southwest-8-navy"],"axis":"color"}}}
+{"id":"p-didriksons-didriksons-kids-southwest-8-navy","name":"Didriksons Kids' Southwest 8 Navy","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of the Dusty Azalea row"}],"fix":{"group":{"head":"p-didriksons-didriksons-kids-southwest-8-dusty-azalea","members":["p-didriksons-didriksons-kids-southwest-8-navy"],"axis":"color"}}}
+{"id":"p-didriksons-didriksons-women-s-annema-full-zip-6-dark-night-blue","name":"Didriksons Women's Annema Full Zip 6 Dark Night Blue","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same jacket and price as the Shell White row, colourway only"}],"fix":{"group":{"head":"p-didriksons-didriksons-women-s-annema-full-zip-6-dark-night-blue","members":["p-didriksons-didriksons-women-s-annema-full-zip-6-shell-white"],"axis":"color"}}}
+{"id":"p-didriksons-didriksons-women-s-annema-full-zip-6-shell-white","name":"Didriksons Women's Annema Full Zip 6 Shell White","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of the Dark Night Blue row"}],"fix":{"group":{"head":"p-didriksons-didriksons-women-s-annema-full-zip-6-dark-night-blue","members":["p-didriksons-didriksons-women-s-annema-full-zip-6-shell-white"],"axis":"color"}}}
+{"id":"p-didriksons-didriksons-women-s-marget-parka-black","status":"ok"}
+{"id":"p-black-diamond-distance-run-belt-black","status":"ok"}
+{"id":"p-nordicmaps-dividalen","name":"DIVIDALEN","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"DIVIDALEN","suggested":"Dividalen","why":"ALL CAPS place name; the row is a paper hiking map"}],"fix":{"patch":{"name":"Dividalen"}}}
+{"id":"p-stetson-docker-co-pes-brown","status":"ok"}
+{"id":"p-furminator-dog-long-hair-m","name":"Dog Long Hair M","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"FURminator grooming tool, srcCat 'Pelspleie' (coat care)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-carnilove-dog-semi-moist-snack-carp-thyme-200-g","name":"Dog Semi Moist Snack Carp & Thyme 200 g","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog treats, srcCat 'Godbiter'"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-pinewood-dog-sports-2-0-jacket-black-dark-anthracite","status":"ok"}
+{"id":"p-dolomite-dolomite-men-s-54-hike-evo-gore-tex-gunmetal-grey","status":"ok"}
+{"id":"p-aclima-doublewool-longs-man-jet-black","name":"DoubleWool Longs Man Jet Black","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Men","why":"'Man' (singular) in the name is unmapped"}],"fix":{"patch":{"facets":{"audience":"Men"}}}}
+{"id":"p-sea-to-summit-down-trek-tkii-8-c-long-blue","status":"ok"}
+{"id":"p-exped-downmat-7-lw-24-c-lang-bred-7x197x65-cm-dunfyll","status":"ok"}
+{"id":"p-decoy-gun-dog-dressurband-oransje","name":"Dressurbånd Oransje","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog training lead, srcCat 'Kobbel' (leash), brand Decoy Gun Dog"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"ean-7031582270614","status":"ok"}
+{"id":"ean-7031582574057","status":"ok"}
+{"id":"p-osprey-dry-sack-3l-mars-orange","status":"ok"}
+{"id":"p-buff-dry-cool-reflective-yellow","status":"ok"}
+{"id":"p-bergans-drybag-10","name":"Drybag 10","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS","suggested":"Bergans of Norway","why":"same brand stored as 'Bergans of Norway' on the 30-odd Bergans feed rows in this shard"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"ean-7031582582021","status":"ok"}
+{"id":"p-mammut-drybag-light-10l-oransje","status":"ok"}
+{"id":"p-lowe-alpine-drysac-dark-blue","status":"ok"}
+{"id":"p-chevalier-dundee-shirt-shooting-fit-men-rust-checked","status":"ok"}
+{"id":"p-osprey-duro-6-black","status":"ok"}
+{"id":"p-dynafit-dynafit-24-7-graphic-t-shirt-m-overcast-trail-crew-leo","status":"ok"}
+{"id":"p-dynafit-dynafit-dynafit-ridge-w-boot","name":"Dynafit Dynafit Ridge W Boot","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Dynafit Dynafit Ridge W Boot","suggested":"Dynafit Ridge W Boot","why":"brand repeated twice at the head of the name"}],"fix":{"patch":{"name":"Dynafit Ridge W Boot"}}}
+{"id":"p-dynafit-dynafit-ridge-ultralight-down-jkt-m-smoke-blue-0720","status":"ok"}
+{"id":"p-dynafit-dynafit-tour-wool-thermal-w-hoody-overcast-0910","status":"ok"}
+{"id":"p-dynafit-dynafit-traverse-hybrid-dynastretch-pnt-m-black-out","status":"ok"}
+{"id":"p-dynafit-dynafit-youngstar-binding","status":"ok"}
+{"id":"p-deerhunter-eagle-fleece-waistcoat-tarmac-green","status":"ok"}
+{"id":"p-eagle-products-eagle-products-drammeglass-i-tre-2026","status":"ok"}
+{"id":"p-butler-creek-easy-rider-vapenreim-svart","status":"ok"}
+{"id":"p-nalgene-easy-sipper-63mm-bla","status":"ok"}
+{"id":"p-sea-to-summit-eco-evac-compression-drybag-5-l-rise","status":"ok"}
+{"id":"p-sea-to-summit-eco-lightweight-drybag-1-5l-orange","status":"ok"}
+{"id":"p-sea-to-summit-eco-lightweight-drybag-set-3-5-8l","status":"ok"}
+{"id":"p-pangea-eco-towel-2-0-standard-pink","status":"ok"}
+{"id":"p-sea-to-summit-eco-ultrasil-drybag-8-l-zinnia","status":"ok"}
+{"id":"p-buff-ecostretch-original-junior-blossom-pink","status":"ok"}
+{"id":"p-garmin-edge-840-solar-sykkelcomputer-med-solcellelading","name":"Edge 840 Solar, Sykkelcomputer med Solcellelading","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Bikes","why":"the name says 'Sykkelcomputer' - a bike head unit; srcCat 'Kart og kompass' is where the shop files navigation"},{"kind":"facets","severity":"high","field":"facets.type","current":"Camping gear","suggested":null,"why":"derived from the 'Kart og kompass' crumb; a bike computer is not camping gear"}],"fix":{"patch":{"cat":"Bikes","facets":{"type":null}}}}
+{"id":"ean-7031582441601","name":"Elastic band for Gaiter","status":"issue","issues":[{"kind":"junk","severity":"med","field":null,"current":null,"suggested":"hidden","why":"a replacement elastic strap for a gaiter - a spare part, not something a shopper price-compares"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-casstrom-eldstal-masurbjork","status":"ok"}
+{"id":"p-chevalier-ellesmere-windblocker-coat-brown","status":"ok"}
+{"id":"p-hestra-embla-kork","status":"ok"}
+{"id":"p-snugpak-endurance-40-olive","status":"ok"}
+{"id":"p-seeland-enduro-ryggsekk-med-stol-pine-green","status":"ok"}
+{"id":"p-okuma-enlite-2000a-spinning-utv-5-2-1","status":"ok"}
+{"id":"p-eno-hammock-eno-doubledeluxe-khaki-olive","status":"ok"}
+{"id":"p-sea-to-summit-escapist-ultra-mesh-bug-tent","status":"ok"}
+{"id":"p-espegard-espegard-grillrist-balbrenner-50-metall","status":"ok"}
+{"id":"ean-7031582533375","name":"Essentials 2.5L Shell Jacket Men","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"identical name to ean-7031582583288, different EAN and price - the same jacket in another colour/size sitting as two top-level rows"}],"fix":{"group":{"head":"ean-7031582533375","members":["ean-7031582583288"],"axis":"color"}}}
+{"id":"ean-7031582583288","name":"Essentials 2.5L Shell Jacket Men","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"duplicate name of ean-7031582533375"}],"fix":{"group":{"head":"ean-7031582533375","members":["ean-7031582583288"],"axis":"color"}}}
+{"id":"ean-7031582534846","name":"Essentials 2.5L Shell Pants Women","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"the name says Pants; 'Shell Jacket' siblings leaked the Jackets value onto the pants rows"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582533825","status":"ok"}
+{"id":"ean-7031582619406","name":"Essentials 3L Shell Pants Men","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"the name says Pants"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582545408","status":"ok"}
+{"id":"p-tretorn-eva-winter-dam-black-black","name":"Eva Winter Dam Black/Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Vintersko' - a women's winter shoe, not hiking/hunting footwear"},{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"Swedish 'Dam' in the name is unmapped"}],"fix":{"patch":{"cat":"Shoes","facets":{"audience":"Women"}}}}
+{"id":"p-rojk-everyday-merino-socks-wild-cherry","status":"ok"}
+{"id":"p-cabeau-evolution-earth-deluxe-terra","status":"ok"}
+{"id":"p-evolv-evolv-evolv-v6-lv","name":"evolv Evolv V6 LV","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"evolv Evolv V6 LV","suggested":"Evolv V6 LV","why":"brand repeated twice, first occurrence lowercase"}],"fix":{"patch":{"name":"Evolv V6 LV"}}}
+{"id":"p-deerhunter-excape-light-jacket-art-green","status":"ok"}
+{"id":"ean-7031582100263","name":"Expander","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Expander","suggested":null,"why":"one generic word with no product noun - a shopper cannot tell what this kr 399 item is"}],"fix":{"patch":{"name":"Bergans Expander (pack lid extension)"}}}
+{"id":"p-exped-exped-drybag-first-aid-chili","status":"ok"}
+{"id":"p-exped-exped-drybag-versa-clear-assortiert","status":"ok"}
+{"id":"p-exped-exped-dura-6-5r-lw-dark-lava-flame","status":"ok"}
+{"id":"p-exped-exped-lightning-45-women-s-black","status":"ok"}
+{"id":"p-exped-exped-schnozzel-pumpbag-ul-m-sunshine","name":"Exped Schnozzel Pumpbag UL M Sunshine","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same pumpbag and colourway as p-exped-exped-schnozzel-pumpbag-ul-sunshine, this one is the M size"}],"fix":{"group":{"head":"p-exped-exped-schnozzel-pumpbag-ul-sunshine","members":["p-exped-exped-schnozzel-pumpbag-ul-m-sunshine"],"axis":"size"}}}
+{"id":"p-exped-exped-schnozzel-pumpbag-ul-sunshine","name":"Exped Schnozzel Pumpbag Ul Sunshine","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"size variant family with the UL M row"}],"fix":{"group":{"head":"p-exped-exped-schnozzel-pumpbag-ul-sunshine","members":["p-exped-exped-schnozzel-pumpbag-ul-m-sunshine"],"axis":"size"}}}
+{"id":"p-exped-exped-ultra-6-5r-m-mummy-meadow-meadow","status":"ok"}
+{"id":"p-exped-exped-verglas-40-black","status":"ok"}
+{"id":"p-rab-expedition-1000-30-c-summit-red","status":"ok"}
+{"id":"p-adventure-food-expedition-breakfast","status":"ok"}
+{"id":"p-hurtta-expedition-parka-buckthorn-40xs-cm","name":"Expedition Parka Buckthorn 40XS cm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"Hurtta dog parka, srcCat 'Vinterdekken', sized '40XS cm' (dog back length)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-mystery-ranch-expedition-waist-belt-l-xl-foliage","status":"ok"}
+{"id":"ean-7031580031347","name":"Expediton Set","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Expediton Set","suggested":"Expedition Set","why":"misspelling in the source feed name"}],"fix":{"patch":{"name":"Expedition Set"}}}
+{"id":"p-alaska-1795-extreme-lite-2-0-safety-mix-jaktjacka-blindmax-hd","status":"ok"}
+{"id":"p-hurtta-extreme-warmer-iii-eco-40-50-cm-raven","name":"Extreme Warmer III ECO 40-50 cm Raven","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"Hurtta dog winter coat, srcCat 'Vinterdekken', sized in cm back length"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-osprey-fairview-70-black","status":"ok"}
+{"id":"p-falke-falke-tk2-explore-cool-w-white","status":"ok"}
+{"id":"p-falke-falke-tk2-explore-men-trekking-socks-marine","status":"ok"}
+{"id":"p-falke-falke-tk2-explore-women-trekking-socks-navy","status":"ok"}
+{"id":"p-falke-falke-tk2-explore-wool-women-kitt-mouline","status":"ok"}
+{"id":"p-oakley-fall-line-l-prizm-matte-black-sapphire","status":"ok"}
+{"id":"p-oakley-fall-line-m-prizm-matte-black-hi-pink","status":"ok"}
+{"id":"ean-7031582617099","status":"ok"}
+{"id":"p-osprey-farpoint-55-black","status":"ok"}
+{"id":"p-real-feltrasjon-biff-og-potetgryte-gronn","status":"ok"}
+{"id":"p-fenix-fenix-hl16-hodelykt-led-rosa","name":"FENIX HL16 HODELYKT LED ROSA","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"FENIX HL16 HODELYKT LED ROSA","suggested":"Fenix HL16 hodelykt LED rosa","why":"ALL CAPS feed name"}],"fix":{"patch":{"name":"Fenix HL16 hodelykt LED rosa"}}}
+{"id":"p-ferrino-ferrino-tent-nemesi-1-pro-olive-green","status":"ok"}
+{"id":"p-oakley-field-boonie-hat-light-curry","status":"ok"}
+{"id":"p-real-field-meal-kylling-karri","status":"ok"}
+{"id":"p-fila-fila-strada-low-damesko-bla","name":"Fila Strada low damesko Blå","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Fritidssko' - a Fila casual sneaker"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-klattermusen-fimmafang-3-0-lumbarpack-7l-honey","status":"ok"}
+{"id":"ean-7031582616146","name":"Finnsnes Fleece Headband","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"a headband is not a top; the value came from the sibling 'Finnsnes Fleece Jacket' family"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7031582378907","status":"ok"}
+{"id":"ean-7031582575856","status":"ok"}
+{"id":"p-twentyfour-finse-2-0-2-lags-anorakk-olive-wood","name":"Finse 2.0 2-Lags Anorakk Olive Wood","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"three Twentyfour Finse 2.0 2-lags women's anoraks at kr 1599 sitting as separate rows, differing only by colourway"}],"fix":{"group":{"head":"p-twentyfour-finse-2-0-2-lags-anorakk-olive-wood","members":["p-twentyfour-finse-2-0-2-lags-d-matt-gronn","p-twentyfour-finse-2-0-2-lags-jakke-kastanje"],"axis":"color"}}}
+{"id":"p-twentyfour-finse-2-0-2-lags-d-matt-gronn","name":"Finse 2.0 2-Lags D Matt Grønn","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Finse 2.0 2-Lags D Matt Grønn","suggested":"Finse 2.0 2-Lags Anorakk Dame Matt Grønn","why":"'D' is a truncated 'Dame' and the product noun is missing entirely"},{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"colourway of the Finse 2.0 2-Lags anorak family"}],"fix":{"patch":{"name":"Finse 2.0 2-Lags Anorakk Dame Matt Grønn"}}}
+{"id":"p-twentyfour-finse-2-0-2-lags-jakke-kastanje","name":"Finse 2.0 2-Lags Jakke Kastanje","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"colourway of the Finse 2.0 2-Lags anorak family"}],"fix":{"group":{"head":"p-twentyfour-finse-2-0-2-lags-anorakk-olive-wood","members":["p-twentyfour-finse-2-0-2-lags-d-matt-gronn","p-twentyfour-finse-2-0-2-lags-jakke-kastanje"],"axis":"color"}}}
+{"id":"p-twentyfour-finse-embla-grabla","name":"Finse Embla Gråblå","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"srcCat 'Luer' (beanies) derives no type"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-twentyfour-finse-leather-boot-skyggesort","name":"Finse Leather Boot Skyggesort","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Black","why":"'Skyggesort' is a Norwegian compound ending in 'sort' (black) and is unmapped"}],"fix":{"patch":{"facets":{"color":"Black"}}}}
+{"id":"p-mammut-first-zip-4l-alpine-aop-black-snow-camo","status":"ok"}
+{"id":"p-mammut-first-zip-8l-safety-orange-black","status":"ok"}
+{"id":"p-savotta-fiskesaks","status":"ok"}
+{"id":"p-fixe-maillon-small-oval-stainless","name":"Fixe Maillon small oval stainless","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Fixe","why":"the brand is the first word of the name; 'Unspecified' is a placeholder that breaks the brand filter"}],"fix":{"patch":{"brand":"Fixe","name":"Maillon small oval stainless"}}}
+{"id":"p-giro-fixture-mips-ii-y-mat-light-pink","name":"Fixture Mips Ii Y Mat Light Pink","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Bikes","why":"Giro Fixture MIPS II is a mountain-bike helmet (Y = youth); srcCat is only the brand crumb so nothing decided it"}],"fix":{"patch":{"cat":"Bikes"}}}
+{"id":"p-calazo-fjellkart-sarek-padjelanta-1-100-000","name":"fjellkart Sarek & Padjelanta 1:100 000","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"fjellkart Sarek & Padjelanta 1:100 000","suggested":"Fjellkart Sarek & Padjelanta 1:100 000","why":"name starts lowercase"}],"fix":{"patch":{"name":"Fjellkart Sarek & Padjelanta 1:100 000"}}}
+{"id":"p-fjellpulken-fjellpulken-fjellpulken-barnepulk-med-drag-og-sele-burgund","name":"Fjellpulken Fjellpulken barnepulk med drag og sele Burgundy","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Fjellpulken Fjellpulken barnepulk med drag og sele Burgundy","suggested":"Fjellpulken barnepulk med drag og sele Burgundy","why":"brand repeated twice at the head of the name"}],"fix":{"patch":{"name":"Fjellpulken barnepulk med drag og sele Burgundy"}}}
+{"id":"p-fjellpulken-fjellpulken-sele-xpedition-pro-2-0-gra","status":"ok"}
+{"id":"p-fjellpulken-fjellpulken-traverse-165-yellow","status":"ok"}
+{"id":"p-fjallraven-fjallraven-1960-logo-hat-dusty-rose","status":"ok"}
+{"id":"p-fjallraven-fjallraven-abisko-hike-lite-20-s-m-clay","status":"ok"}
+{"id":"p-fjallraven-fjallraven-abisko-shape-3-pole-kit-assorted","status":"ok"}
+{"id":"p-fjallraven-fjallraven-archive-logo-t-shirt-m-misty-green","status":"ok"}
+{"id":"p-fjallraven-fjallraven-bergtagen-gtx-pro-trousers-m-black","status":"ok"}
+{"id":"p-fjallraven-fjallraven-bergtagen-stretch-trousers-w-black","status":"ok"}
+{"id":"p-fjallraven-fjallraven-canvas-belt-deep-blue","status":"ok"}
+{"id":"p-fjallraven-fjallraven-classic-knit-hat-dawn-blue","status":"ok"}
+{"id":"p-fjallraven-fjallraven-farden-roller-75-green","status":"ok"}
+{"id":"p-fjallraven-fjallraven-high-coast-hip-pack-blackberry","status":"ok"}
+{"id":"p-fjallraven-fjallraven-kaitum-beanie-dark-grey","status":"ok"}
+{"id":"p-fjallraven-fjallraven-kanken-flint-grey","status":"ok"}
+{"id":"p-fjallraven-fjallraven-kanken-koncept-super-grey-green","status":"ok"}
+{"id":"p-fjallraven-fjallraven-kanken-sling-fossil","status":"ok"}
+{"id":"p-fjallraven-fjallraven-men-s-fjallraven-heavy-classic-t-shirt-black","name":"Fjällräven Men's Fjällräven Heavy Classic T-Shirt Black","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Fjällräven Men's Fjällräven Heavy Classic T-Shirt Black","suggested":"Fjällräven Men's Heavy Classic T-Shirt Black","why":"brand appears twice in the name"}],"fix":{"patch":{"name":"Fjällräven Men's Heavy Classic T-Shirt Black"}}}
+{"id":"p-fjallraven-fjallraven-men-s-fjallraven-logo-t-shirt-uncle-blue-melange","name":"Fjällräven Men's Fjällräven Logo T-shirt Uncle Blue/Melange","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Fjällräven Men's Fjällräven Logo T-shirt Uncle Blue/Melange","suggested":"Fjällräven Men's Logo T-shirt Uncle Blue/Melange","why":"brand appears twice in the name"}],"fix":{"patch":{"name":"Fjällräven Men's Logo T-shirt Uncle Blue/Melange"}}}
+{"id":"p-fjallraven-fjallraven-men-s-keb-agile-winter-trousers-dark-navy","status":"ok"}
+{"id":"p-fjallraven-fjallraven-men-s-vidda-pro-lite-shorts-fossil","status":"ok"}
+{"id":"p-fjallraven-fjallraven-men-s-ovik-polo-shirt-navy","status":"ok"}
+{"id":"p-fjallraven-fjallraven-nuuk-lite-parka-w-black","status":"ok"}
+{"id":"p-fjallraven-fjallraven-singi-hip-pack-10-khaki-dust","status":"ok"}
+{"id":"p-fjallraven-fjallraven-singi-mesh-bag-green","status":"ok"}
+{"id":"p-fjallraven-fjallraven-singi-two-pin-belt-leather-cognac","status":"ok"}
+{"id":"p-fjallraven-fjallraven-ulvo-hip-pack-medium-red-gold","status":"ok"}
+{"id":"p-fjallraven-fjallraven-women-s-abisko-trekking-tights-pro-black-iron-gr","name":"Fjällräven Women's Abisko Trekking Tights Pro Black/Iron Grey","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same tights, same price, colourway only vs the Deep Forest/Iron Grey row"}],"fix":{"group":{"head":"p-fjallraven-fjallraven-women-s-abisko-trekking-tights-pro-black-iron-gr","members":["p-fjallraven-fjallraven-women-s-abisko-trekking-tights-pro-deep-forest-i"],"axis":"color"}}}
+{"id":"p-fjallraven-fjallraven-women-s-abisko-trekking-tights-pro-deep-forest-i","name":"Fjällräven Women's Abisko Trekking Tights Pro Deep Forest/Iron Grey","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colourway of the Abisko Trekking Tights Pro row"}],"fix":{"group":{"head":"p-fjallraven-fjallraven-women-s-abisko-trekking-tights-pro-black-iron-gr","members":["p-fjallraven-fjallraven-women-s-abisko-trekking-tights-pro-deep-forest-i"],"axis":"color"}}}
+{"id":"p-fjallraven-fjallraven-women-s-abisko-varm-trekking-tights-black-iron-g","name":"Fjällräven Women's Abisko Värm Trekking Tights Black-Iron Grey","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same tights, same price, colourway only vs the Deep Patina row"}],"fix":{"group":{"head":"p-fjallraven-fjallraven-women-s-abisko-varm-trekking-tights-black-iron-g","members":["p-fjallraven-fjallraven-women-s-abisko-varm-trekking-tights-deep-patina"],"axis":"color"}}}
+{"id":"p-fjallraven-fjallraven-women-s-abisko-varm-trekking-tights-deep-patina","name":"Fjällräven Women's Abisko Värm Trekking Tights Deep Patina-Iron Grey","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colourway of the Abisko Värm Trekking Tights row"}],"fix":{"group":{"head":"p-fjallraven-fjallraven-women-s-abisko-varm-trekking-tights-black-iron-g","members":["p-fjallraven-fjallraven-women-s-abisko-varm-trekking-tights-deep-patina"],"axis":"color"}}}
+{"id":"p-fjallraven-fjallraven-women-s-expedition-down-lite-jacket-patina-green","status":"ok"}
+{"id":"p-fjallraven-fjallraven-women-s-expedition-mid-winter-jacket-true-red-un","status":"ok"}
+{"id":"p-fjallraven-fjallraven-women-s-keb-agile-winter-trousers-black","status":"ok"}
+{"id":"p-fjallraven-fjallraven-women-s-keb-trousers-curved-cabin-red-rowan-red","name":"Fjällräven Women's Keb Trousers Curved Cabin Red-Rowan Red","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same Keb Trousers Curved, colourway only vs the Deep Forest row"}],"fix":{"group":{"head":"p-fjallraven-fjallraven-women-s-keb-trousers-curved-cabin-red-rowan-red","members":["p-fjallraven-fjallraven-women-s-keb-trousers-curved-deep-forest-laurel-g"],"axis":"color"}}}
+{"id":"p-fjallraven-fjallraven-women-s-keb-trousers-curved-deep-forest-laurel-g","name":"Fjällräven Women's Keb Trousers Curved Deep Forest-Laurel Green","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colourway of the Keb Trousers Curved row"}],"fix":{"group":{"head":"p-fjallraven-fjallraven-women-s-keb-trousers-curved-cabin-red-rowan-red","members":["p-fjallraven-fjallraven-women-s-keb-trousers-curved-deep-forest-laurel-g"],"axis":"color"}}}
+{"id":"p-fjallraven-fjallraven-women-s-ovik-gore-tex-padded-parka-suede-brown","status":"ok"}
+{"id":"p-fjallraven-fjallraven-ovik-365-hat-black","status":"ok"}
+{"id":"p-fjallraven-fjallraven-ovik-boxy-flannel-shirt-w-eggshell-dawn-blue","status":"ok"}
+{"id":"p-flamingo-flamingo-doggy-guide-bicycle-leading-device","name":"Flamingo Doggy Guide Bicycle Leading Device","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"a bike attachment for walking a dog - Flamingo is a pet-supplies brand"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-black-diamond-flare-headlamp-octane","status":"ok"}
+{"id":"p-rab-flatiron-badge-heather","status":"ok"}
+{"id":"p-reima-fleece-sweater-ornament-kids-deep-purple","status":"ok"}
+{"id":"p-icebreaker-flexi-chute-sage","status":"ok"}
+{"id":"p-oakley-flight-deck-l-matte-black-prizm-rose-gold","status":"ok"}
+{"id":"p-oakley-flight-deck-m-replacement-prizm-sage-gold","status":"ok"}
+{"id":"p-oakley-flight-tracker-l-matte-black-prizm-snow-24k-iridium","status":"ok"}
+{"id":"p-rapala-floater-elite-12cm-10g-gdhs","status":"ok"}
+{"id":"p-barbour-flowerdale-hat-trench","status":"ok"}
+{"id":"p-hydrapak-flux-1-5l-malibu-blue","status":"ok"}
+{"id":"p-laksen-fly-by-pheasant-tie-heather","name":"Fly-By Pheasant Tie Heather","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Fashion","why":"srcCat 'Slips og Sløyfer' - a necktie, country-styled but still neckwear"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-7031582578833","status":"ok"}
+{"id":"ean-7031582090298","status":"ok"}
+{"id":"ean-7031582451501","status":"ok"}
+{"id":"ean-7031582452225","name":"Fløyen Outdoor Tights Women","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":null,"current":null,"suggested":null,"why":"three rows share this exact name and the kr 1299 price on three different EANs - one product split across colour/size SKUs"}],"fix":{"group":{"head":"ean-7031582452225","members":["ean-7031582279648","ean-7031582333494"],"axis":"color"}}}
+{"id":"ean-7031582279648","name":"Fløyen Outdoor Tights Women","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":null,"current":null,"suggested":null,"why":"duplicate name/price of ean-7031582452225"}],"fix":{"group":{"head":"ean-7031582452225","members":["ean-7031582279648","ean-7031582333494"],"axis":"color"}}}
+{"id":"ean-7031582333494","name":"Fløyen Outdoor Tights Women","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":null,"current":null,"suggested":null,"why":"duplicate name/price of ean-7031582452225"}],"fix":{"group":{"head":"ean-7031582452225","members":["ean-7031582279648","ean-7031582333494"],"axis":"color"}}}
+{"id":"ean-7031581841419","name":"Fløyen W Jacket","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":null,"current":null,"suggested":null,"why":"three rows share this exact name at kr 750/750/749 on three different EANs"}],"fix":{"group":{"head":"ean-7031581841419","members":["ean-7031582020851","ean-7031582089902"],"axis":"color"}}}
+{"id":"ean-7031582020851","name":"Fløyen W Jacket","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":null,"current":null,"suggested":null,"why":"duplicate name of ean-7031581841419"}],"fix":{"group":{"head":"ean-7031581841419","members":["ean-7031582020851","ean-7031582089902"],"axis":"color"}}}
+{"id":"ean-7031582089902","name":"Fløyen W Jacket","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":null,"current":null,"suggested":null,"why":"duplicate name of ean-7031581841419"}],"fix":{"group":{"head":"ean-7031581841419","members":["ean-7031582020851","ean-7031582089902"],"axis":"color"}}}
+{"id":"ean-7031582282495","status":"ok"}
+{"id":"ean-7031580015170","status":"ok"}
+{"id":"ean-7031580016191","status":"ok"}
+{"id":"p-exped-fold-drybag-first-aid-m","status":"ok"}
+{"id":"p-foodmaster-foodmaster-vacuum-bag-200x300-mm-100-stk","name":"FoodMaster Vacuum Bag 200x300 mm 100 stk.","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":null,"why":"a 100-pack of food vacuum-sealer bags; 'Bag' in the name matched the luggage rule"}],"fix":{"patch":{"facets":{"type":null}}}}
+{"id":"p-mystery-ranch-forager-hip-pack-2-5-garnet","status":"ok"}
+{"id":"p-mystery-ranch-forager-pocket-l-foliage","status":"ok"}
+{"id":"p-mystery-ranch-forager-pocket-small-0-75-coyote","status":"ok"}
+{"id":"p-harkila-forest-hunter-27l-hunting-green","status":"ok"}
+{"id":"p-lundhags-forest-ii-pecan","status":"ok"}
+{"id":"p-victorinox-forester-111-mm-rod","name":"Forester 111 Mm Röd","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Red","why":"Swedish 'Röd' (red) is unmapped - this shop (Widforss) publishes Swedish colour words"}],"fix":{"patch":{"facets":{"color":"Red"}}}}
+{"id":"p-garmin-foretrex-801-black","status":"ok"}
+{"id":"p-solvkroken-forlenger-49cm","name":"FORLENGER 49CM","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"FORLENGER 49CM","suggested":"Forlenger 49 cm","why":"ALL CAPS feed name"}],"fix":{"patch":{"name":"Forlenger 49 cm"}}}
+{"id":"p-frank-walton-foster-sempione","status":"ok"}
+{"id":"p-pinewood-frazer-sweater-woman-suede-brown-dark-copper","name":"Frazer Sweater Woman Suede Brown/Dark Copper","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"'Woman' (singular) in the name is unmapped"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"ean-9005013003261","name":"Frii of Norway - Pennal Ninja - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Office","why":"'Pennal' is a school pencil case; srcCat 'Ryggsekk' is the shop's schoolbag department, not the product"},{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":null,"why":"derived from the 'Ryggsekk' crumb; a pencil case is not a backpack"},{"kind":"name","severity":"low","field":"name","current":"Frii of Norway - Pennal Ninja - Onesize","suggested":"Frii of Norway Pennal Ninja","why":"brand prefix plus a '- Onesize' size suffix with no vlabel/family wiring"}],"fix":{"patch":{"cat":"Office","name":"Frii of Norway Pennal Ninja","facets":{"type":null}}}}
+{"id":"p-garphyttan-frilufsarjackan-brun","status":"ok"}
+{"id":"p-oakley-frogskins-35th-polished-clear-prizm-violet","status":"ok"}
+{"id":"p-ruffwear-front-range-collar-purple-sage","name":"Front Range Collar Purple Sage","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"RuffWear dog collar, srcCat 'Halsbånd'"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-hawke-frontier-ed-x-8x32-gra","status":"ok"}
+{"id":"p-isbjorn-frost-light-weight-jacket-teens-moss","status":"ok"}
+{"id":"p-alaska-1795-frost-neoprene-boots","status":"ok"}
+{"id":"p-fubuki-fubuki-okinawa-yellow","status":"ok"}
+{"id":"p-marmot-fulcrum-eco-30-long-crocodile-nori","name":"Fulcrum Eco 30 Long Crocodile/Nori","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sleeping","why":"srcCat '3-sesongsposer' (3-season sleeping bags) is unmapped"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-lundhags-fulu-down-hooded-jacket-w-deep-blue","status":"ok"}
+{"id":"ean-7031582358817","name":"future.labs.05.B","status":"issue","issues":[{"kind":"junk","severity":"med","field":"name","current":"future.labs.05.B","suggested":"hidden","why":"an internal project code with no product noun at all - nothing a shopper could search for or recognise at kr 3500"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031582393832","name":"future.labs.05.D Anorak","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"future.labs.05.D Anorak","suggested":"Bergans future.labs.05.D Anorak","why":"lowercase internal project code as the leading token; only 'Anorak' identifies the product"}],"fix":{"patch":{"name":"Bergans future.labs.05.D Anorak"}}}
+{"id":"p-g3-g3-elements-skin-145mm-red","status":"ok"}
+{"id":"ean-7031580313016","name":"Gaiter Zipper Dermizax®","status":"issue","issues":[{"kind":"junk","severity":"med","field":null,"current":null,"suggested":"hidden","why":"a replacement zipper for a gaiter - a spare part, not a comparable product"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-eagle-gamasje-svart","status":"ok"}
+{"id":"p-garmin-garmin-cirqa-smart-band-black","name":"Garmin CIRQA Smart Band Black","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Watches","why":"a smart band/wearable; srcCat is only the brand crumb 'Varemerker > Garmin' so the shop's Outdoor floor decided it"}],"fix":{"patch":{"cat":"Watches"}}}
+{"id":"p-garmin-garmin-fenix-8-pro-51mm-titanium","name":"Garmin Fenix 8 Pro - 51mm Titanium","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Watches","why":"a 51 mm GPS smartwatch; srcCat is only the brand crumb"}],"fix":{"patch":{"cat":"Watches"}}}
+{"id":"p-garmin-garmin-forerunner-170-music-red-pink-mango","name":"Garmin Forerunner 170 Music Red Pink/mango","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Watches","why":"a running smartwatch; srcCat is only the brand crumb"}],"fix":{"patch":{"cat":"Watches"}}}
+{"id":"p-garmin-garmin-instinct-3-solar-45mm-whitestone","name":"Garmin Instinct 3 Solar, 45mm Whitestone","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Watches","why":"a 45 mm GPS smartwatch; srcCat is only the brand crumb"}],"fix":{"patch":{"cat":"Watches"}}}
+{"id":"p-garmin-garmin-instinct-3-amoled-45mm-citrine-gray","name":"Garmin Instinct 3, Amoled 45mm Citrine Gray","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Watches","why":"a 45 mm GPS smartwatch; srcCat is only the brand crumb"}],"fix":{"patch":{"cat":"Watches"}}}
+{"id":"p-garmin-garmin-nimh-batteripakke-nocolour","status":"ok"}
+{"id":"p-garmin-garmin-ultrafit-nylonremmer-20mm-deep-orchid","name":"Garmin Ultrafit-Nylonremmer (20mm) Deep Orchid","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Watches","why":"a 20 mm watch strap - belongs with the watches it fits"}],"fix":{"patch":{"cat":"Watches"}}}
+{"id":"ean-7031582610960","status":"ok"}
+{"id":"p-gaston-luga-gaston-luga-dash-backpack-13-14-dataryggsekk-olive","name":"Gaston Luga Däsh Backpack 13/14\" dataryggsekk Olive","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Computers","why":"srcCat is explicit: 'Produkter > Data > Tilbehør til bærbar PC > Datavesker > Dataryggsekk' - a 13/14\" laptop backpack from Kjell & Company"}],"fix":{"patch":{"cat":"Computers"}}}
+{"id":"p-gerber-gator-drop-point-fine-edge","status":"ok"}
+{"id":"p-lundhags-gear-bag-20-forest-green","status":"ok"}
+{"id":"p-evoc-gear-bag-35-black","status":"ok"}
+{"id":"_summary","shard":"Outdoor-02","checked":300,"ok":202,"issues":98,"by_kind":{"category":31,"variant":27,"facets":23,"name":18,"duplicate":6,"brand":4,"junk":3},"high":30,"rule_gaps":["Widforss' dog department is entirely unmapped - 'Vinterdekken', 'Halsbånd', 'Peilehalsbånd', 'Seler', 'Kjøleputer', 'Pelspleie', 'Kobbel', 'Godbiter' resolve to nothing and 13 dog products fell through to the shop's Outdoor floor; add them to the Pets vocabulary","a brand-only srcCat crumb ('Black Diamond', 'Varemerker > Garmin', 'Crocs', 'Fjällräven') gives classify nothing, so the shop floor decides - and worse, deriveFacets reads the crumb as text: 'Black Diamond' set color=Black on a skin lotion and on an Aqua headlamp. Skip pure brand crumbs in both classify and deriveFacets","audience vocabulary misses the singular/abbreviated forms 'Wmn', 'Woman', 'Man', Swedish 'Dam' and 'Toddler' (6 rows in this shard)","sleeping-bag leaves '3-sesongsposer'/'4-sesongsposer' and the mug leaf 'Termokopper' derive no type, while their siblings 'Liggeunderlag'/'Termos' do","Swedish colour words from Widforss ('Röd') and Norwegian compounds ('Skyggesort') are not folded into the colour table"],"notes":"Genuinely-outdoor rows (Bergans/Fjällräven/Devold apparel, Rapala tackle, packs, tents) are in good shape; almost all damage is at the edges - a shop floor absorbing another department (13 dog products, 6 Garmin wearables, 6 casual/running shoes, a laptop backpack, a pencil case) and Bergans/Fjellsport feeds shipping duplicate SKU rows (11 rows across 8 variant families). Two shard-wide cosmetics not reported per row: every row carries the category-default icon 'tent' (a fishing lure and a beanie both show a tent), and 141 of 300 rows have no image at all, concentrated in the Milrab/Widforss/Fjellsport sampled crawls."}

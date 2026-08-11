@@ -1,0 +1,301 @@
+{"id":"p-patagonia-m-s-point-reyes-canvas-gi-pants-basin-green","status":"ok"}
+{"id":"p-houdini-m-s-power-houdi-sage-green","name":"M's Power Houdi Sage Green","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"T-shirts & tops","suggested":"Knitwear & hoodies","why":"the Power Houdi is a fleece midlayer hoodie; srcCat leaf is \"Mellomlag og Fleecetrøyer\" — the parent crumb \"Gensere og T-Skjorter\" produced the tee value"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"same Houdini M's Power Houdi in two colourways as separate rows"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies"}}}}
+{"id":"p-houdini-m-s-power-houdi-sugar-snow","name":"M's Power Houdi Sugar Snow","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of p-houdini-m-s-power-houdi-sage-green","why":"same product in another colourway, no vlabel/family; wire under p-houdini-m-s-power-houdi-sage-green"}]}
+{"id":"p-barbour-m-s-ramsey-cord-tailored-shirt-forest","status":"ok"}
+{"id":"p-chevalier-m-s-raptor-heavy-flannel-shirt-kodiak-brown-checked","status":"ok"}
+{"id":"p-patagonia-m-s-retro-pile-new-navy","status":"ok"}
+{"id":"p-patagonia-m-s-retro-pile-vest-el-cap-khaki","name":"M's Retro Pile Vest El Cap Khaki","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of p-patagonia-m-s-retro-pile-vest-pelican-w-smolder-blue","why":"same product in another colourway, no vlabel/family; wire under p-patagonia-m-s-retro-pile-vest-pelican-w-smolder-blue"}]}
+{"id":"p-patagonia-m-s-retro-pile-vest-pelican-w-smolder-blue","name":"M's Retro Pile Vest Pelican w/Smolder Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"same Patagonia M's Retro Pile Vest in two colourways, both kr 1399, sitting as separate top-level rows"}],"fix":{"group":{"head":"p-patagonia-m-s-retro-pile-vest-pelican-w-smolder-blue","members":["p-patagonia-m-s-retro-pile-vest-el-cap-khaki"],"axis":"color"}}}
+{"id":"p-swazi-m-s-reverse-clan-tee-olive","status":"ok"}
+{"id":"p-columbia-m-s-rugged-path-parka-ancient-fssil","name":"M's Rugged Path Parka Ancient Fssil","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"M's Rugged Path Parka Ancient Fssil","suggested":"M's Rugged Path Parka Ancient Fossil","why":"colourway typo \"Fssil\" carried through from the shop"}],"fix":{"patch":{"name":"M's Rugged Path Parka Ancient Fossil"}}}
+{"id":"p-barbour-m-s-sanderling-casual-fern","status":"ok"}
+{"id":"p-helly-hansen-m-s-seven-j-jacket-ebony","status":"ok"}
+{"id":"p-didriksons-m-s-sigur-jacket-black","status":"ok"}
+{"id":"p-columbia-m-s-silver-ridge-convertible-pant-olive-green","status":"ok"}
+{"id":"p-mountain-hardwear-m-s-southpass-fleece-full-zip-golden-brown","status":"ok"}
+{"id":"p-barbour-m-s-sp-tattersall-shirt-dark-bordeaux","status":"ok"}
+{"id":"p-icebreaker-m-s-sphere-ss-crewe-midnight-navy-hthr-2018","status":"ok"}
+{"id":"p-barbour-m-s-strathyre-wax-jacket-olive","status":"ok"}
+{"id":"p-barbour-m-s-tartan-pique-polo-dark-olive-classic","status":"ok"}
+{"id":"p-icebreaker-m-s-tech-lite-ii-ss-tee-trail-hiker-loden","status":"ok"}
+{"id":"p-falke-m-s-tk2-explore-wool-black","status":"ok"}
+{"id":"p-patagonia-m-s-torrentshell-3l-rain-jacket-svart","status":"ok"}
+{"id":"p-marmot-m-s-transporter-tee-ss-foliage-heather","status":"ok"}
+{"id":"p-beretta-m-s-trap-cotton-vest-e-coffee-green","name":"M's Trap Cotton Vest e Coffee & Green","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"M's Trap Cotton Vest e Coffee & Green","suggested":"M's Trap Cotton Vest Coffee & Green","why":"stray \"e\" between the model and the colourway"}],"fix":{"patch":{"name":"M's Trap Cotton Vest Coffee & Green"}}}
+{"id":"p-houdini-m-s-tree-polo-shirt-greenish-gray","status":"ok"}
+{"id":"p-laksen-m-s-trent-v-neck-camel","status":"ok"}
+{"id":"p-alaska-1795-m-s-tundra-pant-blindtech-snow","status":"ok"}
+{"id":"p-houdini-m-s-up-message-tee-storm-green","status":"ok"}
+{"id":"p-rab-m-s-valiance-jacket-army","status":"ok"}
+{"id":"p-black-diamond-m-s-valley-shorts-tundra","name":"M's Valley Shorts Tundra","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name says \"Valley Shorts\", srcCat leaf is \"Shorts\""}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-patagonia-m-s-venga-rock-pants-reg-wing-grey","status":"ok"}
+{"id":"p-houdini-m-s-wadi-shorts-baremark-green","status":"ok"}
+{"id":"p-rab-m-s-windgather-hoody-black","status":"ok"}
+{"id":"p-houdini-m-s-wooler-houdi-college-grey","status":"ok"}
+{"id":"p-alpha-industries-ma-1-tt-sage-green","status":"ok"}
+{"id":"p-chevalier-madeley-contemporary-fit-shirt-chevalier-check-light","status":"ok"}
+{"id":"p-bergans-of-norway-magma-light-down-jacket-men","name":"Magma Light Down Jacket Men","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS OF NORWAY","suggested":"Bergans of Norway","why":"the Bergans-feed rows in this shard store \"Bergans of Norway\"; ALL-CAPS comes from the Intersport feed"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"ean-7031582407324","status":"ok"}
+{"id":"p-haglofs-magma-mid-hood-women","name":"Magma Mid Hood Women","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"HAGLÖFS","suggested":"Haglöfs","why":"stored as \"Haglöfs\" on another row in this shard"}],"fix":{"patch":{"brand":"Haglöfs"}}}
+{"id":"p-chevalier-mainstone-fleece-jacket-men-brown","status":"ok"}
+{"id":"p-make-up-fx-blood-spray-red","name":"Make-Up FX Blood Spray [Red]","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Beauty","why":"FX make-up (fake blood spray); Outland files its whole range under \"Klær\" so the shop crumb is worthless here"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"sparkles","why":"cosmetics"}],"fix":{"patch":{"cat":"Beauty","icon":"sparkles"}}}
+{"id":"p-make-up-fx-essentials-cosmetic-sponges-3","name":"Make-Up FX Essentials Cosmetic Sponges (3)","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Beauty","why":"cosmetic sponges; Outland files its whole range under \"Klær\""},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"sparkles","why":"cosmetics"}],"fix":{"patch":{"cat":"Beauty","icon":"sparkles"}}}
+{"id":"p-lundhags-makke-lt-ms-shorts","name":"Makke Lt Ms Shorts","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf both say Shorts; \"Shorts\" is a value the rules do emit on other rows in this shard"},{"kind":"brand","severity":"low","field":"brand","current":"LUNDHAGS","suggested":"Lundhags","why":"stored as \"Lundhags\" on two other rows in this shard"}],"fix":{"patch":{"facets":{"type":"Shorts"},"brand":"Lundhags"}}}
+{"id":"p-lundhags-makke-lt-ws-pant-sand","status":"ok"}
+{"id":"p-lundhags-makke-ws-azure-deep-blue","status":"ok"}
+{"id":"p-hestra-malte-naturgul","status":"ok"}
+{"id":"ean-5715501007780","status":"ok"}
+{"id":"ean-5715676208371","status":"ok"}
+{"id":"ean-5715607402342","status":"ok"}
+{"id":"ean-5715613000082","status":"ok"}
+{"id":"p-mammut-mammut-hiking-v-shorts-women-strata","status":"ok"}
+{"id":"p-adidas-manchester-united-22-23-hjemmetroye-junior","status":"ok"}
+{"id":"p-felix-mansjettknapper-i-925-solv","name":"Mansjettknapper i 925 sølv","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Jewelry","why":"mansjettknapper = cufflinks; srcCat \"Hjem > Smykker > Til herre > Mansjettknapper\" contains Smykker (jewellery), but the leaf-first walk hit \"Til herre\" first and read it as menswear"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"gem","why":"jewellery item"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"p-felix-mansjettknapper-i-tofarget-stal","name":"Mansjettknapper i tofarget stål","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Jewelry","why":"mansjettknapper = cufflinks; srcCat \"Hjem > Smykker > Til herre > Mansjettknapper\" contains Smykker (jewellery), but the leaf-first walk hit \"Til herre\" first and read it as menswear"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"gem","why":"jewellery item"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"p-marco-tozzi-marco-tozzi-kort-damestovlett-gul-2-2-25321-33","name":"Marco Tozzi kort damestøvlett gul 2-2-25321-33","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"støvlett = ankle boot, srcCat \"Dame / Støvletter / Chelsea-støvletter\" is a shoe path; Shoes is its own category"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"footprints","why":"footwear, not a garment"},{"kind":"name","severity":"low","field":"name","current":"Marco Tozzi kort damestøvlett gul 2-2-25321-33","suggested":"Marco Tozzi kort damestøvlett gul","why":"trailing shop SKU \"2-2-25321-33\" in the display name"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-marco-tozzi-marco-tozzi-stovlett-svart-2-25202-43","name":"Marco Tozzi Støvlett Svart 2-25202-43","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"støvlett = ankle boot, srcCat \"Dame / Støvletter / Platåstøvletter\" is a shoe path"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"footprints","why":"footwear, not a garment"},{"kind":"name","severity":"low","field":"name","current":"Marco Tozzi Støvlett Svart 2-25202-43","suggested":"Marco Tozzi Støvlett Svart","why":"trailing shop SKU \"2-25202-43\" in the display name"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-stoix-marcus-regular-sky-blue-bottle-green","name":"Marcus Regular Sky Blue Bottle Green","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of p-stoix-marcus-regular-sky-blue-dark-gray","why":"same product in another colourway, no vlabel/family; wire under p-stoix-marcus-regular-sky-blue-dark-gray"}]}
+{"id":"p-stoix-marcus-regular-sky-blue-dark-gray","name":"Marcus Regular Sky Blue Dark Gray","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"same STOIX Marcus Regular shirt in two colourways, both kr 999"}],"fix":{"group":{"head":"p-stoix-marcus-regular-sky-blue-dark-gray","members":["p-stoix-marcus-regular-sky-blue-bottle-green"],"axis":"color"}}}
+{"id":"ean-7071539151634","status":"ok"}
+{"id":"ean-7071539193085","name":"Marius Kids - Marius Matboks Yellow Lunch - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Kitchen","why":"Matboks = lunch box; srcCat is literally \"Matboks\" — not a garment"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"utensils","why":"lunch box"}],"fix":{"patch":{"cat":"Kitchen","icon":"utensils"}}}
+{"id":"p-oakley-mark-ii-white-b1b-camo-desert","status":"ok"}
+{"id":"ean-5715522311255","status":"ok"}
+{"id":"ean-5715522084975","status":"ok"}
+{"id":"ean-5711529396349","status":"ok"}
+{"id":"ean-5715522227112","status":"ok"}
+{"id":"ean-5715522223923","status":"ok"}
+{"id":"ean-5711529520652","status":"ok"}
+{"id":"ean-5715522112630","status":"ok"}
+{"id":"ean-5715522378166","status":"ok"}
+{"id":"p-marmar-marmar-dakira-kjole","name":"MarMar Dakira Kjole","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"MarMar","suggested":"MarMar Copenhagen","why":"the EAN-fed rows for the same brand in this shard store \"MarMar Copenhagen\"; two spellings split the brand filter"}],"fix":{"patch":{"brand":"MarMar Copenhagen"}}}
+{"id":"p-marmar-marmar-oriel-dress","name":"MarMar Oriel Dress","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"MarMar","suggested":"MarMar Copenhagen","why":"the EAN-fed rows for the same brand in this shard store \"MarMar Copenhagen\"; two spellings split the brand filter"}],"fix":{"patch":{"brand":"MarMar Copenhagen"}}}
+{"id":"p-marmar-marmar-piva-bukser","name":"MarMar Piva Bukser","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"MarMar","suggested":"MarMar Copenhagen","why":"the EAN-fed rows for the same brand in this shard store \"MarMar Copenhagen\"; two spellings split the brand filter"}],"fix":{"patch":{"brand":"MarMar Copenhagen"}}}
+{"id":"p-marmar-marmar-piva-leggings","name":"MarMar Piva Leggings","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"MarMar","suggested":"MarMar Copenhagen","why":"the EAN-fed rows for the same brand in this shard store \"MarMar Copenhagen\"; two spellings split the brand filter"}],"fix":{"patch":{"brand":"MarMar Copenhagen"}}}
+{"id":"p-marmar-marmar-rubello-overall","name":"MarMar Rubello - Overall","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"MarMar","suggested":"MarMar Copenhagen","why":"the EAN-fed rows for the same brand in this shard store \"MarMar Copenhagen\"; two spellings split the brand filter"}],"fix":{"patch":{"brand":"MarMar Copenhagen"}}}
+{"id":"p-marmar-marmar-theos-genser","name":"MarMar Theos Genser","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"MarMar","suggested":"MarMar Copenhagen","why":"the EAN-fed rows for the same brand in this shard store \"MarMar Copenhagen\"; two spellings split the brand filter"}],"fix":{"patch":{"brand":"MarMar Copenhagen"}}}
+{"id":"ean-766501000061","name":"Marshall Ilder julenisse lue","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Pets","why":"Marshall is a ferret-accessory brand, \"Ilder\" = ferret, sold by Zooservice (pet shop) at kr 34 — a santa hat for a ferret, not human apparel"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Marshall","why":"the name leads with the brand"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"dog","why":"pet product"}],"fix":{"patch":{"cat":"Pets","brand":"Marshall","icon":"dog"}}}
+{"id":"p-energetics-martin-iv-ux","name":"MARTIN IV UX","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"MARTIN IV UX","suggested":"Martin IV UX","why":"ALL-CAPS feed name from Intersport"}],"fix":{"patch":{"name":"Martin IV UX"}}}
+{"id":"p-marvel-marvel-2-delt-pyjamas-barn","status":"ok"}
+{"id":"p-maxemilia-maxemilia-ivar-festdrakt-til-gutt","status":"ok"}
+{"id":"p-maxemilia-maxemilia-jakke-til-gutt-knut","status":"ok"}
+{"id":"p-maxemilia-maxemilia-ulla-festdrakt","status":"ok"}
+{"id":"ean-4055589331874","status":"ok"}
+{"id":"ean-4036946389295","status":"ok"}
+{"id":"p-arena-may-low","name":"MAY LOW","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"MAY LOW","suggested":"May Low","why":"ALL-CAPS feed name from Sport 1"}],"fix":{"patch":{"name":"May Low"}}}
+{"id":"p-laksen-mayfair-corduroy-trousers-forest","status":"ok"}
+{"id":"p-melton-melton-blomster-ulltofler","name":"Melton Blomster Ulltøfler","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Shoes","why":"Ulltøfler = wool slippers, i.e. footwear; srcCat is Junior Barneklær's useless \"Home\" crumb so the shop floor decided the category"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"footprints","why":"footwear, not a garment"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-melton-melton-klassiske-skinntofler","name":"Melton Klassiske Skinntøfler","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Shoes","why":"Skinntøfler = leather slippers, i.e. footwear; srcCat is Junior Barneklær's useless \"Home\" crumb so the shop floor decided the category"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"footprints","why":"footwear, not a garment"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-melton-melton-klassiske-ulltofler","name":"Melton Klassiske Ulltøfler","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Shoes","why":"Ulltøfler = wool slippers, i.e. footwear; srcCat is Junior Barneklær's useless \"Home\" crumb so the shop floor decided the category"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"footprints","why":"footwear, not a garment"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-nike-men-s-dri-fit-unlined-versatile-shorts","name":"Men's  Dri-FIT Unlined Versatile Shorts","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf both say Shorts"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-marmot-men-s-airexchange-ls-chinchilla","status":"ok"}
+{"id":"p-swazi-men-s-farm-sock-forest-green","status":"ok"}
+{"id":"p-rojk-men-s-mounter-merino-pullover-hoodie-acorn","name":"Men's Mounter Merino Pullover Hoodie Acorn","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"T-shirts & tops","suggested":"Knitwear & hoodies","why":"the name says \"Pullover Hoodie\""}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies"}}}}
+{"id":"p-house-of-hygge-men-s-pile-fleece-jacket","status":"ok"}
+{"id":"p-marmot-men-s-waypoint-gore-tex-jacket-claystone","status":"ok"}
+{"id":"p-bergans-of-norway-merino-tech-beanie","status":"ok"}
+{"id":"p-kappahl-merkepenn","name":"Merkepenn","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Office","why":"a marker pen for labelling clothes (srcCat \"Barn > Accessories > Klespleie\" = garment care); stationery, definitely not apparel"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"pen-line","why":"a pen"}],"fix":{"patch":{"cat":"Office","icon":"pen-line"}}}
+{"id":"p-mammut-meron-in-hooded-svart","status":"ok"}
+{"id":"ean-7391998557342","status":"ok"}
+{"id":"p-mesmestripe-tights","status":"ok"}
+{"id":"p-haglofs-micro-nordic-down-hood-women","status":"ok"}
+{"id":"p-rab-microlight-alpine-jacket","name":"Microlight Alpine Jacket","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"RAB","suggested":"Rab","why":"stored as \"Rab\" on two other rows in this shard"}],"fix":{"patch":{"brand":"Rab"}}}
+{"id":"p-haglofs-mid-standard-shorts-women","name":"Mid Standard Shorts Women","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name and srcCat leaf both say Shorts"},{"kind":"brand","severity":"low","field":"brand","current":"HAGLÖFS","suggested":"Haglöfs","why":"stored as \"Haglöfs\" on another row in this shard"}],"fix":{"patch":{"facets":{"type":"Shorts"},"brand":"Haglöfs"}}}
+{"id":"p-bergans-midtli-midlayer-sweatshirt-women","name":"Midtli Midlayer Sweatshirt Women","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"T-shirts & tops","suggested":"Knitwear & hoodies","why":"name says \"Midlayer Sweatshirt\", srcCat leaf is \"Gensere\""},{"kind":"brand","severity":"low","field":"brand","current":"BERGANS","suggested":"Bergans of Norway","why":"same brand stored three ways in this shard (BERGANS / BERGANS OF NORWAY / Bergans of Norway) — splits the brand filter"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies"},"brand":"Bergans of Norway"}}}
+{"id":"ean-7031582598961","status":"ok"}
+{"id":"p-buff-midweight-merino-wool-dahlia-melange","status":"ok"}
+{"id":"p-mikk-line-mikk-line-vinterdress-80-116","status":"ok"}
+{"id":"ean-5715713043903","status":"ok"}
+{"id":"p-disney-minnie-caps-barn","status":"ok"}
+{"id":"ean-5714226144183","status":"ok"}
+{"id":"ean-5713438218408","status":"ok"}
+{"id":"ean-5713438455308","status":"ok"}
+{"id":"ean-5713438833069","status":"ok"}
+{"id":"p-minymo-minymo-badeshorts","status":"ok"}
+{"id":"p-minymo-minymo-bukse-seersucker","status":"ok"}
+{"id":"p-minymo-minymo-bukser","status":"ok"}
+{"id":"p-minymo-minymo-bukser-ribstop","status":"ok"}
+{"id":"p-minymo-minymo-cardigan","status":"ok"}
+{"id":"p-minymo-minymo-collegegenser","status":"ok"}
+{"id":"p-minymo-minymo-denimbukser","status":"ok"}
+{"id":"p-minymo-minymo-full-zip-genser","status":"ok"}
+{"id":"p-minymo-minymo-genser","status":"ok"}
+{"id":"p-minymo-minymo-hettejakke","status":"ok"}
+{"id":"p-minymo-minymo-jakke","status":"ok"}
+{"id":"p-minymo-minymo-jakke-solid","status":"ok"}
+{"id":"p-minymo-minymo-jeans-stretch-slim-fit","status":"ok"}
+{"id":"p-minymo-minymo-jeansbukser","status":"ok"}
+{"id":"p-minymo-minymo-joggebukse-2-pakk","status":"ok"}
+{"id":"p-minymo-minymo-longsleeve","status":"ok"}
+{"id":"p-minymo-minymo-nattkjole","status":"ok"}
+{"id":"p-minymo-minymo-pique","status":"ok"}
+{"id":"p-minymo-minymo-pysjamas","status":"ok"}
+{"id":"p-minymo-minymo-pysjamas-sett","status":"ok"}
+{"id":"p-minymo-minymo-shorts-denim","status":"ok"}
+{"id":"p-minymo-minymo-shorts-twill","status":"ok"}
+{"id":"p-minymo-minymo-skjorte","status":"ok"}
+{"id":"p-minymo-minymo-skjort","status":"ok"}
+{"id":"p-minymo-minymo-snekkerkjole-kord","status":"ok"}
+{"id":"p-minymo-minymo-t-skjorte","status":"ok"}
+{"id":"p-minymo-minymo-t-skjorte-2pk","status":"ok"}
+{"id":"p-minymo-minymo-truser-2pk","status":"ok"}
+{"id":"p-minymo-minymo-vanter-3pk","status":"ok"}
+{"id":"p-mjuk-mjuk-spahandkle-med-frynser","name":"Mjuk spahåndkle med frynser","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"håndkle = towel; srcCat \"Håndklær og kluter\" is home textiles, not clothing"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"home","why":"home textile"}],"fix":{"patch":{"cat":"Home","icon":"home"}}}
+{"id":"p-norheim-moen-w-turbukse","name":"MOEN W TURBUKSE","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"MOEN W TURBUKSE","suggested":"Moen W Turbukse","why":"ALL-CAPS feed name from Intersport"}],"fix":{"patch":{"name":"Moen W Turbukse"}}}
+{"id":"ean-7071813041088","status":"ok"}
+{"id":"p-moomin-happy-adult-winter-beanie","status":"ok"}
+{"id":"p-harkila-moose-hunter-2-0-safety-rod","status":"ok"}
+{"id":"p-morose-top","status":"ok"}
+{"id":"p-amundsen-mountain-airy-shell-jacket-anthracite-navy","status":"ok"}
+{"id":"p-oakley-mountains-out-b1b-tee-new-dark-brush","status":"ok"}
+{"id":"ean-5709688319507","status":"ok"}
+{"id":"ean-5712644877133","status":"ok"}
+{"id":"ean-5709688313871","status":"ok"}
+{"id":"ean-5709688542974","status":"ok"}
+{"id":"ean-5712644907076","status":"ok"}
+{"id":"ean-5709688197600","status":"ok"}
+{"id":"ean-5712644830596","status":"ok"}
+{"id":"ean-5712644739394","status":"ok"}
+{"id":"ean-5712644739639","status":"ok"}
+{"id":"ean-5712644828531","status":"ok"}
+{"id":"ean-5712644029624","status":"ok"}
+{"id":"ean-5712644816750","status":"ok"}
+{"id":"ean-5712644136193","status":"ok"}
+{"id":"ean-5712644852727","status":"ok"}
+{"id":"ean-5712644140411","status":"ok"}
+{"id":"p-mp-mp-baby-sokker","status":"ok"}
+{"id":"p-mp-mp-capsule-strompebukse-ull","status":"ok"}
+{"id":"p-mp-mp-celosia-glitter-strompebukse","status":"ok"}
+{"id":"p-mp-mp-glitter-strompebukse","status":"ok"}
+{"id":"p-mp-mp-helsinki-floral-lue","status":"ok"}
+{"id":"p-mp-mp-helsinki-panneband-bow","status":"ok"}
+{"id":"p-mp-mp-juno-strompebukse-ull","status":"ok"}
+{"id":"p-mp-mp-klassiske-skinntofler","name":"MP Klassiske Skinntøfler","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Shoes","why":"Skinntøfler = leather slippers, i.e. footwear; srcCat is Junior Barneklær's useless \"Home\" crumb so the shop floor decided the category"},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"footprints","why":"footwear, not a garment"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-mp-mp-lenox-strompebukse-ull-bambus","status":"ok"}
+{"id":"p-mp-mp-strompebukse-ull-bomull","name":"MP Strømpebukse Ull/Bomull","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-mp-mp-strompebukse-ull-bomull","suggested":"merge with p-mp-mp-ull-bomull-strompebukse","why":"same shop (Junior Barneklær), same brand, same price kr 269, name is the same words reordered (\"MP Strømpebukse Ull/Bomull\" vs \"MP Ull/Bomull Strømpebukse\") — the slug-id fallback made two rows out of one listing"}],"fix":{"group":{"head":"p-mp-mp-strompebukse-ull-bomull","members":["p-mp-mp-ull-bomull-strompebukse"],"axis":"color"}}}
+{"id":"p-mp-mp-ull-ribbet-sokker","status":"ok"}
+{"id":"p-mp-mp-ull-ribbet-strompebukse","status":"ok"}
+{"id":"p-mp-mp-ull-bomull-strompebukse","name":"MP Ull/Bomull Strømpebukse","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-mp-mp-ull-bomull-strompebukse","suggested":"merge into p-mp-mp-strompebukse-ull-bomull","why":"duplicate of p-mp-mp-strompebukse-ull-bomull — same shop, same price, name words reordered"}]}
+{"id":"p-mp-mp-ullsokker-3-pakk","status":"ok"}
+{"id":"p-the-north-face-mudder-trucker","name":"MUDDER TRUCKER","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"MUDDER TRUCKER","suggested":"Mudder Trucker","why":"ALL-CAPS feed name from Intersport"}],"fix":{"patch":{"name":"Mudder Trucker"}}}
+{"id":"p-adidas-mufc-a-jsy-y","name":"MUFC A JSY Y","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MUFC A JSY Y","suggested":"Manchester United Away Jersey Junior","why":"raw Adidas feed code — no shopper can read \"MUFC A JSY Y\"; srcCat confirms a club top"}],"fix":{"patch":{"name":"Manchester United Away Jersey Junior"}}}
+{"id":"ean-7391998192703","status":"ok"}
+{"id":"p-didriksons-mynta-kids-t-shirt-4-navy","status":"ok"}
+{"id":"p-bergans-myske-wool-kids-pnt","name":"Myske Wool Kids Pnt","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS","suggested":"Bergans of Norway","why":"same brand stored three ways in this shard"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"ean-5714139610256","name":"Müsli - Amme Topp/BH Trekant Cream - S","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"T-shirts & tops","suggested":"Underwear & nightwear","why":"srcCat \"Amme Bh/Ammeinnlegg\" and the name \"Amme Topp/BH\" make this a nursing bra"},{"kind":"brand","severity":"low","field":"brand","current":"Musli","suggested":"Müsli","why":"the name spells the brand \"Müsli\""}],"fix":{"patch":{"facets":{"type":"Underwear & nightwear"},"brand":"Müsli"}}}
+{"id":"ean-5714139513878","name":"Müsli - Babyolje Uparfyrmert - Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Baby","why":"Babyolje = baby oil, srcCat \"Stelle\" (baby care) — a skincare product, not clothing"},{"kind":"brand","severity":"low","field":"brand","current":"Musli","suggested":"Müsli","why":"the name spells the brand \"Müsli\""},{"kind":"icon","severity":"low","field":"icon","current":"shirt","suggested":"baby","why":"baby care product"}],"fix":{"patch":{"cat":"Baby","brand":"Müsli","icon":"baby"}}}
+{"id":"ean-7391998570174","status":"ok"}
+{"id":"ean-7391998793085","status":"ok"}
+{"id":"ean-5715677462970","name":"Name It -  Regnsett Dry10 Dark Sapphire - 86","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"Name It Regnsett Dry10 size 86, two colourways, both kr 549"}],"fix":{"group":{"head":"ean-5715677462970","members":["ean-5715677463021"],"axis":"color"}}}
+{"id":"ean-5715510017930","status":"ok"}
+{"id":"ean-5715871013176","status":"ok"}
+{"id":"ean-5715517873126","status":"ok"}
+{"id":"ean-5715716109002","status":"ok"}
+{"id":"ean-5715866038436","status":"ok"}
+{"id":"ean-5715828739227","status":"ok"}
+{"id":"ean-5715723979254","status":"ok"}
+{"id":"ean-5715510224857","status":"ok"}
+{"id":"ean-5715600627407","status":"ok"}
+{"id":"ean-5715675821571","status":"ok"}
+{"id":"ean-5715715961762","name":"Name It - Body Kortermet Jente Kab Elderberry Melange - 50","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"Name It Body Kortermet Jente Kab size 50, two colourways"}],"fix":{"group":{"head":"ean-5715715961762","members":["ean-5715716643100"],"axis":"color"}}}
+{"id":"ean-5715716643100","name":"Name It - Body Kortermet Jente Kab Pastel Yellow - 50","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715715961762","why":"same product in another colourway, no vlabel/family; wire under ean-5715715961762"}]}
+{"id":"ean-5715672441109","status":"ok"}
+{"id":"ean-5715515661824","status":"ok"}
+{"id":"ean-5715517778551","status":"ok"}
+{"id":"ean-5715726937800","status":"ok"}
+{"id":"ean-5715825584943","status":"ok"}
+{"id":"ean-5715674514306","status":"ok"}
+{"id":"ean-5715614938360","status":"ok"}
+{"id":"ean-5715614999064","status":"ok"}
+{"id":"ean-5715729550464","name":"Name It - Bukse Paw Patrol Sweat Neel Navy Blazer - 92","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Trousers","why":"Bukse = trousers (sweatpants); \"Sweat\" in the name pulled it into knitwear"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-5715323669227","status":"ok"}
+{"id":"ean-5715600777805","status":"ok"}
+{"id":"ean-5715870842654","name":"Name It - Bukse Sweat Fairy Cradle Pink - 92","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Trousers","why":"Bukse = trousers (sweatpants); \"Sweat\" in the name pulled it into knitwear"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-5715677565367","status":"ok"}
+{"id":"ean-5715832403305","status":"ok"}
+{"id":"ean-5715321703992","name":"Name It - Cape til Festdrakt Dark Sapphire - 98-104","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Dresses & skirts","suggested":"Accessories","why":"a cape worn with a bunad; srcCat leaf is \"Tilbehør\" (accessories), not a dress or skirt"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5715516921477","name":"Name It - Dressjakke Fort Blazer Dark Sapphire - 86","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Knitwear & hoodies","suggested":"Jackets","why":"Dressjakke / Blazer = a suit jacket; the shop filed it under \"Genser\" but the name is unambiguous"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-5715669865291","status":"ok"}
+{"id":"ean-5715825713626","status":"ok"}
+{"id":"ean-5715832128543","status":"ok"}
+{"id":"ean-5715865337066","name":"Name It - Forkle til Festdrakt 2026 Tetana Dark Sapphire - 98-104","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Dresses & skirts","suggested":"Accessories","why":"Forkle = apron worn with a bunad; srcCat leaf is \"Tilbehør\""}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5715826979519","status":"ok"}
+{"id":"ean-5715674457351","status":"ok"}
+{"id":"ean-5715826199306","status":"ok"}
+{"id":"ean-5715870258882","status":"ok"}
+{"id":"ean-5715601160194","status":"ok"}
+{"id":"ean-5715671154451","status":"ok"}
+{"id":"ean-5715731278035","status":"ok"}
+{"id":"ean-5715613994213","status":"ok"}
+{"id":"ean-5715830105959","status":"ok"}
+{"id":"ean-5715826852553","status":"ok"}
+{"id":"ean-5715906294570","status":"ok"}
+{"id":"ean-5715824997157","name":"Name It - Genser Sweat Narina Island Fossil - 92","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715824975100","why":"same product in another colourway, no vlabel/family; wire under ean-5715824975100"}]}
+{"id":"ean-5715824975100","name":"Name It - Genser Sweat Narina Tradewinds - 92","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"Name It Genser Sweat Narina size 92, two colourways"}],"fix":{"group":{"head":"ean-5715824975100","members":["ean-5715824997157"],"axis":"color"}}}
+{"id":"ean-5715612210345","status":"ok"}
+{"id":"ean-5715733066388","status":"ok"}
+{"id":"ean-5715872474112","status":"ok"}
+{"id":"ean-5715824843225","status":"ok"}
+{"id":"ean-5715865937419","status":"ok"}
+{"id":"ean-5715613872559","status":"ok"}
+{"id":"ean-5715733476903","name":"Name It - Hårsløyfe med Strikk Runica Gold Color - Onesize","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Accessories","why":"Hårsløyfe = hair bow, srcCat \"Hårpynt\" (hair accessories); \"Strikk\" (elastic) matched the knitwear rule"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour variant of ean-5715733476910","why":"Name It Hårsløyfe med Strikk Runica, two colours, both kr 69, no vlabel/family"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5715733476910","name":"Name It - Hårsløyfe med Strikk Runica Lava Smoke - Onesize","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Accessories","why":"Hårsløyfe = hair bow, srcCat \"Hårpynt\"; \"Strikk\" (elastic) matched the knitwear rule"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour variant of ean-5715733476903","why":"Name It Hårsløyfe med Strikk Runica, two colours, both kr 69, no vlabel/family"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5715677594541","status":"ok"}
+{"id":"ean-5715832126204","status":"ok"}
+{"id":"ean-5715865914762","status":"ok"}
+{"id":"ean-5715732266918","status":"ok"}
+{"id":"ean-5715516750961","status":"ok"}
+{"id":"ean-5715715820250","status":"ok"}
+{"id":"ean-5715868597177","status":"ok"}
+{"id":"ean-5715501387066","status":"ok"}
+{"id":"ean-5715722706301","name":"Name It - Kjole Sweat Naya Sweet Dreams - 92","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Knitwear & hoodies","suggested":"Dresses & skirts","why":"Kjole = dress, srcCat leaf \"Kjole\"; \"Sweat\" pulled it into knitwear"}],"fix":{"patch":{"facets":{"type":"Dresses & skirts"}}}}
+{"id":"ean-5715830282650","status":"ok"}
+{"id":"ean-5715870918953","status":"ok"}
+{"id":"ean-5715716070005","name":"Name It - Kjole Vigga Bright White Butterfly - 92","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715872939819","why":"same product in another colourway, no vlabel/family; wire under ean-5715872939819"}]}
+{"id":"ean-5715872939819","name":"Name It - Kjole Vigga Cradle Pink Cherries - 92","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"Name It Kjole Vigga size 92, two prints, both kr 99"}],"fix":{"group":{"head":"ean-5715872939819","members":["ean-5715716070005"],"axis":"color"}}}
+{"id":"ean-5715865804322","status":"ok"}
+{"id":"ean-5715832409444","name":"Name It - Kyse Festdrakt 2026 Tenka Bright White - 34-39cm","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Dresses & skirts","suggested":"Accessories","why":"Kyse = bonnet; srcCat leaf is \"Tilbehør\""}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5715517643385","status":"ok"}
+{"id":"ean-5715866018490","status":"ok"}
+{"id":"ean-5715517772085","status":"ok"}
+{"id":"ean-5715732209724","status":"ok"}
+{"id":"ean-5715721465766","name":"Name It - Longs Ull Baby Wang Folkstone Gray - 50 /Nyfødt","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715721465209","why":"same product in another colourway, no vlabel/family; wire under ean-5715721465209"}]}
+{"id":"ean-5715721465209","name":"Name It - Longs Ull Baby Wang Small Flower - 50 /Nyfødt","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 3-colour family","why":"Name It Longs Ull Baby Wang size 50, three colourways as separate rows"}],"fix":{"group":{"head":"ean-5715721465209","members":["ean-5715721465766","ean-5715515696697"],"axis":"color"}}}
+{"id":"ean-5715515696697","name":"Name It - Longs Ull Baby Wang Snow White - 50","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715721465209","why":"same product in another colourway, no vlabel/family; wire under ean-5715721465209"}]}
+{"id":"ean-5715721285456","status":"ok"}
+{"id":"ean-5715832466720","status":"ok"}
+{"id":"ean-5715865656532","status":"ok"}
+{"id":"ean-5715866998709","name":"Name It - Poloskjorte Jared Terry Vintage Indigo - 92","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Knitwear & hoodies","suggested":"T-shirts & tops","why":"Poloskjorte = polo shirt; the shop filed it under \"Genser\""}],"fix":{"patch":{"facets":{"type":"T-shirts & tops"}}}}
+{"id":"ean-5715222747835","status":"ok"}
+{"id":"ean-5715832445947","status":"ok"}
+{"id":"ean-5715725282307","status":"ok"}
+{"id":"ean-5715722745003","status":"ok"}
+{"id":"ean-5715906087318","status":"ok"}
+{"id":"ean-5715417501518","status":"ok"}
+{"id":"ean-5715677463021","name":"Name It - Regnsett Dry10 Wistful Mauve - 86","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715677462970","why":"same product in another colourway, no vlabel/family; wire under ean-5715677462970"}]}
+{"id":"ean-5715512754871","status":"ok"}
+{"id":"ean-5715512751184","status":"ok"}
+{"id":"ean-5715720227723","status":"ok"}
+{"id":"ean-5715716030184","status":"ok"}
+{"id":"ean-5715872946787","status":"ok"}
+{"id":"ean-5715906234262","status":"ok"}
+{"id":"ean-5715865661062","status":"ok"}
+{"id":"ean-5715866026037","status":"ok"}
+{"id":"ean-5715906632815","name":"Name It - Sløyfe Frode Navy Blazer - 1-3 år","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Suits","suggested":"Accessories","why":"Sløyfe = bow tie, srcCat \"Tilbehør\"; \"Blazer\" here is part of the COLOUR name \"Navy Blazer\", which the type rule read as a suit"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5715427835467","status":"ok"}
+{"id":"ean-5713755266434","status":"ok"}
+{"id":"ean-5715874102822","status":"ok"}
+{"id":"ean-5715833677453","name":"Name It - Softshelldress Alfa08 Grape Shake Bow - 80","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"Name It Softshelldress Alfa08 size 80, two colourways"}],"fix":{"group":{"head":"ean-5715833677453","members":["ean-5715865625439"],"axis":"color"}}}
+{"id":"ean-5715865625439","name":"Name It - Softshelldress Alfa08 Magic Keepsake Lilac - 80","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715833677453","why":"same product in another colourway, no vlabel/family; wire under ean-5715833677453"}]}
+{"id":"ean-5715429173437","status":"ok"}
+{"id":"ean-5715504732269","status":"ok"}
+{"id":"ean-5715867770557","status":"ok"}
+{"id":"ean-5715720458813","status":"ok"}
+{"id":"ean-5715872939116","name":"Name It - Sommerdrakt Vigga Pale Aqua Rainbow - 92","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715870517378","why":"same product in another colourway, no vlabel/family; wire under ean-5715870517378"}]}
+{"id":"ean-5715870517378","name":"Name It - Sommerdrakt Vigga Purple Impression - 92","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"Name It Sommerdrakt Vigga size 92, two colourways, both kr 99"}],"fix":{"group":{"head":"ean-5715870517378","members":["ean-5715872939116"],"axis":"color"}}}
+{"id":"ean-5715912420253","status":"ok"}
+{"id":"ean-5715721066864","status":"ok"}
+{"id":"ean-5715721066727","name":"Name It - Strømpebukse Baby Ull/ Bomull Rib Wakma Folkstone Gray - 50-56","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of a 2-colour family","why":"Name It Strømpebukse Baby Ull/Bomull Rib Wakma 50-56, two colourways"}],"fix":{"group":{"head":"ean-5715721066727","members":["ean-5715517778087"],"axis":"color"}}}
+{"id":"ean-5715517778087","name":"Name It - Strømpebukse Baby Ull/ Bomull Rib Wakma Mulled Basil - 50-56","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"variant member of ean-5715721066727","why":"same product in another colourway, no vlabel/family; wire under ean-5715721066727"}]}
+{"id":"ean-5715673139067","status":"ok"}
+{"id":"ean-5715721715120","status":"ok"}
+{"id":"_summary","shard":"Fashion-05","checked":300,"ok":225,"issues":75,"by_kind":{"facets":19,"variant":25,"name":9,"brand":16,"category":15,"icon":15,"duplicate":2},"high":13,"rule_gaps":["size is never derived: ~130 Guttelus/Mamalicious rows end in an explicit size (\"- 92\", \"- 50-56\", \"- S\", \"- 34-39cm\", \"- 1-3 år\") and only 3 rows in the whole shard carry facets.size — the Fashion size facet is effectively empty","audience is missing on most kids rows: Guttelus and Junior Barneklær sell nothing but children's wear (sizes 50-116) yet audience:Kids is set on well under half of their rows","no variant wiring at all: every \"<product> <colourway> - <size>\" row is a separate top-level product with no vlabel/family; 11 obvious colour families in this shard alone","\"Til herre\" / \"Til dame\" resolve to Fashion before a real crumb is reached — Bjørklund's \"Hjem > Smykker > Til herre > Mansjettknapper\" lost Jewelry that way; they belong in CAT_WEAK","\"støvlett\"/\"støvletter\" (ankle boots) and \"tøffel\"/\"tøfler\"/\"ulltøfler\"/\"skinntøfler\" (slippers) are unmapped and land in Fashion instead of Shoes","\"håndkle\" (towel) and \"matboks\" (lunch box) are unmapped in the Home / Kitchen vocabulary","colour-name and fabric words leak into facets.type: \"Navy Blazer\" made a bow tie a Suit, \"Sweat\" makes \"Bukse ... Sweat\" knitwear instead of trousers, \"Strikk\" (elastic) makes a hair bow knitwear","facets.type prefers a parent crumb over the leaf for shorts: 4 rows whose name AND srcCat leaf both say \"Shorts\" still store type \"Trousers\" while other rows get \"Shorts\"","brand casing is not normalised: Intersport/Sport 1 feeds emit ALL-CAPS (BERGANS, HAGLÖFS, RAB, LUNDHAGS) alongside the same brand title-cased from other feeds, splitting the brand filter"],"notes":"Overall healthy — the shard really is almost all Fashion and the shop breadcrumbs are being read well. The damage is concentrated: 15 rows are not apparel at all (2 ankle boots, 4 slippers, 2 cufflinks, a lunch box, a towel, a marker pen, 2 make-up items, baby oil, a ferret santa hat), 19 rows carry a wrong facets.type (mostly colour/fabric words leaking into the type rule), and roughly 40% of rows still have no product image (every Guttelus and most Widforss rows are img=0). Nothing in the shard deserves demotion."}

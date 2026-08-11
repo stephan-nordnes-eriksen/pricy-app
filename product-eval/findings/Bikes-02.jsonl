@@ -1,0 +1,301 @@
+{"id":"p-gavia-gavia-forzo-sl-e-mtb-display","name":"Gavia Forzo SL E-MTB Display","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Accessories","why":"a handlebar display unit for an e-MTB, not a bicycle; the 'E-MTB' token in the name derived type=Bikes"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-gavia-gavia-forzo-sl-motordeksel","status":"ok"}
+{"id":"p-gavia-gavia-treviso-disc-setepinneklemme","status":"ok"}
+{"id":"p-giant-giant-e-krankarmer","status":"ok"}
+{"id":"p-giant-giant-e-ladeinngang-ledning","status":"ok"}
+{"id":"p-giant-giant-e-utladningskabel","status":"ok"}
+{"id":"p-giant-giant-hjullager","status":"ok"}
+{"id":"p-giant-giant-int-800-type-b-batterideksel","status":"ok"}
+{"id":"ean-768686178894","status":"ok"}
+{"id":"ean-199270038018","name":"Giro Isode II MIPS Sykkelhjelm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Giro Isode II MIPS family","why":"ean-199270038025 carries the identical name at the identical price (kr 839) as a separate top-level row — a second SKU of the same helmet"}],"fix":{"group":{"head":"ean-199270038018","members":["ean-199270038025"],"axis":"size"}}}
+{"id":"ean-199270038025","name":"Giro Isode II MIPS Sykkelhjelm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-199270038018","why":"identical name and price to ean-199270038018; should be wired as a variant child, not a second listing"}]}
+{"id":"ean-768686351914","name":"Giro Ranger Terrengsko","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Terrengsko' is an off-road cycling shoe; footwear is filed under Apparel elsewhere in this category"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-768686352201","name":"Giro Rincon Terrengsko","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Giro Rincon Terrengsko family","why":"ean-768686456787 carries the identical name as a separate top-level row"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Terrengsko' is a cycling shoe"}],"fix":{"group":{"head":"ean-768686352201","members":["ean-768686456787"],"axis":"size"}}}
+{"id":"ean-768686456787","name":"Giro Rincon Terrengsko","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-768686352201","why":"identical name to ean-768686352201, a second SKU of the same shoe"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Terrengsko' is a cycling shoe"}]}
+{"id":"p-shimano-girwire-1-2x2100mm-box-100stk","name":"Girwire 1,2x2100mm Box 100stk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Drivetrain","why":"'Girwire' is a gear cable; srcCat 'SYKKEL > Sykkeldeler > Slitedeler' confirms a drivetrain wear part"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"p-gloworm-gloworm-cx-core-frontlykt","name":"Gloworm CX-Core Frontlykt","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.discipline","current":"Gravel","why":"a front light has no discipline; 'CX' in the model code 'CX-Core' was read as cyclocross","suggested":null}],"fix":{"patch":{"facets":{"discipline":null}}}}
+{"id":"p-gloworm-gloworm-xsv-3600-frontlykt","status":"ok"}
+{"id":"p-gloworm-gloworm-xsv-pd-frontlykt","status":"ok"}
+{"id":"p-greenway-greenway-lg2600-10-4ah-elsykkelbatteri","name":"Greenway LG2600 10,4Ah Elsykkelbatteri","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Accessories","why":"a replacement e-bike battery, not a bike; 'elsykkel' in the name derived type=Bikes"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5708486023906","name":"GripGrab Expert RC Max Sykkelhansker","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the GripGrab Expert RC Max family","why":"ean-5708486024026 carries the identical name as a separate top-level row (kr 400 vs kr 599 = another size/colour SKU)"}],"fix":{"group":{"head":"ean-5708486023906","members":["ean-5708486024026"],"axis":"size"}}}
+{"id":"ean-5708486024026","name":"GripGrab Expert RC Max Sykkelhansker","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-5708486023906","why":"identical name to ean-5708486023906, a second SKU of the same glove"}]}
+{"id":"ean-5708486025122","status":"ok"}
+{"id":"ean-5708486024286","status":"ok"}
+{"id":"ean-5708486026259","status":"ok"}
+{"id":"ean-5708486026303","status":"ok"}
+{"id":"p-gransfors-gransfors-oksskaft","name":"Gränsfors Øksskaft","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Tools","why":"'Øksskaft' is a replacement axe handle from axe maker Gränsfors Bruk; it landed in Bikes only because the shop (Bikeshop) supplies no srcCat"}],"fix":{"patch":{"cat":"Tools"}}}
+{"id":"p-gransfors-gransfors-oksskaft-kubben","name":"Gränsfors Øksskaft Kubben","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Tools","why":"an axe handle, nothing to do with bicycles; same unlabelled-shop failure as p-gransfors-gransfors-oksskaft"}],"fix":{"patch":{"cat":"Tools"}}}
+{"id":"p-hamax-hamax-ekstra-feste","status":"ok"}
+{"id":"p-hamax-hamax-flow-sykkelhjelm-barn","status":"ok"}
+{"id":"p-hamax-hamax-outback-next-skisett","status":"ok"}
+{"id":"p-hamax-hamax-outback-avenida-regntrekk","status":"ok"}
+{"id":"p-hamax-hamax-pluto-l-sykkelvogn-til-hund","status":"ok"}
+{"id":"p-hammer-hammer-speed-race-s-spinningsykkel","name":"HAMMER Speed Race S Spinningsykkel","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Spinningsykkel' is cardio training equipment, not a bicycle; the '-sykkel' suffix pulled it into Bikes"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-hard-rocx-hard-rocx-barnesykkel-ifarta-24","name":"Hard Rocx Barnesykkel iFarta 24\"","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.discipline","current":null,"suggested":"Kids","why":"'Barnesykkel' (children's bike) is stated in the name; type=Bikes and wheel=24 already derived"}],"fix":{"patch":{"facets":{"discipline":"Kids"}}}}
+{"id":"p-hayes-hayes-d-series-rotor-203mm-8-with-hardware","name":"Hayes D-Series Rotor - 203mm (8\") with Hardware","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Brakes","why":"a 203 mm disc brake rotor; other brake parts in this shard carry type=Brakes"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-helsport-helsport-gravel-sl-10l-seteveske","name":"Helsport Gravel SL 10L Seteveske","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Accessories","why":"a 10 L saddle bag, not a bike; 'Gravel SL' in the name derived type=Bikes"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-helsport-helsport-gravel-sl-styresele","name":"Helsport Gravel SL Styresele","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Accessories","why":"a handlebar harness for bikepacking bags, not a bike"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-high5-high5-baer-energibar","name":"High5 Bær Energibar","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Health","why":"an energy bar (sports nutrition); it is in Bikes only because the shop is a bike shop with no srcCat"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"ean-787421359510","name":"Hilleberg Helags 3 Telt","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a 3-person Hilleberg tent (kr 15 299); Bikeshop rows carry no srcCat so the whole outdoor department defaults to Bikes"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"ean-787421358117","name":"Hilleberg Niak Telt","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a Hilleberg trekking tent, not bike gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-abus-hjelm-purl-y","status":"ok"}
+{"id":"p-hope-hope-carbon-setepinne","status":"ok"}
+{"id":"p-hope-hope-press-fit-pf46-kranklager","status":"ok"}
+{"id":"p-hope-hope-pro-2-4-bak-konverteringssett","status":"ok"}
+{"id":"p-hope-hope-pro2-3-evo-2-paler-og-fjaerer","status":"ok"}
+{"id":"p-hope-hope-pro5-rs4-15mm-konverteringssett","status":"ok"}
+{"id":"ean-5056454963212","status":"ok"}
+{"id":"p-hope-hope-rs4-12mm-front-konverteringssett","status":"ok"}
+{"id":"ean-5056033435727","status":"ok"}
+{"id":"p-hope-hope-t47-threaded-24mm-kranklager","status":"ok"}
+{"id":"p-hornit-hornit-lazy-lama-sykkelhjelm-barn","status":"ok"}
+{"id":"p-ht-components-ht-pk02-racing-pedaler","status":"ok"}
+{"id":"p-sweet-protection-hunter-light-gloves-w","status":"ok"}
+{"id":"p-sweet-protection-hunter-sykkelhansker-herre","status":"ok"}
+{"id":"ean-8595153687236","name":"inCondi UB600i Trimsykkel","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — an upright exercise bike, training equipment rather than a bicycle"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"ean-8595153687250","name":"inSportLine inCondi R600i","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — a recumbent exercise bike, not a bicycle"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-insportline-insportline-xbike-lite","name":"inSPORTline Xbike Lite","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — a folding exercise bike"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-ism-ism-pn-1-0-sete","status":"ok"}
+{"id":"p-ism-ism-pn-3-1-sete","status":"ok"}
+{"id":"p-ism-ism-ps2-0-road-sete","status":"ok"}
+{"id":"p-jagwire-jagwire-dca585-bremsekloss","status":"ok"}
+{"id":"p-jagwire-jagwire-dca898-bremsekloss","status":"ok"}
+{"id":"p-jagwire-jagwire-e-sram-code-guide-bremsekloss","status":"ok"}
+{"id":"p-jagwire-jagwire-pro-e-shim-tekt-prox-bremsekloss","status":"ok"}
+{"id":"p-jagwire-jagwire-road-pro-s-power-bremseklosser","status":"ok"}
+{"id":"ean-858953003902","status":"ok"}
+{"id":"p-k-edge-k-edge-road-braze-on-kjedefanger","status":"ok"}
+{"id":"p-sram-kassett-pg-1230-12-speed-11-50t-hg-boss","status":"ok"}
+{"id":"p-katadyn-katadyn-befree-vannfiltersystem-flaske","name":"Katadyn BeFree Vannfiltersystem Flaske","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a backcountry water filter bottle; Outdoor covers hiking/camping gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-kenda-kenda-clincher-ks-700x35-dekk","status":"ok"}
+{"id":"p-kenda-kenda-k-948-26-sykkeldekk","name":"Kenda K-948 26\" Sykkeldekk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tyres & tubes","why":"'Sykkeldekk' is stated in the name and wheel=26 was already derived; the sibling Kenda row has type=Tyres & tubes"}],"fix":{"patch":{"facets":{"type":"Tyres & tubes"}}}}
+{"id":"p-kindshock-kindshock-recourse-ultralight-ii-sett","status":"ok"}
+{"id":"p-king-cage-king-cage-flat-top-flaskestativ","status":"ok"}
+{"id":"p-king-cage-king-cage-titan-sugeror","status":"ok"}
+{"id":"p-kmc-kmc-bullet-pin-kjedebolt","status":"ok"}
+{"id":"p-knog-knog-oi-prima-ringeklokke","status":"ok"}
+{"id":"p-koo-koo-demos-briller","status":"ok"}
+{"id":"p-kryptonite-kryptonite-keeper-712-sykkellas","status":"ok"}
+{"id":"p-kryptonite-kryptonite-keeper-785-sykkellas","status":"ok"}
+{"id":"p-kryptonite-kryptonite-ny-noose-w-evs4-sykkellas","status":"ok"}
+{"id":"ean-8718568136810","name":"Lake CX 177 Wide Landeveissko","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Apparel","why":"'Landeveissko' is a road cycling shoe, not a bike; the 'landeveis' token derived type=Bikes"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head, with ean-8718568136759 as member","why":"ean-8718568136759 has the identical name and price (kr 1 899) as a separate top-level row"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-8718568136759","name":"Lake CX 177 Wide Landeveissko","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Apparel","why":"a road cycling shoe, not a bike"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-8718568136810","why":"identical name and price to ean-8718568136810, a second size SKU"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-8718568113248","name":"Lake CX 238 Landeveissko","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Apparel","why":"a road cycling shoe, not a bike"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"p-cog-lappesaker-cog","status":"ok"}
+{"id":"ean-5420056606806","name":"Lazer Blade Aeroshell","status":"issue","issues":[{"kind":"price","severity":"med","field":"best","current":17,"suggested":null,"why":"kr 17 for a helmet aeroshell (RRP is in the kr 150–300 range) reads as a scrape/decimal error, not a real price"}]}
+{"id":"ean-5400974024937","status":"ok"}
+{"id":"ean-5400974016185","status":"ok"}
+{"id":"ean-5400974031973","name":"Lazer Lupo KinetiCore Hjelm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Lazer Lupo KinetiCore family","why":"ean-5400974031928 has the identical name and price (kr 749) as a separate top-level row"}],"fix":{"group":{"head":"ean-5400974031973","members":["ean-5400974031928"],"axis":"size"}}}
+{"id":"ean-5400974031928","name":"Lazer Lupo KinetiCore Hjelm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-5400974031973","why":"identical name and price to ean-5400974031973"}]}
+{"id":"p-lazer-lazer-pnut-2-0-kineticore-barnehjelm","name":"Lazer Pnut 2.0 KinetiCore Barnehjelm","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":null,"suggested":"Helmets","why":"'Barnehjelm' (children's helmet) is stated in the name but the compound is not matched, so neither type nor discipline derived"},{"kind":"facets","severity":"med","field":"facets.discipline","current":null,"suggested":"Kids","why":"'Barne-' prefix; sibling rows named 'sykkelhjelm barn' do get discipline=Kids"}],"fix":{"patch":{"facets":{"type":"Helmets","discipline":"Kids"}}}}
+{"id":"p-lezyne-lezyne-femto-usb-c-stvzo-baklys","status":"ok"}
+{"id":"ean-4712805984824","status":"ok"}
+{"id":"p-lezyne-lezyne-matrix-team-flaskestativ","status":"ok"}
+{"id":"p-lezyne-lezyne-micro-floor-drive-hpg-minipumpe","status":"ok"}
+{"id":"p-lezyne-lezyne-shock-drive-minipumpe","status":"ok"}
+{"id":"p-lezyne-lezyne-strip-pro-ai-400-baklys","status":"ok"}
+{"id":"p-lightweight-lightweight-schutzschild","status":"ok"}
+{"id":"p-linus-linus-boss-9-10-delt","status":"ok"}
+{"id":"p-little-me-sykkelhjelm","name":"LITTLE ME - SYKKELHJELM","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"LITTLE ME - SYKKELHJELM","suggested":"Little Me Sykkelhjelm","why":"ALL-CAPS shop boilerplate with a hyphen separator; srcCat is the same string, so there is no real breadcrumb"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Little Me","why":"'Unspecified' is a placeholder; the name reads brand-then-product"}],"fix":{"patch":{"name":"Little Me Sykkelhjelm","brand":"Little Me"}}}
+{"id":"p-lizard-skins-lizard-skins-dsp-holker","status":"ok"}
+{"id":"p-look-look-keo-2-max-landeveispedaler","name":"Look Keo 2 Max Landeveispedaler","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Drivetrain","why":"road pedals, not a bike; 'landeveis' derived type=Bikes. Other pedals in this shard (HT PK02, Race Face Chester) carry type=Drivetrain"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"p-look-look-keo-blade-vison-upgrade-kit","status":"ok"}
+{"id":"p-look-look-keo-classic-3-sort-landeveispedaler","name":"Look Keo Classic 3 Sort Landeveispedaler","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Drivetrain","why":"road pedals, not a bike; same 'landeveis' over-trigger"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"p-look-look-keo-grip-klosser","status":"ok"}
+{"id":"p-lupine-lupine-3m-duallock-hjelmbrakett","status":"ok"}
+{"id":"p-m-wave-m-wave-airshock-demperpumpe","status":"ok"}
+{"id":"p-m-wave-m-wave-bagasje-tilhenger","status":"ok"}
+{"id":"p-m-wave-m-wave-eiker-refleks","status":"ok"}
+{"id":"p-m-wave-m-wave-hurtigkobling-til-cargo-trailer","name":"M-Wave Hurtigkobling til Cargo Trailer","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.discipline","current":"MTB","suggested":null,"why":"a quick coupling for a cargo trailer has no MTB discipline; nothing in the name supports it"}],"fix":{"patch":{"facets":{"discipline":null}}}}
+{"id":"p-m-wave-m-wave-one-4-all-bagasjebrett","status":"ok"}
+{"id":"p-m-wave-m-wave-racky-baseplate-til-bagasjebrett","status":"ok"}
+{"id":"p-mac-ride-mac-ride-mounting-bracket-spacer","status":"ok"}
+{"id":"p-magicshine-magicshine-monteer-12000-sykkellykt","status":"ok"}
+{"id":"p-mahle-mahle-x20-drive-unit-motor","status":"ok"}
+{"id":"p-mahle-mahle-x20-pas-sensor","status":"ok"}
+{"id":"p-mahle-mahle-x35-f-batteri","status":"ok"}
+{"id":"p-maurten-maurten-drink-mix-160-sportsdrikk-eske","name":"Maurten Drink Mix 160 Sportsdrikk Eske","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Health","why":"a box of sports drink mix (nutrition), not bike equipment"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"p-mavic-mavic-275mm-ksyrium-sls-sl-eiker","status":"ok"}
+{"id":"p-mavic-mavic-278mm-ksyrium-equipe-s-eiker","status":"ok"}
+{"id":"p-mavic-mavic-allroad-1-disc-forhjul","name":"Mavic Allroad 1 Disc Forhjul","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Wheels","why":"'Forhjul' is a front wheel; 'Framhjul' rows in this shard do derive type=Wheels, 'Forhjul' does not"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-mavic-mavic-allroad-s-carbon-forhjul","name":"Mavic Allroad S Carbon Forhjul","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Wheels","why":"'Forhjul' (front wheel) is not in the Wheels vocabulary"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-mavic-mavic-allroad-sl-disc-hjulsett","name":"Mavic Allroad SL Disc Hjulsett","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Wheels","why":"'Hjulsett' is a wheelset; the term does not derive type=Wheels"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-mavic-mavic-bak-endestykker","status":"ok"}
+{"id":"p-mavic-mavic-cosmic-carbone-eikenokkel","status":"ok"}
+{"id":"p-mavic-mavic-cosmic-carbone-sls-sort-eike","name":"Mavic Cosmic Carbone SLS Sort Eike","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Wheels","why":"'Eike' (spoke, singular) misses the vocabulary while the plural 'Eiker' rows derive type=Wheels"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-mavic-mavic-crossride-eiker","status":"ok"}
+{"id":"p-mavic-mavic-distanseskive-til-boss","status":"ok"}
+{"id":"p-mavic-mavic-ksyrium-s-disc-framhjul","status":"ok"}
+{"id":"p-mavic-mavic-ksyrium-sl-disc-hjulsett","name":"Mavic Ksyrium SL Disc Hjulsett","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Wheels","why":"'Hjulsett' (wheelset) is not matched by the Wheels vocabulary"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-mavic-mavic-road-hjulpose","status":"ok"}
+{"id":"p-maxxis-maxxis-crossmark-ii-exo-tr-27-5-dekk","status":"ok"}
+{"id":"p-maxxis-maxxis-downhill-presta-26-slange","status":"ok"}
+{"id":"p-maxxis-maxxis-dth-exc-20-dekk","status":"ok"}
+{"id":"p-maxxis-maxxis-forekaster-dc-29-tr-exo-dekk","status":"ok"}
+{"id":"p-merida-merida-alu-flaskestativ","status":"ok"}
+{"id":"p-merida-merida-cyclocross-45-mm-skjermsett","status":"ok"}
+{"id":"p-merida-merida-race-briller","status":"ok"}
+{"id":"p-merida-merida-silex-bagasjebrett","status":"ok"}
+{"id":"p-met-met-hooray-sykkelhjelm-barn","status":"ok"}
+{"id":"ean-8015190299624","name":"MET Shelter Youth MIPS Hjelm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.discipline","current":null,"suggested":"Kids","why":"'Youth' in the name marks a junior helmet; only the Norwegian 'barn' derives discipline=Kids today"}],"fix":{"patch":{"facets":{"discipline":"Kids"}}}}
+{"id":"p-met-met-urban-corso-sykkelhjelm","status":"ok"}
+{"id":"p-miche-miche-pista-lasering","status":"ok"}
+{"id":"p-miche-miche-primato-k12-juniorkassett","status":"ok"}
+{"id":"p-michelin-michelin-a3-700-x-33-46-slange","name":"Michelin  A3 700 x 33/46 Slange","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Michelin  A3 700 x 33/46 Slange","suggested":"Michelin A3 700 x 33/46 Slange","why":"doubled space after the brand, as scraped"}],"fix":{"patch":{"name":"Michelin A3 700 x 33/46 Slange"}}}
+{"id":"p-michelin-michelin-dynamic-sport-28-622-dekk","status":"ok"}
+{"id":"p-milkit-milkit-bearing-grease-lagerfett","status":"ok"}
+{"id":"p-milkit-milkit-compact-75-mm-tubeless-kit","status":"ok"}
+{"id":"p-milkit-milkit-essential-bike-care-bundle-kit","status":"ok"}
+{"id":"p-milkit-milkit-tubeless-75mm-ventilkjerne","status":"ok"}
+{"id":"p-christopeit-sport-minisykkel-mb3-brukt","name":"Minisykkel MB3 brukt","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — a mini pedal exerciser, training equipment rather than a bicycle"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-morgan-blue-morgan-blue-fm-oil","status":"ok"}
+{"id":"p-morgan-blue-morgan-blue-polish-1000-ml","status":"ok"}
+{"id":"p-morgan-blue-morgan-blue-race-oil","status":"ok"}
+{"id":"p-morgan-blue-morgan-blue-tyre-sealant-guffe","status":"ok"}
+{"id":"p-msr-msr-footprint-universal-large-4-personer","name":"MSR Footprint Universal Large 4 Personer","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a tent footprint for a 4-person tent; camping gear, not bike gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-msr-msr-windburner-sauskjele","name":"MSR Windburner Sauskjele","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a sauce pot for the MSR Windburner camping stove system"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-muc-off-muc-off-airmach-elektrisk-sykkelpumpe","status":"ok"}
+{"id":"p-muc-off-muc-off-disc-brake-cleaner-spray","status":"ok"}
+{"id":"p-muc-off-muc-off-drivetrain-cleaner-avfetting","status":"ok"}
+{"id":"p-muc-off-muc-off-e-bike-dry-kjedeolje","status":"ok"}
+{"id":"p-muc-off-muc-off-silikon-shine-polish","status":"ok"}
+{"id":"p-muc-off-muc-off-spray-e-bike-aw-kjedeolje","status":"ok"}
+{"id":"p-muc-off-muc-off-wet-lube-sykkelolje-120ml","name":"MUC-OFF Wet Lube Sykkelolje 120ml","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Muc-OFF","suggested":"Muc-Off","why":"casing differs from the other eight Muc-Off rows, which splits the brand into two entries in the brand filter"}],"fix":{"patch":{"brand":"Muc-Off"}}}
+{"id":"p-muc-off-muc-off-x-3-kjedevasker","status":"ok"}
+{"id":"p-mucky-nutz-mucky-nutz-fat-butt-fender-skjerm","status":"ok"}
+{"id":"p-shimano-navgir-cues-rd-u4010-9-10-delt-2x9-10","name":"Navgir CUES RD-U4010 9/10-delt (2x9/10)","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Drivetrain","why":"a rear derailleur; srcCat 'SYKKEL > Sykkeldeler > Slitedeler' confirms a drivetrain part"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"p-niterider-niterider-pro-hjelmfeste","status":"ok"}
+{"id":"ean-8030819370591","name":"Northwave Clean Sock Sokker","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Sokker' (socks) is clothing; 'sykkelhansker'/'sykkelshorts' rows do derive type=Apparel"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"p-nova-ride-nova-ride-ccd-evo-s-girarm","name":"Nova Ride CCD Evo S Girarm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Drivetrain","why":"'Girarm' is a derailleur cage; the sibling Nova Ride SRAM row carries type=Drivetrain"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"p-nova-ride-nova-ride-ccd-evo-v-girarm","name":"Nova Ride CCD Evo V Girarm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Drivetrain","why":"'Girarm' is a derailleur cage"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"p-nova-ride-nova-ride-ccd-evo-vs-girarm","name":"Nova Ride CCD Evo VS Girarm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Drivetrain","why":"'Girarm' is a derailleur cage"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"ean-3760375605985","name":"Nova Ride EVO S MTB Trinsehjul","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Drivetrain","why":"jockey wheels, not a bike; 'MTB' derived type=Bikes. The identical SRAM version (ean-3760375606395) correctly carries type=Drivetrain"}],"fix":{"patch":{"facets":{"type":"Drivetrain"}}}}
+{"id":"ean-3760375606395","status":"ok"}
+{"id":"p-oakley-oakley-cybr-dyno-linse","status":"ok"}
+{"id":"p-oakley-oakley-holbrook-metal-prizm-brille","status":"ok"}
+{"id":"p-oakley-oakley-holbrook-xl-fritidsbrille","name":"Oakley Holbrook XL Fritidsbrille","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Fashion","why":"the name says 'Fritidsbrille' (leisure sunglasses) — a lifestyle model, unlike the Radar/Resistor sport glasses in this shard"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-oakley-oakley-radar-ev-path-linse","status":"ok"}
+{"id":"p-oakley-oakley-radar-ev-s-path-briller","status":"ok"}
+{"id":"p-oakley-oakley-resistor-sweep-briller","status":"ok"}
+{"id":"p-oneupcomponents-oneup-components-aluminum-pedal-pin-kit","status":"ok"}
+{"id":"ean-37162821945","status":"ok"}
+{"id":"ean-43262821945","status":"ok"}
+{"id":"p-oneupcomponents-oneup-v2-dropper-cartridge-kit","status":"ok"}
+{"id":"p-oneupcomponents-oneup-v2-1-actuator-kit","status":"ok"}
+{"id":"p-optimus-stoves-optimus-crux-lite-gassbrenner","name":"Optimus Crux Lite Gassbrenner","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a camping gas stove; Bikeshop's outdoor department has no srcCat so it defaults to Bikes"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-optimus-stoves-optimus-gemini-gassbrenner","name":"Optimus Gemini Gassbrenner","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a camping stove system, not bike gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-ortlieb-ortlieb-frame-mount-set","status":"ok"}
+{"id":"ean-4013051056441","status":"ok"}
+{"id":"p-ortlieb-ortlieb-ql1-reserve-kroker","status":"ok"}
+{"id":"p-ortlieb-ortlieb-ql2-las","status":"ok"}
+{"id":"p-ortlieb-ortlieb-ql2-2-anchoring-hook","status":"ok"}
+{"id":"ean-4013051049399","status":"ok"}
+{"id":"p-osprey-osprey-daylite-hanging-organizer-kit","name":"Osprey Daylite Hanging Organizer Kit","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a travel/hiking pack organiser from Osprey's Daylite luggage line"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-osprey-osprey-daylite-hanging-toiletry-kit","name":"Osprey Daylite Hanging Toiletry Kit","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a hanging toiletry bag, travel gear rather than bike gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"ean-810165745681","name":"Osprey Dyna 1.5 Run Hydration Vest","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"a running hydration vest ('Run' in the name); training gear, not bike equipment"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"ean-843820198201","name":"Osprey Dyna Pro™ 10 Run Hydration Vest","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"a running hydration vest, not bike equipment"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"ean-810165747715","name":"Osprey Hikelite 32 Ryggsekk","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a 32 L hiking backpack ('Hikelite'), Outdoor gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"ean-843820180947","name":"Osprey Poco LT Bæremeis","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a hiking child carrier ('bæremeis'), not bike equipment"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"ean-843820187793","name":"Osprey Poco Soft Bæremeis","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a hiking child carrier, not bike equipment"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"ean-810165748088","name":"Osprey Sportlite 20 Ryggsekk","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a 20 L hiking backpack"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-osprey-osprey-talon-22-ef-ryggsekk","name":"Osprey Talon 22 EF Ryggsekk","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a 22 L hiking backpack"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-osprey-osprey-ultralight-packing-cube-small","name":"Osprey Ultralight Packing Cube Small","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a luggage packing cube, travel gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"ean-843820157192","name":"Osprey Ultralight Roll Organizer","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a roll-up travel organiser, not bike equipment"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-osprey-osprey-wildwater-dry-bag-50-pakkpose","name":"Osprey Wildwater Dry Bag 50 Pakkpose","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a 50 L paddling dry bag"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-oxc-oxc-dirtyfoot-stotte","status":"ok"}
+{"id":"ean-8436588593115","name":"Pacific and Co ForeverYoung Sykkelsokker","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Sykkelsokker' (cycling socks) is clothing but 'sokker' is not in the Apparel vocabulary"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"p-park-tool-park-tool-tw-2-2-momentnokkel","name":"Park Tool  TW-2.2 Momentnøkkel","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Park Tool  TW-2.2 Momentnøkkel","suggested":"Park Tool TW-2.2 Momentnøkkel","why":"doubled space after the brand, as scraped"}],"fix":{"patch":{"name":"Park Tool TW-2.2 Momentnøkkel"}}}
+{"id":"p-park-tool-park-tool-bbp-aos-kranklagerverktoy","status":"ok"}
+{"id":"p-park-tool-park-tool-bbt-16-kranklagerverktoy","status":"ok"}
+{"id":"p-park-tool-park-tool-bdt-1-tannhjulavdrager","status":"ok"}
+{"id":"p-park-tool-park-tool-cm-25-professional-kjedevasker","status":"ok"}
+{"id":"p-park-tool-park-tool-crp-2-styrelagerverktoy","status":"ok"}
+{"id":"p-park-tool-park-tool-htr-hs-styrelager-fres","status":"ok"}
+{"id":"p-park-tool-park-tool-hydraulic-brake-bleed-kit","status":"ok"}
+{"id":"p-park-tool-park-tool-ph-8-unbrakonokkel-m-t-handtak","status":"ok"}
+{"id":"p-park-tool-park-tool-rtp-1-multiverktoy","status":"ok"}
+{"id":"p-park-tool-park-tool-sr-2-3-kjedepisk","status":"ok"}
+{"id":"p-park-tool-park-tool-sw-12-eiken-248-kkel","name":"Park Tool SW-12 Eiken&#248;kkel","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Park Tool SW-12 Eiken&#248;kkel","suggested":"Park Tool SW-12 Eikenøkkel","why":"the scraped name is HTML-entity-escaped ('&#248;' = 'ø') and renders literally in the UI; the id carries the same damage"}],"fix":{"patch":{"name":"Park Tool SW-12 Eikenøkkel"}}}
+{"id":"p-park-tool-park-tool-sw-16-eikenokkel","status":"ok"}
+{"id":"p-park-tool-park-tool-swb-15-breaker-bar","status":"ok"}
+{"id":"p-park-tool-park-tool-tap-8-5mm-gjengetapp","status":"ok"}
+{"id":"p-park-tool-park-tool-ts-4-2-hjulrettestativ","status":"ok"}
+{"id":"p-park-tool-park-tool-ts-4-3-hjulrettestativ","status":"ok"}
+{"id":"p-park-tool-park-tool-wag-5-sentreringsmal","status":"ok"}
+{"id":"p-continental-piggdekk-28-spike-240-reflex","name":"Piggdekk 28 Spike 240 Reflex","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":null,"suggested":"Tyres & tubes","why":"'Piggdekk' is a studded tyre and srcCat is 'Sykkeldekk, slanger og ventiler', but the compound is not matched"},{"kind":"facets","severity":"low","field":"facets.wheel","current":null,"suggested":28,"why":"'28' in the name is the wheel size"}],"fix":{"patch":{"facets":{"type":"Tyres & tubes","wheel":28}}}}
+{"id":"p-pilo-pilo-dropout-girore-047-d12","status":"ok"}
+{"id":"p-pilo-pilo-dropout-girore-054-d13","status":"ok"}
+{"id":"p-pilo-pilo-dropout-girore-103-d58","status":"ok"}
+{"id":"p-pilo-pilo-dropout-girore-382-d516","status":"ok"}
+{"id":"p-pilo-pilo-dropout-girore-414-d644","status":"ok"}
+{"id":"p-pilo-pilo-dropout-girore-128-d229","status":"ok"}
+{"id":"p-pilo-pilo-dropout-girore-316-d250","status":"ok"}
+{"id":"p-pilo-pilo-narrow-wide-oval-krankdrev-34t","status":"ok"}
+{"id":"p-pilo-pilo-narrow-wide-shimano-krankdrev-34t","status":"ok"}
+{"id":"p-pilo-pilo-narrow-wide-sram-oval-krankdrev-32t","status":"ok"}
+{"id":"p-pirelli-pirelli-cinturato-cross-h-dekk","status":"ok"}
+{"id":"ean-8019227377071","status":"ok"}
+{"id":"p-poc-poc-elicit-toric-briller","status":"ok"}
+{"id":"ean-7325549883161","status":"ok"}
+{"id":"p-poc-poc-propel-briller","status":"ok"}
+{"id":"p-poc-poc-ultra-frame-bag-3l","status":"ok"}
+{"id":"p-poc-poc-ultra-top-tube-bag-1-7l","status":"ok"}
+{"id":"ean-7325549894877","name":"POC VPD Air Flow Elbow Albuebeskyttelse","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the POC VPD Air Flow Elbow family","why":"ean-7325549894792 has the identical name and price (kr 650) as a separate top-level row"}],"fix":{"group":{"head":"ean-7325549894877","members":["ean-7325549894792"],"axis":"size"}}}
+{"id":"ean-7325549894792","name":"POC VPD Air Flow Elbow Albuebeskyttelse","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-7325549894877","why":"identical name and price to ean-7325549894877, a second size SKU"}]}
+{"id":"ean-7325549884021","status":"ok"}
+{"id":"ean-4005251100093","name":"Presidio","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — cardio training equipment, not a bicycle"},{"kind":"name","severity":"low","field":"name","current":"Presidio","suggested":"Hammer Presidio","why":"a bare model name with no brand or product type; unidentifiable in a results list"}],"fix":{"patch":{"cat":"Sport","name":"Hammer Presidio"}}}
+{"id":"p-diamant-prism-12","name":"Prism 12","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Bikes","why":"srcCat 'SYKKEL > Sykler > Barnesykler og juniorsykler' — this is an actual bicycle, but only discipline=Kids derived"},{"kind":"facets","severity":"low","field":"facets.wheel","current":null,"suggested":12,"why":"the '12' in 'Prism 12' is the wheel size for a children's bike"}],"fix":{"patch":{"facets":{"type":"Bikes","wheel":12}}}}
+{"id":"p-pro-pro-baseplate","status":"ok"}
+{"id":"p-pro-pro-carbon-3k-spacer-set-1-1-8","status":"ok"}
+{"id":"p-pro-pro-direct-mount-seteveske","status":"ok"}
+{"id":"p-pro-pro-discover-setepinne","status":"ok"}
+{"id":"ean-8717009482851","name":"PRO Discover Stem","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-8717009482868","why":"identical name to ean-8717009482868 (kr 599 vs kr 699) — two stem lengths listed as separate products"}]}
+{"id":"ean-8717009482868","name":"PRO Discover Stem","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the PRO Discover Stem family","why":"ean-8717009482851 carries the identical name as a separate top-level row"}],"fix":{"group":{"head":"ean-8717009482868","members":["ean-8717009482851"],"axis":"size"}}}
+{"id":"ean-8717009418805","status":"ok"}
+{"id":"ean-8717009418843","status":"ok"}
+{"id":"p-pro-pro-integrert-bakskjerm","status":"ok"}
+{"id":"p-pro-pro-kranklagerverktoy","status":"ok"}
+{"id":"p-pro-pro-nedre-styrelager-zs44-30","status":"ok"}
+{"id":"p-pro-pro-nummerholder-til-sete","status":"ok"}
+{"id":"p-pro-pro-race-control-styretape","status":"ok"}
+{"id":"ean-8717009668293","status":"ok"}
+{"id":"p-pro-pro-stotabsorberende-gel-pads","status":"ok"}
+{"id":"p-pro-pro-t-nokkel-sats","status":"ok"}
+{"id":"p-pro-pro-team-gravel-rammeveske","name":"PRO Team Gravel Rammeveske","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Accessories","why":"a frame bag, not a bike; 'Gravel' in the name derived type=Bikes"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-pro-pro-tharsis-evo-carbon-styre","status":"ok"}
+{"id":"p-pro-pro-verktoysett","status":"ok"}
+{"id":"p-pro-pro-vibe-evo-computerfeste","status":"ok"}
+{"id":"ean-8717009402484","status":"ok"}
+{"id":"ean-8717009340083","status":"ok"}
+{"id":"p-pro-pro-ovre-styrelager-zs44-28-6","status":"ok"}
+{"id":"p-profile-design-profile-design-a3a-bta-bridge","status":"ok"}
+{"id":"p-profile-design-profile-design-a3a-high-riser-kit","status":"ok"}
+{"id":"p-profile-design-profile-design-hsa-riser-kit-90mm","status":"ok"}
+{"id":"p-profile-design-profile-design-supersonic-e-tempoboyle","status":"ok"}
+{"id":"ean-4015731095757","name":"Puky Barnehjelm","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":null,"suggested":"Helmets","why":"'Barnehjelm' (children's helmet) is the whole name, but the compound derives neither type nor discipline"},{"kind":"facets","severity":"med","field":"facets.discipline","current":null,"suggested":"Kids","why":"'Barne-' prefix"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-4015731095870","why":"identical name to ean-4015731095870 (kr 739 vs kr 619) — two SKUs of the same helmet"}],"fix":{"patch":{"facets":{"type":"Helmets","discipline":"Kids"}}}}
+{"id":"ean-4015731095870","name":"Puky Barnehjelm","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":null,"suggested":"Helmets","why":"'Barnehjelm' is a children's helmet; no facets derived at all"},{"kind":"facets","severity":"med","field":"facets.discipline","current":null,"suggested":"Kids","why":"'Barne-' prefix"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head, with ean-4015731095757 as member","why":"ean-4015731095757 carries the identical name as a separate top-level row"}],"fix":{"group":{"head":"ean-4015731095870","members":["ean-4015731095757"],"axis":"size"}}}
+{"id":"p-puky-puky-stottehandtak-for-barnesykler","status":"ok"}
+{"id":"p-purepower-purepower-carbo-race-drikk","name":"PurePower Carbo Race Drikk","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Health","why":"a carbohydrate sports drink; nutrition, not bike equipment"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"p-purepower-purepower-energy-snack-eske","name":"PurePower Energy Snack ESKE","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Health","why":"a box of energy snacks; nutrition, not bike equipment"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"p-purepower-purepower-recovery-drikk","name":"PurePower Recovery Drikk","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Health","why":"a recovery drink; nutrition, not bike equipment"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"ean-8596084156884","name":"Pynero MiniBike","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — a mini pedal exerciser, training equipment"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-quad-lock-quad-lock-out-front-mount","status":"ok"}
+{"id":"ean-9348943110594","name":"Quad Lock Samsung Skjermbeskyttelse","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Phones","why":"a screen protector for a Samsung phone; it is in Bikes only because the seller is a bike shop"}],"fix":{"patch":{"cat":"Phones"}}}
+{"id":"p-quarq-quarq-shockwiz-tuningssystem","status":"ok"}
+{"id":"p-quoc-quoc-mtb-cx-spike-pigger","name":"QUOC MTB/CX Spike Pigger","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Apparel","why":"replacement studs for QUOC off-road cycling shoes, not a bike; 'MTB' derived type=Bikes"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-821973340036","status":"ok"}
+{"id":"ean-821973469317","status":"ok"}
+{"id":"ean-821973409283","name":"Race Face DM Bosch 52CL Krankdrev","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Race Face","why":"the name starts with the brand and the three sibling Race Face rows all carry brand='Race Face'"}],"fix":{"patch":{"brand":"Race Face"}}}
+{"id":"ean-821973353173","status":"ok"}
+{"id":"p-race-face-race-face-sixc-35-riser-styre","status":"ok"}
+{"id":"p-rapha-rapha-logo-lue","name":"Rapha Logo Lue","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Lue' (cap/beanie) is clothing; 'lue' is not in the Apparel vocabulary"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-5059526482147","name":"Rapha Men's Brevet Insulated Vest","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"an insulated cycling vest; 'vest' is not in the Apparel vocabulary"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"p-rapha-rapha-men-s-core-sykkeltroye","status":"ok"}
+{"id":"ean-5059526376217","name":"Rapha Men's Pro Team LS Midweight Trøye","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Trøye' (jersey) is clothing; only the compound 'sykkeltrøye' derives type=Apparel today"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-5059526509714","name":"Rapha Mens Pro Team LS Lightweight Trøye","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Apparel","why":"'Trøye' (jersey) is clothing"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-8595153682446","name":"Recumbent Varis","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — a recumbent exercise bike, training equipment"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-hammer-recument-rb-8000","name":"Recument RB 8000","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — a recumbent exercise bike, not a bicycle"},{"kind":"name","severity":"low","field":"name","current":"Recument RB 8000","suggested":"Recumbent RB 8000","why":"'Recument' is a typo for 'Recumbent' in the shop's own title, and it is the only searchable word in the name"}],"fix":{"patch":{"cat":"Sport","name":"Recumbent RB 8000"}}}
+{"id":"ean-850066970126","status":"ok"}
+{"id":"p-reid-reid-e-trail-2-0-display-d19","status":"ok"}
+{"id":"p-reid-reid-kade-stotte","status":"ok"}
+{"id":"_summary","shard":"Bikes-02","checked":300,"ok":204,"issues":96,"by_kind":{"category":37,"facets":42,"variant":16,"name":6,"brand":3,"price":1},"high":31,"rule_gaps":["Bikeshop rows carry NO srcCat at all, so that shop's outdoor department lands in Bikes wholesale: 12 Osprey packs/organisers, 2 Hilleberg tents, 2 Optimus stoves, 2 MSR camp items, a Katadyn water filter and 2 Gränsfors axe handles","srcCat 'Kondisjon / Treningssykkel' and 'Kondisjon / Spinningsykkel' resolve to Bikes — 9 exercise/fitness bikes here; the CAT_RULES '-sykkel' token should not beat the 'Kondisjon' crumb, these belong in Sport","facetrules derives type='Bikes' from the tokens 'MTB', 'landeveis', 'gravel' and 'elsykkel' on accessories: road pedals, cycling shoes, frame/saddle bags, an e-bike battery, a display unit and jockey wheels all carry type=Bikes (12 rows, all high severity)","'barnehjelm' and English 'youth' derive neither type=Helmets nor discipline=Kids, while 'sykkelhjelm barn' does","'forhjul', 'hjulsett' and singular 'eike' miss type=Wheels though 'framhjul'/'eiker' hit it; 'piggdekk' misses Tyres & tubes though 'dekk' hits it","'sokker', 'lue', 'vest' and 'trøye' miss type=Apparel though 'sykkelhansker'/'sykkelshorts'/'sykkeltrøye' hit it","sports nutrition (energibar, sportsdrikk, carbo/recovery drikk) has no vocabulary anywhere and stays in whatever shop category sold it","scraped names are not HTML-entity-decoded — 'Park Tool SW-12 Eiken&#248;kkel' renders the entity literally and the id was slugged from the damaged string"],"notes":"The bike-parts core of this shard is in good shape (204/300 clean, brands and prices consistent); the damage is concentrated in two systematic leaks — Bikeshop's unlabelled outdoor/camping department sitting in Bikes, and a facetrules over-trigger stamping type='Bikes' on accessories — plus 8 unwired variant pairs. Roughly 60% of the rows have img=0, the known sampled-crawl gap, so that is reported here once rather than per row."}

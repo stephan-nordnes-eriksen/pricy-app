@@ -1,0 +1,301 @@
+{"id":"p-sengeramme-vemmelev-90x200cm-m-magasin-beige-stoff","name":"Sengeramme VEMMELEV 90x200cm m/magasin beige stoff","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.dim","current":null,"suggested":"90x200","why":"name states 90x200cm; the size rule misses a dimension glued to 'cm'"}],"fix":{"patch":{"facets":{"dim":"90x200"}}}}
+{"id":"p-jysk-sengesett-ellen-140x200-brun","name":"Sengesett ELLEN 140x200 brun","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"'Sengesett' is a duvet cover set - bed linen textile, not furniture; srcCat 'Soverom' names only the room"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Sengesett ELLEN","why":"same linen set as p-jysk-sengesett-ellen-140x220-gronn, sitting as a separate top-level row"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-jysk-sengesett-ellen-140x220-gronn","name":"Sengesett ELLEN 140x220 grønn","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"duvet cover set, bed linen textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sengesett-gabby-140x200-lyserod","name":"Sengesett GABBY 140x200 lyserød","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"duvet cover set, bed linen textile"},{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Pink","why":"name ends in 'lyserød' (light pink), unmapped in the colour table"}],"fix":{"patch":{"cat":"Home","facets":{"color":"Pink"}}}}
+{"id":"p-jysk-sengesett-gaming-140x200-svart","name":"Sengesett GAMING 140x200 svart","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"duvet cover set, bed linen textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sengesett-line-140x200-aqua","name":"Sengesett LINE 140x200 aqua","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"duvet cover set, bed linen textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-kronborg-sengesett-malin-musselin-140x200-mork-sand","name":"Sengesett MALIN musselin 140x200 mørk sand","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"muslin duvet cover set, bed linen textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sengesett-tone-200x220-bla","name":"Sengesett TONE 200x220 blå","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"duvet cover set, bed linen textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sengestamme-oberting-160x200-cm","status":"ok"}
+{"id":"p-sengestamme-ripon-180x200-cm","status":"ok"}
+{"id":"p-sengeteppe-gloriosa-160x220-beige","name":"Sengeteppe GLORIOSA 160x220 beige","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"'Sengeteppe' is a bedspread - a textile, not furniture"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sengeteppe-myggblom-220x240-beige","name":"Sengeteppe MYGGBLOM 220x240 beige","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"bedspread textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sengeteppe-toutli-taupe-200x220-cm","name":"Sengeteppe Toutli Taupe, 200x220 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"bedspread textile; srcCat is literally 'Sengeteppe'"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-borganas-sengtopp-borganas-of-sweden","status":"ok"}
+{"id":"ean-5713350001263","status":"ok"}
+{"id":"p-tradition-sett-ln12-salongbord-60x140-cm-verde-guatemala","status":"ok"}
+{"id":"p-sett-med-2-barkrakker-cornell","status":"ok"}
+{"id":"p-sett-med-2-spisestoler-roxby","status":"ok"}
+{"id":"p-settbord-munkebo-o55-o45-natur-eikefarget-2-stk","name":"Settbord MUNKEBO Ø55/Ø45 natur eikefarget 2 stk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tables","why":"'Settbord' is a nest of tables; only the colour was derived"}],"fix":{"patch":{"facets":{"type":"Tables"}}}}
+{"id":"p-sia-garderobe-med-speil-250x215-cm","status":"ok"}
+{"id":"p-sidebord-cajeme","status":"ok"}
+{"id":"p-woood-sidebord-pim-sett-med-2","status":"ok"}
+{"id":"p-sidevegger-til-pavilion-mirador-300x300-cm-4-stk-svart","name":"Sidevegger til Pavilion Mirador 300x300 cm 4 stk Svart","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Garden","why":"side walls for a garden pavilion; srcCat 'Hagemøbler & utemiljø > Solbeskyttelse > Paviljong > Paviljongvegg' is unambiguous"}],"fix":{"patch":{"cat":"Garden"}}}
+{"id":"p-sidria-sengepakke-140x200-cm","name":"Sidria Sengepakke 140x200 cm","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Sidria Sengepakke","why":"same bed package in another size as p-sidria-sengepakke-180x200-cm"}],"fix":{"group":{"head":"p-sidria-sengepakke-140x200-cm","members":["p-sidria-sengepakke-180x200-cm"],"axis":"size"}}}
+{"id":"p-sidria-sengepakke-180x200-cm","status":"ok"}
+{"id":"p-bark-siena-spisegruppe-rund-110-cm-hvitlasert-med-4-build-spisestoler","status":"ok"}
+{"id":"ean-5713035084451","status":"ok"}
+{"id":"ean-5713035090070","status":"ok"}
+{"id":"ean-5713035084321","name":"Sign skrivebord","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Sign skrivebord","why":"identical name and srcCat as ean-5713035084291, two sizes of the same desk as separate rows"}],"fix":{"group":{"head":"ean-5713035084321","members":["ean-5713035084291"],"axis":"size"}}}
+{"id":"ean-5713035084291","status":"ok"}
+{"id":"p-loft24-silfa-lenestol-microfiber","name":"Silfa Lenestol Microfiber","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.material","current":null,"suggested":"Fabric","why":"name states Microfiber"}],"fix":{"patch":{"facets":{"material":"Fabric"}}}}
+{"id":"p-silhuet-silhuet-vegghylle-nr-5","status":"ok"}
+{"id":"p-vox-simple-krakk-gra","status":"ok"}
+{"id":"p-simply-kommode-92-cm","status":"ok"}
+{"id":"p-forms-objects-sitar-puff-solv","status":"ok"}
+{"id":"p-fritab-sitte-og-ryggpute-utendors-flock-minivik","name":"Sitte- og ryggpute utendørs Flock Minivik","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Covers & cushions","why":"a seat and back cushion; no facet was derived at all"}],"fix":{"patch":{"facets":{"type":"Covers & cushions"}}}}
+{"id":"p-fritab-sittepute-fritab-robin-wr-for-lenestol-og-sofa","name":"Sittepute Fritab Robin WR for lenestol og sofa","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Sofas","why":"this is a seat cushion FOR a sofa, not a sofa; 'sofa' in the name drove the rule","suggested":"Covers & cushions"}],"fix":{"patch":{"facets":{"type":"Covers & cushions"}}}}
+{"id":"p-sjeselong-nimes","status":"ok"}
+{"id":"p-skaberg-skrivebord-100-cm-med-oppbevaring-vegghylle","status":"ok"}
+{"id":"p-hartman-nordic-skagen-klappbenk","status":"ok"}
+{"id":"p-woood-skap-caz-small","status":"ok"}
+{"id":"p-skap-kommode-art-deco-3d-150-beige","status":"ok"}
+{"id":"p-skjenk-ovtrup-3-dorer-beige","status":"ok"}
+{"id":"p-wohnling-skjenk-wohnling-massivt-tre-90-cm-2-dorer-2-skuffer-landlig-s","status":"ok"}
+{"id":"p-skohylle-sten","status":"ok"}
+{"id":"p-skovlunde-l160-bord-natur-eik-4-risskov-stol-lys-gra","status":"ok"}
+{"id":"p-skovlunde-l160-bord-natur-eik-4-rostrup-stol-svart","status":"ok"}
+{"id":"p-skovlunde-l200-bord-mork-eik-4-bovrup-stol-mork-eik-brun","status":"ok"}
+{"id":"p-skovlunde-l200-bord-mork-eik-4-hygum-stol-konjakk","name":"SKOVLUNDE L200 bord mørk eik + 4 HYGUM stol konjakk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Brown","why":"'konjakk' (cognac) is a colour word the table does not know; the three sibling SKOVLUNDE sets all carry a colour"}],"fix":{"patch":{"facets":{"color":"Brown"}}}}
+{"id":"p-vox-skrivebord-4-you-fresh-120-cm","status":"ok"}
+{"id":"p-skrivebord-eva","status":"ok"}
+{"id":"p-skrivebordsstol-monarch","name":"Skrivebordsstol Monarch","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Tables","suggested":"Chairs","why":"a desk CHAIR (srcCat 'Kontorstol & skrivebordsstol'); 'skrivebord' inside 'skrivebordsstol' matched the table rule, so it is filed under Tables"}],"fix":{"patch":{"facets":{"type":"Chairs"}}}}
+{"id":"p-dreamzone-skummadrass-120x200-kjosen-medium","name":"Skummadrass 120x200 KJOSEN Medium","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Skummadrass KJOSEN Medium","why":"same mattress in another size as p-dreamzone-skummadrass-70x190-kjosen-medium"}],"fix":{"group":{"head":"p-dreamzone-skummadrass-120x200-kjosen-medium","members":["p-dreamzone-skummadrass-70x190-kjosen-medium"],"axis":"size"}}}
+{"id":"p-dreamzone-skummadrass-120x200-lillelv-ekstra-fast","name":"Skummadrass 120x200 LILLELV Ekstra fast","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Skummadrass LILLELV Ekstra fast","why":"same mattress in another size as p-dreamzone-skummadrass-90x200-lillelv-ekstra-fast"}],"fix":{"group":{"head":"p-dreamzone-skummadrass-120x200-lillelv-ekstra-fast","members":["p-dreamzone-skummadrass-90x200-lillelv-ekstra-fast"],"axis":"size"}}}
+{"id":"p-wellpur-skummadrass-120x200-wellpur-glomma-ekstra-fast","status":"ok"}
+{"id":"p-dreamzone-skummadrass-70x190-kjosen-medium","status":"ok"}
+{"id":"p-dreamzone-skummadrass-90x200-lillelv-ekstra-fast","status":"ok"}
+{"id":"p-skyvedor-elverum","status":"ok"}
+{"id":"p-skap-vipack-casami-2-delar-med-dorrar-vipack-mint-green","status":"ok"}
+{"id":"ean-7053346144801","status":"ok"}
+{"id":"p-venture-home-slider-matgruppe-forlengningsbar-170-cm-rektangulaer-med","status":"ok"}
+{"id":"p-sminkebord-malling-m-speil-5-skuff-hvit","name":"Sminkebord MALLING m/speil 5 skuff hvit","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Mirrors","suggested":"Tables","why":"a dressing table with 5 drawers; 'm/speil' made the mirror rule win over the table"}],"fix":{"patch":{"facets":{"type":"Tables"}}}}
+{"id":"p-woood-snurrestol-atty","status":"ok"}
+{"id":"p-sofa-andrup-3-seter-oval-beige-stoff","status":"ok"}
+{"id":"p-sofa-eltap-cotonn-256x105x119-cm","name":"Sofa Eltap Cotonn 256x105x119 cm","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Eltap","why":"the name states the brand"}],"fix":{"patch":{"brand":"Eltap"}}}
+{"id":"p-sofa-eltap-inversa-220x83x89-cm","name":"Sofa Eltap Inversa 220x83x89 cm","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Eltap","why":"the name states the brand"}],"fix":{"patch":{"brand":"Eltap"}}}
+{"id":"p-sofa-eltap-silva-236x95x90-cm","name":"Sofa Eltap Silva 236x95x90 cm","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Eltap","why":"the name states the brand"}],"fix":{"patch":{"brand":"Eltap"}}}
+{"id":"p-sofa-home4you-magnolia-4-seter-lys-beige","name":"Sofa HOME4YOU Magnolia 4-seter lys beige","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"HOME4YOU","why":"the name states the brand"}],"fix":{"patch":{"brand":"HOME4YOU"}}}
+{"id":"p-sofa-m-sjeselong-falslev-kordfloyel-oliven","status":"ok"}
+{"id":"p-venture-home-sofabenk-bobby-120-cm-i-tre","status":"ok"}
+{"id":"p-woood-sofabord-bear-87-cm-utendors","status":"ok"}
+{"id":"p-sofabord-fresno-60-cm","status":"ok"}
+{"id":"p-royal-oak-sofabord-kliplev-o80-natur-eikefiner","status":"ok"}
+{"id":"p-sofabord-klippinge-61x101-lys-brun","status":"ok"}
+{"id":"p-royal-oak-sofabord-lejre-60x120-hvit-natur-eik","status":"ok"}
+{"id":"p-royal-oak-sofabord-lyngvig-60x110-1-hylle-mork-eik","status":"ok"}
+{"id":"p-sofabord-markskel-60x110-hvit-natur-villeikfarget","status":"ok"}
+{"id":"p-sofabord-nordure-sofabord-sibas-svart-transparent-svart-solv","name":"Sofabord Nordure Sofabord Sibas Svart / Transparent Svart, sølv","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Nordure","why":"the name states the brand"},{"kind":"name","severity":"low","field":"name","current":"Sofabord Nordure Sofabord Sibas Svart / Transparent Svart, sølv","suggested":"Nordure Sofabord Sibas Svart / Transparent","why":"'Sofabord' and 'Svart' each appear twice - shop title concatenated with its own breadcrumb"}],"fix":{"patch":{"brand":"Nordure"}}}
+{"id":"p-sofabord-spodsbjerg-o67-mork-eikefarget","status":"ok"}
+{"id":"p-wohnling-sofabord-wohnling-heltre-tre-kant-med-nalemetallben-landstil","status":"ok"}
+{"id":"p-wohnling-sofabord-wohnling-marmorblokk-utseende-rektangulaer-tobladet","status":"ok"}
+{"id":"p-wohnling-sofabord-wohnling-marmorstil-rektangulaer-elegant-moderne-sti","status":"ok"}
+{"id":"p-wohnling-sofabord-wohnling-metall-rund-60-cm-halvkule-overflate-modern","status":"ok"}
+{"id":"p-wohnling-sofabord-wohnling-rund-steinoptikk-stil-moderne-utseende-70-c","status":"ok"}
+{"id":"p-wohnling-sofabord-wohnling-rundt-metall-60-cm-hammerutseende-orientals","status":"ok"}
+{"id":"p-sofamodul-skejby-apen-ende-venstre-beige-stoff","status":"ok"}
+{"id":"p-soffbord-beliani-stanton-gra-grey","name":"Soffbord Beliani Stanton Grå Grey","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Beliani","why":"the name states the brand"},{"kind":"name","severity":"low","field":"name","current":"Soffbord Beliani Stanton Grå Grey","suggested":"Beliani Stanton Soffbord Grå","why":"the colour is repeated in two languages ('Grå Grey')"}],"fix":{"patch":{"brand":"Beliani"}}}
+{"id":"p-forms-objects-sofia-3-seter-sofa-hvit","name":"Sofia 3 seter sofa hvit","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Sofia 3 seter sofa","why":"identical product and price (kr 16 000) to p-forms-objects-sofia-3-seter-sofa-lys-gra, only the colour differs"}],"fix":{"group":{"head":"p-forms-objects-sofia-3-seter-sofa-hvit","members":["p-forms-objects-sofia-3-seter-sofa-lys-gra"],"axis":"color"}}}
+{"id":"p-forms-objects-sofia-3-seter-sofa-lys-gra","status":"ok"}
+{"id":"p-img-sofia-lenestol-power-med-krakk","status":"ok"}
+{"id":"p-forms-objects-sofia-puff-lys-gra","status":"ok"}
+{"id":"ean-5705540019240","status":"ok"}
+{"id":"p-kid-soft-madrassbeskytter-hvit","status":"ok"}
+{"id":"ean-7068600045602","name":"Soft Satin laken til overmadrass hvit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a satin bed sheet (srcCat 'Soverom > Laken > Satenglaken'); bed linen is a textile"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Soft Satin laken til overmadrass","why":"same sheet in another colour as p-kid-soft-satin-laken-til-overmadrass-sand"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-kid-soft-satin-laken-til-overmadrass-sand","name":"Soft Satin laken til overmadrass sand","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"bed sheet, a textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-7068600016237","name":"Soft Satin putevar hvit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a pillowcase (srcCat 'Soverom > Putetrekk > Sateng putevar')"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Soft Satin putevar","why":"same pillowcase in another colour as ean-7068600016343, same price"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-7068600016343","name":"Soft Satin putevar lys grå","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"pillowcase textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-7068600045824","name":"Soft Satin splittlaken lys grå","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a split bed sheet, textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-hartman-nordic-solar-line-parasoll-o200-cm","name":"Solar Line parasoll Ø200 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Garden","why":"a parasol, not furniture; srcCat 'Hagemøbler > Paviljonger og parasoller'"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Solar Line parasoll","why":"same parasol in Ø300 as p-hartman-nordic-solar-line-parasoll-o300-cm"}],"fix":{"patch":{"cat":"Garden"}}}
+{"id":"p-hartman-nordic-solar-line-parasoll-o300-cm","name":"Solar Line parasoll Ø300 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Garden","why":"a parasol, not furniture"}],"fix":{"patch":{"cat":"Garden"}}}
+{"id":"p-soli-sofabord-o65-cm","status":"ok"}
+{"id":"ean-7350046507401","name":"Solid Potte XL, Hvid","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a decorative pot; srcCat 'Innredning > Dekorasjon > Krukker' is decor, not furniture"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-solseng-utendors-volterra-stal","status":"ok"}
+{"id":"p-sonali-nattbord-45-cm","status":"ok"}
+{"id":"p-sone-dyp-sone-dyp-hjornesofa","status":"ok"}
+{"id":"p-sone-lav-sone-lav-hjornesofa","status":"ok"}
+{"id":"p-sons-barstol","status":"ok"}
+{"id":"ean-5740034520697","name":"Sorbet Kisses Bukett","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a decorative bouquet; srcCat 'Innredning > Dekorasjon > Dekorative Assesoarer'"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-sovesofa-4-seters-u-formet-345x202-cm-hoyre","name":"Sovesofa 4-seters U-formet 345x202 cm Høyre","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Sovesofa 4-seters U-formet 345x202","why":"identical sofa, identical price, only the orientation differs from p-sovesofa-4-seters-u-formet-345x202-cm-venstre; orientation is not one of the allowed group axes so no group fix is proposed"}]}
+{"id":"p-sovesofa-4-seters-u-formet-345x202-cm-venstre","status":"ok"}
+{"id":"p-sovesofa-lystrup-2-seter-mork-gra-stoff","status":"ok"}
+{"id":"p-sovesofa-vettre","status":"ok"}
+{"id":"p-tvilum-space-kommode","status":"ok"}
+{"id":"p-tvilum-space-nattbord","status":"ok"}
+{"id":"p-kleppe-mobelfabrikk-space-sofabord-126x70-cm","status":"ok"}
+{"id":"p-spaceo-spaceo-hylle","status":"ok"}
+{"id":"ean-5713520023118","name":"Speil Med Hylle 70x72 cm, Eik","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Shelving","suggested":"Mirrors","why":"it is a wall mirror with a small shelf (srcCat 'Innredning > Speil > Veggspeil'); the shelf word won and Furniture declares a Mirrors type"}],"fix":{"patch":{"facets":{"type":"Mirrors"}}}}
+{"id":"p-woood-spisebenk-ato-180-cm","status":"ok"}
+{"id":"p-royal-oak-spisebord-agerby-90x160-glass-natur-eik","status":"ok"}
+{"id":"p-royal-oak-spisebord-agerby-o119-glass-natur-eik","name":"Spisebord AGERBY Ø119 glass/natur eik","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Spisebord AGERBY","why":"same table, round vs rectangular top, as p-royal-oak-spisebord-agerby-90x160-glass-natur-eik; same price"}],"fix":{"group":{"head":"p-royal-oak-spisebord-agerby-o119-glass-natur-eik","members":["p-royal-oak-spisebord-agerby-90x160-glass-natur-eik"],"axis":"size"}}}
+{"id":"p-spisebord-krondal-90x180-marmor-look-svart","status":"ok"}
+{"id":"p-royal-oak-spisebord-marstrand-o110-110x200-natur-eik","name":"Spisebord MARSTRAND Ø110/110x200 natur eik","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Spisebord MARSTRAND Ø110/200","why":"same extendable table in another finish as p-spisebord-marstrand-o110-l200-hvit-natur; same price"}],"fix":{"group":{"head":"p-royal-oak-spisebord-marstrand-o110-110x200-natur-eik","members":["p-spisebord-marstrand-o110-l200-hvit-natur"],"axis":"color"}}}
+{"id":"p-spisebord-marstrand-o110-l200-hvit-natur","status":"ok"}
+{"id":"p-royal-oak-spisebord-skovlunde-90x160-natur-eik-svart","status":"ok"}
+{"id":"p-spisegruppe","name":"Spisegruppe","status":"issue","issues":[{"kind":"junk","severity":"high","field":"name","current":"Spisegruppe","why":"the name is nothing but the generic category word 'dining set' - no model, no brand, no size, so no shopper can identify it; worse, the bare slug has merged offers from two shops (Chilli kr 9 999 and Trademax kr 15 999) that are almost certainly different products, so the price comparison it shows is false"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-spisegruppe-dano-uttrekkbart-spisebord-160-200-cm-med-6-nibe-plus-spis","status":"ok"}
+{"id":"p-spisegruppe-mirko-levanzo","status":"ok"}
+{"id":"p-spisegruppe-reddeer-120-cm","status":"ok"}
+{"id":"p-venture-home-spisegruppe-strada-rund-120-170-cm-hvit-med-edina-stoler","status":"ok"}
+{"id":"p-venture-home-spisegruppe-strada-rund-120-170-cm-hvit-med-lilja-stoler","status":"ok"}
+{"id":"p-venture-home-spisegruppe-tudera-80-cm-rektangulaer-med-2-limhamn-stole","status":"ok"}
+{"id":"p-spisegruppe-utendors-6-seter-java-premium-akasietre","status":"ok"}
+{"id":"p-spisestol-adslev-antrasittgra-stoff-svart","status":"ok"}
+{"id":"p-spisestol-bellinge-sand-natur-eikefarget","status":"ok"}
+{"id":"p-spisestol-floby-ll","status":"ok"}
+{"id":"p-spisestol-pebringe-floyel-gra-natur-eik","status":"ok"}
+{"id":"p-spisestol-rachel","status":"ok"}
+{"id":"p-spisestol-sanroman-classic-beige-svart","status":"ok"}
+{"id":"p-spisestol-uten-armlener-peach-flora-spisestol-whitewash-ben-beige-stof","status":"ok"}
+{"id":"p-spjalsang-med-skottenhet-garderob-jaxx-forrest-jaxx-oak","name":"Spjälsäng med sköttenhet garderob Jaxx Forrest Jaxx oak","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Baby","why":"'Spjälsäng med sköttenhet' is a cot with a changing unit, srcCat 'Barnemøbelsett' - nursery furniture belongs in Baby"},{"kind":"name","severity":"low","field":"name","current":"Spjälsäng med sköttenhet garderob Jaxx Forrest Jaxx oak","why":"untranslated Swedish and 'Jaxx' repeated twice","suggested":"Sprinkelseng med stellekommode og garderobe Jaxx Forrest, eik"}],"fix":{"patch":{"cat":"Baby"}}}
+{"id":"ean-5712772112571","status":"ok"}
+{"id":"ean-5713035073479","status":"ok"}
+{"id":"p-square-classic-square-classic-tv-benk","name":"Square Classic TV benk","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Square Classic TV benk","why":"three top-level rows carry exactly this name from the same shop (this slug row plus ean-220001642805 and ean-220001463332) at kr 13 899 / 12 449 / 6 829 - one product in three widths, and the slug row has no EAN so it will keep re-forking"}],"fix":{"group":{"head":"p-square-classic-square-classic-tv-benk","members":["ean-220001642805","ean-220001463332"],"axis":"size"}}}
+{"id":"ean-220001642805","status":"ok"}
+{"id":"ean-220001463332","status":"ok"}
+{"id":"p-square-exclusive-square-exclusive-skjenk","status":"ok"}
+{"id":"p-square-exclusive-square-exclusive-vitrineskap","status":"ok"}
+{"id":"p-staffin-4-sits-hornbaddsoffa-ljusgra","name":"Staffin 4-sits Hörnbäddsoffa Ljusgrå","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Grey","why":"name ends in 'Ljusgrå' - Swedish spelling, so the Norwegian colour table missed it"}],"fix":{"patch":{"facets":{"color":"Grey"}}}}
+{"id":"p-staffin-fotskammel-50-cm","name":"Staffin Fotskammel 50 cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Chairs","why":"a footstool; no facet derived at all"}],"fix":{"patch":{"facets":{"type":"Chairs"}}}}
+{"id":"p-staffin-mobelsett-for-stue","status":"ok"}
+{"id":"p-fritab-standard-posisjonspute-52x104-cm-beige","status":"ok"}
+{"id":"p-woood-statement-4-seters-floyelssofa","status":"ok"}
+{"id":"p-woood-statement-skinnlenestol","name":"Statement Skinnlenestol","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.material","current":null,"suggested":"Leather","why":"'skinn' in Skinnlenestol states leather"}],"fix":{"patch":{"facets":{"material":"Leather"}}}}
+{"id":"p-black-decker-stavmiksersett-black-decker-brushed-1200w","name":"Stavmiksersett Black+Decker Brushed 1200W","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Furniture","suggested":"Kitchen","why":"a 1200W immersion blender set; srcCat 'Blande & hakke' (blend & chop) is a kitchen crumb the vocabulary does not read, so a Trademax kitchen appliance landed in Furniture"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-stefan-2-seters-sovesofa","status":"ok"}
+{"id":"p-forms-objects-stella-pidestall-svart","status":"ok"}
+{"id":"p-forms-objects-stella-sidebord-natur","name":"Stella sidebord natur","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Stella sidebord","why":"same side table in another colour as p-forms-objects-stella-sidebord-svart, same price"}],"fix":{"group":{"head":"p-forms-objects-stella-sidebord-natur","members":["p-forms-objects-stella-sidebord-svart"],"axis":"color"}}}
+{"id":"p-forms-objects-stella-sidebord-svart","status":"ok"}
+{"id":"p-borganas-of-sweden-stellebordsbeskyttelse-kappe-50-x-70-cm","name":"Stellebordsbeskyttelse Kappe 50 x 70 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Baby","why":"a changing-table cover (srcCat 'Stellebord'); nursery goods belong in Baby, and it is a textile besides"}],"fix":{"patch":{"cat":"Baby"}}}
+{"id":"p-steppello-skjenk-50x82-cm","status":"ok"}
+{"id":"p-aytm-stilla-puff-taupe","status":"ok"}
+{"id":"p-scapa-stockholm-hjornesofa","status":"ok"}
+{"id":"ean-4007219336650","name":"Stolbenhylse m/filt for glatte gulv og tepper transparent 22-26mm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"felt sleeves for chair legs at kr 90 - furniture protection hardware, srcCat 'Hjem > Oppbevaring og praktisk hjem > Møbelbeskyttelse > Møbelknotter'; nobody browsing Furniture wants this"},{"kind":"facets","severity":"low","field":"facets.type","current":"Storage","why":"a felt glide is not storage; the crumb 'Oppbevaring' mid-path drove it","suggested":null}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-7340185009751","name":"Stopning Til Le Grand Air 4-seter Sofa Bomull, Lysegrå","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Sofas","suggested":"Covers & cushions","why":"'Stopning' is replacement cushion filling FOR a sofa (srcCat 'Møbeltilbehør > Møbeltrekk'), not a sofa"}],"fix":{"patch":{"facets":{"type":"Covers & cushions"}}}}
+{"id":"p-kid-strawberry-stripe-bomull-putevar-lys-bla","name":"Strawberry stripe bomull putevar lys blå","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a cotton pillowcase (srcCat 'Soverom > Putetrekk > Bomullputevar')"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-wohnling-streams-sofabord-60-cm","status":"ok"}
+{"id":"p-stressless-stressless-bay-spisestol","status":"ok"}
+{"id":"p-stressless-stressless-berlin-lenestol","status":"ok"}
+{"id":"p-stressless-stressless-berlin-lenestol-m-krakk","status":"ok"}
+{"id":"p-stressless-stressless-bordeaux-center-spisebord-o125-cm","name":"Stressless® Bordeaux Center spisebord Ø125 cm","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Red","suggested":null,"why":"'Bordeaux' is the model name, not the colour - the colour rule read it as wine red, so the Colour filter offers a red dining table that isn't red"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-stressless-stressless-bordeaux-spisebord-o125-cm","name":"Stressless® Bordeaux spisebord Ø125 cm","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Red","suggested":null,"why":"'Bordeaux' is the model name, not the colour"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-stressless-stressless-ellipse-smabord-vangebord","status":"ok"}
+{"id":"p-stressless-stressless-emily-2-seter-med-longseat","status":"ok"}
+{"id":"p-stressless-stressless-fiona-3-seter","status":"ok"}
+{"id":"p-stressless-stressless-fiona-hjornesofa","status":"ok"}
+{"id":"p-stressless-stressless-laurel-spisestol","status":"ok"}
+{"id":"p-stressless-stressless-magic-lenestol","status":"ok"}
+{"id":"p-stressless-stressless-magic-lenestol-m-krakk","status":"ok"}
+{"id":"p-stressless-stressless-pallbord","status":"ok"}
+{"id":"p-stressless-stressless-reno-lenestol","status":"ok"}
+{"id":"p-stressless-stressless-tokyo-lenestol","status":"ok"}
+{"id":"p-stressless-stressless-tokyo-lenestol-m-krakk","status":"ok"}
+{"id":"ean-7350038277664","status":"ok"}
+{"id":"ean-7350038271587","status":"ok"}
+{"id":"ean-7350038275073","status":"ok"}
+{"id":"p-string-string-hylle-kombinasjon-b-arbeidsomrade-hvit","status":"ok"}
+{"id":"p-string-string-hylle-kombinasjon-t-gang-hvit","status":"ok"}
+{"id":"ean-7350038274878","status":"ok"}
+{"id":"p-scandinavian-choice-strontian-highboard-scandinavian-choice-black","status":"ok"}
+{"id":"p-scandinavian-choice-strontian-sangbord-40-cm-scandinavian-choice-anthr","name":"Strontian Sängbord 40 cm Scandinavian Choice Anthracite","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Grey","why":"name ends in 'Anthracite' - English colour word, unmapped"}],"fix":{"patch":{"facets":{"color":"Grey"}}}}
+{"id":"p-scandinavian-choice-strontian-sangbord-46-cm-scandinavian-choice-black","name":"Strontian Sängbord 46 cm Scandinavian Choice Black","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Strontian Sängbord","why":"same bedside table series in another size/finish as p-scandinavian-choice-strontian-sangbord-40-cm-scandinavian-choice-anthr"}],"fix":{"group":{"head":"p-scandinavian-choice-strontian-sangbord-46-cm-scandinavian-choice-black","members":["p-scandinavian-choice-strontian-sangbord-40-cm-scandinavian-choice-anthr"],"axis":"size"}}}
+{"id":"ean-7053346149134","name":"Stryn kommode","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Stryn kommode","why":"three rows with exactly this name from the same shop (ean-7053346149219, ean-7053346149202) at kr 8 999 / 5 499 / 4 999 - one chest of drawers in three widths"}],"fix":{"group":{"head":"ean-7053346149134","members":["ean-7053346149219","ean-7053346149202"],"axis":"size"}}}
+{"id":"ean-7053346149219","status":"ok"}
+{"id":"ean-7053346149202","status":"ok"}
+{"id":"p-studio-designs-fusion-table","name":"Studio Designs Fusion Table","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Studio Designs","why":"the name leads with the brand"}],"fix":{"patch":{"brand":"Studio Designs"}}}
+{"id":"p-studio-designs-futura-craft-station-black-clear","name":"Studio Designs Futura Craft Station - Black/Clear","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Studio Designs","why":"the name leads with the brand"}],"fix":{"patch":{"brand":"Studio Designs"}}}
+{"id":"ean-7029289903546","name":"Sumatra parasoll Ø: 300 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Garden","why":"a parasol; srcCat '... > Hagemøbler > Hagetilbehør > Parasoller og parasollføtter'"}],"fix":{"patch":{"cat":"Garden"}}}
+{"id":"ean-8719773078933","status":"ok"}
+{"id":"ean-8719773068804","status":"ok"}
+{"id":"p-hartman-nordic-sun-line-parasoll-o270-cm","name":"Sun Line parasoll Ø270 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Garden","why":"a parasol; srcCat 'Hagemøbler > Paviljonger og parasoller'"}],"fix":{"patch":{"cat":"Garden"}}}
+{"id":"ean-8719773081353","status":"ok"}
+{"id":"p-bedly-sundborn-kontinentalseng-210-cm-memory","status":"ok"}
+{"id":"p-tvilum-suntia-kommode-med-4-skuffer-70x40x82-cm","status":"ok"}
+{"id":"p-varax-suvi-3-pers-hammock-71b-1","status":"ok"}
+{"id":"p-svane-svane-earth-latexgel-overmadrass","status":"ok"}
+{"id":"p-svane-svane-heaven-duo-overmadrass","status":"ok"}
+{"id":"p-svane-svane-ocean-latexgel-overmadrass","status":"ok"}
+{"id":"p-svane-svane-ocean-softec-overmadrass","status":"ok"}
+{"id":"p-svane-svane-ocean-ziptop-softec-overmadrass","status":"ok"}
+{"id":"p-svane-svane-bari-hodegavl-180x115-cm","name":"Svane® Bari hodegavl 180x115 cm","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Chairs","suggested":"Beds","why":"a bed headboard (srcCat 'Soverom > Seng og madrass > Sengegavl / Benk'); the trailing 'Benk' crumb made it a chair, so headboards show up under the Chairs filter"}],"fix":{"patch":{"facets":{"type":"Beds"}}}}
+{"id":"ean-220001633568","name":"Svane® Copenhagen sengegavl","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Svane® Copenhagen sengegavl","why":"same headboard in another width as ean-220001633353"}],"fix":{"group":{"head":"ean-220001633568","members":["ean-220001633353"],"axis":"size"}}}
+{"id":"ean-220001633353","status":"ok"}
+{"id":"ean-220001639577","name":"Svane® Deluxe laken til regulerbar seng","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a fitted sheet for an adjustable bed - bed linen, a textile"},{"kind":"facets","severity":"med","field":"facets.type","current":"Beds","suggested":null,"why":"a sheet is not a bed; 'seng' in the name drove the type"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Svane® Deluxe laken","why":"identical name and price as ean-220001639560"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-220001639560","name":"Svane® Deluxe laken til regulerbar seng","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"bed sheet, a textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-220001635654","status":"ok"}
+{"id":"p-svane-intelligel-zala-svane-intelligel-zala-v2-kontinentalseng-180x200","name":"Svane® Intelligel Zala V2 kontinentalseng 180x200","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Svane IntelliGel Zala","suggested":"Svane","why":"the model line was captured as the brand; sibling rows correctly say 'Svane'"}],"fix":{"patch":{"brand":"Svane"}}}
+{"id":"p-svane-intelligel-zefir-svane-intelligel-zefir-kontinentalseng-180x200","name":"Svane® Intelligel Zefir kontinentalseng 180x200","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Svane Intelligel Zefir","suggested":"Svane","why":"model line captured as brand"}],"fix":{"patch":{"brand":"Svane"}}}
+{"id":"p-svane-svane-lux-kontinentalseng-180x200","status":"ok"}
+{"id":"p-svane-sengegavl-svane-luxembourg-sengegavl","name":"Svane® Luxembourg sengegavl","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Svane sengegavl","suggested":"Svane","why":"'Svane sengegavl' is brand + product word, not a brand"}],"fix":{"patch":{"brand":"Svane"}}}
+{"id":"ean-220001634053","name":"Svane® Madrid sengegavl","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Svane® Madrid sengegavl","why":"three rows with this exact name from the same shop at kr 9 099 / 7 699 / 13 999 - one headboard in three widths"}],"fix":{"group":{"head":"ean-220001634053","members":["ean-220001633926","ean-220001634176"],"axis":"size"}}}
+{"id":"ean-220001633926","status":"ok"}
+{"id":"ean-220001634176","status":"ok"}
+{"id":"p-svane-svane-mila-plus-kontinentalseng-180x200","status":"ok"}
+{"id":"p-svane-mila-plus-svane-mila-plus-rammeseng-90x200","name":"Svane® Mila Plus rammeseng 90x200","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Svane Mila Plus","suggested":"Svane","why":"model line captured as brand"},{"kind":"facets","severity":"med","field":"facets.type","current":"Mattresses","suggested":"Beds","why":"a 'rammeseng' is a complete framed bed; the shop's 'rammemadrass' crumb pulled it to Mattresses"}],"fix":{"patch":{"brand":"Svane","facets":{"type":"Beds"}}}}
+{"id":"p-svane-sengegavl-svane-monaco-sengegavl","name":"Svane® Monaco sengegavl","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Svane sengegavl","suggested":"Svane","why":"brand + product word captured as brand"}],"fix":{"patch":{"brand":"Svane"}}}
+{"id":"p-svane-nocturne-svane-nocturne-kontinentalseng-200x210","name":"Svane® Nocturne kontinentalseng 200x210","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Svane Nocturne","suggested":"Svane","why":"model line captured as brand"}],"fix":{"patch":{"brand":"Svane"}}}
+{"id":"p-svane-svane-origo-plus-kontinentalseng-180x200","status":"ok"}
+{"id":"ean-220001634343","status":"ok"}
+{"id":"ean-220001634336","name":"Svane® Oslo sengegavl","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Svane® Oslo sengegavl","why":"four rows carry this name from the same shop (ean-220001634343 kr 6 299, this one kr 8 999, ean-220001634442 kr 10 999, and the EAN-less p-svane-sengegavl-svane-oslo-sengegavl also kr 8 999) - widths of one headboard plus one duplicate"}],"fix":{"group":{"head":"ean-220001634336","members":["ean-220001634343","ean-220001634442","p-svane-sengegavl-svane-oslo-sengegavl"],"axis":"size"}}}
+{"id":"ean-220001634442","status":"ok"}
+{"id":"p-svane-sengegavl-svane-oslo-sengegavl","name":"Svane® Oslo sengegavl","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-svane-sengegavl-svane-oslo-sengegavl","suggested":"ean-220001634336","why":"same name, same shop (Fagmøbler) and same price kr 8 999 as ean-220001634336; this is the EAN-less slug fork of that row"},{"kind":"brand","severity":"low","field":"brand","current":"Svane sengegavl","suggested":"Svane","why":"brand + product word captured as brand"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-220001374812","name":"Svane® Paris sengegavl","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Svane® Paris sengegavl","why":"three rows with this name from the same shop at kr 9 099 / 8 399 / 9 099 - widths of one headboard"}],"fix":{"group":{"head":"ean-220001374812","members":["ean-220001374751","ean-220001589735"],"axis":"size"}}}
+{"id":"ean-220001374751","status":"ok"}
+{"id":"ean-220001589735","status":"ok"}
+{"id":"p-svane-svane-roma-hodegavl-150x130-cm","name":"Svane® Roma hodegavl 150x130 cm","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Chairs","suggested":"Beds","why":"a bed headboard; the 'Sengegavl / Benk' crumb made it a chair"}],"fix":{"patch":{"facets":{"type":"Beds"}}}}
+{"id":"p-svane-sengegavl-svane-roma-sengegavl","name":"Svane® Roma sengegavl","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Svane sengegavl","suggested":"Svane","why":"brand + product word captured as brand; the identically named p-svane-svane-roma-sengegavl says 'Svane'"}],"fix":{"patch":{"brand":"Svane"}}}
+{"id":"p-svane-svane-roma-sengegavl","status":"ok"}
+{"id":"ean-220001375406","name":"Svane® Roma sengegavl","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Svane® Roma sengegavl","why":"three rows with this name from the same shop at kr 14 699 / 14 999 / 15 999, two of them EAN-less slugs that differ only by the brand string"}],"fix":{"group":{"head":"ean-220001375406","members":["p-svane-sengegavl-svane-roma-sengegavl","p-svane-svane-roma-sengegavl"],"axis":"size"}}}
+{"id":"ean-220001634732","name":"Svane® Vienna sengegavl","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Svane® Vienna sengegavl","why":"same headboard in another width as ean-220001634510"}],"fix":{"group":{"head":"ean-220001634732","members":["ean-220001634510"],"axis":"size"}}}
+{"id":"ean-220001634510","status":"ok"}
+{"id":"p-svingbar-krakk-dubrovnik-2-pakning","status":"ok"}
+{"id":"p-svingbar-lenestol-dalby","status":"ok"}
+{"id":"p-woood-swichor-garderobe","status":"ok"}
+{"id":"ean-5713148098239","status":"ok"}
+{"id":"p-sangram-betvallen-180x200-cm","name":"Sängram Betvallen 180x200 cm","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Sängram Betvallen","why":"same bed frame in another size as p-sangram-betvallen-80x200-cm"}],"fix":{"group":{"head":"p-sangram-betvallen-180x200-cm","members":["p-sangram-betvallen-80x200-cm"],"axis":"size"}}}
+{"id":"p-sangram-betvallen-80x200-cm","status":"ok"}
+{"id":"p-sangram-boisdale-100x200-cm","status":"ok"}
+{"id":"p-sangram-boisdale-120x200-cm","status":"ok"}
+{"id":"p-sangram-boisdale-140x200-cm","status":"ok"}
+{"id":"p-sangram-boisdale-160x200-cm","name":"Sängram Boisdale 160x200 cm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Sängram Boisdale","why":"eight top-level rows are the same bed frame in eight sizes (80/90/100/120/140/160/180/200 x200); they should be one product with a size axis"}],"fix":{"group":{"head":"p-sangram-boisdale-160x200-cm","members":["p-sangram-boisdale-80x200-cm","p-sangram-boisdale-90x200-cm","p-sangram-boisdale-100x200-cm","p-sangram-boisdale-120x200-cm","p-sangram-boisdale-140x200-cm","p-sangram-boisdale-180x200-cm","p-sangram-boisdale-200x200-cm"],"axis":"size"}}}
+{"id":"p-sangram-boisdale-180x200-cm","status":"ok"}
+{"id":"p-sangram-boisdale-200x200-cm","status":"ok"}
+{"id":"p-sangram-boisdale-80x200-cm","status":"ok"}
+{"id":"p-sangram-boisdale-90x200-cm","status":"ok"}
+{"id":"p-sangram-derry-160x200-cm","status":"ok"}
+{"id":"p-sangram-hayton-140x200-cm","status":"ok"}
+{"id":"p-sangram-hayton-160x200-cm","name":"Sängram Hayton 160x200 cm","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Sängram Hayton","why":"same bed frame in another size as p-sangram-hayton-140x200-cm"}],"fix":{"group":{"head":"p-sangram-hayton-160x200-cm","members":["p-sangram-hayton-140x200-cm"],"axis":"size"}}}
+{"id":"ean-7316180018654","name":"T Helix Stripe Knott, Stainless look","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a single cabinet knob at kr 126 (srcCat 'Møbler > Møbeltilbehør > Knotter og dørhåndtak'); fittings are not furniture - the 'Møbler' root crumb carried it"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-tabell-spisebord-110x110x78-cm","status":"ok"}
+{"id":"p-scandinavian-choice-taberk-u-sovesofa-hoyre","status":"ok"}
+{"id":"p-helinox-table-four-black","name":"Table Four Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Outdoor","why":"a Helinox packable camping table from Milrab; srcCat 'Start > Utstyr > Turmøbler > Bord' - Turmøbler is camping gear, which the rubric puts in Outdoor"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-helinox-table-zero-lt-cyan-cyan-blue","name":"Table Zero LT Cyan/Cyan Blue","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Outdoor","why":"Helinox camping table; srcCat 'Start > Outdoor > Utstyr og Tilbehør > Turmøbler'"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tables","why":"the name is literally 'Table'; only the colour was derived"}],"fix":{"patch":{"cat":"Outdoor","facets":{"type":"Tables"}}}}
+{"id":"p-talin-garderobe-180x58x215-cm","status":"ok"}
+{"id":"p-tallmo-garderobe-med-speil-150x200-cm","name":"Tallmo Garderobe Med Speil 150x200 cm","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Tallmo Garderobe Med Speil","why":"same wardrobe in another width as p-tallmo-garderobe-med-speil-200x200-cm"}],"fix":{"group":{"head":"p-tallmo-garderobe-med-speil-150x200-cm","members":["p-tallmo-garderobe-med-speil-200x200-cm"],"axis":"size"}}}
+{"id":"p-tallmo-garderobe-med-speil-200x200-cm","status":"ok"}
+{"id":"p-tapas-kommode-154-cm","status":"ok"}
+{"id":"p-km-home-tarfaya-fryseteppe-200x290-cm","name":"Tarfaya Fryseteppe 200x290 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a frieze rug (srcCat 'Friezematter'); rugs are interior textiles, not furniture"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Tarfaya Fryseteppe","why":"same rug in 80x150 as p-km-home-tarfaya-fryseteppe-80x150-cm"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-km-home-tarfaya-fryseteppe-80x150-cm","name":"Tarfaya Fryseteppe 80x150 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a frieze rug; srcCat 'Friezematte'"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-tarka-kommode","status":"ok"}
+{"id":"p-tavon-konsoll-146x76x45-cm","status":"ok"}
+{"id":"p-venture-home-tempe-matgruppe-80-cm-rektangulaer-med-2-eva-stoler","status":"ok"}
+{"id":"p-venture-home-tempe-matgruppe-80-cm-rektangulaer-med-2-night-stoler","status":"ok"}
+{"id":"p-remmen-mobelfabrikk-teo-nattbord","status":"ok"}
+{"id":"p-teodin-hjornesofa-med-divan-venstre-floyel","status":"ok"}
+{"id":"p-remmen-mobelfabrikk-tessa-kommode","status":"ok"}
+{"id":"ean-220001625648","status":"ok"}
+{"id":"ean-220001528338","status":"ok"}
+{"id":"ean-5713487061314","name":"The City Mouse Trefigur 6,7 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a 6.7 cm decorative wooden figurine; srcCat 'Innredning > Dekorasjon > Dekorative Assesoarer'"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-7057741019498","status":"ok"}
+{"id":"ean-8718142063693","status":"ok"}
+{"id":"p-comfort-garden-thor-utelenestol-loungestol-utemobler-i-kunstrotting","name":"Thor utelenestol – loungestol utemøbler i kunstrotting","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.material","current":"Wood","suggested":null,"why":"'kunstrotting' is synthetic rattan, i.e. plastic - the rule read the 'rotting' stem as wood, so it shows under the Wood material filter"}],"fix":{"patch":{"facets":{"material":null}}}}
+{"id":"p-thore-sofabord","status":"ok"}
+{"id":"p-kleppe-mobelfabrikk-thun-lampebord-45x60-cm","status":"ok"}
+{"id":"p-timiza-bokhylle-90x20-cm-5-hyller","status":"ok"}
+{"id":"p-tisselaken-anita-140x200cm-hvit","name":"Tisselaken ANITA 140x200cm hvit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a waterproof mattress sheet - bed linen textile"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Tisselaken ANITA","why":"same sheet in 60x120 as p-tisselaken-anita-60x120-hvit"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-tisselaken-anita-60x120-hvit","name":"Tisselaken ANITA 60x120 hvit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"waterproof bed sheet, a textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-tisselaken-gunn-90x200x30cm-hvit","name":"Tisselaken GUNN 90x200x30cm hvit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"waterproof bed sheet, a textile"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-interstil-toledo-spisebord-225x94-5-cm","status":"ok"}
+{"id":"p-tomson-hagesett-morkegra","name":"Tomson Hagesett Mørkegrå","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Grey","why":"name ends in 'Mørkegrå'; the compound form is unmapped where plain 'grå' is not"}],"fix":{"patch":{"facets":{"color":"Grey"}}}}
+{"id":"ean-7073337001388","status":"ok"}
+{"id":"p-top-garderobe-62x150-cm","status":"ok"}
+{"id":"p-tor-spisegruppe-4-seter","status":"ok"}
+{"id":"p-km-home-torekov-multi-140-200-km-home-multicolor","name":"Torekov Multi 140*200 KM Home Multicolor","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a wool rug (srcCat 'Ullteppe'); rugs are interior textiles"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"Torekov Ullteppe","why":"same rug line as p-km-home-torekov-ullteppe-300x400-cm, different size"},{"kind":"facets","severity":"low","field":"facets.dim","current":null,"suggested":"140x200","why":"the shop wrote '140*200' with an asterisk, which the size rule does not read"}],"fix":{"patch":{"cat":"Home","facets":{"dim":"140x200"}}}}
+{"id":"p-km-home-torekov-ullteppe-300x400-cm","name":"Torekov Ullteppe 300x400 cm","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Furniture","suggested":"Home","why":"a wool rug; srcCat 'Ullteppe'"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"p-toreno-sofabord-110-cm","status":"ok"}
+{"id":"ean-7053346146799","status":"ok"}
+{"id":"p-remmen-mobelfabrikk-torvald-kommode","status":"ok"}
+{"id":"p-torvenn-nattbord-45-cm","status":"ok"}
+{"id":"p-tredobbelt-hagestol-viva-antrasitt","status":"ok"}
+{"id":"p-scandi-days-trend-4-seters-hoyrevendt-l-formet-sjeselongsofa-i-floyel","status":"ok"}
+{"id":"_summary","shard":"Furniture-06","checked":300,"ok":201,"issues":99,"by_kind":{"category":40,"variant":30,"facets":26,"brand":16,"name":3,"junk":1,"duplicate":1},"high":7,"rule_gaps":["Norwegian bed-linen vocabulary is unmapped and lands in Furniture: sengesett, laken/splittlaken, putevar, tisselaken, sengeteppe (17 rows here) all belong in Home","Rug words are unmapped and land in Furniture: ullteppe, fryseteppe/friezematte (4 rows here) belong in Home","Hagemøbler leaf crumbs that are NOT furniture still resolve to Furniture: 'Paviljonger og parasoller', 'Paviljongvegg', 'Parasoller og parasollføtter' should reach Garden","'Turmøbler' (packable camping furniture, Milrab/Widforss) resolves to Furniture; it is camping gear and should reach Outdoor","facetrules colour table reads model names as colours - 'Bordeaux' gives color Red on both Stressless Bordeaux tables","facetrules type table is driven by substrings: 'skrivebordsstol' gives Tables, 'sminkebord m/speil' gives Mirrors, 'sengegavl / benk' gives Chairs, 'sittepute for ... sofa' gives Sofas","dim is not derived from '90x200cm' (glued to cm), '70x40x82' (three axes) or '140*200' (asterisk separator)","colour words unmapped: lyserød, aqua, konjakk, mørkegrå, Anthracite, Ljusgrå (Swedish spellings in particular)","'kunstrotting' (synthetic rattan) derives material Wood","every one of the 300 rows carries icon 'sofa' - the Furniture default is never specialised, so a mattress, a rug and a parasol all render the same glyph","Fagmøbler rows take the model/series name as brand: 'Svane sengegavl', 'Svane Nocturne', 'Svane IntelliGel Zala', 'Svane Mila Plus', 'Sone dyp', 'Sone lav'","Trademax/Chilli publish untranslated Swedish names (Sängram, Soffbord, Skåp, Spjälsäng, Hörnbäddsoffa, Sängbord) and EAN-less slug ids fork the same product per shop-title spelling"],"notes":"Category placement is broadly right - the leaks are systematic rather than random: 24 rows are bedding/rug textiles or decor that belong in Home, 4 are Garden (parasols, a pavilion wall), 2 Outdoor camping tables, 2 Baby, and one Black+Decker immersion blender that should be Kitchen. The bigger structural problem is duplication: 20+ rows are one product split across sizes or colours (8 Sängram Boisdale sizes, four Svane sengegavl families, three Stryn kommode, three Square Classic TV benk), and EAN-less p- slugs fork rows that already exist under an EAN. 79 of 300 rows still have no image."}

@@ -1,0 +1,301 @@
+{"id":"ean-3600531700379","status":"ok"}
+{"id":"ean-3600531465247","name":"Maybelline New York Instant Eraser Concealer 07 Sand 6,8ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-3600531465193","why":"same Instant Eraser Concealer in shade 07 Sand; shade 08 Buff sits as a separate top-level row"}],"fix":{"group":{"head":"ean-3600531465193","members":["ean-3600531465247"],"axis":"color"}}}
+{"id":"ean-3600531465193","name":"Maybelline New York Instant Eraser Concealer 08 Buff 08 Buff","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Maybelline New York Instant Eraser Concealer 08 Buff 08 Buff","suggested":"Maybelline New York Instant Eraser Concealer 08 Buff","why":"shade label repeated by the feed"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Instant Eraser Concealer shade family","why":"group fix carried on ean-3600531465247"}],"fix":{"patch":{"name":"Maybelline New York Instant Eraser Concealer 08 Buff"}}}
+{"id":"ean-3600531701802","status":"ok"}
+{"id":"ean-7612367082525","name":"Medela Freestyle™ Hands-free Double Electric Wearable Breast Pump","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Baby","why":"electric breast pump, srcCat 'Brystpumpe'; sold by a beauty shop but it is baby/nursing equipment"}],"fix":{"patch":{"cat":"Baby"}}}
+{"id":"ean-8800289461071","status":"ok"}
+{"id":"ean-818625024338","name":"Medik8 C-Tetra Serum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Medik8 C-Tetra Serum 30 ml 30 ml","suggested":"Medik8 C-Tetra Serum 30 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Medik8 C-Tetra Serum 30 ml"}}}
+{"id":"ean-818625020859","status":"ok"}
+{"id":"ean-818625024505","status":"ok"}
+{"id":"ean-818625023720","status":"ok"}
+{"id":"ean-818625024703","name":"Medik8 Ulitmate Recovery Intense 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Medik8 Ulitmate Recovery Intense 30 ml 30 ml","suggested":"Medik8 Ultimate Recovery Intense 30 ml","why":"'Ulitmate' is a typo for 'Ultimate' and the size is repeated"}],"fix":{"patch":{"name":"Medik8 Ultimate Recovery Intense 30 ml"}}}
+{"id":"ean-5707644905146","status":"ok"}
+{"id":"ean-5707644930353","name":"Meraki Diffuser Lilac Muse 240ml","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Home","why":"reed diffuser for home fragrance, srcCat 'Hjem > Dufter til hjemmet > Duftpinner' — interior/decor, not personal care"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-5707644930032","name":"Meraki Essential Oil Herbal Calm 30ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"srcCat 'Hjem > Dufter til hjemmet' — scent oil for the home fragrance range, not a skincare oil"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-5707644930278","status":"ok"}
+{"id":"ean-5707644905122","status":"ok"}
+{"id":"ean-5707644833937","name":"Meraki Hand Soap Anti-Odour 490ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Cleansing","why":"'Hand Soap', srcCat 'Håndsåpe'; sibling hand/body washes in this shard get Cleansing"}],"fix":{"patch":{"facets":{"type":"Cleansing"}}}}
+{"id":"p-garnier-micellarvann-garnier-skinactive","status":"ok"}
+{"id":"ean-22548420010","name":"Michael Kors Gorgeous! Eau de Parfum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Michael Kors Gorgeous! Eau de Parfum 30 ml 30 ml","suggested":"Michael Kors Gorgeous! Eau de Parfum 30 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Michael Kors Gorgeous! Eau de Parfum 30 ml"}}}
+{"id":"ean-717489003445","status":"ok"}
+{"id":"ean-717489001458","status":"ok"}
+{"id":"ean-717489445702","status":"ok"}
+{"id":"ean-717489310086","name":"Milani Cosmetics Stay Put Eyeliner Picante 0,28g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Stay Put Eyeliner shade family","why":"Picante and Semi-Sweet are the same eyeliner in two shades, sitting as separate top-level rows"}],"fix":{"group":{"head":"ean-717489310086","members":["ean-717489310024"],"axis":"color"}}}
+{"id":"ean-717489310024","name":"Milani Cosmetics Stay Put Eyeliner Semi-Sweet 0,28g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-717489310086","why":"shade variant of the same eyeliner; group fix carried on the head row"}]}
+{"id":"ean-840157411782","name":"Milk Makeup KUSH Brow Shadow Stick Diesel Diesel","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Milk Makeup KUSH Brow Shadow Stick Diesel Diesel","suggested":"Milk Makeup KUSH Brow Shadow Stick Diesel","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"Milk Makeup KUSH Brow Shadow Stick Diesel"}}}
+{"id":"ean-8032274147794","status":"ok"}
+{"id":"ean-8032274106159","status":"ok"}
+{"id":"ean-8032274063636","status":"ok"}
+{"id":"ean-8032274190530","status":"ok"}
+{"id":"ean-8032274192152","name":"milk_shake Moisture & More Whipped Cream 200ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Moisturisers","suggested":"Hair care","why":"srcCat 'Leave-in' and milk_shake is a haircare brand; 'Cream' pulled it into Moisturisers"}],"fix":{"patch":{"facets":{"type":"Hair care"}}}}
+{"id":"ean-8032274196068","status":"ok"}
+{"id":"ean-8032274185918","status":"ok"}
+{"id":"ean-8032274185949","status":"ok"}
+{"id":"ean-3348901500838","name":"Miss Dior Rose N'Roses Eau de Toilette 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Miss Dior Rose N'Roses Eau de Toilette 100 ml 100 ml","suggested":"Miss Dior Rose N'Roses Eau de Toilette 100 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Miss Dior Rose N'Roses Eau de Toilette 100 ml"}}}
+{"id":"ean-8809581452367","status":"ok"}
+{"id":"ean-8809643533720","status":"ok"}
+{"id":"ean-3614222169192","name":"Miu Miu L'Eau Bleue Eau de Parfum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Miu Miu L'Eau Bleue Eau de Parfum 30 ml 30 ml","suggested":"Miu Miu L'Eau Bleue Eau de Parfum 30 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Miu Miu L'Eau Bleue Eau de Parfum 30 ml"}}}
+{"id":"ean-8809663752576","status":"ok"}
+{"id":"ean-8809579273127","status":"ok"}
+{"id":"ean-8809689370204","status":"ok"}
+{"id":"ean-6417128190942","status":"ok"}
+{"id":"ean-840222313201","name":"MOIRA 16 HR Seal Setting Spray 52ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"setting spray, srcCat 'Setting Spray'"}],"fix":{"patch":{"facets":{"type":"Face makeup"}}}}
+{"id":"ean-840222313645","name":"MOIRA Marvelous Baked Blush 002 Cinnamon Roll 002 Cinnamon Roll","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"MOIRA Marvelous Baked Blush 002 Cinnamon Roll 002 Cinnamon Roll","suggested":"MOIRA Marvelous Baked Blush 002 Cinnamon Roll","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"MOIRA Marvelous Baked Blush 002 Cinnamon Roll"}}}
+{"id":"ean-802535157156","name":"Moisture Miracle Coconut Oil Baobab Oil Leave 425ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Moisture Miracle Coconut Oil Baobab Oil Leave 425ml","suggested":"African Pride Moisture Miracle Coconut Oil Baobab Oil Leave-In 425ml","why":"brand 'African Pride' is stored but missing from the name, and 'Leave' is a truncated 'Leave-In'"}],"fix":{"patch":{"name":"African Pride Moisture Miracle Coconut Oil Baobab Oil Leave-In 425ml"}}}
+{"id":"ean-5030805003789","name":"Molton Brown Flora Luminare Fine Liquid Hand Wash 300 ml 300 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Molton Brown Flora Luminare Fine Liquid Hand Wash 300 ml 300 ml","suggested":"Molton Brown Flora Luminare Fine Liquid Hand Wash 300 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Molton Brown Flora Luminare Fine Liquid Hand Wash 300 ml"}}}
+{"id":"ean-5030805015027","name":"Molton Brown Wild Mint & Lavandin Bath & Shower Gel 300 ml 300 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Molton Brown Wild Mint & Lavandin Bath & Shower Gel 300 ml 300 ml","suggested":"Molton Brown Wild Mint & Lavandin Bath & Shower Gel 300 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Molton Brown Wild Mint & Lavandin Bath & Shower Gel 300 ml"}}}
+{"id":"ean-3386460169967","status":"ok"}
+{"id":"ean-7290113140646","status":"ok"}
+{"id":"ean-7290015629461","name":"Moroccanoil Dry Shampoo Dark Tones 65 ml 65 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Moroccanoil Dry Shampoo Dark Tones 65 ml 65 ml","suggested":"Moroccanoil Dry Shampoo Dark Tones 65 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Moroccanoil Dry Shampoo Dark Tones 65 ml"}}}
+{"id":"ean-7290015485944","status":"ok"}
+{"id":"ean-7290011521028","status":"ok"}
+{"id":"ean-7290011521196","status":"ok"}
+{"id":"ean-7290013627216","status":"ok"}
+{"id":"ean-192608261126","name":"Morphe Eyeshadow Palette Python Code Python Code","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Morphe Eyeshadow Palette Python Code Python Code","suggested":"Morphe Eyeshadow Palette Python Code","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"Morphe Eyeshadow Palette Python Code"}}}
+{"id":"ean-192608125480","name":"Morphe Micro Brow Pencil Java Java","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Morphe Micro Brow Pencil Java Java","suggested":"Morphe Micro Brow Pencil Java","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"Morphe Micro Brow Pencil Java"}}}
+{"id":"ean-192608263106","status":"ok"}
+{"id":"ean-192608243245","name":"Morphe Soulmatte Velvet Lip Mousse Honey Honey","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Lips","why":"it is a lip mousse; 'Mousse' matched the haircare vocabulary"},{"kind":"name","severity":"low","field":"name","current":"Morphe Soulmatte Velvet Lip Mousse Honey Honey","suggested":"Morphe Soulmatte Velvet Lip Mousse Honey","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"Morphe Soulmatte Velvet Lip Mousse Honey","facets":{"type":"Lips"}}}}
+{"id":"ean-192608259642","name":"Morphe Wakeup Artist Under Eye Complexion Concealer Peach 02 Peach 02","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Morphe Wakeup Artist Under Eye Complexion Concealer Peach 02 Peach 02","suggested":"Morphe Wakeup Artist Under Eye Complexion Concealer Peach 02","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"Morphe Wakeup Artist Under Eye Complexion Concealer Peach 02"}}}
+{"id":"ean-8011003839292","status":"ok"}
+{"id":"ean-7350103700691","status":"ok"}
+{"id":"ean-7350134689729","name":"Muli Collection Mini Drop Earrings Silver","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"silver stud earrings, srcCat 'Smykker & tilbehør > Smykker > Øredobber > Studs'"}],"fix":{"patch":{"cat":"Jewelry"}}}
+{"id":"ean-7350134682201","name":"Muli Collection Mini Huggies Silver 3pck","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"huggie hoop earrings, srcCat 'Hoops'; same brand/range as ean-7350134689729"}],"fix":{"patch":{"cat":"Jewelry"}}}
+{"id":"ean-767332152721","status":"ok"}
+{"id":"ean-767332109046","status":"ok"}
+{"id":"ean-767332150147","status":"ok"}
+{"id":"ean-3700410004571","status":"ok"}
+{"id":"ean-3700410004359","status":"ok"}
+{"id":"ean-5715336020169","status":"ok"}
+{"id":"ean-9356126008231","status":"ok"}
+{"id":"ean-9356126008422","status":"ok"}
+{"id":"ean-9356126008460","status":"ok"}
+{"id":"ean-9356126008477","status":"ok"}
+{"id":"ean-5905997306683","status":"ok"}
+{"id":"ean-3423478504059","name":"Narciso Rodriguez For Her Pure Musc Eau de Parfum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Narciso Rodriguez For Her Pure Musc Eau de Parfum 30 ml 30 ml","suggested":"Narciso Rodriguez For Her Pure Musc Eau de Parfum 30 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Narciso Rodriguez For Her Pure Musc Eau de Parfum 30 ml"}}}
+{"id":"ean-194251005317","name":"NARS #16 Blush Brush #16 Blush Brush #16 Blush Brush","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"NARS #16 Blush Brush #16 Blush Brush #16 Blush Brush","suggested":"NARS #16 Blush Brush","why":"the whole product name is repeated three times by the Kicks feed"},{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"a brush is an applicator, not face makeup; 'Blush' pulled it into Face makeup"}],"fix":{"patch":{"name":"NARS #16 Blush Brush","facets":{"type":"Tools"}}}}
+{"id":"ean-194251157177","name":"NARS Afterglow Lip Oil Wondrous Wondrous","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NARS Afterglow Lip Oil Wondrous Wondrous","suggested":"NARS Afterglow Lip Oil Wondrous","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"NARS Afterglow Lip Oil Wondrous"}}}
+{"id":"ean-194251070704","name":"NARS Light Reflecting Foundation Aruba Aruba","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NARS Light Reflecting Foundation Aruba Aruba","suggested":"NARS Light Reflecting Foundation Aruba","why":"shade label repeated by the Kicks feed"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-194251070506","why":"shade variant of the same foundation; group fix carried on the head row"}],"fix":{"patch":{"name":"NARS Light Reflecting Foundation Aruba"}}}
+{"id":"ean-194251070506","name":"NARS Light Reflecting Foundation Fiji Fiji","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Light Reflecting Foundation shade family","why":"Fiji and Aruba are the same foundation in two shades as separate top-level rows"},{"kind":"name","severity":"low","field":"name","current":"NARS Light Reflecting Foundation Fiji Fiji","suggested":"NARS Light Reflecting Foundation Fiji","why":"shade label repeated by the feed; still needs the dedupe after the group is wired (only one fix per row)"}],"fix":{"group":{"head":"ean-194251070506","members":["ean-194251070704"],"axis":"color"}}}
+{"id":"ean-194251149110","name":"NARS Light Reflecting Luminizing Stick Eros Eros","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NARS Light Reflecting Luminizing Stick Eros Eros","suggested":"NARS Light Reflecting Luminizing Stick Eros","why":"shade label repeated by the Kicks feed"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"a luminizing/highlighter stick is face makeup"}],"fix":{"patch":{"name":"NARS Light Reflecting Luminizing Stick Eros","facets":{"type":"Face makeup"}}}}
+{"id":"ean-607845066316","name":"NARS Natural Radiant Longwear Foundation Zambie Zambie","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NARS Natural Radiant Longwear Foundation Zambie Zambie","suggested":"NARS Natural Radiant Longwear Foundation Zambie","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"NARS Natural Radiant Longwear Foundation Zambie"}}}
+{"id":"ean-607845012320","status":"ok"}
+{"id":"ean-7072999000319","status":"ok"}
+{"id":"ean-850034009124","status":"ok"}
+{"id":"ean-658580422547","status":"ok"}
+{"id":"ean-7331162269305","status":"ok"}
+{"id":"ean-7331162275115","name":"Neccin Shampoo Fragrance Free 100ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Fragrance","suggested":"Hair care","why":"it is a fragrance-FREE shampoo, srcCat 'Hårpleie > Shampoo'; the word 'Fragrance' in the name flipped the facet to the opposite of the truth"}],"fix":{"patch":{"facets":{"type":"Hair care"}}}}
+{"id":"ean-8809455420973","status":"ok"}
+{"id":"p-scholl-negleklipper-scholl","status":"ok"}
+{"id":"ean-3473311020208","status":"ok"}
+{"id":"ean-5021807006366","name":"New Nordic Natural Magic Collagen Gummies 45 pcs","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Health","why":"ingestible collagen supplement gummies, srcCat 'Kollagen'; supplements belong in Health"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"ean-5056217809245","status":"ok"}
+{"id":"ean-5056217810968","status":"ok"}
+{"id":"ean-42390060","status":"ok"}
+{"id":"ean-4005900822512","name":"NIVEA Anti Age Hyaluron Face Cream 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NIVEA Anti Age Hyaluron Face Cream 50 ml 50 ml","suggested":"NIVEA Anti Age Hyaluron Face Cream 50 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"NIVEA Anti Age Hyaluron Face Cream 50 ml"}}}
+{"id":"ean-42449065","name":"NIVEA Black & White Original Roll On 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NIVEA Black & White Original Roll On 50 ml 50 ml","suggested":"NIVEA Black & White Original Roll On 50 ml","why":"size repeated by the Kicks feed"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Body & bath","why":"roll-on antiperspirant is body care"}],"fix":{"patch":{"name":"NIVEA Black & White Original Roll On 50 ml","facets":{"type":"Body & bath"}}}}
+{"id":"ean-4006000002736","name":"NIVEA Caring Cleansing Mousse 150ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Cleansing","why":"facial cleansing mousse, srcCat 'Hudpleie > Ansikt > Rens > Mousse'; 'Mousse' matched the haircare vocabulary"}],"fix":{"patch":{"facets":{"type":"Cleansing"}}}}
+{"id":"ean-4005900974563","status":"ok"}
+{"id":"ean-6001051006205","status":"ok"}
+{"id":"ean-4006000177786","status":"ok"}
+{"id":"ean-4005808130573","name":"NIVEA Men Shower Sensitive 250ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Body & bath","why":"shower gel, srcCat 'Mann > Hudpleie > Kropp > Dusj'"}],"fix":{"patch":{"facets":{"type":"Body & bath"}}}}
+{"id":"ean-4006000128702","status":"ok"}
+{"id":"ean-4006000173009","name":"NIVEA Sun UV Fluid Medium Tinted 50+ 40ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.spf","current":null,"suggested":50,"why":"name states '50+' but spf was not derived; the '<n>+' form is not matched"}],"fix":{"patch":{"facets":{"spf":50}}}}
+{"id":"ean-1230000065023","status":"ok"}
+{"id":"ean-1230000065931","status":"ok"}
+{"id":"ean-7350076867322","name":"NORDBO LactiTotal 60pcs","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Health","why":"60-capsule probiotic supplement, srcCat 'Immunforsvar' (immune system)"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"ean-3264680038334","status":"ok"}
+{"id":"ean-3264680036880","status":"ok"}
+{"id":"ean-3264680034480","status":"ok"}
+{"id":"ean-3264680046568","status":"ok"}
+{"id":"ean-3264680026133","status":"ok"}
+{"id":"ean-3264680032608","name":"NUXE Tanning Oil Face & Body SPF50 150ml","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Serums & oils","suggested":"Sun care","why":"SPF50 sun oil, srcCat 'Hudpleie > Solprodukter > Solkrem og solpleie > Sololje'; 'Oil' won over the sun-care evidence"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-800897129798","name":"NYX Professional Makeup Bare With Me Concealer Serum #Beige 9,6ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Bare With Me Concealer Serum shade family","why":"#Beige and #Fair are the same concealer in two shades as separate top-level rows"}],"fix":{"group":{"head":"ean-800897129798","members":["ean-800897129767"],"axis":"color"}}}
+{"id":"ean-800897129767","name":"NYX Professional Makeup Bare With Me Concealer Serum #Fair 9,6ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897129798","why":"shade variant; group fix carried on the head row"}]}
+{"id":"ean-800897273811","name":"NYX PROFESSIONAL MAKEUP Bridgerton Epic Ink Liner Glitz Waterproof 2 Glitzed In Gold 1ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"'Epic Ink Liner' is an eyeliner; every other Epic Ink row in the shard is typed Eyes"}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-800897275860","status":"ok"}
+{"id":"ean-800897268909","name":"NYX PROFESSIONAL MAKEUP Buttermelt Hightlighter 05 Bright And Butta 5g","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Buttermelt Hightlighter 05 Bright And Butta 5g","suggested":"NYX PROFESSIONAL MAKEUP Buttermelt Highlighter 05 Bright And Butta 5g","why":"'Hightlighter' is a typo in the shop feed"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897268923","why":"shade variant of the same highlighter; group fix carried on the head row"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Buttermelt Highlighter 05 Bright And Butta 5g"}}}
+{"id":"ean-800897268923","name":"NYX PROFESSIONAL MAKEUP Buttermelt Hightlighter 15 U Butta Werk 5g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Buttermelt Highlighter shade family","why":"shades 05 and 15 sit as separate top-level rows"},{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Buttermelt Hightlighter 15 U Butta Werk 5g","suggested":"NYX PROFESSIONAL MAKEUP Buttermelt Highlighter 15 U Butta Werk 5g","why":"same 'Hightlighter' typo; still needs the rename after the group is wired (only one fix per row)"}],"fix":{"group":{"head":"ean-800897268923","members":["ean-800897268909"],"axis":"color"}}}
+{"id":"ean-800897004217","status":"ok"}
+{"id":"ean-800897274788","name":"NYX Professional Makeup Epic Inky Stix 01 Black Screen 0,1g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Epic Inky Stix shade family","why":"shades 01 and 05 sit as separate top-level rows"}],"fix":{"group":{"head":"ean-800897274788","members":["ean-800897274825"],"axis":"color"}}}
+{"id":"ean-800897274825","name":"NYX Professional Makeup Epic Inky Stix 05 Robotic Red 0,1g","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"same eyeliner stick as ean-800897274788, which is typed Eyes; this row's srcCat is only 'Outlet Sminke'"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897274788","why":"shade variant; group fix carried on the head row"}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-800897207649","name":"NYX PROFESSIONAL MAKEUP Epic Wear Liner Stick 22 Intense Teal 22 Intense Teal","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Epic Wear Liner Stick 22 Intense Teal 22 Intense Teal","suggested":"NYX PROFESSIONAL MAKEUP Epic Wear Liner Stick 22 Intense Teal","why":"shade label repeated by the Kicks feed"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"eyeliner stick"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Epic Wear Liner Stick 22 Intense Teal","facets":{"type":"Eyes"}}}}
+{"id":"ean-800897197148","name":"NYX Professional Makeup Epic Wear Semi Permanent Eye & Body Liquid Liner Black 3,5ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Epic Wear Liquid Liner shade family","why":"Black and Brown sit as separate top-level rows"}],"fix":{"group":{"head":"ean-800897197148","members":["ean-800897197155"],"axis":"color"}}}
+{"id":"ean-800897197155","name":"NYX Professional Makeup Epic Wear Semi Permanent Eye & Body Liquid Liner Brown 3,5ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897197148","why":"shade variant; group fix carried on the head row"}]}
+{"id":"ean-800897279233","status":"ok"}
+{"id":"ean-800897233976","status":"ok"}
+{"id":"ean-800897274252","status":"ok"}
+{"id":"ean-800897249243","name":"NYX Professional Makeup Fix Stick Concealer Stick Apricot 0.5 1,6g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897249335","why":"shade variant of the Fix Stick Concealer; group fix carried on the head row"}]}
+{"id":"ean-800897249335","name":"NYX Professional Makeup Fix Stick Concealer Stick Capuccino 13 1,6g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Fix Stick Concealer shade family","why":"Apricot 0.5, Capuccino 13 and Light 04 are three shades of one concealer stick sitting as separate top-level rows"}],"fix":{"group":{"head":"ean-800897249335","members":["ean-800897249243","ean-800897249434"],"axis":"color"}}}
+{"id":"ean-800897249434","name":"NYX Professional Makeup Fix Stick Concealer Stick Light 04 1,6g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897249335","why":"shade variant; group fix carried on the head row"}]}
+{"id":"ean-800897004576","name":"NYX PROFESSIONAL MAKEUP Lift & Snatch Brow Tint Pen 10 Black 10 Black","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Lift & Snatch Brow Tint Pen 10 Black 10 Black","suggested":"NYX PROFESSIONAL MAKEUP Lift & Snatch Brow Tint Pen 10 Black","why":"shade label repeated by the Kicks feed"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Lift & Snatch Brow Tint Pen shade family","why":"group fix carried on ean-800897004484"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Lift & Snatch Brow Tint Pen 10 Black"}}}
+{"id":"ean-800897004484","name":"NYX Professional Makeup Lift & Snatch Brow Tint Pen Blonde 1ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897004576","why":"Blonde and 10 Black are the same brow pen in two shades as separate top-level rows"}],"fix":{"group":{"head":"ean-800897004576","members":["ean-800897004484"],"axis":"color"}}}
+{"id":"ean-800897221676","status":"ok"}
+{"id":"ean-800897004019","name":"NYX PROFESSIONAL MAKEUP Lip Lingerie XXL Lipstick 10 Low Cut 10 Low Cut","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Lip Lingerie XXL Lipstick 10 Low Cut 10 Low Cut","suggested":"NYX PROFESSIONAL MAKEUP Lip Lingerie XXL Lipstick 10 Low Cut","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Lip Lingerie XXL Lipstick 10 Low Cut"}}}
+{"id":"ean-800897275440","name":"NYX Professional Makeup Make Em Wonder Foundation 27 True Caramel 25ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Make Em Wonder Foundation shade family","why":"shades 27, 34 and 37 are one foundation sitting as three top-level rows"}],"fix":{"group":{"head":"ean-800897275440","members":["ean-800897275525","ean-800897275556"],"axis":"color"}}}
+{"id":"ean-800897275525","name":"NYX Professional Makeup Make Em Wonder Foundation 34 Mahogany 25ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897275440","why":"shade variant; group fix carried on the head row"}]}
+{"id":"ean-800897275556","name":"NYX Professional Makeup Make Em Wonder Foundation 37 Deep Rich 25ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897275440","why":"shade variant; group fix carried on the head row"}]}
+{"id":"ean-800897836849","name":"NYX Professional Makeup Micro Brow Pencil 2 Blonde 0,09g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-800897836887","why":"shade variant of the Micro Brow Pencil; group fix carried on the head row"}]}
+{"id":"ean-800897836887","name":"NYX Professional Makeup Micro Brow Pencil 6 Brunette 0,09g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Micro Brow Pencil shade family","why":"shades 2 Blonde and 6 Brunette sit as separate top-level rows"}],"fix":{"group":{"head":"ean-800897836887","members":["ean-800897836849"],"axis":"color"}}}
+{"id":"p-nyx-professional-makeup-nyx-professional-makeup-prep-set-duo-setting-s","status":"ok"}
+{"id":"ean-800897005245","status":"ok"}
+{"id":"ean-800897207274","name":"NYX PROFESSIONAL MAKEUP Shine Loud High Pigment Liquid Lipstick 09 Make It Work 09 Make It Work","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Shine Loud High Pigment Liquid Lipstick 09 Make It Work 09 Make It Work","suggested":"NYX PROFESSIONAL MAKEUP Shine Loud High Pigment Liquid Lipstick 09 Make It Work","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Shine Loud High Pigment Liquid Lipstick 09 Make It Work"}}}
+{"id":"ean-800897108311","name":"NYX PROFESSIONAL MAKEUP Slim Lip Pencil 831 Mauve 831 Mauve","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Slim Lip Pencil 831 Mauve 831 Mauve","suggested":"NYX PROFESSIONAL MAKEUP Slim Lip Pencil 831 Mauve","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Slim Lip Pencil 831 Mauve"}}}
+{"id":"ean-800897271077","status":"ok"}
+{"id":"ean-800897170462","name":"NYX PROFESSIONAL MAKEUP Suede Matte Lip Liner 55 Cold Brew 55 Cold Brew","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Suede Matte Lip Liner 55 Cold Brew 55 Cold Brew","suggested":"NYX PROFESSIONAL MAKEUP Suede Matte Lip Liner 55 Cold Brew","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Suede Matte Lip Liner 55 Cold Brew"}}}
+{"id":"ean-800897225308","name":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Blush Stick 04 Butta Biscuit 04 Butta Biscuit","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Blush Stick 04 Butta Biscuit 04 Butta Biscuit","suggested":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Blush Stick 04 Butta Biscuit","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Blush Stick 04 Butta Biscuit"}}}
+{"id":"ean-800897100056","name":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Face Shaping Stick Medium Tan Medium Tan","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Face Shaping Stick Medium Tan Medium Tan","suggested":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Face Shaping Stick Medium Tan","why":"shade label repeated by the Kicks feed"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"contour/face shaping stick; the sibling Wonder Stick row is typed Face makeup"}],"fix":{"patch":{"name":"NYX PROFESSIONAL MAKEUP Wonder Stick Dual-Ended Face Shaping Stick Medium Tan","facets":{"type":"Face makeup"}}}}
+{"id":"ean-9333478000281","status":"ok"}
+{"id":"ean-852084005828","status":"ok"}
+{"id":"ean-22796976017","status":"ok"}
+{"id":"ean-22796973115","status":"ok"}
+{"id":"ean-5037200109801","status":"ok"}
+{"id":"ean-5037200069310","status":"ok"}
+{"id":"ean-850056933636","status":"ok"}
+{"id":"ean-840026652896","status":"ok"}
+{"id":"ean-840026652889","status":"ok"}
+{"id":"ean-840026641586","status":"ok"}
+{"id":"ean-5999556688471","status":"ok"}
+{"id":"ean-5999556687924","status":"ok"}
+{"id":"ean-5999556688242","status":"ok"}
+{"id":"ean-4064665124743","name":"OPI Infinite Shine Won For The Ages 15ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the OPI Infinite Shine shade family","why":"'Won For The Ages' and 'Good Nighty Aphrodite' are the same 15ml Infinite Shine polish in two shades"}],"fix":{"group":{"head":"ean-4064665124743","members":["ean-4064665288681"],"axis":"color"}}}
+{"id":"ean-4064665105926","status":"ok"}
+{"id":"ean-4064665233476","status":"ok"}
+{"id":"ean-4064665233544","status":"ok"}
+{"id":"ean-4064665225136","name":"OPI Nature Strong Rooting For Hue Rooting For Hue","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"OPI Nature Strong Rooting For Hue Rooting For Hue","suggested":"OPI Nature Strong Rooting For Hue","why":"shade label repeated by the Kicks feed"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Nails","why":"OPI Nature Strong is nail lacquer; every other OPI row in the shard is typed Nails"}],"fix":{"patch":{"name":"OPI Nature Strong Rooting For Hue","facets":{"type":"Nails"}}}}
+{"id":"ean-4064665001143","name":"OPI Nature Strong Top Coat NATTC 15ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Nails","why":"nail top coat, srcCat 'Topcoat'"}],"fix":{"patch":{"facets":{"type":"Nails"}}}}
+{"id":"ean-4064665288681","name":"OPI Spring Collection Infinite Shine Good Nighty Aphrodite 15ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-4064665124743","why":"shade variant of Infinite Shine; group fix carried on the head row"}]}
+{"id":"ean-840035200217","status":"ok"}
+{"id":"ean-811913019634","status":"ok"}
+{"id":"ean-840035227023","status":"ok"}
+{"id":"ean-840035230726","status":"ok"}
+{"id":"ean-840035232577","status":"ok"}
+{"id":"ean-840035232546","status":"ok"}
+{"id":"ean-811913018460","status":"ok"}
+{"id":"ean-811913019788","status":"ok"}
+{"id":"p-oribe-oribe-grandiose-hair-plumping-mousse","status":"ok"}
+{"id":"ean-840035213859","status":"ok"}
+{"id":"ean-840035231037","status":"ok"}
+{"id":"ean-840035210551","status":"ok"}
+{"id":"ean-811913018514","status":"ok"}
+{"id":"ean-811913016701","status":"ok"}
+{"id":"ean-840035220093","status":"ok"}
+{"id":"ean-840035215433","status":"ok"}
+{"id":"ean-811913018712","status":"ok"}
+{"id":"ean-840035235233","status":"ok"}
+{"id":"ean-5060238284653","status":"ok"}
+{"id":"ean-5060238286114","status":"ok"}
+{"id":"ean-5060238285629","status":"ok"}
+{"id":"ean-85715568267","status":"ok"}
+{"id":"ean-9507727789450","name":"Otra Eyewear Echo Gold/Brown","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"sunglasses (Otra Eyewear); the shop's crumb is only the style name 'Glam', and the sibling row's full crumb is 'Smykker & tilbehør > Solbriller & Briller > Solbriller'"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-9501373456957","name":"Otra Eyewear Nove Tortoise/Brown","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"sunglasses; crumb 'Fashionable' is only the style name, the range sits under 'Solbriller & Briller'"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-9505697268449","name":"Otra Eyewear Zoe Cream/Light Brown","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"srcCat 'Smykker & tilbehør > Solbriller & Briller > Solbriller > Sassy' — sunglasses, an accessory"},{"kind":"facets","severity":"high","field":"facets.type","current":"Moisturisers","suggested":null,"why":"a pair of sunglasses is not a moisturiser; the Beauty type facet does not apply once the category is fixed"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-5902627620027","status":"ok"}
+{"id":"ean-5902627619359","name":"Paese Hi Rice Light Beige 10g","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"loose face powder in a shade name (Light Beige), same 10g format as the Paese Glowing Powder row typed Face makeup"}],"fix":{"patch":{"facets":{"type":"Face makeup"}}}}
+{"id":"ean-5907546501433","status":"ok"}
+{"id":"ean-9531132037","status":"ok"}
+{"id":"ean-9531139951","status":"ok"}
+{"id":"ean-9531140308","status":"ok"}
+{"id":"ean-9531141121","status":"ok"}
+{"id":"ean-9531128269","status":"ok"}
+{"id":"ean-9531139098","name":"Paul Mitchell Shampoo One 300ml","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Paul Mitchell Shampoo","suggested":"Paul Mitchell","why":"the product word 'Shampoo' was swallowed into the brand; all eight other Paul Mitchell rows in this shard store 'Paul Mitchell'"}],"fix":{"patch":{"brand":"Paul Mitchell"}}}
+{"id":"ean-9531139142","status":"ok"}
+{"id":"ean-70747270196","name":"Peepers Ultraviolet Sun Gold +2,50","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Fashion","why":"Peepers reading sunglasses in strength +2,50, srcCat 'Solbriller & Briller' — eyewear is a Fashion accessory"},{"kind":"facets","severity":"high","field":"facets.type","current":"Sun care","suggested":null,"why":"'Sun' in the model name made it sunscreen; the Beauty type facet does not apply once the category is fixed"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"ean-8809786590383","status":"ok"}
+{"id":"ean-8800255681472","name":"Peripera Ink Velvet 25 Cinnamon Nude 4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-8800255681533","why":"shade variant of Ink Velvet; group fix carried on the head row"}]}
+{"id":"ean-8800255681533","name":"Peripera Ink Velvet 31 Wine Nude 4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Peripera Ink Velvet shade family","why":"shades 25 and 31 are the same 4g lip tint sitting as separate top-level rows"}],"fix":{"group":{"head":"ean-8800255681533","members":["ean-8800255681472"],"axis":"color"}}}
+{"id":"ean-8800255681373","status":"ok"}
+{"id":"ean-713708730017","status":"ok"}
+{"id":"ean-713708730000","status":"ok"}
+{"id":"ean-713708421045","status":"ok"}
+{"id":"ean-713708421021","status":"ok"}
+{"id":"ean-670367018347","name":"Peter Thomas Roth Ultimate Solution 5 50ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Moisturisers","why":"srcCat 'Hudpleie > Ansikt > Dagkrem' (day cream)"}],"fix":{"patch":{"facets":{"type":"Moisturisers"}}}}
+{"id":"ean-8710103897842","status":"ok"}
+{"id":"ean-8710103924005","status":"ok"}
+{"id":"ean-44386131439","status":"ok"}
+{"id":"ean-885190343553","name":"Pixi On-the-Glow BLUSH Chantilly Chantilly","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Pixi On-the-Glow BLUSH Chantilly Chantilly","suggested":"Pixi On-the-Glow BLUSH Chantilly","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"Pixi On-the-Glow BLUSH Chantilly"}}}
+{"id":"p-biogance-plouf-by-biogance-detangling-spray-250-ml","name":"Plouf by Biogance Detangling Spray 250 ml","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Pets","why":"srcCat 'Start > Hund > Helse og Pleie > Pelspleie' — dog coat detangler sold by Widforss; 'Detangling Spray' read as human haircare"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"ean-3614274485004","name":"Prada Paradigme Le Parfum 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Prada Paradigme Le Parfum 100 ml 100 ml","suggested":"Prada Paradigme Le Parfum 100 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Prada Paradigme Le Parfum 100 ml"}}}
+{"id":"ean-7029351004928","name":"PRIMER VINYL BÅT 0,4L PRIMER SPRAY","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Tools","why":"Jotun vinyl boat primer spray sold by Jernia, srcCat 'Hjem > Maling og oppussing > Olje og lakk > Primer' — the paint sense of 'Primer' was read as the makeup sense"},{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":null,"why":"boat paint is not face makeup; the Beauty facet does not apply once the category is fixed"},{"kind":"name","severity":"low","field":"name","current":"PRIMER VINYL BÅT 0,4L PRIMER SPRAY","suggested":"Jotun Primer Vinyl Båt Primer Spray 0,4L","why":"ALL-CAPS shop boilerplate with the size mid-name and no brand"}],"fix":{"patch":{"cat":"Tools","name":"Jotun Primer Vinyl Båt Primer Spray 0,4L"}}}
+{"id":"ean-6430013130571","status":"ok"}
+{"id":"ean-8057717140941","status":"ok"}
+{"id":"ean-8057717141764","status":"ok"}
+{"id":"ean-8057717142204","status":"ok"}
+{"id":"ean-8057717142464","status":"ok"}
+{"id":"ean-8057717142907","status":"ok"}
+{"id":"ean-8057717143294","status":"ok"}
+{"id":"ean-5711914198169","name":"Pudderdåserne Multi-Peptide + EGF 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Pudderdåserne Multi-Peptide + EGF 50 ml 50 ml","suggested":"Pudderdåserne Multi-Peptide + EGF 50 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Pudderdåserne Multi-Peptide + EGF 50 ml"}}}
+{"id":"ean-5400706617789","name":"Purasana Classic Matcha Raw Powder Organic 75g","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Health","why":"organic matcha tea powder, srcCat 'Drikkevare' (beverage) — an ingestible, not a cosmetic"},{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":null,"why":"'Powder' read as cosmetic powder; drinking matcha is not face makeup"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"ean-847137056858","name":"PÜR 4-in-1 Mineral Tinted Moisturizer MN3 Buff MN3 Buff","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"PÜR 4-in-1 Mineral Tinted Moisturizer MN3 Buff MN3 Buff","suggested":"PÜR 4-in-1 Mineral Tinted Moisturizer MN3 Buff","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"PÜR 4-in-1 Mineral Tinted Moisturizer MN3 Buff"}}}
+{"id":"ean-847137049393","name":"PÜR Blushing Act Berry Beautiful Berry Beautiful","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"PÜR Blushing Act Berry Beautiful Berry Beautiful","suggested":"PÜR Blushing Act Berry Beautiful","why":"shade label repeated by the Kicks feed"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"'Blushing Act' is PÜR's blush"}],"fix":{"patch":{"name":"PÜR Blushing Act Berry Beautiful","facets":{"type":"Face makeup"}}}}
+{"id":"ean-7070084061016","name":"På Stell Impregnering Interiør 500ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"'Impregnering Interiør' is a waterproofing/protector spray for interior textiles and surfaces, not a personal-care product; no srcCat to correct it"}],"fix":{"patch":{"cat":"Home"}}}
+{"id":"ean-5060486268887","status":"ok"}
+{"id":"ean-5060486268870","status":"ok"}
+{"id":"ean-742271477258","status":"ok"}
+{"id":"ean-5061066470249","status":"ok"}
+{"id":"ean-742271477197","status":"ok"}
+{"id":"ean-3349668616237","status":"ok"}
+{"id":"ean-3349668530564","status":"ok"}
+{"id":"ean-3349668630349","status":"ok"}
+{"id":"ean-3349668630240","status":"ok"}
+{"id":"ean-3349668588718","status":"ok"}
+{"id":"ean-3349668627462","status":"ok"}
+{"id":"ean-3349668630042","name":"Rabanne Phantom Intense Eau de parfum 150 ml 150 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Rabanne Phantom Intense Eau de parfum 150 ml 150 ml","suggested":"Rabanne Phantom Intense Eau de Parfum 150 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Rabanne Phantom Intense Eau de Parfum 150 ml"}}}
+{"id":"ean-3605971512650","name":"Ralph Lauren Ralph's Club Eau de Parfum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Ralph Lauren Ralph's Club Eau de Parfum 30 ml 30 ml","suggested":"Ralph Lauren Ralph's Club Eau de Parfum 30 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"Ralph Lauren Ralph's Club Eau de Parfum 30 ml"}}}
+{"id":"ean-7350067501778","name":"Re-fresh Superfood Bone Broth Premium 450g","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Health","why":"srcCat 'Buljong' (broth) — an ingestible collagen/bone-broth food product, not a cosmetic"}],"fix":{"patch":{"cat":"Health"}}}
+{"id":"ean-79625018950","name":"Real Techniques Artist Essentials 5pcs","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tools","why":"5-piece brush set, srcCat 'Sminke > Koster' (brushes)"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-79625446364","status":"ok"}
+{"id":"ean-79625446111","name":"Real Techniques Extra Big Powder Brush","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"srcCat 'Sminke > Koster' — a brush is an applicator; the sibling Real Techniques set is typed Tools"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-79625440881","name":"Real Techniques Miracle 2-In-1 Powder Puff Duo","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"srcCat 'Sminke > Koster > Blending sponge' — an applicator, same class as Morphe's sponge duo which is typed Tools"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-79625018943","name":"Real Techniques Miracle Powder Sponge","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"srcCat 'Sminke > Koster > Blending sponge' — an applicator, not a cosmetic"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-7391593002964","status":"ok"}
+{"id":"ean-3474637198381","status":"ok"}
+{"id":"ean-3474636961054","status":"ok"}
+{"id":"ean-884486497918","status":"ok"}
+{"id":"ean-3474636920259","status":"ok"}
+{"id":"ean-7350016780629","status":"ok"}
+{"id":"ean-7350016784788","name":"REF Stockholm Weightless Volume Shampoo 285 ml 285 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"REF Stockholm Weightless Volume Shampoo 285 ml 285 ml","suggested":"REF Stockholm Weightless Volume Shampoo 285 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"name":"REF Stockholm Weightless Volume Shampoo 285 ml"}}}
+{"id":"ean-9003877907015","name":"RefectoCil Eyelash & Eyebrow Tint No.2 Blue Black 15ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"lash/brow tint, srcCat 'Sminke > Øyne > Øyenbryn'"}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-851150006981","status":"ok"}
+{"id":"ean-851150006677","name":"Régimes des Fleurs Crushed Fruits Eau De Parfum 75ml","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Régimes des Fleurs","suggested":"Régime des Fleurs","why":"the house is 'Régime des Fleurs'; the trailing s splits it from ean-851150006981 (same brand, same shop) into two brand facets"}],"fix":{"patch":{"brand":"Régime des Fleurs","name":"Régime des Fleurs Crushed Fruits Eau De Parfum 75ml"}}}
+{"id":"ean-4008496877461","status":"ok"}
+{"id":"ean-5038061136029","status":"ok"}
+{"id":"p-remington-remington-mb4000-skjeggetrimmer","status":"ok"}
+{"id":"ean-5056264707723","status":"ok"}
+{"id":"ean-818426021819","status":"ok"}
+{"id":"ean-818426020720","status":"ok"}
+{"id":"ean-818426021826","status":"ok"}
+{"id":"ean-761318298663","status":"ok"}
+{"id":"ean-8432225115481","status":"ok"}
+{"id":"ean-8432225096780","status":"ok"}
+{"id":"ean-8432225096865","status":"ok"}
+{"id":"ean-761318352129","status":"ok"}
+{"id":"ean-5057566893732","status":"ok"}
+{"id":"ean-5057566829687","status":"ok"}
+{"id":"ean-5057566893664","status":"ok"}
+{"id":"ean-5057566894302","name":"Revolution Beauty Reloaded Sculpt & Contour Stick Light 8g","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"srcCat 'Sminke > Ansikt > Contouring'"}],"fix":{"patch":{"facets":{"type":"Face makeup"}}}}
+{"id":"ean-5057566834469","status":"ok"}
+{"id":"ean-5057566874311","status":"ok"}
+{"id":"ean-8719134163100","status":"ok"}
+{"id":"ean-8719134166132","status":"ok"}
+{"id":"ean-8719134180732","name":"RITUALS The Ritual Of Sakura Mini Fragrance Sticks Diffuser 70 ml 70 ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"reed diffuser / fragrance sticks are home fragrance, same class as the Meraki diffuser whose crumb is 'Hjem > Dufter til hjemmet > Duftpinner'; this row has no srcCat to correct it"},{"kind":"name","severity":"low","field":"name","current":"RITUALS The Ritual Of Sakura Mini Fragrance Sticks Diffuser 70 ml 70 ml","suggested":"RITUALS The Ritual Of Sakura Mini Fragrance Sticks Diffuser 70 ml","why":"size repeated by the Kicks feed"}],"fix":{"patch":{"cat":"Home","name":"RITUALS The Ritual Of Sakura Mini Fragrance Sticks Diffuser 70 ml"}}}
+{"id":"ean-8719134155068","status":"ok"}
+{"id":"ean-816248026876","name":"RMS Beauty Legendary Serum Lipstick Melanie Melanie","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"RMS Beauty Legendary Serum Lipstick Melanie Melanie","suggested":"RMS Beauty Legendary Serum Lipstick Melanie","why":"shade label repeated by the Kicks feed"}],"fix":{"patch":{"name":"RMS Beauty Legendary Serum Lipstick Melanie"}}}
+{"id":"ean-8809625246938","name":"rom&nd Bare Layer Palette 1 Apricot Mood 1 Apricot Mood","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"rom&nd Bare Layer Palette 1 Apricot Mood 1 Apricot Mood","suggested":"rom&nd Bare Layer Palette 1 Apricot Mood","why":"shade label repeated by the Kicks feed"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"Bare Layer Palette is an eyeshadow palette"}],"fix":{"patch":{"name":"rom&nd Bare Layer Palette 1 Apricot Mood","facets":{"type":"Eyes"}}}}
+{"id":"ean-8800258080043","name":"rom&nd Juicy Lasting Tint 01 Pomelo Skin 4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"head of the Juicy Lasting Tint shade family","why":"shades 01 and 05 are the same 4g lip tint sitting as separate top-level rows"}],"fix":{"group":{"head":"ean-8800258080043","members":["ean-8800258080098"],"axis":"color"}}}
+{"id":"ean-8800258080098","name":"rom&nd Juicy Lasting Tint 05 Jujube 4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-8800258080043","why":"shade variant; group fix carried on the head row"}]}
+{"id":"ean-3760240890492","status":"ok"}
+{"id":"ean-5710111002927","status":"ok"}
+{"id":"ean-5710111004051","status":"ok"}
+{"id":"ean-5710111000060","status":"ok"}
+{"id":"ean-5710111001142","status":"ok"}
+{"id":"ean-5710111005652","status":"ok"}
+{"id":"ean-5710111003160","status":"ok"}
+{"id":"ean-5710111003672","status":"ok"}
+{"id":"ean-5710111001722","status":"ok"}
+{"id":"ean-5710111001647","status":"ok"}
+{"id":"ean-5710111001357","name":"Rudolph Care Sun Body Lotion spf 15 Travelsize 75ml","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Moisturisers","suggested":"Sun care","why":"SPF15 sun lotion, srcCat '… > Rudolph Care > Solpleie'; spf 15 is already stored, so the row shows up under SPF but not under Sun care"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-5710111003573","status":"ok"}
+{"id":"ean-5710111003856","name":"Rudolph Care The Gua Sha","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tools","why":"a gua sha stone is a facial tool, not a product applied to the skin"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-8008860032621","status":"ok"}
+{"id":"ean-8008860032898","status":"ok"}
+{"id":"_summary","shard":"Beauty-05","checked":300,"ok":191,"issues":109,"by_kind":{"name":48,"facets":34,"variant":30,"category":17,"brand":2},"high":22,"rule_gaps":["Kicks feed rows (srcCat empty) append the shade/size label to a name that already ends with it — 'Fiji Fiji', '30 ml 30 ml', and 'NARS #16 Blush Brush' three times: 49 rows in this shard alone. Strip a repeated trailing tail at ingest instead of patching row by row.","facetrules Beauty 'type': 'Mousse'/'Cream' pull face and lip products into Hair care (NIVEA Caring Cleansing Mousse, Morphe Soulmatte Velvet Lip Mousse), and the literal word 'Fragrance' types 'Neccin Shampoo Fragrance Free' as Fragrance — the exact opposite of the truth. Prefer the srcCat leaf over the name token for 'type'.","Brushes, sponges and powder puffs land on 'Face makeup' instead of 'Tools' — srcCat 'Sminke > Koster' / 'Blending sponge' should force Tools.","spf is not derived from the '<n>+' form ('NIVEA Sun UV Fluid Medium Tinted 50+').","Beauty shops' non-beauty shelves promote straight into Beauty: supplements and food ('Kollagen', 'Immunforsvar', 'Buljong', 'Drikkevare' → Health), eyewear ('Solbriller & Briller' → Fashion), jewellery ('Smykker … Øredobber', 'Hoops' → Jewelry), nursing ('Brystpumpe' → Baby) and home fragrance ('Dufter til hjemmet' → Home). Also 'Primer' in a Jernia paint breadcrumb read as makeup primer — the paint sense needs to beat the cosmetic one when the crumb contains 'Maling og oppussing'."],"notes":"Beauty proper is in good shape — the 250-odd skincare/haircare/fragrance rows are correctly categorised and mostly correctly faceted; nearly all the damage is at the edges (14 rows that are not beauty products at all) plus one mechanical feed defect (duplicated name tails) that is worth fixing in the crawler rather than by patch. 145 of 300 rows (48%) still have no image, consistent with the sampled-crawl state; not reported per row."}

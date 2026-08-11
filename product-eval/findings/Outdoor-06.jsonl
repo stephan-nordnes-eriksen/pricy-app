@@ -1,0 +1,301 @@
+{"id":"p-13-fishing-snitch-freefall-pro-inline-ice-combo-29-74cm-lh","status":"ok"}
+{"id":"p-eagle-snor-3-mm-allround-16-5m","status":"ok"}
+{"id":"p-swims-snow-runner-black","status":"ok"}
+{"id":"p-snowline-snowline-snowline-chainsen-pro-blue","name":"Snowline Snowline Chainsen Pro Blue","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Snowline Snowline Chainsen Pro Blue","suggested":"Chainsen Pro Blue","why":"brand 'Snowline' repeated twice at the head of the name; the brand field already carries it"}],"fix":{"patch":{"name":"Chainsen Pro Blue"}}}
+{"id":"p-mons-royale-socks-atlas-merino-snow-sock-burnt-sage","status":"ok"}
+{"id":"p-carinthia-sof-3-links-olive","status":"ok"}
+{"id":"p-osprey-sojourn-porter-30l-graphite-purple","status":"ok"}
+{"id":"p-rab-solar-ultra-1-long-4-c-granite","status":"ok"}
+{"id":"p-msr-solid-heat-reflector-w-windscreen-assorted","status":"ok"}
+{"id":"p-nordicmaps-solor","status":"ok"}
+{"id":"p-the-heat-company-sos-kroppsvarmer-18-timer-rod-bla","status":"ok"}
+{"id":"p-bliz-spark-black-orange-silver-mirror","status":"ok"}
+{"id":"p-kavu-spectator-raven","status":"ok"}
+{"id":"p-salomon-forces-speed-assault-2-gtx-earth-brown","name":"Speed Assault 2 GTX Earth Brown","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Tursko' = hiking shoes; footwear has its own category"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-salomon-speedcross-6-gtx-poseidon-black-lunar-rock","name":"Speedcross 6 GTX Poseidon/Black/Lunar Rock","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Løpesko' = running shoes"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-bula-speeddry-convert-balaclava-black","status":"ok"}
+{"id":"p-speedo-speedo-boys-eco-endurance-aquashort-black","name":"Speedo Boys Eco Endurance+ Aquashort Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Sport","why":"boys' swim trunks; Outdoor here means hiking/camping/fishing/hunting, swimming is Sport"},{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Kids","why":"name says 'Boys'"}],"fix":{"patch":{"cat":"Sport","facets":{"audience":"Kids"}}}}
+{"id":"p-speedo-speedo-girls-eco-endurance-medalist-navy","name":"Speedo Girls' Eco Endurance+ Medalist Navy","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Sport","why":"girls' racing swimsuit; swimming is Sport, not Outdoor"},{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Kids","why":"name says 'Girls''"}],"fix":{"patch":{"cat":"Sport","facets":{"audience":"Kids"}}}}
+{"id":"p-speedo-speedo-junior-jet-2-0-pink-blue","name":"Speedo Junior Jet 2.0 Pink/blue","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Sport","why":"junior swim goggles; swimming is Sport, not hiking/camping/fishing/hunting"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-lundhags-speik-ice-42l-dark-red","status":"ok"}
+{"id":"p-solvkroken-spesial-classic-4-gr-uv-g","status":"ok"}
+{"id":"p-solvkroken-spesial-classic-43","status":"ok"}
+{"id":"p-solvkroken-spesial-classic-zebra-12-g-s-r","status":"ok"}
+{"id":"p-solvkroken-spesial-spinner","status":"ok"}
+{"id":"p-gerber-spine-fixed-green","status":"ok"}
+{"id":"p-solvkroken-splitthagl","status":"ok"}
+{"id":"p-elbe-splitthagl-0-4g","status":"ok"}
+{"id":"ean-7031581550588","status":"ok"}
+{"id":"ean-7031582439868","status":"ok"}
+{"id":"ean-7031582439851","status":"ok"}
+{"id":"p-brusletto-sprettern","status":"ok"}
+{"id":"ean-7031580003078","name":"Spring","status":"issue","issues":[{"kind":"junk","severity":"high","field":"hidden","current":null,"suggested":"1","why":"name is the single word 'Spring' with no srcCat and a kr 59 price - a Bergans spare part no shopper can identify or search for"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-snow-peak-stainless-vacuum-bottle-milk-350-clear","status":"ok"}
+{"id":"p-snow-peak-stainless-vacuum-bottle-milk-500-sand","status":"ok"}
+{"id":"p-rab-stance-vintage-wmns-deep-ink","status":"ok"}
+{"id":"p-hydro-flask-standard-mouth-flex-cap-alpine","status":"ok"}
+{"id":"p-stanley-stanley-adventure-to-go-termos","name":"Stanley Adventure To-Go Termos","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"STANLEY","suggested":"Stanley","why":"ALL-CAPS feed spelling splits the brand facet from the 'Stanley' rows in the same shard"}],"fix":{"patch":{"brand":"Stanley"}}}
+{"id":"p-nite-ize-steelie-orbiter-vent-mount-kit","name":"Steelie Orbiter Vent Mount Kit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Phones","why":"car-vent phone mount; srcCat leaf is 'Mobiltelefoni og Tilbehør' (mobile phone accessories)"}],"fix":{"patch":{"cat":"Phones"}}}
+{"id":"p-hallmark-stekespade-lang","status":"ok"}
+{"id":"ean-7031580016023","name":"Stem to 15/16,5/18","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":"1","why":"spare stem referring to other Bergans model numbers; no shopper can tell what this is from the name and there is no srcCat"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-solvkroken-stingsilda","status":"ok"}
+{"id":"p-solvkroken-stingsilda-holographic-75-g","status":"ok"}
+{"id":"ean-7031582552895","name":"Storetind Fleece Lined Wool Beanie Junior","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"a beanie is headwear; other beanies in this shard (Striped V2 Beanie) get 'Accessories', the wool/fleece words pulled this one into baselayers"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7031582553519","name":"Storetind Insulated Shell Pants Junior","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"name says 'Pants'; the row is filed under the Jackets type facet"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582554080","status":"ok"}
+{"id":"ean-7031582552970","name":"Storetind Wool Balaclava Junior","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"a balaclava is headwear; the Bula balaclava in this shard is typed 'Accessories'"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-solvkroken-storlaksen","status":"ok"}
+{"id":"ean-7031581757420","status":"ok"}
+{"id":"p-trangia-stormkjokken-25-8-ul-ha","status":"ok"}
+{"id":"p-ivanhoe-of-sweden-stormy-hat-wb-navy","status":"ok"}
+{"id":"ean-7031582126485","status":"ok"}
+{"id":"ean-7031582323433","status":"ok"}
+{"id":"ean-7031582323075","status":"ok"}
+{"id":"ean-7031582322771","status":"ok"}
+{"id":"ean-7031582322924","status":"ok"}
+{"id":"p-rohnisch-streamline-tank-top-baby-blue","status":"ok"}
+{"id":"p-tasmanian-tiger-strech-svart","status":"ok"}
+{"id":"p-klattermusen-stretch-belt-black","status":"ok"}
+{"id":"p-lundhags-striim-i-ispik","status":"ok"}
+{"id":"p-mora-ice-strikemaster-24v-lite-flite-150mm-ez-combo","status":"ok"}
+{"id":"ean-7031582398288","status":"ok"}
+{"id":"p-tretorn-strong-neo-green","status":"ok"}
+{"id":"p-5-11-tactical-stryke-pant-w-flex-tac-tm-ranger-green","status":"ok"}
+{"id":"p-sea-to-summit-stuff-sack-mesh-l-15l-green","status":"ok"}
+{"id":"p-sea-to-summit-stuff-sack-ultrasilicone-xxl-30l-grey","status":"ok"}
+{"id":"p-sufix-sufix-advance-clear-150m-0-30mm","status":"ok"}
+{"id":"p-sufix-super-21-fluorocarbon-30m-0-35mm","status":"ok"}
+{"id":"p-black-diamond-super-8-yellow","status":"ok"}
+{"id":"ean-7031582099819","status":"ok"}
+{"id":"p-chevalier-suspenders-40-mm-c-s-beige","status":"ok"}
+{"id":"p-gerber-suspension-multi-tool","status":"ok"}
+{"id":"p-oakley-sutro-lite-sweep-prizm-road","status":"ok"}
+{"id":"p-harkila-svarin-fleece-willow-green-shadow-brown","status":"ok"}
+{"id":"p-solvkroken-svenskepilk-rustfri","status":"ok"}
+{"id":"p-light-my-fire-swedish-kasa-300-ml-cocoa","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-boondock-rig-reflect-rig-bixbite-mat","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-commuter-bronco-white","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-igniter-2vi-mips-helmet-matte-bronco","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-igniter-2vi-mips-helmet-panther","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-looper-mips-helmet-matte-nardo-gray","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-memento-rig-reflect-rig-topaz-gloss","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-promuter-mips-matte-black","status":"ok"}
+{"id":"p-sweet-protection-sweet-protection-trailblazer-mips-helmet-matte-black","status":"ok"}
+{"id":"p-klean-kanteen-swing-lok-cap-for-classic-bottles-brushed-stainless","status":"ok"}
+{"id":"p-bliz-switch-nano-optics-matt-hvit-brun-med-rod-multi","status":"ok"}
+{"id":"p-sweet-protection-switcher-mips-deep-purple-metallic","status":"ok"}
+{"id":"p-swix-swix-5k-jacket-w-chalk","status":"ok"}
+{"id":"p-swix-swix-i2-touring-pole-white","status":"ok"}
+{"id":"p-swix-swix-infinity-softshell-pants-m-black","status":"ok"}
+{"id":"p-swix-swix-kx45-violet-klister-2c-to-4c-nocolor","name":"Swix Kx45 Violet Klister, -2c To 4c Nocolor","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Swix Kx45 Violet Klister, -2c To 4c Nocolor","suggested":"Swix Kx45 Violet Klister, -2c to 4c","why":"trailing 'Nocolor' is a feed placeholder for the colour axis, not part of the product name"}],"fix":{"patch":{"name":"Swix Kx45 Violet Klister, -2c to 4c"}}}
+{"id":"p-swix-swix-legacy-merino-blend-ls-m-black","status":"ok"}
+{"id":"p-swix-swix-marka-beanie-jr-dark-navy","name":"Swix Marka Beanie Jr Dark Navy","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-swix-swix-marka-beanie-jr-snow-white-red","why":"same beanie as 'Swix Marka Beanie Jr Snow White/Red' in another colourway, sitting as a separate top-level row with no vlabel/family"}],"fix":{"group":{"head":"p-swix-swix-marka-beanie-jr-snow-white-red","members":["p-swix-swix-marka-beanie-jr-dark-navy"],"axis":"color"}}}
+{"id":"p-swix-swix-marka-beanie-jr-snow-white-red","name":"Swix Marka Beanie Jr Snow White/Red","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family with p-swix-swix-marka-beanie-jr-dark-navy","why":"two colourways of the same junior beanie are separate top-level rows; this one has an image so it is the better head"}],"fix":{"group":{"head":"p-swix-swix-marka-beanie-jr-snow-white-red","members":["p-swix-swix-marka-beanie-jr-dark-navy"],"axis":"color"}}}
+{"id":"p-swix-swix-men-s-infinity-hybrid-insulated-jacket-magnet-black","status":"ok"}
+{"id":"p-swix-swix-men-s-nordic-xc-pants-dark-navy","status":"ok"}
+{"id":"p-swix-swix-p21-glide-edge-kit-nocolor","status":"ok"}
+{"id":"p-swix-swix-racex-classic-wind-boxer-w-bright-white","status":"ok"}
+{"id":"p-swix-swix-swix-wool-logo-beanie-dark-navy","name":"Swix Swix Wool Logo Beanie Dark Navy","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Swix Swix Wool Logo Beanie Dark Navy","suggested":"Swix Wool Logo Beanie Dark Navy","why":"brand 'Swix' repeated twice in the name"},{"kind":"facets","severity":"med","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"a beanie is headwear; 'Wool' pulled it into baselayers while the other Swix beanies in this shard are 'Accessories'"}],"fix":{"patch":{"name":"Swix Wool Logo Beanie Dark Navy","facets":{"type":"Accessories"}}}}
+{"id":"p-swix-swix-t12-synthetic-racing-cork-w-hd-unspecified","name":"Swix T12 Synthetic racing cork w/HD Unspecified","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Swix T12 Synthetic racing cork w/HD Unspecified","suggested":"Swix T12 Synthetic Racing Cork w/HD","why":"trailing 'Unspecified' is a feed placeholder for the colour axis"}],"fix":{"patch":{"name":"Swix T12 Synthetic Racing Cork w/HD"}}}
+{"id":"p-swix-swix-t1716-p-stick-black-6mm-4-pcs-35g-black","status":"ok"}
+{"id":"p-swix-swix-t410-plexi-sharpener-wc-large","status":"ok"}
+{"id":"p-swix-swix-women-s-racex-classic-wind-half-zip-bright-white","status":"ok"}
+{"id":"p-sydvang-sydvang-austfjell-pump-sack-crimson","name":"Sydvang Austfjell Pump Sack Crimson","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Red","why":"name ends in 'Crimson'"}],"fix":{"patch":{"facets":{"color":"Red"}}}}
+{"id":"p-sydvang-sydvang-skaring-3p-tunnel-tent-lw-2-0-olivine","status":"ok"}
+{"id":"p-sydvang-sydvang-skaring-3p-ultralight-tunnel-tent-haute-red","status":"ok"}
+{"id":"p-calazo-sydostra-skane-1-50-000","status":"ok"}
+{"id":"p-oakley-sylas-prizm-matte-black-camo-black","status":"ok"}
+{"id":"p-osprey-syncro-12-black","status":"ok"}
+{"id":"p-exped-synmat-9-lw-20-c-long-9x197x65-cm","status":"ok"}
+{"id":"p-carinthia-syntetovsack-defence-4-m-15-c","status":"ok"}
+{"id":"p-satila-of-sweden-satila-grace-headband-navy","status":"ok"}
+{"id":"p-solvkroken-solvkroken-isbor-200mm","name":"SØLVKROKEN ISBOR 200MM","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Silver","suggested":null,"why":"colour derived from the brand token 'SØLVKROKEN' (sølv = silver) in the name, not from the product; this is an ice auger"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-solvkroken-solvkroken-kyst-300-m-0-45-ocean-camo","name":"SØLVKROKEN KYST 300 M 0,45 OCEAN CAMO","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Silver","suggested":null,"why":"the name says the line is OCEAN CAMO; 'Silver' comes from the brand token 'SØLVKROKEN' (sølv = silver)"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-solvkroken-solvkroken-rod-agnkrok","status":"ok"}
+{"id":"p-solvkroken-solvkroken-si-yr-4000fd","name":"SØLVKROKEN SI YR 4000FD","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Silver","suggested":null,"why":"colour derived from the brand token 'SØLVKROKEN' (sølv = silver) in the name, not from the product (a fishing reel)"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-solvkroken-solvkroken-sjokrok-til-agnfiske","name":"Sølvkroken sjøkrok til agnfiske","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Silver","suggested":null,"why":"colour derived from the brand token 'Sølvkroken' (sølv = silver) in the name, not from the product"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-solvkroken-solvkroken-sv-ljos-7-6-fot-ul-2-11-g-ultralight-spinning","name":"SØLVKROKEN SV LJOS 7,6 FOT UL 2-11 G ULTRALIGHT SPINNING","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Silver","suggested":null,"why":"colour derived from the brand token 'SØLVKROKEN' (sølv = silver); the product is a spinning rod with no stated colour"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-solvkroken-solvkroken-sv-vega-8-fot-xh-60-140-g-fast-action-spinning","name":"SØLVKROKEN SV VEGA 8 FOT XH 60-140 G FAST ACTION SPINNING","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Silver","suggested":null,"why":"colour derived from the brand token 'SØLVKROKEN' (sølv = silver); the product is a spinning rod with no stated colour"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-solvkroken-solvkroken-svii-skumring-1000fd","name":"SØLVKROKEN SVII SKUMRING 1000FD","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Silver","suggested":null,"why":"colour derived from the brand token 'SØLVKROKEN' (sølv = silver), not from the product (a fishing reel)"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-elbe-sorberg-hempev-10st-06","status":"ok"}
+{"id":"p-camelbak-t-o-r-o-protector-14-dry-deep-forest-brilliant-blue","status":"ok"}
+{"id":"p-hiko-sport-taco-nyckelfodral-i-neopren-osorterade-farger","status":"ok"}
+{"id":"p-tasmanian-tiger-tactical-field-book-olivengronn","status":"ok"}
+{"id":"p-helinox-tactical-sunset-chair-military-olive","status":"ok"}
+{"id":"p-petzl-tactikka-rgb-2018-svart","status":"ok"}
+{"id":"p-tasmanian-tiger-tacvec-container-carbon","status":"ok"}
+{"id":"p-fallkniven-taiga-th1-hunter-desert-ironwood","status":"ok"}
+{"id":"p-osprey-talon-11-stealth-black","status":"ok"}
+{"id":"p-osprey-talon-22","name":"Talon 22","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"OSPREY","suggested":"Osprey","why":"ALL-CAPS feed spelling splits the brand facet from the 'Osprey' rows in the same shard"}],"fix":{"patch":{"brand":"Osprey"}}}
+{"id":"p-osprey-talon-33l-marian-red","status":"ok"}
+{"id":"p-gregory-targhee-32-lava-red","status":"ok"}
+{"id":"p-barbour-tartan-dog-bow-tie-classic-tartan","name":"Tartan Dog Bow Tie Classic Tartan","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"a bow tie for a dog; srcCat is only the brand crumb 'Start > Varemerker > Barbour' so the name is the evidence"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-barbour-tartan-webbing-dog-collar-classic-tartan","name":"Tartan/Webbing Dog Collar Classic Tartan","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"a dog collar; srcCat is only the brand crumb 'Start > Varemerker > Barbour'"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-beretta-team-ls-black","status":"ok"}
+{"id":"p-osprey-tempest-14-dagstursekk-junior","name":"Tempest 14 dagstursekk junior","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"OSPREY","suggested":"Osprey","why":"ALL-CAPS feed spelling splits the brand facet from the 'Osprey' rows in the same shard"}],"fix":{"patch":{"brand":"Osprey"}}}
+{"id":"p-osprey-tempest-20-bell-orange","status":"ok"}
+{"id":"p-osprey-tempest-velocity-30","name":"Tempest Velocity 30","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"OSPREY","suggested":"Osprey","why":"ALL-CAPS feed spelling splits the brand facet from the 'Osprey' rows in the same shard"}],"fix":{"patch":{"brand":"Osprey"}}}
+{"id":"p-tendon-tendon-tendon-rope-cleaner-0-5l-no-color","name":"Tendon Tendon Rope Cleaner 0,5l No Color","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Tendon Tendon Rope Cleaner 0,5l No Color","suggested":"Tendon Rope Cleaner 0,5 l","why":"brand 'Tendon' repeated twice and a trailing 'No Color' feed placeholder"}],"fix":{"patch":{"name":"Tendon Rope Cleaner 0,5 l"}}}
+{"id":"p-wildo-tennstal-s-pitaya-pink","status":"ok"}
+{"id":"ean-7031581473160","status":"ok"}
+{"id":"ean-7031581473177","status":"ok"}
+{"id":"ean-7031581473214","status":"ok"}
+{"id":"ean-7031582099734","status":"ok"}
+{"id":"ean-7031581677131","status":"ok"}
+{"id":"p-adidas-terrex-mid-gtx-k","name":"TERREX MID GTX K","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat is 'SKO > Fjell-, jakt- og hikingsko > Hikingsko' - the shop files it under footwear at the root crumb"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-tretorn-terrang-lutum-strl-37-green","name":"Terräng Lutum Strl 37 Green","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"Tretorn Terräng rubber boot, and the name carries a shoe size ('Strl 37'); srcCat is only the brand crumb"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-tetragun-tetragun-messing-jag-kal-410","status":"ok"}
+{"id":"p-tetragun-tetragun-pusselapper-kal-17-22-storpakk","status":"ok"}
+{"id":"p-tetragun-tetragun-pussesett-kal-270-284-6-5-7mm","status":"ok"}
+{"id":"p-fibertec-textile-guard-eco-rt-500-ml","status":"ok"}
+{"id":"p-swazi-the-hood-black","status":"ok"}
+{"id":"p-stanley-the-iceflow-twist-flip-bottle-0-47-l-16-oz-black-2-0","name":"The Iceflow™ Twist Flip Bottle 0.47 L / 16 Oz Black 2.0","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family with the Peach Rose row","why":"same Stanley Iceflow Twist Flip 0.47 L bottle in another colourway sits as a separate top-level row"}],"fix":{"group":{"head":"p-stanley-the-iceflow-twist-flip-bottle-0-47-l-16-oz-black-2-0","members":["p-stanley-the-iceflow-twist-flip-bottle-0-47-l-16-oz-peach-rose"],"axis":"color"}}}
+{"id":"p-stanley-the-iceflow-twist-flip-bottle-0-47-l-16-oz-peach-rose","name":"The Iceflow™ Twist Flip Bottle 0.47 L / 16 Oz Peach Rose","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-stanley-the-iceflow-twist-flip-bottle-0-47-l-16-oz-black-2-0","why":"colourway of the same 0.47 L Iceflow Twist Flip bottle, no vlabel/family wiring"}],"fix":{"group":{"head":"p-stanley-the-iceflow-twist-flip-bottle-0-47-l-16-oz-black-2-0","members":["p-stanley-the-iceflow-twist-flip-bottle-0-47-l-16-oz-peach-rose"],"axis":"color"}}}
+{"id":"p-stanley-the-legendary-classic-bottle-1-l-nightfall","status":"ok"}
+{"id":"p-stanley-the-legendary-food-jar-spork-0-4-l-hammertone-clay","status":"ok"}
+{"id":"p-the-north-face-the-north-face-base-camp-gear-box-m-tnf-black-tnf-black","status":"ok"}
+{"id":"p-the-north-face-the-north-face-etip-recycled-glove-tnf-black-tnf-white","status":"ok"}
+{"id":"p-the-north-face-the-north-face-men-s-back-to-berkeley-iv-leather-lifest","status":"ok"}
+{"id":"p-the-north-face-the-north-face-women-s-diablo-down-2-0-jacket-tnf-black","status":"ok"}
+{"id":"p-therm-a-rest-therm-a-rest-neoair-xlite-nxt-regular-short-sleeping-pad","status":"ok"}
+{"id":"p-alaska-1795-thermodry-260g-mellanstall-black","status":"ok"}
+{"id":"p-think-tank-think-tank-mindshift-backlight-26l-woodland-green","name":"Think Tank Mindshift Backlight 26L Woodland Green","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Photo","why":"camera backpack from Japan Photo; srcCat 'Home > Fototilbehør > Kameraveske > Ryggsekk' - only the vague 'Home' root crumb kept it out of Photo"}],"fix":{"patch":{"cat":"Photo"}}}
+{"id":"p-think-tank-think-tank-mindshift-photocross-13-orange-ember-ryggsekk","name":"Think Tank MindShift PhotoCross 13 Orange Ember Ryggsekk","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Photo","why":"camera backpack from Japan Photo; srcCat 'Home > Fototilbehør > Kameraveske > Ryggsekk'"}],"fix":{"patch":{"cat":"Photo"}}}
+{"id":"p-thule-thule-delight-red","status":"ok"}
+{"id":"p-thule-thule-thule-subterra-powershuttle-black","name":"Thule Thule Subterra Powershuttle Black","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Thule Thule Subterra Powershuttle Black","suggested":"Thule Subterra Powershuttle Black","why":"brand 'Thule' repeated twice in the name"}],"fix":{"patch":{"name":"Thule Subterra Powershuttle Black"}}}
+{"id":"p-exped-thunder-50-navy","status":"ok"}
+{"id":"p-exped-thunder-70-black","status":"ok"}
+{"id":"p-helkowerk-ti-black-forest-hatchet","status":"ok"}
+{"id":"p-ticket-to-the-moon-ticket-to-the-moon-compact-hammock-purple","status":"ok"}
+{"id":"p-deerhunter-tie-w-stag-rumba-red","name":"Tie w/ Stag Rumba Red","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Fashion","why":"a necktie; srcCat 'Slips og Sløyfer' (ties and bow ties) is clothing/accessories, not hiking/hunting gear"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-big-agnes-tiger-wall-ul2-bikepack","status":"ok"}
+{"id":"p-psarvard-tika-gul-kampleke","name":"Tika gul kampleke","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Pets","why":"'kampleke' is a dog tug toy and srcCat 'Aktiviseringsleker' is the shop's dog-activity-toy section"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-timberland-timberland-men-s-sprint-trekker-mid-warm-lined-rust","name":"Timberland Men's Sprint Trekker Mid Warm Lined Rust","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"'Mid' + 'Warm Lined' is boot naming - the Timberland Sprint Trekker Mid is a winter boot; srcCat is only the brand crumb"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"ean-7031582492511","status":"ok"}
+{"id":"ean-7031582492740","status":"ok"}
+{"id":"ean-7031582492221","status":"ok"}
+{"id":"p-snow-peak-titanium-single-wall-450-metall","status":"ok"}
+{"id":"p-lundhags-tived-light-25-l-unisex-black","status":"ok"}
+{"id":"p-klean-kanteen-tkwide-355ml-with-wide-cafe-cap-shale-black","status":"ok"}
+{"id":"p-klean-kanteen-tkwide-473-ml-with-wide-twist-cap-black","status":"ok"}
+{"id":"p-klean-kanteen-tkwide-592ml-with-wide-cafe-cap-blue-tint","status":"ok"}
+{"id":"p-nitecore-tm20k","status":"ok"}
+{"id":"p-topo-athletic-topo-athletic-women-s-vista-black-mint","status":"ok"}
+{"id":"p-swedteam-tor-shirt","status":"ok"}
+{"id":"ean-7031581791301","name":"Torfinnstind Lady Jacket","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says 'Lady'; 'Wmns' maps to Women in this shard but 'Lady' does not"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"ean-7031581791707","name":"Torfinnstind Lady Pants","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says 'Lady'"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-abu-garcia-tormentor-combo-7-m","status":"ok"}
+{"id":"p-harkila-tornio-25-l-stolryggsack","status":"ok"}
+{"id":"p-hestra-touch-point-dry-wool-glove-marin","name":"Touch Point Dry Wool Glove Marin","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"a glove is not a top/baselayer; 'Wool' in the name pulled it into that group"},{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Blue","why":"name ends in 'Marin' (navy)"}],"fix":{"patch":{"facets":{"type":"Accessories","color":"Blue"}}}}
+{"id":"p-dynafit-tour-wool-thermal-m-hoody-fallen-rock","status":"ok"}
+{"id":"p-tova-tova-wool-soles-precut-eco-natural-brown","name":"Tova Wool Soles Precut Eco Natural Brown","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"wool insoles are not a top/baselayer; 'Wool' in the name drove the group"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7031582332749","status":"ok"}
+{"id":"p-therm-a-rest-trail-pro-l-tide","status":"ok"}
+{"id":"p-beretta-transformer-medium-cartridge-bag-black-gray","status":"ok"}
+{"id":"p-osprey-transporter-95-raven-black-black","status":"ok"}
+{"id":"p-osprey-transporter-carryon-boarding-bag-raven-black-black","status":"ok"}
+{"id":"p-fibertec-travel-soap-eco-250-ml","status":"ok"}
+{"id":"p-ortovox-traverse-20-sea-surface","status":"ok"}
+{"id":"p-burrel-tree-mount-trefeste-for-viltkamera","status":"ok"}
+{"id":"p-trek-n-eat-trek-n-eat-quinoa-mexican-style","status":"ok"}
+{"id":"p-alaska-1795-trekking-lite-ux-fritidsbukse-svart-mork-gra-w","name":"Trekking Lite UX Fritidsbukse Svart / Mørk Grå W","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Hiking gear","suggested":"Trousers","why":"'bukse' = trousers and srcCat is 'Friluftsbukser Dame'; 'Trekking' in the name won over the garment word"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"p-under-armour-tribase-reign-3-svart","name":"TriBase Reign 3 Svart","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Løpesko' = running shoes"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-bergans-of-norway-trillemarka-2-pers","name":"Trillemarka 2-pers","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS OF NORWAY","suggested":"Bergans of Norway","why":"ALL-CAPS feed spelling; the same brand appears as 'Bergans of Norway' on the ean-* rows in this shard"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"ean-7031582570677","status":"ok"}
+{"id":"p-bergans-trollhetta-80","name":"Trollhetta 80","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS","suggested":"Bergans of Norway","why":"truncated ALL-CAPS feed spelling splits the brand facet three ways in this shard (BERGANS / BERGANS OF NORWAY / Bergans of Norway)"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"ean-7031582014416","status":"ok"}
+{"id":"ean-7031582014232","status":"ok"}
+{"id":"ean-7031582014270","status":"ok"}
+{"id":"ean-7031582099895","status":"ok"}
+{"id":"ean-7031582098805","status":"ok"}
+{"id":"p-bergans-of-norway-trollhetta-v5-95-tursekk","name":"Trollhetta V5 95 tursekk","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS OF NORWAY","suggested":"Bergans of Norway","why":"ALL-CAPS feed spelling splits the brand facet from the 'Bergans of Norway' rows"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"p-bergans-trollhetta-v5-w-75","name":"Trollhetta V5 W 75","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS","suggested":"Bergans of Norway","why":"truncated ALL-CAPS feed spelling splits the brand facet"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"p-nordeca-trolltunga-odda-ullensvang-1-50-000","status":"ok"}
+{"id":"p-bushnell-trophy-first-strike","status":"ok"}
+{"id":"p-nordicmaps-trysil-nord-1-50-000","status":"ok"}
+{"id":"p-tsl-outdoor-tsl-227-snowhunter-m-70-140-kg-snow-camo","status":"ok"}
+{"id":"p-tsl-outdoor-tsl-305-halloween-elevation","status":"ok"}
+{"id":"p-nitecore-tube-uv-uppladdningsbar-uv-lampa-45-lumen","status":"ok"}
+{"id":"p-marmot-tungsten-3p-foliage-dark-azure","status":"ok"}
+{"id":"p-rapala-tungsten-bugbite-jig-1-8g-gold-flash","status":"ok"}
+{"id":"p-mikael-tham-tuskproof-wolf-v-5-orange-xxl","name":"Tuskproof Wolf v.5 Orange XXL","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Pets","why":"boar-protection vest worn by the dog; srcCat 'Start > Hund > Jakt > Jaktvester og Tilbehør > Villsvinvester' starts at 'Hund' (dog)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-twentyfour-twentyfour-mode-warm-ls-bukse-d-sort","status":"ok"}
+{"id":"p-black-diamond-twilight-bivy-wasabi-wasabi","name":"Twilight Bivy Wasabi Wasabi","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Black","suggested":null,"why":"the bivy is 'Wasabi' (green); 'Black' was derived from the brand crumb 'Start > Varemerker > Black Diamond' in srcCat"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-carhartt-workwear-twill-mesh-back-logo-patch-cap-asphalt","status":"ok"}
+{"id":"p-mammut-tyin-mti-5-season-200-l-bison","status":"ok"}
+{"id":"p-under-armour-ua-vanish-woven-2in1-sts-black","status":"ok"}
+{"id":"p-osprey-ul-dry-sack-6l-mars-orange","status":"ok"}
+{"id":"p-osprey-ul-stuff-pack-mars-orange","status":"ok"}
+{"id":"ean-7031582614029","status":"ok"}
+{"id":"ean-7031582462484","status":"ok"}
+{"id":"ean-7031582142638","status":"ok"}
+{"id":"ean-7031582142942","status":"ok"}
+{"id":"ean-7031582140771","status":"ok"}
+{"id":"ean-7031582429135","status":"ok"}
+{"id":"ean-7031582293354","status":"ok"}
+{"id":"p-exped-ultra-3r-duo-m-5-c-synmat","status":"ok"}
+{"id":"p-exped-ultra-6-5r-lw-meadow","status":"ok"}
+{"id":"p-swedteam-ultra-dry-m-glove","status":"ok"}
+{"id":"p-la-sportiva-ultra-raptor-ii-gtx-w-s-rose-onyx","name":"Ultra Raptor Ii Gtx W's Rose/Onyx","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Tursko' = hiking shoes"},{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family with the Slate/Sorbet row","why":"the same La Sportiva Ultra Raptor II GTX women's shoe in another colourway is a separate top-level row"}],"fix":{"group":{"head":"p-la-sportiva-ultra-raptor-ii-gtx-w-s-rose-onyx","members":["p-la-sportiva-ultra-raptor-ii-gtx-w-s-slate-sorbet"],"axis":"color"}}}
+{"id":"p-la-sportiva-ultra-raptor-ii-gtx-w-s-slate-sorbet","name":"Ultra Raptor II GTX W's Slate/Sorbet","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"same shoe model as the 'Tursko'-filed Rose/Onyx row; srcCat here is only the vague 'Start > Outdoor'"},{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-la-sportiva-ultra-raptor-ii-gtx-w-s-rose-onyx","why":"colourway of the same shoe, no vlabel/family wiring"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-la-sportiva-ultra-raptor-ii-mid-gtx-hikingsko","name":"Ultra Raptor II Mid GTX Hikingsko","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"name ends in 'Hikingsko' and srcCat is 'SKO > Fjell-, jakt- og hikingsko > Hikingsko'"},{"kind":"brand","severity":"low","field":"brand","current":"LA SPORTIVA","suggested":"La Sportiva","why":"ALL-CAPS feed spelling splits the brand facet from the other La Sportiva rows"}],"fix":{"patch":{"cat":"Shoes","brand":"La Sportiva"}}}
+{"id":"p-la-sportiva-ultra-raptor-ii-mid-wide-gtx-black-clay","name":"Ultra Raptor Ii Mid Wide Gtx Black/Clay","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Tursko' = hiking shoes"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-osprey-ultralight-drysack-20l-poppy-orange","status":"ok"}
+{"id":"p-osprey-ultralight-packing-cube-s-electric-lime","status":"ok"}
+{"id":"p-osprey-ultralight-stuff-pack-ryggsekk","name":"Ultralight Stuff Pack ryggsekk","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"OSPREY","suggested":"Osprey","why":"ALL-CAPS feed spelling splits the brand facet from the 'Osprey' rows in the same shard"}],"fix":{"patch":{"brand":"Osprey"}}}
+{"id":"p-grayl-ultrapress-purifier-bottle-desert-tan","status":"ok"}
+{"id":"p-leki-ultratrail-fx-one-bright-red-violet-neonyellow","status":"ok"}
+{"id":"p-ulvang-ulvang-alltime-graze-hat-beetle-green","status":"ok"}
+{"id":"p-swims-umbrella-short-black-orange","status":"ok"}
+{"id":"p-under-armour-undeniable-5-0-duffle-md-pitch-gray","status":"ok"}
+{"id":"p-polar-unite-usb-charging-svart","status":"ok"}
+{"id":"p-solvkroken-up-rigg-bunntackle-allround","status":"ok"}
+{"id":"p-solvkroken-up-rigg-sei","status":"ok"}
+{"id":"p-urberg-urberg-backpack-raincover-s-orange","status":"ok"}
+{"id":"p-urberg-urberg-bamboo-boxers-long-leg-7-pack-men-black-beauty","name":"Urberg Bamboo Boxers Long Leg 7-Pack Men Black Beauty","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":null,"why":"men's boxer shorts filed under bags - '7-Pack' in the name matched the backpack rule"}],"fix":{"patch":{"facets":{"type":null}}}}
+{"id":"p-urberg-urberg-extra-wide-sleeping-bag-2-0-black-beauty","name":"Urberg Extra Wide Sleeping Bag 2.0 Black Beauty","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":"Sleeping","why":"it is a sleeping bag; the word 'Bag' matched the backpack rule instead"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-urberg-urberg-hiking-knife-black","status":"ok"}
+{"id":"p-urberg-urberg-hiking-rugged-pants-men-black-beauty","status":"ok"}
+{"id":"p-urberg-urberg-hiking-stretch-adventure-pants-jr-arctic-dusk","status":"ok"}
+{"id":"p-urberg-urberg-kids-bjorndalen-2-0-hiking-pants-midnight-navy","status":"ok"}
+{"id":"p-urberg-urberg-light-flanell-shirt-wmn-blue-nights","name":"Urberg Light Flanell Shirt Wmn Blue Nights","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says 'Wmn'; 'Wmns' maps to Women elsewhere in this shard but 'Wmn' does not"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-urberg-urberg-men-s-printed-tree-tee-plum-kitten-mountain","status":"ok"}
+{"id":"p-urberg-urberg-men-s-tree-base-layer-pants-midnight-navy","status":"ok"}
+{"id":"p-urberg-urberg-merino-tee-wmn-mediterranea","name":"Urberg Merino Tee Wmn Mediterranea","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says 'Wmn'"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-urberg-urberg-microfiber-towel-60x120-cm-navy","status":"ok"}
+{"id":"p-urberg-urberg-moss-knit-sweater-wmn-beige","name":"Urberg Moss Knit Sweater Wmn Beige","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says 'Wmn'"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-urberg-urberg-multi-tool-small-navy","status":"ok"}
+{"id":"p-urberg-urberg-pile-hoodie-wmn-grey-melange","name":"Urberg Pile Hoodie Wmn Grey Melange","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name says 'Wmn'"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-urberg-urberg-rogen-cookset-4p-grey","status":"ok"}
+{"id":"p-urberg-urberg-solar-panel-28w-black-beauty","status":"ok"}
+{"id":"p-urberg-urberg-spare-pole-tipi-tent-5p-2-0-black","status":"ok"}
+{"id":"p-urberg-urberg-trekking-pole-g2-white","status":"ok"}
+{"id":"p-urberg-urberg-tritan-bottle-1000-ml-dark-purple","status":"ok"}
+{"id":"p-urberg-urberg-unisex-orby-neoprene-boot-black-beauty","name":"Urberg Unisex Örby Neoprene Boot Black Beauty","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"the name says 'Boot'; footwear has its own category"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-berkley-urbn-hollowbelly-v-tail-7-5cm","status":"ok"}
+{"id":"p-avignon-urfors-high-unisex-morkegronn","status":"ok"}
+{"id":"p-urth-urth-arkose-20l-ryggsekk-insert-beige","name":"URTH Arkose 20L Ryggsekk + Insert Beige","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Photo","why":"camera backpack with a camera insert, sold by Japan Photo; the row has no srcCat at all so nothing pointed at Photo"}],"fix":{"patch":{"cat":"Photo"}}}
+{"id":"p-nordisk-utgard-sky-13-2-technical-cotton-tent-sandshell","status":"ok"}
+{"id":"ean-7031582092025","status":"ok"}
+{"id":"ean-7031581999554","status":"ok"}
+{"id":"p-primus-vacuum-bottle-0-75-l-navy","status":"ok"}
+{"id":"p-meindl-vakuum-men-fit-wide-dark-brown","status":"ok"}
+{"id":"ean-7031582438892","status":"ok"}
+{"id":"p-helsport-varanger-4-6-inner-tent-incl-floor","status":"ok"}
+{"id":"ean-7031582271550","status":"ok"}
+{"id":"ean-7031582271758","status":"ok"}
+{"id":"p-rapide-vaxspray-300-ml","status":"ok"}
+{"id":"ean-7031582610137","status":"ok"}
+{"id":"p-springyard-velcro-soft-reflex","status":"ok"}
+{"id":"p-rab-venant-5-panel-cap-graphene-marmalade","status":"ok"}
+{"id":"ean-7031582496205","status":"ok"}
+{"id":"ean-7031582099062","status":"ok"}
+{"id":"ean-7031582496229","name":"Vengetind 32","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"ean-7031582496229","suggested":"ean-7031582099062","why":"identical name, brand, image and price band as ean-7031582099062 ('Vengetind 32', kr 1700 vs kr 1699) - two EANs of the same Bergans pack sitting as separate products"}],"fix":{"alias":{"ean":"7031582496229","product_id":"ean-7031582099062"}}}
+{"id":"ean-7031582573913","status":"ok"}
+{"id":"p-bergans-vengetind-42","name":"Vengetind 42","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"BERGANS","suggested":"Bergans of Norway","why":"truncated ALL-CAPS feed spelling splits the brand facet"}],"fix":{"patch":{"brand":"Bergans of Norway"}}}
+{"id":"ean-7031582099031","status":"ok"}
+{"id":"p-blue-fox-vibrax-chaser-11g-c","status":"ok"}
+{"id":"p-blue-fox-vibrax-fluorescent-bff1-4g-gfr","status":"ok"}
+{"id":"p-blue-fox-vibrax-hot-pepper-4g-3-pk","status":"ok"}
+{"id":"p-blue-fox-vibrax-minnow-super-9g-c","status":"ok"}
+{"id":"_summary","shard":"Outdoor-06","checked":300,"ok":231,"issues":69,"by_kind":{"category":23,"facets":27,"brand":11,"name":6,"variant":6,"junk":2,"duplicate":1},"high":18,"rule_gaps":["colour is derived from BRAND tokens: 'SØLVKROKEN' (sølv = silver) in the name gives color Silver on 7 fishing rows, and a 'Varemerker > Black Diamond' crumb in srcCat gives color Black to a wasabi-green bivy - deriveFacets should ignore brand crumbs and a leading brand token in the name","'Pack'/'Bag' anywhere in the name derives type 'Backpacks & bags' - it hit a 7-pack of boxer shorts and a sleeping bag","footwear breadcrumbs land in Outdoor: 'Tursko', 'Løpesko' and 'SKO > Fjell-, jakt- og hikingsko > Hikingsko' should resolve to Shoes (9 rows here)","audience: 'Wmns' maps to Women but 'Wmn' and 'Lady' do not (6 rows)","type is not derived from the pack breadcrumbs 'Dagstursekker/Dagstursekk/Tursekker/Tursekk', so ~15 backpacks in this shard have no type facet while 'Duffelbagger' and 'Ryggsekker og Vesker' work","beanies/balaclavas/gloves/insoles get type 'Tops & baselayers' whenever the name contains Wool or Fleece, while identical headwear without those words gets 'Accessories'"],"notes":"Healthy shard - 231/300 clean, all rows machine-promoted, categories mostly right because the fishing/tent/sleeping breadcrumbs are strong; the real damage is concentrated in derived facets (brand-token colours, Bag/Pack types) and in footwear that should sit in Shoes. Two secondary systemic issues need no per-row fix: every row carries the default icon 'tent', and 115 of 300 have no image (all from sampled, image-less crawls). A large body of nordic-ski and helmet gear sits in Outdoor by convention - left alone here, but it is the next boundary worth a decision."}

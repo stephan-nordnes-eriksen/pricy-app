@@ -1,0 +1,300 @@
+{"id":"p-restrap-restrap-bumper-bar","status":"ok"}
+{"id":"ean-5060367880115","status":"ok"}
+{"id":"p-revelate-designs-revelate-designs-campamocha-styreveske","status":"ok"}
+{"id":"ean-850009042750","status":"ok"}
+{"id":"p-revelate-designs-revelate-designs-spenne-kit","status":"ok"}
+{"id":"ean-857192003117","status":"ok"}
+{"id":"ean-850009042477","status":"ok"}
+{"id":"p-rock-shox-rock-shox-am-service-kit","status":"ok"}
+{"id":"p-rock-shox-rock-shox-recon-silver-basic-service-kit","status":"ok"}
+{"id":"p-rock-shox-rock-shox-reverb-hydraulic-fluid","status":"ok"}
+{"id":"p-rock-shox-rock-shox-sid-basic-service-kit","status":"ok"}
+{"id":"p-rock-shox-rock-shox-steel-coil-spring","status":"ok"}
+{"id":"p-rock-shox-rockshox-air-top-cap","status":"ok"}
+{"id":"p-rock-shox-rockshox-am-basic-service-kit","status":"ok"}
+{"id":"p-rock-shox-rockshox-bakdemper-monteringsdeler","status":"ok"}
+{"id":"p-rock-shox-rockshox-bottomless-tokens","status":"ok"}
+{"id":"p-rock-shox-rockshox-damper-upgrade-kit","status":"ok"}
+{"id":"p-rock-shox-rockshox-debonair-kit-150mm","status":"ok"}
+{"id":"p-rock-shox-rockshox-deluxe-super-deluxe-service-kit","status":"ok"}
+{"id":"p-rock-shox-rockshox-full-service-kit","status":"ok"}
+{"id":"p-rock-shox-rockshox-recon-silver-rl-b1","name":"RockShox Recon Silver RL B1+","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"RockShox Recon Silver RL B1+","suggested":null,"why":"a Recon Silver RL B1+ fork at kr 145 is implausible; the name is almost certainly truncated from a service/spare part for that fork (seal kit, decal), so the row reads as a whole fork at a fake price"}]}
+{"id":"p-rule28-rule28-one-aero-calf-guard","status":"ok"}
+{"id":"p-sapim-sapim-brass-polyax-2-x-16mm-sils-nippler","status":"ok"}
+{"id":"p-sawyer-sawyer-bottle-vannfilter-flaske","name":"Sawyer Bottle Vannfilter Flaske","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"Sawyer squeeze water-filter bottle — hiking/camping water treatment, not bike gear; it only sits in Bikes because the crawled shop is a bike shop and there is no srcCat"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-schwalbe-schwalbe-24-landevei-slange","status":"ok"}
+{"id":"p-schwalbe-schwalbe-26-quot-nr-sv13xxl-fatbike-slange","name":"Schwalbe 26&quot; Nr.SV13XXL Fatbike Slange","status":"issue","issues":[{"kind":"name","severity":"high","field":"name","current":"Schwalbe 26&quot; Nr.SV13XXL Fatbike Slange","suggested":"Schwalbe 26\" Nr.SV13XXL Fatbike Slange","why":"HTML entity &quot; left unescaped in the stored name; it renders literally on the PDP"},{"kind":"facets","severity":"low","field":"facets.wheel","current":null,"suggested":26,"why":"name states 26\" but the escaped entity blocked the wheel-size derivation — every other Schwalbe row in the shard has wheel set"}],"fix":{"patch":{"name":"Schwalbe 26\" Nr.SV13XXL Fatbike Slange","facets":{"wheel":26}}}}
+{"id":"p-schwalbe-schwalbe-al-grounder-29-dekk","status":"ok"}
+{"id":"ean-4026495902083","status":"ok"}
+{"id":"p-schwalbe-schwalbe-hans-dampf-addix-soft-26-dekk","status":"ok"}
+{"id":"p-schwalbe-schwalbe-magic-mary-addix-us-29-dekk","status":"ok"}
+{"id":"p-schwalbe-schwalbe-racing-ray-addix-sg-27-5-dekk","status":"ok"}
+{"id":"ean-708447914408","name":"Schwinn 510U Treningssykkel","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"stationary exercise bike, srcCat 'Kondisjon / Treningssykkel' (fitness/exercise bike) — it is gym equipment, not a bicycle you ride"},{"kind":"brand","severity":"high","field":"brand","current":"Gymstick","suggested":"Schwinn","why":"the name states Schwinn; Gymstick is the Nordic distributor, not the brand"}],"fix":{"patch":{"cat":"Sport","brand":"Schwinn"}}}
+{"id":"p-scicon-scicon-toptube-beskyttelse","status":"ok"}
+{"id":"ean-9120133009372","name":"Scoot & Ride - Sparkesykkel Highwaykick 3S Ash - Onesize","status":"issue","issues":[{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"Ash","why":"name carries a colour ('Ash') and size ('Onesize') suffix plus a duplicated brand prefix, but the row has no vlabel/family — it will sit as its own top-level product next to its sibling colours"}]}
+{"id":"ean-4897033963886","name":"Scoot & Ride - Sykkelhjelm (45-51cm) Blueberry - Onesize","status":"issue","issues":[{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"Blueberry","why":"colour suffix 'Blueberry' and size 'Onesize' in the name, brand duplicated as a prefix, no vlabel/family wiring"}]}
+{"id":"p-scott-scott-239530-459-dropout-girore","name":"Scott 239530 #459 Dropout/Girøre","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Scott 239530 #459 Dropout/Girøre","suggested":null,"why":"shop SKU noise ('239530 #459') carried into the product name; the hanger number is meaningful to a mechanic but the leading article number is not"}]}
+{"id":"p-scott-scott-bgm-dt-converter","status":"ok"}
+{"id":"ean-7616185378433","name":"Scott Contrail 30 Terrengsykkel","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Bikes","why":"'Terrengsykkel' (MTB) is a complete bicycle at kr 9999 but only discipline=MTB derived; the type filter will not show it under Bikes"}],"fix":{"patch":{"facets":{"type":"Bikes"}}}}
+{"id":"p-scott-scott-e-bike-stotte","status":"ok"}
+{"id":"p-scott-scott-gambler-20-dropout-girore","status":"ok"}
+{"id":"p-scott-scott-mtb-rc-evo-stud-reservesett","name":"Scott MTB RC EVO Stud Reservesett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Accessories","why":"replacement studs for MTB shoes at kr 199 — 'MTB' in the name made it derive type=Bikes, so it shows up when a shopper filters for complete bicycles"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-scott-scott-solace-gravel-30-elsykkel","status":"ok"}
+{"id":"p-sweet-protection-seeker-mips-helmet","name":"Seeker Mips Helmet","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Seeker Mips Helmet","suggested":"Sweet Protection Seeker Mips Helmet","why":"brand missing from the name — the Sport 1 feed publishes the model only, so search for 'Sweet Protection helmet' misses it"},{"kind":"brand","severity":"low","field":"brand","current":"SWEET PROTECTION","suggested":"Sweet Protection","why":"ALL CAPS brand from the Sport 1 feed; it splits the brand facet against normally-cased rows"}],"fix":{"patch":{"name":"Sweet Protection Seeker Mips Helmet","brand":"Sweet Protection"}}}
+{"id":"p-selle-italia-selle-italia-model-x-plus-superflow-sete","status":"ok"}
+{"id":"p-selle-italia-selle-italia-slr-boost-sf-dame-sete","status":"ok"}
+{"id":"p-selle-italia-selle-italia-slr-boost-tm-sete","status":"ok"}
+{"id":"p-selle-royal-selle-royal-gel-setetrekk","status":"ok"}
+{"id":"p-shimano-shimano-105-5700-trinsehjulsett","status":"ok"}
+{"id":"p-shimano-shimano-alfine-20t-bakdrev","status":"ok"}
+{"id":"p-shimano-shimano-alfine-s501-kranksett","status":"ok"}
+{"id":"ean-4524667578970","status":"ok"}
+{"id":"p-shimano-shimano-alivio-m3100-venstre-girspak","status":"ok"}
+{"id":"p-shimano-shimano-altus-m375-bremsekalipper","status":"ok"}
+{"id":"p-shimano-shimano-altus-sl-m315-8s-girspak","status":"ok"}
+{"id":"p-shimano-shimano-bb-es300-bsa-kranklager","status":"ok"}
+{"id":"p-shimano-shimano-bl-m6100-hoyre-bremsehandtak","status":"ok"}
+{"id":"ean-4550170080334","status":"ok"}
+{"id":"p-shimano-shimano-bl-rs600-hoyre-bremsehandtak","status":"ok"}
+{"id":"p-shimano-shimano-br-m810-bleeding-spacer","name":"Shimano BR-M810 Bleeding Spacer","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 29 workshop bleed spacer — a service consumable that ships in every bleed kit, not something a shopper price-compares; also mis-typed as Drivetrain when BR- is a brake part"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-claris-r2000-venstre-sti-hendel","status":"ok"}
+{"id":"p-shimano-shimano-cn-hg701-kjede","status":"ok"}
+{"id":"p-shimano-shimano-cues-u4000-hoyre-girspak","status":"ok"}
+{"id":"p-shimano-shimano-cues-u4000-venstre-girspak","status":"ok"}
+{"id":"p-shimano-shimano-cues-u4000-1-single-kranksett","status":"ok"}
+{"id":"ean-4550170617523","status":"ok"}
+{"id":"p-shimano-shimano-deore-mt500-bak-skivebremssett","name":"Shimano Deore MT500 Bak Skivebremssett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremssett' = disc brake set; the name states brakes, the stored type says Drivetrain"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-shimano-shimano-deore-mt500-framhjul","name":"Shimano Deore MT500 Framhjul","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Wheels","why":"'Framhjul' = front wheel; the Wheels type value exists in this shard and is what the name states"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-shimano-shimano-deore-xt-kulelager-beholder","name":"Shimano Deore XT  Kulelager Beholder","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 29 ball-bearing retainer cage — a loose hardware bit with no standalone shopping intent"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-di2-sm-btr2-batteriholder","status":"ok"}
+{"id":"p-shimano-shimano-dura-ace-9000-bremsewiresett","status":"ok"}
+{"id":"p-shimano-shimano-dura-ace-9000-temposkiftere","status":"ok"}
+{"id":"p-shimano-shimano-dura-ace-9110-aero-bakbrems","name":"Shimano Dura Ace 9110 Aero Bakbrems","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Bakbrems' = rear brake caliper; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-shimano-shimano-dura-ace-r9120-sti-girhendel","status":"ok"}
+{"id":"p-shimano-shimano-dura-ace-r9160-tt-tri-hendelsett","status":"ok"}
+{"id":"p-shimano-shimano-dura-ace-r9200-felgbrems","name":"Shimano Dura-Ace R9200 Felgbrems","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Felgbrems' = rim brake; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"ean-4550170616298","status":"ok"}
+{"id":"p-shimano-shimano-eikenippel","name":"Shimano Eikenippel","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 25 single spoke nipple — wheelbuilding hardware, not a listable product; also typed Drivetrain when it is a wheel part"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-fc-2350-34t-drev","status":"ok"}
+{"id":"p-shimano-shimano-fc7800-krankarm-skruer","name":"Shimano FC7800 Krankarm Skruer","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 39 crank-arm bolts — loose fasteners for a 2007 groupset, no shopping intent"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-festeskrue-for-kaliper-m5x14mm","name":"Shimano festeskrue for kaliper M5x14mm","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 49 single M5x14 caliper mounting screw — a fastener, not a product"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-fett-til-girwirestrompe","status":"ok"}
+{"id":"p-shimano-shimano-fh-rm35-boss","status":"ok"}
+{"id":"ean-4550170641160","name":"Shimano FH-TC600 El-sykkel Baknav","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Drivetrain","suggested":"Wheels","why":"'Baknav' = rear hub, a wheel component; FH- is Shimano's hub prefix"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-shimano-shimano-hg-ev-cn-9000-kjedebolter","status":"ok"}
+{"id":"p-shimano-shimano-hjulmutter-3-8-nexus","name":"Shimano Hjulmutter 3/8\" Nexus","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 29 axle nut — a loose fastener"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-kjedestabilisator","status":"ok"}
+{"id":"p-shimano-shimano-mf-tz500-14-28t-frikrans","status":"ok"}
+{"id":"p-shimano-shimano-mh10-handtak","status":"ok"}
+{"id":"p-shimano-shimano-mt200-venstre-bremsehandtak","status":"ok"}
+{"id":"p-shimano-shimano-p03a-rf-bremseklosser","status":"ok"}
+{"id":"p-shimano-shimano-press-fit-mt500-kranklager","status":"ok"}
+{"id":"p-shimano-shimano-rd-m9000-sgs-bakgir-innerplate","status":"ok"}
+{"id":"p-shimano-shimano-road-sus-slr-bremsewiresett","status":"ok"}
+{"id":"p-shimano-shimano-rt-54-bremseskive","status":"ok"}
+{"id":"p-shimano-shimano-rt-em300-bremseskive","status":"ok"}
+{"id":"p-shimano-shimano-rt-mt900-160-mm-bremseskive","status":"ok"}
+{"id":"p-shimano-shimano-saint-m820-hoyre-girspak","status":"ok"}
+{"id":"p-shimano-shimano-saint-m820-kranksett","status":"ok"}
+{"id":"p-shimano-shimano-sg-7c22-stovdeksel","name":"Shimano SG-7C22 Støvdeksel","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 38 dust cap for an internal gear hub — a service part with no standalone listing value"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-4550170074012","name":"Shimano SH-GE900 Sykkelsko","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Apparel","why":"'Sykkelsko' = cycling shoes; stored type Drivetrain is flatly contradicted by the name"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-4550170065409","name":"Shimano SH-GE900GTX Sykkelsko","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Apparel","why":"'Sykkelsko' = cycling shoes, not drivetrain"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"ean-4550170001568","name":"Shimano SH-GE900HS Sykkelsko","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Apparel","why":"'Sykkelsko' = cycling shoes, not drivetrain"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"p-shimano-shimano-sl-m8000-base-cap-bolt","name":"Shimano SL-M8000 Base Cap & Bolt","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 50 shifter base cap and bolt — spare hardware"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-sl-rv300-6s-revoshift-girhendel","status":"ok"}
+{"id":"p-shimano-shimano-slx-660-22t-drev","status":"ok"}
+{"id":"p-shimano-shimano-slx-br-m7100-skivebremskalipper","name":"Shimano SLX BR-M7100 Skivebremskalipper","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremskalipper' = disc brake caliper; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-shimano-shimano-slx-mt620-bakhjul","name":"Shimano SLX MT620 Bakhjul","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Wheels","why":"'Bakhjul' = rear wheel"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-shimano-shimano-slx-rt70-bremseskive","status":"ok"}
+{"id":"p-shimano-shimano-sm-bh59-disc-bremseslange","status":"ok"}
+{"id":"p-shimano-shimano-sm-bh59-90-kompresjonsring","name":"Shimano SM-BH59/90-kompresjonsring","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"compression ring for the BH59/BH90 brake hose — the sibling SM-BH59/BH90 hose rows in this shard are correctly typed Brakes"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-shimano-shimano-sm-bh90-sbm-bremseslange","status":"ok"}
+{"id":"p-shimano-shimano-sm-ug51-kjedelaser","status":"ok"}
+{"id":"ean-4524667007371","status":"ok"}
+{"id":"p-shimano-shimano-spd-refleksplate","status":"ok"}
+{"id":"p-shimano-shimano-st-r8020-hendelgummi","status":"ok"}
+{"id":"p-shimano-shimano-st-r8070-hendelgummi","status":"ok"}
+{"id":"p-shimano-shimano-steps-e6070-kjede","status":"ok"}
+{"id":"p-shimano-shimano-steps-fc-e6100-krankdrev","status":"ok"}
+{"id":"ean-4550170514778","status":"ok"}
+{"id":"ean-4550170516055","status":"ok"}
+{"id":"p-shimano-shimano-steps-mu-ur500-motorenhet","status":"ok"}
+{"id":"ean-4524667696056","status":"ok"}
+{"id":"ean-4550170655846","name":"Shimano Sykkelsko SH-XC903 42","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Apparel","why":"'Sykkelsko' = cycling shoes; stored type Drivetrain is contradicted by the name"},{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"42","why":"shoe size 42 is baked into the name with no vlabel/family, so every size becomes its own top-level product"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"p-shimano-shimano-tiagra-4700-dobbel-framgir","status":"ok"}
+{"id":"p-shimano-shimano-tiagra-4720-hoy-sti-girhendel","status":"ok"}
+{"id":"p-shimano-shimano-tl-pd40-pedalverktoy","status":"ok"}
+{"id":"p-shimano-shimano-tourney-ty200-bakgir","status":"ok"}
+{"id":"p-shimano-shimano-tourney-ty300-bakgir","status":"ok"}
+{"id":"p-shimano-shimano-tourney-ty601-framgir","status":"ok"}
+{"id":"ean-4524667293651","status":"ok"}
+{"id":"p-shimano-shimano-ultegra-6800-46-36t-drevbolter","status":"ok"}
+{"id":"p-shimano-shimano-ultegra-r8000-drevbolter","status":"ok"}
+{"id":"p-shimano-shimano-ultegra-r8020-skivebremssett","name":"Shimano Ultegra R8020 Skivebremssett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremssett' = disc brake set; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-shimano-shimano-ultegra-r8070-bak-bremsekalipper","status":"ok"}
+{"id":"p-shimano-shimano-wh7900-c24-eike-hoyre-bak","name":"Shimano WH7900-C24 Eike Høyre Bak","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 35 single replacement spoke for a discontinued wheelset — a warranty spare, not a listable product"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-wh7900-c24-eike-venstre-bak","name":"Shimano WH7900-C24 Eike Venstre Bak","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"kr 14 single replacement spoke — same warranty-spare case as the right-hand row"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-shimano-shimano-xt-fc-m8000-drevbolter","status":"ok"}
+{"id":"ean-4550170444044","name":"Shimano XT FH-M8110 28h 12s Baknav","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Drivetrain","suggested":"Wheels","why":"'Baknav' = rear hub, a wheel component"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-shimano-shimano-xt-m8000-front-skivebrems","name":"Shimano XT M8000 Front Skivebrems","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebrems' = disc brake; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-shimano-shimano-xt-m8000-i-spec-hoyre-girspak","status":"ok"}
+{"id":"p-shimano-shimano-xt-m8100-138l-12s-kjede","status":"ok"}
+{"id":"p-shimano-shimano-xt-m8100-2x12-gruppesett","status":"ok"}
+{"id":"p-shimano-shimano-xt-m8120-xc-tl-framhjul","name":"Shimano XT M8120 XC TL Framhjul","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Wheels","why":"'Framhjul' = front wheel"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"ean-4550170305529","status":"ok"}
+{"id":"p-shimano-shimano-xt-rd-m8000-trinsehjul","status":"ok"}
+{"id":"p-shimano-shimano-xt-wh-m8200-27-5-bakhjul","name":"Shimano XT WH-M8200 27.5\" Bakhjul","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Wheels","why":"'Bakhjul' = rear wheel; WH- is Shimano's wheel prefix and wheel=27.5 already derived"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-shimano-shimano-xtr-bremsewiresett","status":"ok"}
+{"id":"ean-4524667880042","status":"ok"}
+{"id":"p-sigma-sigma-kablet-computerfeste","status":"ok"}
+{"id":"p-sigma-sigma-nugget-ii-flash-baklys","status":"ok"}
+{"id":"ean-810093161942","status":"ok"}
+{"id":"ean-810093162376","name":"Silca Gravel Wool Sokker","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Apparel","why":"'Sokker' = socks at kr 399; type=Bikes puts a pair of socks in the complete-bicycles filter"}],"fix":{"patch":{"facets":{"type":"Apparel"}}}}
+{"id":"p-silca-silca-inner-check-valve-assembly","status":"ok"}
+{"id":"p-silca-silca-super-pista-digital-gulvpumpe","status":"ok"}
+{"id":"p-silca-silca-ult-chain-striper-wax-prep","status":"ok"}
+{"id":"p-science-in-sport-sis-go-electrolyte-sportsdrikke","status":"ok"}
+{"id":"p-science-in-sport-sis-go-isotonic-variety-pack-energigeler","status":"ok"}
+{"id":"p-science-in-sport-sis-rego-clear-pulver","status":"ok"}
+{"id":"ean-8596084102140","name":"Sittende treningssykkel Omahan RMB","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"recumbent exercise bike, srcCat 'Kondisjon / Treningssykkel' — gym cardio equipment, not a bicycle"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-sks-sks-bluemels-basic-24-skjermsett","status":"ok"}
+{"id":"p-sks-sks-rennkompressor-nxt-gulvpumpe","status":"ok"}
+{"id":"ean-4002556812393","status":"ok"}
+{"id":"p-continental-slange-27-5a40-1-75-2-5-bilventil-conti","name":"Slange 27,5A40 1,75-2,5 Bilventil Conti","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.wheel","current":null,"suggested":27.5,"why":"name states 27,5 (comma decimal, no inch mark) so the wheel-size rule missed it; every other tube row in the shard carries wheel"},{"kind":"brand","severity":"low","field":"brand","current":"CONTINENTAL","suggested":"Continental","why":"ALL CAPS brand from the Sport 1 feed splits the brand facet"}],"fix":{"patch":{"brand":"Continental","facets":{"wheel":27.5}}}}
+{"id":"ean-716736335261","status":"ok"}
+{"id":"ean-716736763491","name":"Smith Persist 2 MIPS Sykkelhjelm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Smith Persist 2 MIPS Sykkelhjelm","why":"identical name, brand and price (kr 1499) as ean-716736763514 — two colour/size SKUs of one helmet sitting as separate top-level rows"}],"fix":{"group":{"head":"ean-716736763491","members":["ean-716736763514"],"axis":"color"}}}
+{"id":"ean-716736763514","name":"Smith Persist 2 MIPS Sykkelhjelm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Smith Persist 2 MIPS Sykkelhjelm","why":"duplicate top-level row of ean-716736763491 (same name, brand, kr 1499); belongs under it as a variant child"}]}
+{"id":"ean-4028017534123","status":"ok"}
+{"id":"p-specialized-specialized-sykkelhjelm-jr-shuffle-2-led","status":"ok"}
+{"id":"ean-196625225932","name":"Specialized Sykkelhjelm SW Evade 4 L","status":"issue","issues":[{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"L","why":"size L is in the name with no vlabel/family, so each helmet size becomes its own product"}]}
+{"id":"ean-4005251357404","name":"Speedbike Pro","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Spinningsykkel' — an indoor spin bike at kr 18369, gym equipment rather than a bicycle"},{"kind":"name","severity":"low","field":"name","current":"Speedbike Pro","suggested":"Hammer Speedbike Pro","why":"name has no brand; 'Speedbike Pro' alone is not identifiable in search"}],"fix":{"patch":{"cat":"Sport","name":"Hammer Speedbike Pro"}}}
+{"id":"ean-5059937591018","name":"Speedo Infant Badesko","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Shoes","why":"infant swim shoes — footwear with nothing bike-related; it inherited Bikes from the bike shop's feed having no srcCat"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"ean-8050949153444","name":"Sportful Classic Sykkelbukse","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Sportful Classic Sykkelbukse","why":"same name, brand and price (kr 1299) as ean-8050949153406 — two SKUs of one bib short as separate top-level rows"}]}
+{"id":"ean-8050949153406","name":"Sportful Classic Sykkelbukse","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"Sportful Classic Sykkelbukse","why":"duplicate of ean-8050949153444 (same name/brand/price); this row has the product photo so it is the better head"}],"fix":{"group":{"head":"ean-8050949153406","members":["ean-8050949153444"],"axis":"size"}}}
+{"id":"ean-8055688955014","status":"ok"}
+{"id":"ean-8050949293409","status":"ok"}
+{"id":"ean-8050949056196","status":"ok"}
+{"id":"ean-8056006445521","status":"ok"}
+{"id":"p-spurcycle-spurcycle-reserve-gummi-sett-v1","status":"ok"}
+{"id":"p-squeezy-squeezy-athletic-maltidserstatning","status":"ok"}
+{"id":"p-squeezy-squeezy-energy-dispenser-klemror","status":"ok"}
+{"id":"p-squeezy-squeezy-liquid-energy-refiller","status":"ok"}
+{"id":"p-squeezy-squeezy-super-energy-gel-125-ml-flaske","status":"ok"}
+{"id":"p-squeezy-squeezy-super-energy-gel-3-pack-mix","name":"Squeezy Super Energy Gel 3 Pack Mix +","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Squeezy Super Energy Gel 3 Pack Mix +","suggested":"Squeezy Super Energy Gel 3 Pack Mix","why":"trailing '+' is a truncation artefact from the shop's listing title"}],"fix":{"patch":{"name":"Squeezy Super Energy Gel 3 Pack Mix"}}}
+{"id":"p-squirt-squirt-e-bike-kjedeolje","status":"ok"}
+{"id":"p-suntour-sr-suntour-nex-28-gaffel","status":"ok"}
+{"id":"ean-710845804496","status":"ok"}
+{"id":"p-sram-sram-centerline-160-mm-bremseskive","status":"ok"}
+{"id":"p-sram-sram-centerline-180-mm-bremseskive","status":"ok"}
+{"id":"p-sram-sram-centerline-2-delt-160mm-bremseskive","status":"ok"}
+{"id":"p-sram-sram-code-bronze-stealth-skivebremssett","name":"SRAM Code Bronze Stealth Skivebremssett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremssett' = disc brake set; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-sram-sram-dub-pf30-73-a-kranklager","status":"ok"}
+{"id":"p-sram-sram-dub-pf41-road-wide-kranklager","status":"ok"}
+{"id":"ean-710845904943","status":"ok"}
+{"id":"ean-710845919510","status":"ok"}
+{"id":"ean-710845888441","status":"ok"}
+{"id":"p-sram-sram-eagle-s100-kjede","status":"ok"}
+{"id":"p-sram-sram-eagle-s500-oppgraderingskit","status":"ok"}
+{"id":"ean-710845888472","status":"ok"}
+{"id":"p-sram-sram-ex1-x-horizon-long-cage-bakgir","status":"ok"}
+{"id":"p-sram-sram-force-axs-e1-skivebremssett","name":"Sram Force AXS E1 Skivebremssett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremssett' = disc brake set; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-sram-sram-force-bakbrems","name":"SRAM Force Bakbrems","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Bakbrems' = rear brake; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-sram-sram-force-etap-axs-wide-d2-framgir","status":"ok"}
+{"id":"p-sram-sram-force-wifli-medium-bakgir","status":"ok"}
+{"id":"p-sram-sram-front-ps-hjullagersett","name":"SRAM Front PS Hjullagersett","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Drivetrain","suggested":"Wheels","why":"'Hjullagersett' = wheel bearing set — a hub/wheel part, not drivetrain"}],"fix":{"patch":{"facets":{"type":"Wheels"}}}}
+{"id":"p-sram-sram-girkabel-hylser-4-mm","status":"ok"}
+{"id":"p-sram-sram-grip-shift-holker","status":"ok"}
+{"id":"ean-710845813061","name":"SRAM Guide T Skivebrems","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebrems' = disc brake; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-sram-sram-gx-eagle-xg-1275-10-52-kassett","status":"ok"}
+{"id":"p-sram-sram-gx-type-2-1-1x11-long-cage-bakgir","status":"ok"}
+{"id":"p-sram-sram-gx-type-2-1-2x10-medium-cage-bakgir","status":"ok"}
+{"id":"p-sram-sram-gx-type-2-1-2x11-medium-cage-bakgir","status":"ok"}
+{"id":"p-sram-sram-gx-x01-x01dh-x1-cx1-trinsehjul","status":"ok"}
+{"id":"p-sram-sram-hose-kit-hrd-stealthamajig","name":"Sram Hose Kit HRD Stealthamajig","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"HRD Stealthamajig hose kit is a hydraulic brake hose, matching the Brakes-typed hose rows elsewhere in the shard"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-sram-sram-hydror-monoblock-bremsekloss","status":"ok"}
+{"id":"ean-710845905971","name":"SRAM Maven Silver Skivebremssett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremssett' = disc brake set; stored type contradicts the name"},{"kind":"duplicate","severity":"med","field":"name","current":"SRAM Maven Silver Skivebremssett","suggested":null,"why":"indistinguishable from ean-710845925955 (same name and brand, kr 2698 vs kr 3369) — most likely front vs rear or two rotor sizes; the shop's variant label is missing from both names so they cannot be merged safely as-is"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"ean-710845925955","name":"SRAM Maven Silver Skivebremssett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremssett' = disc brake set; stored type contradicts the name"},{"kind":"duplicate","severity":"med","field":"name","current":"SRAM Maven Silver Skivebremssett","suggested":null,"why":"same name/brand as ean-710845905971 at a different price; needs the missing variant label before it can be grouped"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-sram-sram-mtb-104-bcd-36t-gxp-l-pin-drev","status":"ok"}
+{"id":"p-sram-sram-mtb-22t-drev","status":"ok"}
+{"id":"p-sram-sram-mth-746-boss","status":"ok"}
+{"id":"ean-710845818035","status":"ok"}
+{"id":"p-sram-sram-pc-1130-11-delt-kjede","status":"ok"}
+{"id":"p-sram-sram-red-2012-bakgir","status":"ok"}
+{"id":"p-sram-sram-red-31-8-mm-klemme","status":"ok"}
+{"id":"p-shimano-sram-red-34-9-mm-klemme","name":"Sram Red 34.9 mm Klemme","status":"issue","issues":[{"kind":"brand","severity":"high","field":"brand","current":"Shimano","suggested":"SRAM","why":"SRAM Red front-derailleur clamp stored under brand Shimano (the derived id slug is 'p-shimano-...' too); the identical 31.8 mm row is correctly SRAM"}],"fix":{"patch":{"brand":"SRAM"}}}
+{"id":"p-sram-sram-red-force-etap-axs-hoods","status":"ok"}
+{"id":"p-sram-sram-red-force-xx1-krankbolt","status":"ok"}
+{"id":"p-sram-sram-rival-1-front-skivebremssett","name":"SRAM Rival 1 Front Skivebremssett","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":"Brakes","why":"'Skivebremssett' = disc brake set; stored type contradicts the name"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-sram-sram-rival-etap-axs-trinsehjul-kit","status":"ok"}
+{"id":"p-sram-sram-sl500-aero-temposkiftere","status":"ok"}
+{"id":"ean-710845837531","status":"ok"}
+{"id":"p-sram-sram-x0-xx-standard-trinsehjul","status":"ok"}
+{"id":"p-sram-sram-x01-trigger-rod-gxp-gruppe","status":"ok"}
+{"id":"p-sram-sram-xx1-eagle-xg-1299-10-52-kassett","status":"ok"}
+{"id":"p-stages-cycling-stages-dash-upper-blendr-feste","status":"ok"}
+{"id":"p-scott-sub-active-eride-usx","name":"SUB Active eRide USX","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"SCOTT","suggested":"Scott","why":"ALL CAPS brand from the Sport 1 feed; the other Scott rows in this shard are 'Scott', so the brand facet splits in two"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Bikes","why":"srcCat 'SYKKEL > Sykler > El sykkel' and kr 34990 make this a complete e-bike, but no type derived"}],"fix":{"patch":{"brand":"Scott","facets":{"type":"Bikes"}}}}
+{"id":"p-sunrace-sunrace-road-csrx0-11-28-10-delt-kassett","status":"ok"}
+{"id":"p-sunrace-sunrace-road-csrx1-11-28-11-delt-kassett","status":"ok"}
+{"id":"p-suomi-tyres-suomi-hile-w240-28-piggdekk","name":"Suomi HILE W240 28\" Piggdekk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tyres & tubes","why":"'Piggdekk' (studded tyre) is a compound the dekk-rule misses, so the row carries wheel=28 but no type"}],"fix":{"patch":{"facets":{"type":"Tyres & tubes"}}}}
+{"id":"p-suomi-tyres-suomi-routa-28-piggdekk","name":"Suomi Routa 28\" Piggdekk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tyres & tubes","why":"same 'piggdekk' compound miss as the HILE row — a studded winter tyre with no type"}],"fix":{"patch":{"facets":{"type":"Tyres & tubes"}}}}
+{"id":"p-giro-sykkelhjelm-scamp-ii","name":"Sykkelhjelm Scamp II","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sykkelhjelm Scamp II","suggested":"Giro Sykkelhjelm Scamp II","why":"brand missing from the name (Intersport publishes the generic noun first)"},{"kind":"brand","severity":"low","field":"brand","current":"GIRO","suggested":"Giro","why":"ALL CAPS brand from the Intersport/Sport 1 feed"}],"fix":{"patch":{"name":"Giro Sykkelhjelm Scamp II","brand":"Giro"}}}
+{"id":"ean-4011905131108","name":"Sykkelkurv til bæresele","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Trixie","why":"'Unspecified' is a placeholder, not a brand; EAN prefix 4011905 is Trixie, the same prefix as ean-4011905028187 'Trixie Friends On Tour-sykkelkurv' in this shard"}],"fix":{"patch":{"brand":"Trixie"}}}
+{"id":"ean-5709386361686","name":"SYKKELLÅS SPRALWIRE MED KODE LENGDE 10X650MM","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"SYKKELLÅS SPRALWIRE MED KODE LENGDE 10X650MM","suggested":"Sykkellås Spralwire med kode, lengde 10x650 mm","why":"ALL CAPS boilerplate title straight from the Jernia feed; it shouts in every listing next to normally-cased rows"},{"kind":"brand","severity":"low","field":"brand","current":"Unspecified","suggested":null,"why":"'Unspecified' is a placeholder brand; the feed gives no real one, so the brand facet gets a junk value"}],"fix":{"patch":{"name":"Sykkellås Spralwire med kode, lengde 10x650 mm"}}}
+{"id":"p-syncros-syn-bike-handlebar-phone-mount","name":"SYN Bike Handlebar Phone Mount","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"SYNCROS","suggested":"Syncros","why":"ALL CAPS brand from the Sport 1 feed; the other 10 Syncros rows in this shard are 'Syncros', so the facet splits"}],"fix":{"patch":{"brand":"Syncros"}}}
+{"id":"p-syncros-syncros-belcarra-r1-5-channel-sete","status":"ok"}
+{"id":"ean-7613368439509","status":"ok"}
+{"id":"p-syncros-syncros-capilano-trekking-gel-sete","status":"ok"}
+{"id":"p-syncros-syncros-fl1-5-wide-dame-sete","status":"ok"}
+{"id":"p-syncros-syncros-greenslide-5-multiverktoy","status":"ok"}
+{"id":"p-syncros-syncros-hivol-800-seteveske","status":"ok"}
+{"id":"p-syncros-syncros-ic-r100-sl-landeveisstyre","name":"Syncros iC-R100-SL Landeveisstyre","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Cockpit & saddle","why":"'Landeveisstyre' = road handlebar (integrated cockpit); type=Bikes lists a handlebar among complete bicycles"}],"fix":{"patch":{"facets":{"type":"Cockpit & saddle"}}}}
+{"id":"p-syncros-syncros-mt-r-200-al-computerfeste","status":"ok"}
+{"id":"p-syncros-syncros-retro-rammeveske","status":"ok"}
+{"id":"p-syncros-syncros-scott-genius-styrelager","status":"ok"}
+{"id":"p-tacx-tacx-neo-flux-shimano-sram-boss","status":"ok"}
+{"id":"p-bikeshop-tacx-shiva-bio-bikeshop-4x750-ml-flasker","name":"Tacx Shiva Bio Bikeshop 4x750 ml Flasker","status":"issue","issues":[{"kind":"brand","severity":"high","field":"brand","current":"Bikeshop","suggested":"Tacx","why":"the shop name was stored as the brand (the id slug is 'p-bikeshop-...' as a result); the identical single-bottle row is correctly branded Tacx"}],"fix":{"patch":{"brand":"Tacx"}}}
+{"id":"p-tacx-tacx-shiva-bio-bikeshop-750-ml-flaske","status":"ok"}
+{"id":"p-tacx-tacx-t1100-galaxia-balanserulle","status":"ok"}
+{"id":"p-wtb-tcs-rim-tape-28mm-x-11m-roll-for-5-wheels-i23","name":"TCS Rim Tape, 28mm x 11m Roll (for 5  wheels) - i23","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"TCS Rim Tape, 28mm x 11m Roll (for 5  wheels) - i23","suggested":"WTB TCS Rim Tape 28mm x 11m Roll (for 5 wheels) - i23","why":"brand WTB missing from the name and a stray double space inside the parenthesis"}],"fix":{"patch":{"name":"WTB TCS Rim Tape 28mm x 11m Roll (for 5 wheels) - i23"}}}
+{"id":"p-tektro-tektro-skivebremseledning-rett-sett-5-5","status":"ok"}
+{"id":"p-weldtite-tf2-performance-olje-med-teflon-100ml","name":"TF2 Performance Olje med Teflon® (100ml)","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"WELDTITE","suggested":"Weldtite","why":"ALL CAPS brand from the Sport 1 feed"}],"fix":{"patch":{"brand":"Weldtite"}}}
+{"id":"ean-40818143469","name":"Therm-a-Rest Vesper 20°F/-6°C Dyne","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"a -6°C down quilt/sleeping bag — camping gear the bike shop stocks for bikepacking; nothing about it is a bike product"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"ean-40818132678","name":"Therm-a-Rest Z Lite SOL Liggeunderlag","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"'Liggeunderlag' = sleeping pad — camping equipment, not bike gear"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-therm-a-rest-therm-a-rest-z-seat-sol-sitteunderlag","name":"Therm-a-Rest Z Seat SOL Sitteunderlag","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Outdoor","why":"'Sitteunderlag' = foam sit pad — camping equipment, same Therm-a-Rest group as the two rows above"}],"fix":{"patch":{"cat":"Outdoor"}}}
+{"id":"p-thomson-thomson-dropper-external-kabelforing","status":"ok"}
+{"id":"p-thule-thule-bike-attachment-sykkelfeste","status":"ok"}
+{"id":"p-thule-thule-chariot-2017-joggesett-hjul","status":"ok"}
+{"id":"p-thule-thule-chariot-sykkeldrag-maxle-trek-adap","name":"Thule Chariot Sykkeldrag Maxle/Trek adap","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Thule Chariot Sykkeldrag Maxle/Trek adap","suggested":"Thule Chariot Sykkeldrag Maxle/Trek adapter","why":"name is cut mid-word at the shop's title length limit ('adap')"}],"fix":{"patch":{"name":"Thule Chariot Sykkeldrag Maxle/Trek adapter"}}}
+{"id":"p-thule-thule-easyfold-3-reisebag-2-sykkler","status":"ok"}
+{"id":"p-thule-thule-easyfold-xt-sykkelarm","status":"ok"}
+{"id":"p-thule-sweden-ab-thule-epos-2-sykkelstativ-hengerfeste","name":"Thule Epos 2 Sykkelstativ Hengerfeste","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Thule Sweden AB","suggested":"Thule","why":"legal entity stored as the brand; the 11 other Thule rows in this shard are 'Thule', so the brand facet splits"}],"fix":{"patch":{"brand":"Thule"}}}
+{"id":"p-thule-thule-hjulstropp-for-g6-928-929","status":"ok"}
+{"id":"p-thule-thule-nokkel-n031","status":"ok"}
+{"id":"p-thule-thule-proride-598-takstativ","status":"ok"}
+{"id":"p-thule-thule-roundtrip-pro-lagringstrekk","status":"ok"}
+{"id":"p-thule-thule-roundtrip-transition-reservehjul","status":"ok"}
+{"id":"p-thule-sweden-ab-thule-shield-pannier-13l-sykkelveske","name":"Thule Shield Pannier 13L Sykkelveske","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Thule Sweden AB","suggested":"Thule","why":"legal entity stored as the brand instead of 'Thule' as on the shard's other Thule rows"}],"fix":{"patch":{"brand":"Thule"}}}
+{"id":"p-toot-performance-toot-aeroyotta-ayfifty-9-csw-hjulsett","status":"ok"}
+{"id":"p-topeak-topeak-backloader-10l-seteveske","status":"ok"}
+{"id":"p-topeak-topeak-backloader-x-10l-seteveske","status":"ok"}
+{"id":"p-topeak-topeak-defender-m1-festebrakett","status":"ok"}
+{"id":"p-topeak-topeak-defender-tx-hybrid-skjermsett","status":"ok"}
+{"id":"p-topeak-topeak-mountain-digital-2stage-minipumpe","status":"ok"}
+{"id":"p-topeak-topeak-pannier-drybag-sideveske","status":"ok"}
+{"id":"p-topeak-topeak-prepstation-verktoykasse","status":"ok"}
+{"id":"p-topeak-topeak-wedge-drybag-m-seteveske","status":"ok"}
+{"id":"p-vaude-trailfront-black","name":"Trailfront Black","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Trailfront Black","suggested":"Vaude Trailfront Black","why":"brand missing from the name; 'Trailfront Black' alone gives a shopper nothing to recognise"},{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"Black","why":"colour suffix in the name with no vlabel/family wiring"}],"fix":{"patch":{"name":"Vaude Trailfront Black"}}}
+{"id":"ean-4044163110622","name":"Treningssykkel AL1","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — a Christopeit indoor exercise bike, gym equipment rather than a bicycle"},{"kind":"duplicate","severity":"med","field":"name","current":"Treningssykkel AL1","suggested":null,"why":"same name, brand and shop as ean-4044163011066 at kr 3995 vs kr 3999 — two EANs for one product; alias one onto the other once it is clear they are not model years"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"ean-4044163011066","name":"Treningssykkel AL1","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' — indoor exercise bike, not a bicycle"},{"kind":"duplicate","severity":"med","field":"name","current":"Treningssykkel AL1","suggested":null,"why":"duplicate of ean-4044163110622 (same name/brand/shop, kr 3999 vs kr 3995); this row has the photo so it is the better head"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"ean-4011905028187","status":"ok"}
+{"id":"ean-887202340826","status":"ok"}
+{"id":"p-truvativ-truvativ-4x-drevbolter","status":"ok"}
+{"id":"p-trygg-trygg-70-frontlykt","status":"ok"}
+{"id":"p-trygg-trygg-polaris-3000l-sykkellykt","status":"ok"}
+{"id":"p-trygg-trygg-polaris-8000l-lyktehode","status":"ok"}
+{"id":"p-tufo-tufo-elite-ride-pariser-dekk","status":"ok"}
+{"id":"p-tufo-tufo-standard-tire-sealant","status":"ok"}
+{"id":"p-tufo-tufo-tubeless-ready-guffe","status":"ok"}
+{"id":"ean-7045952922171","name":"Ulvang Hero Crew Dame Baselagstopp","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"Ulvang merino base-layer top — general training/ski underwear, not cycling kit; it landed in Bikes only because the bike shop feed has no srcCat"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"ean-7045952922881","name":"Ulvang Hero Dame Baselagstights","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"Ulvang merino base-layer tights — training/ski underwear rather than bike gear, same case as the Hero Crew top"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"_summary","shard":"Bikes-03","checked":300,"ok":220,"issues":80,"by_kind":{"facets":35,"category":12,"brand":12,"name":11,"junk":10,"variant":9,"duplicate":4},"high":38,"rule_gaps":["Bikes `type` derivation defaults to Drivetrain for Shimano/SRAM part names: skivebrems*/bremse*/felgbrems sets, hjul/nav/hjullager (wheel + hub parts) and sykkelsko all land on Drivetrain instead of Brakes/Wheels/Apparel — 24 rows in this shard alone","'piggdekk' (studded winter tyre) is not matched by the dekk -> 'Tyres & tubes' rule, so studded tyres derive no type","apparel nouns (sokker, bukse, hettegenser, baselag*, sykkelsko) never derive type=Apparel, and lights (lykt/lys/baklys) never derive type=Accessories — absent across the whole shard, not per-row","wheel size is not derived when the inch mark is HTML-escaped ('26&quot;') or written with a comma decimal and no quote ('27,5A40')","srcCat 'Kondisjon / Treningssykkel' and 'Kondisjon / Spinningsykkel' resolve to Bikes; stationary exercise/spin bikes should route to Sport","Sport 1 / Intersport / Jernia feeds publish ALL-CAPS brands (SCOTT, SYNCROS, GIRO, CONTINENTAL, SWEET PROTECTION, WELDTITE) and legal entities ('Thule Sweden AB'), splitting the brand facet against the same brands from other shops"],"notes":"Healthy shard overall: ~85% of rows are correctly categorised bike components from one shop (Bikeshop). The dominant defect is the derived `type` facet, not `cat` — every disc brake, wheel, hub and cycling shoe from the Shimano/SRAM naming pattern is typed Drivetrain. Secondary: eight non-bike goods (sleeping pads, water filter, swim shoes, base layers) inherited Bikes from a bike shop's feed with no srcCat, and four exercise/spin bikes from Sporttema belong in Sport. 152 of 300 rows still have no image, which is the sampled-crawl state rather than a per-row fault."}

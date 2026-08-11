@@ -1,0 +1,43 @@
+{"id":"p-unior-bike-tools-unior-eikelinjal","status":"ok"}
+{"id":"p-unior-bike-tools-unior-kassettslitasjemaler","status":"ok"}
+{"id":"p-unior-bike-tools-unior-pipenokkel-til-kranklager","status":"ok"}
+{"id":"p-unior-bike-tools-unior-rett-pirkeverktoy","status":"ok"}
+{"id":"p-unior-bike-tools-unior-t-handtak-torx","status":"ok"}
+{"id":"p-unior-bike-tools-unior-ventilkjerneverktoy","status":"ok"}
+{"id":"ean-4005251100062","name":"Varon XTR","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' = cardio exercise bike (Hammer fitness equipment, kr 11 339), gym gear rather than a bicycle"},{"kind":"facets","severity":"high","field":"facets.type","current":"Drivetrain","suggested":null,"why":"whole exercise bike, not a drivetrain part; 'XTR' in the name matched the Shimano groupset rule"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-goodyear-vector-4seasons-tube-type-700x28-28-622-blk","name":"Vector 4Seasons Tube Type 700x28 / 28-622 Blk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tyres & tubes","why":"srcCat 'SYKKEL > Sykkeldeler > Sykkeldekk, slanger og ventiler' and the name is a clincher tyre size"},{"kind":"facets","severity":"low","field":"facets.wheel","current":null,"suggested":28,"why":"'700x28 / 28-622' is ETRTO 622 = 28\"/700c"},{"kind":"brand","severity":"low","field":"brand","current":"GOODYEAR","suggested":"Goodyear","why":"shop-feed ALL CAPS brand string"}],"fix":{"patch":{"brand":"Goodyear","facets":{"type":"Tyres & tubes","wheel":28}}}}
+{"id":"ean-636823619954","status":"ok"}
+{"id":"p-ventura-ventura-veggfeste-for-sykkel","status":"ok"}
+{"id":"p-vittoria-vittoria-air-liner-tubeless-dekkinnsats","status":"ok"}
+{"id":"p-vittoria-vittoria-martello-g2-29-dekk","status":"ok"}
+{"id":"p-vittoria-vittoria-mezcal-tnt-g2-27-5-dekk","status":"ok"}
+{"id":"p-vittoria-vittoria-roadster-29-dekk","status":"ok"}
+{"id":"p-wahoo-wahoo-elemnt-ace-31-8-computerfeste","status":"ok"}
+{"id":"p-wahoo-wahoo-kickr-core-2-11spd-sykkelrulle","status":"ok"}
+{"id":"p-wahoo-wahoo-kickr-xdr-xd-boss","status":"ok"}
+{"id":"p-wahoo-speedplay-wahoo-speedplay-easy-tension-klosser","status":"ok"}
+{"id":"p-weldtite-weldtite-all-weather-olje-100-ml","status":"ok"}
+{"id":"ean-7051943746602","name":"WinMag Cruise BT","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' = Abilica indoor exercise bike, fitness equipment not a bicycle"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-woom-woom-4-go-barnesykkel-20-metallic-blue","name":"Woom 4 Go Barnesykkel 20\" Metallic blue","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.discipline","current":null,"suggested":"Kids","why":"'Barnesykkel' in the name; sibling kids bikes in this shard carry discipline Kids"},{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"Metallic blue","why":"name carries a colour variant suffix but the row has no vlabel/family (no sibling colour in this shard to group with)"}],"fix":{"patch":{"facets":{"discipline":"Kids"}}}}
+{"id":"ean-8596084158246","name":"Xbike Max","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Bikes","suggested":"Sport","why":"srcCat 'Kondisjon / Treningssykkel' = Insportline spinning/exercise bike, gym equipment"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-xeed-xc-3-sport-29","name":"XC 3 SPORT 29","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Bikes","why":"srcCat 'SYKKEL > Sykler > Terrengsykkel' is a complete bike; only discipline was derived"},{"kind":"facets","severity":"low","field":"facets.wheel","current":null,"suggested":29,"why":"trailing '29' in the name is the wheel size (MTB)"}],"fix":{"patch":{"facets":{"type":"Bikes","wheel":29}}}}
+{"id":"p-xeed-xc-r-jr-26","name":"XC R JR 26","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Bikes","why":"srcCat 'SYKKEL > Sykler > Barne- og juniorsykkel' is a complete bike"},{"kind":"facets","severity":"low","field":"facets.wheel","current":null,"suggested":26,"why":"trailing '26' in the name is the wheel size"}],"fix":{"patch":{"facets":{"type":"Bikes","wheel":26}}}}
+{"id":"p-xlc-xlc-barrel-adjuster","status":"ok"}
+{"id":"p-xlc-xlc-bv-x08-styrebrakett","status":"ok"}
+{"id":"p-xlc-xlc-dd-m01-ringeklokke","status":"ok"}
+{"id":"p-xlc-xlc-sp-t14-100mm-dropper-setepinne","status":"ok"}
+{"id":"p-xlc-xlc-sp-t21-150mm-dropper-setepinne","status":"ok"}
+{"id":"p-xlc-xlc-st-l02-justerbar-gaffelrorforlenger","status":"ok"}
+{"id":"p-xlc-xlc-velo-sykkelstotte-26-29","status":"ok"}
+{"id":"p-xon-xon-xba-61-front-skivebremsadapter","name":"XON XBA-61 Front Skivebremsadapter","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Brakes","why":"'Skivebremsadapter' = disc brake adapter; the sibling XON brake pad row derives Brakes"}],"fix":{"patch":{"facets":{"type":"Brakes"}}}}
+{"id":"p-xon-xon-xbd-08a-bremseklosser","status":"ok"}
+{"id":"p-yamaha-yamaha-krankdrev-38t","status":"ok"}
+{"id":"ean-710845848698","name":"ZIPP Service Course 80 Landeveisstyre","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Bikes","suggested":"Cockpit & saddle","why":"'Landeveisstyre' is a road handlebar, a component, not a complete bike"}],"fix":{"patch":{"facets":{"type":"Cockpit & saddle"}}}}
+{"id":"p-zipp-zipp-tangente-presta-raceslange","name":"Zipp Tangente Presta Raceslange","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tyres & tubes","why":"'Raceslange' with a Presta valve is an inner tube"}],"fix":{"patch":{"facets":{"type":"Tyres & tubes"}}}}
+{"id":"p-zipp-zipp-vuka-clip-alumina-evo-extensions","status":"ok"}
+{"id":"ean-749266016621","name":"Zoggs Matrix Hand Paddles","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"swim training hand paddles (Zoggs is a swimwear brand); landed in Bikes only because the seller is Bikeshop's triathlon range"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-zoggs-zoggs-neseklype","name":"Zoggs Neseklype","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"'Neseklype' = swimming nose clip, nothing to do with cycling"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-zone3-zone3-ergo-hand-paddles","name":"Zone3 Ergo Hand Paddles","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"swim training hand paddles (Zone3 triathlon swim gear)"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"ean-607128943341","name":"Zone3 Stroppeløs Neopren Badehette","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Bikes","suggested":"Sport","why":"'Badehette' = neoprene swim cap, swimming equipment"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-zoom-zoom-setepinne","status":"ok"}
+{"id":"_summary","shard":"Bikes-04","checked":42,"ok":28,"issues":14,"by_kind":{"category":7,"facets":8,"brand":1,"variant":1},"high":6,"rule_gaps":["swim vocabulary is unmapped in Bikes: 'badehette', 'neseklype', 'hand paddles' (Zoggs/Zone3 triathlon rows from Bikeshop) stay in Bikes instead of Sport","srcCat 'Kondisjon / Treningssykkel' (indoor exercise bikes, Sporttema) resolves to Bikes; a 'treningssykkel'/'kondisjon' crumb should route to Sport","facetrules derives no Bikes type for tool/tube/adapter words ('slange', 'skivebrems…adapter', 'dekk' via srcCat only) and no wheel from '700x28 / 28-622' or a trailing bare '29'/'26' in a bike name; 'XTR' in a name derives type Drivetrain even on complete machines"],"notes":"Tail of the alphabet, almost entirely Bikeshop/Sport 1 components which are correctly categorised; the only real category damage is triathlon swim gear and indoor exercise bikes sitting in Bikes, plus thin facet coverage (26 of 42 rows have no type) and img=0 on 31 of 42 rows from sampled shops."}

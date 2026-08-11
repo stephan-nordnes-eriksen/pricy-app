@@ -1,0 +1,301 @@
+{"id":"p-patagonia-patagonia-women-s-r1-air-jacket-shore-blue","status":"ok"}
+{"id":"p-paw-of-sweden-paw-of-sweden-dressyrhalsband-original","name":"Paw of Sweden Dressyrhalsband Original","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"'dressyrhalsband' = dog training collar, srcCat 'Halsbånd' (collars); PAW of Sweden is a dog-gear brand"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-peak-performance-peak-performance-m-original-small-logo-tee-pine-needl","status":"ok"}
+{"id":"p-peak-performance-peak-performance-traverse-hat-peach-fuzz-solar-burst","name":"Peak Performance Traverse Hat Peach Fuzz/solar Burst/","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Peak Performance Traverse Hat Peach Fuzz/solar Burst/","suggested":"Peak Performance Traverse Hat Peach Fuzz/Solar Burst","why":"trailing colourway separator left in the scraped name"}],"fix":{"patch":{"name":"Peak Performance Traverse Hat Peach Fuzz/Solar Burst"}}}
+{"id":"p-peak-performance-peak-performance-w-active-tee-misty-lavender","status":"ok"}
+{"id":"p-peak-performance-peak-performance-w-helium-utility-down-vest-black","status":"ok"}
+{"id":"ean-5701359818265","name":"Peppa Gris, Liten ryggsekk 26,5 x 21 x 10 cm ca. 6 L","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Fashion","why":"6 L Peppa Pig character backpack from a toy shop (Lekia), srcCat 'Vesker' = bags; not hiking/camping gear"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-meindl-performance-gtx-black","status":"ok"}
+{"id":"p-odlo-performance-warm-eco-suw-wmn-black-graphite-grey","name":"Performance Warm Eco Suw Wmn Black/Graphite Grey","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name carries the 'Wmn' women's marker"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-marttiini-peruslohifiletti","status":"ok"}
+{"id":"p-petsafe-petsafe-drinkwell-kullfilter","name":"PetSafe Drinkwell Kullfilter","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"carbon filter for the PetSafe Drinkwell pet water fountain"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-petzl-petzl-actik-lamp-green","name":"Petzl Actik Lamp Green","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"same Petzl Actik headlamp sits as three top-level rows (Green/Grey/Blue) with no vlabel/family"}],"fix":{"group":{"head":"p-petzl-petzl-actik-lamp-green","members":["p-petzl-petzl-actik-lamp-grey","p-petzl-petzl-actik-blue"],"axis":"color"}}}
+{"id":"p-petzl-petzl-actik-lamp-grey","name":"Petzl Actik Lamp Grey","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-petzl-petzl-actik-lamp-green","why":"colour variant of the same Actik headlamp, standing as its own top-level row"}]}
+{"id":"p-petzl-petzl-actik-blue","name":"Petzl Actik® Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-petzl-petzl-actik-lamp-green","why":"colour variant of the same Actik headlamp, standing as its own top-level row"}]}
+{"id":"p-petzl-petzl-contact-wall-9-8-mm-40m-green","status":"ok"}
+{"id":"p-petzl-petzl-mambo-10-1-mm-turquoise","status":"ok"}
+{"id":"p-petzl-petzl-paso-guide-7-7-mm-x-70m-oransje","status":"ok"}
+{"id":"p-smartwool-phd-od-ul-crew-black-storlek-m","name":"PhD OD UL Crew Black, Storlek M","status":"issue","issues":[{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"size M","why":"name carries the size suffix 'Storlek M' but the row has no vlabel/family; no sibling size in this shard to group with"}]}
+{"id":"p-nextorch-picatinny-feste-1-stk-kikkertring","status":"ok"}
+{"id":"p-frankford-arsenal-platinum-series-powder-trickler","status":"ok"}
+{"id":"ean-7031582098850","name":"PLUS Daypack","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Backpacks & bags","why":"'Daypack' states the type; the rules only derive it from 'backpack'/'sekk'"}],"fix":{"patch":{"facets":{"type":"Backpacks & bags"}}}}
+{"id":"p-poc-poc-devour-glacial-uranium-black-clarity-universal-sunny-grey","status":"ok"}
+{"id":"p-poc-poc-m-s-essential-mtb-dungaree-uranium-black","status":"ok"}
+{"id":"p-poc-poc-men-s-motion-mtb-pants-uranium-black","status":"ok"}
+{"id":"p-poc-poc-nexal-hydrogen-white-partly-sunny-blue","status":"ok"}
+{"id":"p-poc-poc-vitrea-granite-grey-partly-sunny-blue","status":"ok"}
+{"id":"p-polar-polar-grit-x2-pro-black","status":"ok"}
+{"id":"p-polar-polar-pacer-night-black","name":"Polar Pacer Night Black","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-polar-polar-pacer-white-cloud","why":"same Polar Pacer watch in another colour, as its own top-level row"}]}
+{"id":"p-polar-polar-pacer-white-cloud","name":"Polar Pacer White Cloud","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"Polar Pacer sits as two top-level rows (White Cloud / Night Black)"}],"fix":{"group":{"head":"p-polar-polar-pacer-white-cloud","members":["p-polar-polar-pacer-night-black"],"axis":"color"}}}
+{"id":"p-polar-polar-street-x-green","status":"ok"}
+{"id":"p-polar-polar-unite-svart","status":"ok"}
+{"id":"p-polar-polar-wb-loop-brown","status":"ok"}
+{"id":"p-pool-12-pool-12-roll-backpack","status":"ok"}
+{"id":"p-pool-12-pool-12-slim-s-nocolour","name":"Pool 12 Slim S Nocolour","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Pool 12 Slim S Nocolour","suggested":"Pool 12 Slim S","why":"'Nocolour' is the shop's empty-colour placeholder, not part of the product name"}],"fix":{"patch":{"name":"Pool 12 Slim S"}}}
+{"id":"p-hallmark-popcorngryta","status":"ok"}
+{"id":"p-jetboil-pot-support","status":"ok"}
+{"id":"p-ortovox-powder-rider-16-burning-orange","status":"ok"}
+{"id":"p-houdini-power-wrist-gaiters-desert-rock-red","name":"Power Wrist Gaiters Desert Rock Red","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-houdini-power-wrist-gaiters-rust","why":"same Houdini Power Wrist Gaiters in another colour, as its own top-level row"}]}
+{"id":"p-houdini-power-wrist-gaiters-rust","name":"Power Wrist Gaiters Rust","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"Houdini Power Wrist Gaiters sits as two top-level rows (Rust / Desert Rock Red)"}],"fix":{"group":{"head":"p-houdini-power-wrist-gaiters-rust","members":["p-houdini-power-wrist-gaiters-desert-rock-red"],"axis":"color"}}}
+{"id":"ean-7031582436164","name":"PowerFrame BigPack 130+","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Backpacks & bags","why":"a 130 L Bergans expedition pack; 'BigPack' isn't in the type vocabulary"}],"fix":{"patch":{"facets":{"type":"Backpacks & bags"}}}}
+{"id":"p-rapala-precision-luzia-brown-havana-amber-silver-miror","status":"ok"}
+{"id":"p-rapala-precision-xtreme-air-boss-8cm-9g-hh","status":"ok"}
+{"id":"p-bushnell-prime-8x42","status":"ok"}
+{"id":"p-adidas-prime-ryggsekk","status":"ok"}
+{"id":"p-arxus-primo-estate-brown-mustard","status":"ok"}
+{"id":"p-primos-primos-primos-hjorte-lokk","name":"Primos Primos Hjorte lokk","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Primos Primos Hjorte lokk","suggested":"Primos Hjorte Lokk","why":"brand duplicated inside the name"}],"fix":{"patch":{"name":"Primos Hjorte Lokk"}}}
+{"id":"p-primus-primus-lite-plus-stove-system-ii-0-8-l-black","status":"ok"}
+{"id":"p-primus-primus-mika-wide-insulated-travel-mug-0-5-l","status":"ok"}
+{"id":"p-primus-primus-power-gas-230g-230g","name":"Primus Power gas 230g 230g","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Primus Power gas 230g 230g","suggested":"Primus Power Gas 230g","why":"weight repeated twice (variant label appended to a name that already carries it)"}],"fix":{"patch":{"name":"Primus Power Gas 230g"}}}
+{"id":"p-helsport-pro-fiber-5-sleeping-bag-185cm-smoky-grey-ruby-red","name":"Pro Fiber -5 Sleeping Bag 185cm Smoky Grey / Ruby Red","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":"Sleeping","why":"a sleeping bag (srcCat 'Soveposer'); the English word 'Bag' in the name matched the bags rule"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"size sibling of the 200cm row","why":"same bag in 185cm/200cm as two top-level rows"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-helsport-pro-fiber-5-sleeping-bag-200cm-smoky-grey-ruby-red","name":"Pro Fiber -5 Sleeping Bag 200cm Smoky Grey / Ruby Red","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":"Sleeping","why":"a sleeping bag (srcCat '… > Soveposer'); the English word 'Bag' matched the bags rule"},{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"size sibling of the 185cm row","why":"same bag in 185cm/200cm as two top-level rows"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-proequip-proequip-orange-fabricline-for-peltor-3-5mm-1-25m","status":"ok"}
+{"id":"p-jack-wolfskin-protect-20-svart","status":"ok"}
+{"id":"p-rab-protium-25-nd-mulberry","status":"ok"}
+{"id":"p-puma-puma-magnify-nitro-3-puma-black-puma-white","status":"ok"}
+{"id":"p-trixie-puppy-run-130x55-cm","name":"Puppy Run 130X55 cm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"Trixie puppy pen, srcCat 'Valpegårder' (puppy pens)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-gregory-quadro-pro-international-carry-on-optic-black","status":"ok"}
+{"id":"p-ruffwear-quencher-medium-blue-moon","name":"Quencher Medium Blue Moon","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"RuffWear collapsible dog bowl, srcCat 'Mat- og Vannskåler' (food and water bowls)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-barbour-quilted-dog-coat-forest","name":"Quilted Dog Coat Forest","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"name says dog coat"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-rab-rab-aeon-lt-hydro-anthracite","status":"ok"}
+{"id":"p-rab-rab-alpine-12c-10f-wmns-iris-dark-iris","status":"ok"}
+{"id":"p-rab-rab-alpine-800-wmns-orion-blue-citadel","status":"ok"}
+{"id":"p-rab-rab-cirrus-alpine-wmns-sahara","status":"ok"}
+{"id":"p-rab-rab-cirrus-vest-black","status":"ok"}
+{"id":"p-rab-rab-electron-pro-hoody-wmns-mulberry","status":"ok"}
+{"id":"p-rab-rab-expedition-kitbag-ii-50-dark-slate","name":"Rab Expedition Kitbag Ii 50 Dark Slate","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-rab-rab-expedition-kitbag-ii-80-dark-slate","why":"same duffel in 50 L / 80 L as two top-level rows"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Backpacks & bags","why":"a kitbag/duffel; 'kitbag' isn't in the type vocabulary"}],"fix":{"patch":{"facets":{"type":"Backpacks & bags"}}}}
+{"id":"p-rab-rab-expedition-kitbag-ii-80-dark-slate","name":"Rab Expedition Kitbag Ii 80 Dark Slate","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"size family","why":"same duffel in 50 L / 80 L as two top-level rows"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Backpacks & bags","why":"a kitbag/duffel; 'kitbag' isn't in the type vocabulary"}],"fix":{"group":{"head":"p-rab-rab-expedition-kitbag-ii-80-dark-slate","members":["p-rab-rab-expedition-kitbag-ii-50-dark-slate"],"axis":"size"}}}
+{"id":"p-rab-rab-firewall-jacket-tempest-blue","status":"ok"}
+{"id":"p-rab-rab-firewall-mountain-jacket-wmns-dark-fig-green","status":"ok"}
+{"id":"p-rab-rab-force-ls-tee-wmns-bluebird","status":"ok"}
+{"id":"p-rab-rab-incline-as-pants-wmns-graphene","status":"ok"}
+{"id":"p-rab-rab-kangri-gtx-jacket-wmns-black","status":"ok"}
+{"id":"p-rab-rab-latok-gtx-pants-black","status":"ok"}
+{"id":"p-rab-rab-microlight-jacket-wmns-black-graphene","name":"Rab Microlight Jacket Wmns Black (Graphene)","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-rab-rab-microlight-jacket-wmns-steel","why":"same Microlight Wmns jacket in another colour, as its own top-level row"}]}
+{"id":"p-rab-rab-microlight-jacket-wmns-steel","name":"Rab Microlight Jacket Wmns Steel","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"Rab Microlight Jacket Wmns sits as two top-level rows (Steel / Black)"}],"fix":{"group":{"head":"p-rab-rab-microlight-jacket-wmns-steel","members":["p-rab-rab-microlight-jacket-wmns-black-graphene"],"axis":"color"}}}
+{"id":"p-rab-rab-mountain-cap-black","status":"ok"}
+{"id":"p-rab-rab-mythic-600-cloud","status":"ok"}
+{"id":"p-rab-rab-mythic-alpine-jacket-dark-pollen","name":"Rab Mythic Alpine Jacket Dark Pollen","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"Rab Mythic Alpine Jacket sits as two top-level rows (Dark Pollen / Tempest Blue)"}],"fix":{"group":{"head":"p-rab-rab-mythic-alpine-jacket-dark-pollen","members":["p-rab-rab-mythic-alpine-jacket-tempest-blue"],"axis":"color"}}}
+{"id":"p-rab-rab-mythic-alpine-jacket-tempest-blue","name":"Rab Mythic Alpine Jacket Tempest Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-rab-rab-mythic-alpine-jacket-dark-pollen","why":"colour variant of the same jacket, as its own top-level row"}]}
+{"id":"p-rab-rab-neutrino-pro-hoody-wmns-black","status":"ok"}
+{"id":"p-rab-rab-protium-18-nd-anthracite","status":"ok"}
+{"id":"p-rab-rab-stance-logo-tee-dark-iris","name":"Rab Stance Logo Tee Dark Iris","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"Rab Stance Logo Tee sits as two top-level rows (Dark Iris / Red Earth), same price"}],"fix":{"group":{"head":"p-rab-rab-stance-logo-tee-dark-iris","members":["p-rab-rab-stance-logo-tee-red-earth"],"axis":"color"}}}
+{"id":"p-rab-rab-stance-logo-tee-red-earth","name":"Rab Stance Logo Tee Red Earth","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-rab-rab-stance-logo-tee-dark-iris","why":"colour variant of the same tee, as its own top-level row"}]}
+{"id":"p-rab-rab-stance-pitch-tee-white","status":"ok"}
+{"id":"p-rab-rab-trail-tee-tempest-blue-light-zinc","status":"ok"}
+{"id":"p-rab-rab-tuku-vista-tee-wmns-ecru","status":"ok"}
+{"id":"p-rab-rab-veil-1-black","status":"ok"}
+{"id":"p-rab-rab-vista-5-panel-cap-sage-cool-mint","status":"ok"}
+{"id":"p-rab-rab-women-s-ascent-500-marina-blue","status":"ok"}
+{"id":"p-rab-rab-xenon-mitts-marmalade","status":"ok"}
+{"id":"ean-7031582129448","status":"ok"}
+{"id":"ean-7031582129615","status":"ok"}
+{"id":"ean-7031582337423","status":"ok"}
+{"id":"ean-7031582488330","name":"Rabot Allround 3L Shell Pants  Women","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"the name says Shell Pants; the shell/jacket rule beat the trousers rule"},{"kind":"name","severity":"low","field":"name","current":"Rabot Allround 3L Shell Pants  Women","suggested":"Rabot Allround 3L Shell Pants Women","why":"double space in the scraped name"}],"fix":{"patch":{"name":"Rabot Allround 3L Shell Pants Women","facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582552369","name":"Rabot Alpine 3L Shell Pants Men","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"the name says Shell Pants; the shell/jacket rule beat the trousers rule"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582491941","name":"Rabot Daypack 34 S/M","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Backpacks & bags","why":"'Daypack' states the type; the rules only derive it from 'backpack'/'sekk'"},{"kind":"variant","severity":"low","field":"vlabel","current":null,"suggested":"size S/M","why":"name carries a back-length size suffix with no vlabel/family"}],"fix":{"patch":{"facets":{"type":"Backpacks & bags"}}}}
+{"id":"ean-7031582496625","status":"ok"}
+{"id":"ean-7031582496731","status":"ok"}
+{"id":"ean-7031582603375","status":"ok"}
+{"id":"ean-7031582603504","status":"ok"}
+{"id":"ean-7031582501183","status":"ok"}
+{"id":"ean-7031582577140","name":"Rabot Light 3L Shell Pants Men","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"the name says Shell Pants; the shell/jacket rule beat the trousers rule"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582516415","status":"ok"}
+{"id":"ean-7031582517016","status":"ok"}
+{"id":"ean-7031582517214","status":"ok"}
+{"id":"ean-7031582518518","status":"ok"}
+{"id":"ean-7031582496915","status":"ok"}
+{"id":"ean-7031582338031","status":"ok"}
+{"id":"ean-7031582337720","status":"ok"}
+{"id":"ean-7031582336976","status":"ok"}
+{"id":"ean-7031582337225","status":"ok"}
+{"id":"ean-7031582613763","status":"ok"}
+{"id":"p-swix-racex-carbon-ws-peach-whip","status":"ok"}
+{"id":"p-oakley-radar-ev-xs-path-repl-lens-prizm-road","status":"ok"}
+{"id":"p-rab-radeon-6c-43f-sage-graphene","status":"ok"}
+{"id":"p-hestra-raggwool-mitt-navy","status":"ok"}
+{"id":"p-gregory-raincover-30l-50l-obsidian-black","status":"ok"}
+{"id":"ean-7031581473344","name":"Raincover L","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"size family","why":"Bergans raincover S/L sits as two top-level rows"}],"fix":{"group":{"head":"ean-7031581473344","members":["ean-7031582015864"],"axis":"size"}}}
+{"id":"ean-7031582527053","name":"Raincover Large","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"size family","why":"Bergans raincover Medium/Large (adjacent EANs) sits as two top-level rows"}],"fix":{"group":{"head":"ean-7031582527053","members":["ean-7031582527046"],"axis":"size"}}}
+{"id":"ean-7031582527046","name":"Raincover Medium","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-7031582527053","why":"size variant of the same raincover, as its own top-level row"}]}
+{"id":"ean-7031582015864","name":"Raincover S","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of ean-7031581473344","why":"size variant of the same raincover, as its own top-level row"}]}
+{"id":"p-yeti-rambler-10-oz-tumbler-ms-royal-blue","status":"ok"}
+{"id":"p-yeti-rambler-26-oz-769-ml-straw-bottle-black","status":"ok"}
+{"id":"p-yeti-rambler-532-ml-insulated-bottle-stainless-steel","status":"ok"}
+{"id":"p-yeti-rambler-8-oz-237-ml-cup-white","status":"ok"}
+{"id":"p-yeti-rambler-8-oz-food-jar-black","status":"ok"}
+{"id":"p-yeti-rambler-flask-black","status":"ok"}
+{"id":"p-harkila-rannoch-hsp-shooting-vest-willow-green","status":"ok"}
+{"id":"p-rapala-rapala-90-years-lure-kit-floater-small-naturistic","status":"ok"}
+{"id":"p-rapala-orret-stille-vann-rapala-2pk","name":"Rapala Ørret Stille Vann Rapala 2pk","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Rapala","why":"the name states the brand twice while brand is the 'Unspecified' placeholder"},{"kind":"name","severity":"low","field":"name","current":"Rapala Ørret Stille Vann Rapala 2pk","suggested":"Rapala Ørret Stille Vann 2pk","why":"brand duplicated inside the name"}],"fix":{"patch":{"brand":"Rapala","name":"Rapala Ørret Stille Vann 2pk"}}}
+{"id":"p-rapala-rattlin-minnow-spoon-8-cm","status":"ok"}
+{"id":"p-ulvang-rav-100-pant-ws-black-granite","name":"Rav 100% pant Ws Black/Granite","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name carries the 'Ws' women's marker"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-ray-ban-ray-ban-wayfarer-shiny-black-transitions-graph-green","status":"ok"}
+{"id":"p-hurtta-razzle-dazzle-h-sele-55-65-cm-hedge","name":"Razzle-Dazzle H-sele 55-65 cm Hedge","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"Hurtta dog harness ('H-sele'), srcCat 'Seler' (harnesses)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-ray-ban-rb3736-grey-mirror-silver","status":"ok"}
+{"id":"p-rapala-rcd-magnum-lock-split-ring-pliers","status":"ok"}
+{"id":"p-carson-rd-series-10-x-50-mm","status":"ok"}
+{"id":"p-real-turmat-real-turmat-laks-med-pasta-og-flotesaus-500g","status":"ok"}
+{"id":"ean-7031582317388","name":"ReBorn Type B 5 X","status":"issue","issues":[{"kind":"metadata","severity":"med","field":"name","current":"ReBorn Type B 5 X","suggested":null,"why":"name identifies no product type at all (kr 1200, Bergans ReBorn line) — a shopper can't tell what this is; needs a real name before it is useful"}]}
+{"id":"p-nedis-rechargeable-lead-acid-batteri-6v-10000-mah","status":"ok"}
+{"id":"p-reima-reima-fleece-gloves-varmin-deep-purple","name":"Reima Fleece Gloves, Varmin Deep Purple","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"gloves, not a top; 'Fleece' pulled the row into the baselayer type"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-reima-reima-jacket-puruton-deep-ocean-bugproof","status":"ok"}
+{"id":"p-reima-reima-rain-mittens-kura-rose-blush-1120","name":"Reima Rain mittens, Kura Rose blush 1120","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"mittens are Accessories; no type derived"},{"kind":"name","severity":"low","field":"name","current":"Reima Rain mittens, Kura Rose blush 1120","suggested":"Reima Rain Mittens, Kura Rose Blush","why":"trailing colour code '1120' is SKU noise"}],"fix":{"patch":{"name":"Reima Rain Mittens, Kura Rose Blush","facets":{"type":"Accessories"}}}}
+{"id":"p-reima-reima-reimatec-boots-quicker-black","status":"ok"}
+{"id":"p-elbe-rekehekle-m-5-kroker","name":"REKEHEKLE M/5 KROKER","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"REKEHEKLE M/5 KROKER","suggested":"Rekehekle m/5 kroker","why":"ALL CAPS shop boilerplate"}],"fix":{"patch":{"name":"Rekehekle m/5 kroker"}}}
+{"id":"p-remen-remen-ferskvannsboksen-ferskvann","status":"ok"}
+{"id":"p-muurikka-rengoringssten-400-g","status":"ok"}
+{"id":"p-osprey-renn-50-aurora-purple","status":"ok"}
+{"id":"ean-7031580031224","status":"ok"}
+{"id":"p-garmin-replacement-collar-black","status":"ok"}
+{"id":"p-grey-oak-reservesag","status":"ok"}
+{"id":"p-helly-hansen-resistor-backpack-black","status":"ok"}
+{"id":"p-harkila-retrieve-insulated-lady-cardigantroja-dark-warm-olive","name":"Retrieve Insulated Lady Cardigantröja Dark Warm Olive","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name carries the 'Lady' women's marker"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-petzl-reverso-gray","status":"ok"}
+{"id":"p-msr-revo-ascent-w25-cyan","status":"ok"}
+{"id":"p-scarpa-ribelle-hd-wmn-conifer","name":"Ribelle HD Wmn Conifer","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name carries the 'Wmn' women's marker"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-hawke-ringar-30-mm-weaver-medium-hojd-9-mm","status":"ok"}
+{"id":"p-rapala-rippin-rap-5cm-cgfr","name":"RIPPIN RAP 5CM CGFR","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"the same 5 cm Rippin' Rap lure sits as three top-level rows (CGFR/RCW/ROL), all kr 159 — the suffix is the colour code"},{"kind":"name","severity":"low","field":"name","current":"RIPPIN RAP 5CM CGFR","suggested":"Rippin' Rap 5cm CGFR","why":"ALL CAPS shop boilerplate"}],"fix":{"group":{"head":"p-rapala-rippin-rap-5cm-cgfr","members":["p-rapala-rippin-rap-5cm-rcw","p-rapala-rippin-rap-5cm-rol"],"axis":"color"}}}
+{"id":"p-rapala-rippin-rap-5cm-rcw","name":"RIPPIN RAP 5CM RCW","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-rapala-rippin-rap-5cm-cgfr","why":"colour code variant of the same lure, as its own top-level row"},{"kind":"name","severity":"low","field":"name","current":"RIPPIN RAP 5CM RCW","suggested":"Rippin' Rap 5cm RCW","why":"ALL CAPS shop boilerplate"}],"fix":{"patch":{"name":"Rippin' Rap 5cm RCW"}}}
+{"id":"p-rapala-rippin-rap-5cm-rol","name":"RIPPIN' RAP 5CM ROL","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-rapala-rippin-rap-5cm-cgfr","why":"colour code variant of the same lure, as its own top-level row"},{"kind":"name","severity":"low","field":"name","current":"RIPPIN' RAP 5CM ROL","suggested":"Rippin' Rap 5cm ROL","why":"ALL CAPS shop boilerplate"}],"fix":{"patch":{"name":"Rippin' Rap 5cm ROL"}}}
+{"id":"p-morakniv-risberg-s-spjutbar-lingonberries","status":"ok"}
+{"id":"p-klean-kanteen-rise-mug-414ml-w-flip-lid-autumn-glaze","status":"ok"}
+{"id":"p-robens-robens-icefall-600-pro-fibersovepose-2022","status":"ok"}
+{"id":"p-black-diamond-rocklock-triple-lock-carabiner-gray","status":"ok"}
+{"id":"p-solvkroken-rogerdraget","status":"ok"}
+{"id":"p-camelbak-rogue-light-fired-brick-koi","status":"ok"}
+{"id":"p-bergans-romsdal-3-pers-tent","status":"ok"}
+{"id":"ean-7031582057291","status":"ok"}
+{"id":"ean-7031582058144","status":"ok"}
+{"id":"ean-7031582058267","status":"ok"}
+{"id":"p-lundhags-romus-80-forest-green","status":"ok"}
+{"id":"p-bergans-rondane-30","status":"ok"}
+{"id":"ean-7031582274322","status":"ok"}
+{"id":"ean-7031582270751","status":"ok"}
+{"id":"p-rosesolv-rose-fiskespade-med-stalklinge","name":"Rose, Fiskespade Med Stålklinge","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Kitchen","why":"a silver fish server in the 'Rose' cutlery pattern, sold by the jeweller Mestergull (kr 2060) — serving cutlery, not fishing gear"},{"kind":"facets","severity":"high","field":"facets.type","current":"Fishing","suggested":null,"why":"'fiskespade' matched the fishing vocabulary; the item is table cutlery"}],"fix":{"patch":{"cat":"Kitchen","facets":{"type":null}}}}
+{"id":"p-rossignol-rossignol-outerlimits-insulated-bib-glazed-ginger","status":"ok"}
+{"id":"p-rossignol-rossignol-super-5p-cap-super-violet","status":"ok"}
+{"id":"ean-7031581367063","name":"Rotoclips Male","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":"1","why":"kr 19 fastener clip — a spare part of another Bergans product, not something a shopper compares prices on"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031581182062","status":"ok"}
+{"id":"p-grundens-rum-runner-30l-waterproof-backpack","status":"ok"}
+{"id":"p-rungne-rungne-harness-pants-wide-leg-onyx-black","status":"ok"}
+{"id":"p-rungne-rungne-maglock-8g","status":"ok"}
+{"id":"p-new-balance-running-tempo-v2-blue","name":"Running Tempo v2 Blue","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Løpesko' (running shoes) — a road running shoe, not hiking/camping gear"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"ean-7090033705488","status":"ok"}
+{"id":"ean-7031582547600","status":"ok"}
+{"id":"ean-7031582335078","status":"ok"}
+{"id":"ean-7031582130840","status":"ok"}
+{"id":"ean-7031582132318","status":"ok"}
+{"id":"ean-7031582132080","status":"ok"}
+{"id":"ean-7031582132974","status":"ok"}
+{"id":"p-kastel-roros-leather-wr-stone","status":"ok"}
+{"id":"p-fallkniven-s1proez-zytel-sheet-for-s1-pro","status":"ok"}
+{"id":"p-shimano-sahara-fi","status":"ok"}
+{"id":"p-solvkroken-salamander-allround","status":"ok"}
+{"id":"p-solvkroken-salamander-trout","status":"ok"}
+{"id":"p-salewa-salewa-pedroc-2-max-w-oatmeal-black-out","status":"ok"}
+{"id":"p-salomon-salomon-active-skin-4-laurel-wreath","status":"ok"}
+{"id":"p-salomon-salomon-active-skin-8-brilliant-olive-willow","status":"ok"}
+{"id":"p-salomon-salomon-active-sling-belt-green","status":"ok"}
+{"id":"p-salomon-salomon-escape-outrack-peat-safari-iron","status":"ok"}
+{"id":"p-salomon-salomon-men-s-xa-3d-pro-v9-gore-tex-deep-lichen-green-safari-d","status":"ok"}
+{"id":"p-salomon-salomon-men-s-xa-pro-3d-v9-nautical-blue-alloy-dark-citron","status":"ok"}
+{"id":"p-salomon-salomon-merino-gloves-u-iron","status":"ok"}
+{"id":"p-salomon-salomon-mountain-flex-jacket-w-whisper-white","status":"ok"}
+{"id":"p-salomon-salomon-shift-supra-boa-120-gw-black-cool-gray-5-shale-green","status":"ok"}
+{"id":"p-salomon-salomon-ultra-glide-4-wide-lilac-ash-excalibur-pink-yarrow","status":"ok"}
+{"id":"p-salomon-salomon-women-s-aero-glide-4-grvl-nocturne-black-dusky-orchid","status":"ok"}
+{"id":"p-salomon-salomon-women-s-chroma-fleece-cardigan-gray-green","status":"ok"}
+{"id":"p-salomon-salomon-women-s-mountain-flex-jacket-pearl-blue","name":"Salomon Women's Mountain Flex Jacket Pearl Blue/","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Salomon Women's Mountain Flex Jacket Pearl Blue/","suggested":"Salomon Women's Mountain Flex Jacket Pearl Blue","why":"trailing colourway separator left in the scraped name"}],"fix":{"patch":{"name":"Salomon Women's Mountain Flex Jacket Pearl Blue"}}}
+{"id":"p-salomon-salomon-women-s-shakeout-bliss-bra-deep-black","name":"Salomon Women's Shakeout Bliss Bra Deep Black/","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Salomon Women's Shakeout Bliss Bra Deep Black/","suggested":"Salomon Women's Shakeout Bliss Bra Deep Black","why":"trailing colourway separator left in the scraped name"}],"fix":{"patch":{"name":"Salomon Women's Shakeout Bliss Bra Deep Black"}}}
+{"id":"p-salomon-salomon-women-s-shkout-core-tank-whisper-white","name":"Salomon Women's Shkout Core Tank Whisper White","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Salomon Women's Shkout Core Tank Whisper White","suggested":"Salomon Women's Shakeout Core Tank Whisper White","why":"'Shkout' is the shop's truncation of the Shakeout range (cf. the Shakeout Bliss Bra row)"}],"fix":{"patch":{"name":"Salomon Women's Shakeout Core Tank Whisper White"}}}
+{"id":"p-salomon-salomon-women-s-wayfarer-2-0-shorts-deep-black","status":"ok"}
+{"id":"p-salomon-salomon-women-s-x-ultra-5-gore-tex-asphalt-castlerock-brunnera","name":"Salomon Women's X Ultra 5 GORE-TEX Asphalt / Castlerock / Brunnera Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"colour family","why":"the same Women's X Ultra 5 GORE-TEX shoe sits as two top-level rows, both kr 1900"}],"fix":{"group":{"head":"p-salomon-salomon-women-s-x-ultra-5-gore-tex-asphalt-castlerock-brunnera","members":["p-salomon-salomon-women-s-x-ultra-5-gore-tex-seagrass-turbulence-tender"],"axis":"color"}}}
+{"id":"p-salomon-salomon-women-s-x-ultra-5-gore-tex-seagrass-turbulence-tender","name":"Salomon Women's X Ultra 5 GORE-TEX Seagrass/turbulence/tender Peach","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-salomon-salomon-women-s-x-ultra-5-gore-tex-asphalt-castlerock-brunnera","why":"colourway of the same shoe, as its own top-level row"}]}
+{"id":"p-the-north-face-salty-dog-aviatornvy-moonlightivory","name":"Salty Dog Aviatornvy/Moonlightivory","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Salty Dog Aviatornvy/Moonlightivory","suggested":"Salty Dog Aviator Navy/Moonlight Ivory","why":"colourway codes run together with no spaces"}],"fix":{"patch":{"name":"Salty Dog Aviator Navy/Moonlight Ivory"}}}
+{"id":"p-lidmans-same-70-mm-s","status":"ok"}
+{"id":"p-lundhags-saruk-wool-pile-mid-full-zip-w-sand","status":"ok"}
+{"id":"p-saucony-saucony-endorphin-azura-w-black-aqua","status":"ok"}
+{"id":"ean-7031582349433","status":"ok"}
+{"id":"p-marmot-sawtooth-dark-azure-foliage","name":"Sawtooth Dark Azure/Foliage","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sleeping","why":"srcCat '3-sesongsposer' (3-season sleeping bags) derives no type, unlike 'Vintersoveposer'"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-harkila-saxnas-gtx-women-willow-green","status":"ok"}
+{"id":"p-easy-hit-sb-3-0-green","status":"ok"}
+{"id":"p-mystery-ranch-scapegoat-25l-multicam","status":"ok"}
+{"id":"p-scarpa-scarpa-f1-anthracite-ottanio","status":"ok"}
+{"id":"p-scarpa-scarpa-instinct-black","status":"ok"}
+{"id":"p-mystery-ranch-scree-m-l-olive","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-airlite-towel-large-picante","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-boab-30f-1c-regular-wide-laurel-wreath","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-camp-cutlery-set-3-piece-charcoal","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-eco-lightweight-compression-sack-35-l-oliv","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-evac-eco-dry-bag-13-l-turkish-tile","name":"Sea To Summit Evac Eco Dry Bag 13 L Turkish Tile","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"size family","why":"same dry bag, same colour, 8 L and 13 L as two top-level rows"}],"fix":{"group":{"head":"p-sea-to-summit-sea-to-summit-evac-eco-dry-bag-13-l-turkish-tile","members":["p-sea-to-summit-sea-to-summit-evac-eco-dry-bag-8l-turkish-tile"],"axis":"size"}}}
+{"id":"p-sea-to-summit-sea-to-summit-evac-eco-dry-bag-8l-turkish-tile","name":"Sea To Summit Evac Eco Dry Bag 8L Turkish Tile","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"member of p-sea-to-summit-sea-to-summit-evac-eco-dry-bag-13-l-turkish-tile","why":"size variant of the same dry bag, as its own top-level row"}]}
+{"id":"p-sea-to-summit-sea-to-summit-field-repair-buckle-side-release-38mm-1-pi","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-frontier-ul-collapsible-cup-sulphur-yellow","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-frontier-ultralight-collapsible-kettle-coo","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-kitchen-folding-spoon-black","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-kitchen-sink-burnt-olive","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-mosquito-headnet-ultramesh-black","name":"Sea To Summit MOSQUITO HEADNET ULTRAMESH Black","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sea To Summit MOSQUITO HEADNET ULTRAMESH Black","suggested":"Sea To Summit Mosquito Headnet Ultramesh Black","why":"ALL CAPS model string in the middle of the name"}],"fix":{"patch":{"name":"Sea To Summit Mosquito Headnet Ultramesh Black"}}}
+{"id":"p-sea-to-summit-sea-to-summit-pillow-foam-core-deluxe-navy-blue","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-travellinglight-garment-mesh-bag-small-lim","status":"ok"}
+{"id":"p-sea-to-summit-sea-to-summit-trek-tkiii-long-blue","status":"ok"}
+{"id":"ean-7031588012003","name":"Seat Leg Middle","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":"1","why":"a spare leg for another Bergans product; the name identifies no product a shopper could compare"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-helinox-seat-warmer-for-sunset-beach-coyote-tan-forest-green","status":"ok"}
+{"id":"p-hydrapak-seeker-3l-mammoth-grey","status":"ok"}
+{"id":"p-seleverkstedet-seleverkstedet-trekreg-dog-harness-gra-brun-xxs","name":"Seleverkstedet Trekreg dog harness Grå/brun XXS","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"name says dog harness (size XXS)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-solvkroken-selvlysende-slange-3-mm-1-mm-hull","status":"ok"}
+{"id":"ean-7031582326236","status":"ok"}
+{"id":"ean-7031582325536","status":"ok"}
+{"id":"ean-7031582145370","status":"ok"}
+{"id":"ean-7031582125679","status":"ok"}
+{"id":"ean-7031582408710","status":"ok"}
+{"id":"p-condor-sentry-plate-carrier-svart","status":"ok"}
+{"id":"p-pieps-set-frs","status":"ok"}
+{"id":"p-alaska-1795-setetrekk","status":"ok"}
+{"id":"p-sufix-sfx-4x-braid-low-vis-green-135m-0-330mm","status":"ok"}
+{"id":"p-rapala-shad-rap-elite-7-5cm-12g-gdbg","status":"ok"}
+{"id":"p-rapala-shadow-rap-11cm-ft","name":"SHADOW RAP 11CM FT","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"SHADOW RAP 11CM FT","suggested":"Shadow Rap 11cm FT","why":"ALL CAPS shop boilerplate"}],"fix":{"patch":{"name":"Shadow Rap 11cm FT"}}}
+{"id":"p-leatherman-sheath-nylon-small","status":"ok"}
+{"id":"p-lowa-shoe-clean","name":"Shoe Clean","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Footwear","suggested":null,"why":"a shoe-care cleaner, not footwear; the word 'Shoe' in the name derived the type"}],"fix":{"patch":{"facets":{"type":null}}}}
+{"id":"p-oakley-si-cotton-cap-coyote","status":"ok"}
+{"id":"p-yeti-sidekick-dry-3l-black","status":"ok"}
+{"id":"p-sigg-sigg-traveller-black-1-0l","status":"ok"}
+{"id":"p-sea-to-summit-sigma-pot-2-7-l","status":"ok"}
+{"id":"p-rab-silk-std-s-bag-liner-slate","name":"Silk Std S/Bag Liner Slate","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Backpacks & bags","suggested":"Sleeping","why":"a sleeping-bag liner (srcCat 'Liners'); the word 'Bag' matched the bags rule"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-vaude-silkroad-plus-uniklip-black","status":"ok"}
+{"id":"p-silva-silva-compass-field-nocolour","name":"Silva Compass Field Nocolour","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Silva Compass Field Nocolour","suggested":"Silva Compass Field","why":"'Nocolour' is the shop's empty-colour placeholder, not part of the product name"}],"fix":{"patch":{"name":"Silva Compass Field"}}}
+{"id":"p-silva-silva-free-1200-xs-black","status":"ok"}
+{"id":"p-silva-silva-trekking-poles-alu-tele-black","status":"ok"}
+{"id":"p-singing-rock-singing-rock-colt-wire-buet-snapper","status":"ok"}
+{"id":"p-singing-rock-singing-rock-dyneema-sling-11mm-120cm","status":"ok"}
+{"id":"ean-7031582145295","status":"ok"}
+{"id":"p-vaude-sioux-100-ii-syn-baltic-sea","name":"Sioux 100 Ii Syn Baltic Sea","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sleeping","why":"srcCat '3-sesongsposer' (3-season sleeping bags) derives no type"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"ean-7031581706657","name":"Sira Lady Pants","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"name carries the 'Lady' women's marker"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"ean-7031582278610","status":"ok"}
+{"id":"ean-7031582278771","status":"ok"}
+{"id":"ean-7031581996324","status":"ok"}
+{"id":"ean-7031582284505","status":"ok"}
+{"id":"ean-7031582284055","status":"ok"}
+{"id":"ean-7031582284208","status":"ok"}
+{"id":"ean-7031582440024","status":"ok"}
+{"id":"p-amundsen-skauen-gaiters-faded-navy","status":"ok"}
+{"id":"ean-7031581606018","status":"ok"}
+{"id":"ean-7031581858240","name":"Skin to 18,5 Red","status":"issue","issues":[{"kind":"metadata","severity":"med","field":"name","current":"Skin to 18,5 Red","suggested":null,"why":"kr 5499 row whose name identifies no product type — unusable as a listing until the source name is fixed"}]}
+{"id":"p-rapala-skitter-pop-elite-7-5cm-10g-gdsgs","status":"ok"}
+{"id":"p-klattermusen-skrymner-backpack-20l-putty-grey","status":"ok"}
+{"id":"p-mammut-skywalker-3-0-helmet-white","status":"ok"}
+{"id":"p-didriksons-slaghoken-usx-men-s-anorak-flame","status":"ok"}
+{"id":"p-sea-to-summit-sleepbag-down-ascent-aci-4-c-regular-unisex","status":"ok"}
+{"id":"p-mountain-equipment-sleeping-mat-service-kit-mixed-colour","status":"ok"}
+{"id":"p-nike-slim-waist-pack-3-0-lopebelte","status":"ok"}
+{"id":"p-sea-to-summit-sling-bag-ultrasilicone-black-grey","status":"ok"}
+{"id":"ean-7031581918296","status":"ok"}
+{"id":"ean-7031582045601","status":"ok"}
+{"id":"ean-7031581989357","status":"ok"}
+{"id":"ean-7031581952948","status":"ok"}
+{"id":"p-rohnisch-slub-loose-obsidian-black","status":"ok"}
+{"id":"p-elbe-slukboks-gronn-5-rom-liten","status":"ok"}
+{"id":"p-smartwool-smartloft-glove-unisex-black","name":"Smartloft Glove Unisex Black","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"gloves are Accessories; no type derived"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-smartwool-smartwool-women-s-hike-full-cushion-crew-socks-deep-navy","status":"ok"}
+{"id":"p-alaska-1795-sniper-huvtroja-300g-black","status":"ok"}
+{"id":"_summary","shard":"Outdoor-05","checked":300,"ok":226,"issues":74,"by_kind":{"variant":30,"facets":23,"name":18,"category":10,"junk":2,"metadata":2,"brand":1},"high":15,"rule_gaps":["'... Shell Pants' derives facets.type Jackets — the shell/jacket rule must not win over the trousers rule (3 Bergans Rabot rows)","English 'Sleeping Bag' / 'Bag Liner' derives type 'Backpacks & bags'; only the Norwegian 'sovepose*' breadcrumbs reach 'Sleeping'","srcCat '3-sesongsposer' (3-season sleeping bags) derives no type, while 'Vintersoveposer' does","'Daypack', 'BigPack' and 'Kitbag' derive no type; only 'backpack'/'sekk' do","women's markers 'Ws', 'Wmn' and 'Lady' derive no audience (only 'Wmns'/'Women' do)","gloves/mittens derive 'Tops & baselayers' (via 'Fleece') or nothing instead of 'Accessories'","'fiskespade' matches the Fishing vocabulary — a silver fish server from the jeweller Mestergull landed in Outdoor with type Fishing","dog gear from outdoor/hunting shops ('halsbånd', 'sele', 'valpegård', 'dog coat/harness', Drinkwell filter) stays in Outdoor instead of resolving to Pets"],"notes":"Healthy shard overall — categories are right for ~97% of rows and the only systematic category leak is pet gear sold by outdoor shops (7 rows); the real weakness is variant wiring, since nearly every Fjellsport/Milrab row carries a colourway suffix with no vlabel/family and 14 rows are plain colour/size duplicates of another row in this shard alone."}

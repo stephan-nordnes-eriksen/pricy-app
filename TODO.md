@@ -18,7 +18,7 @@
 - [ ] Why is the categories so broken.
 - [ ] Many items are mis-catetorized. Things like "tv series" makes "pokemon" show up under the "tv" category
 - [ ] The numbers in the filter section should update when you change filters. So if there are no "wireless" audio gear left, then it should say 0, in stead of "123" (or however many exists in total).
-
+- [ ] "Made in X"
 
 Where to pick up tomorrow:
 - In claude design, we ran out of tokens during the view mode fix. We should resume here when. Then, we sync this to the clude code side of things.

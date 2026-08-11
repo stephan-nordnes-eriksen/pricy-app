@@ -1,0 +1,301 @@
+{"id":"ean-810039590973","status":"ok"}
+{"id":"ean-810039591024","status":"ok"}
+{"id":"ean-810039593912","status":"ok"}
+{"id":"ean-731509865707","status":"ok"}
+{"id":"ean-731509919004","status":"ok"}
+{"id":"ean-731509597769","name":"KISS Haute Couture Trio Lashes Classy 30pcs","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"false lashes, srcCat \"Individuelle vipper\""}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-731509913811","status":"ok"}
+{"id":"ean-731509974829","name":"Kiss My Lashes But Better No Filters","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"false lashes, srcCat \"Losvipper\""}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-731509836066","status":"ok"}
+{"id":"ean-731509970708","name":"KISS So Wispy Lash 04","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"false lashes, srcCat \"Losvipper\""}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-731509891294","status":"ok"}
+{"id":"ean-7350064920770","name":"Kiyomi Tøymykner 500 ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"Kiyomi Toymykner is fabric softener (laundry), not a body-care product"},{"kind":"facets","severity":"med","field":"facets.type","current":"Fragrance","suggested":null,"why":"a Beauty facet on a laundry product"}],"fix":{"patch":{"cat":"Home","icon":"washing-machine","facets":{"type":null}}}}
+{"id":"ean-7072684031338","status":"ok"}
+{"id":"ean-8809572895272","status":"ok"}
+{"id":"ean-4044897170619","status":"ok"}
+{"id":"ean-4044897170909","status":"ok"}
+{"id":"ean-4044897050058","status":"ok"}
+{"id":"ean-4044897040066","status":"ok"}
+{"id":"ean-4044897040134","status":"ok"}
+{"id":"ean-4044897032160","status":"ok"}
+{"id":"ean-4044897894232","name":"KMS Color Vitality Intense Gloss Treatment 500ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Lips","suggested":"Hair care","why":"a hair gloss treatment (srcCat Behandling), not a lip product"}],"fix":{"patch":{"facets":{"type":"Hair care"}}}}
+{"id":"ean-7036389301097","name":"Kombiprimer B-base 0,9l","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Tools","why":"Tjaeralin Kombiprimer is paint primer, srcCat \"Hjem > Maling og oppussing > Olje og lakk > Primer\"; \"Primer\" matched the cosmetics vocabulary"},{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":null,"why":"a Beauty facet on a paint product"}],"fix":{"patch":{"cat":"Tools","icon":"wrench","facets":{"type":null}}}}
+{"id":"ean-840026660273","name":"KVD Beauty Good Apple Liquid Foundation Deep 082 30ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"KVD Good Apple Liquid Foundation shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-840026660273","members":["ean-840026660303"],"axis":"color"}}}
+{"id":"ean-840026660303","status":"ok"}
+{"id":"ean-4064941113584","name":"Kylie Cosmetics Blush 214 Play For Keeps 214 Play For Keeps","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Kylie Cosmetics Blush 214 Play For Keeps 214 Play For Keeps","suggested":"Kylie Cosmetics Blush 214 Play For Keeps","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Kylie Cosmetics Blush 214 Play For Keeps"}}}
+{"id":"ean-4064941009122","name":"Kylie Cosmetics Gel Eyeliner Pencil 15 Shimmery Bronze 15 Shimmery Bronze","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Kylie Cosmetics Gel Eyeliner Pencil 15 Shimmery Bronze 15 Shimmery Bronze","suggested":"Kylie Cosmetics Gel Eyeliner Pencil 15 Shimmery Bronze","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Kylie Cosmetics Gel Eyeliner Pencil 15 Shimmery Bronze"}}}
+{"id":"ean-4064941118923","name":"Kylie Cosmetics Lip And Cheek Tint 351 All Things Pink 351 All Things Pink","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Kylie Cosmetics Lip And Cheek Tint 351 All Things Pink 351 All Things Pink","suggested":"Kylie Cosmetics Lip And Cheek Tint 351 All Things Pink","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Kylie Cosmetics Lip And Cheek Tint 351 All Things Pink"}}}
+{"id":"ean-4064941009818","name":"Kylie Cosmetics Matte Lipstick 300 Koko K 300 Koko K","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Kylie Cosmetics Matte Lipstick 300 Koko K 300 Koko K","suggested":"Kylie Cosmetics Matte Lipstick 300 Koko K","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Kylie Cosmetics Matte Lipstick 300 Koko K"}}}
+{"id":"ean-4064941009689","name":"Kylie Cosmetics Power Plush Foundation 2.5N Nutral 2.5N Nutral","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Kylie Cosmetics Power Plush Foundation 2.5N Nutral 2.5N Nutral","suggested":"Kylie Cosmetics Power Plush Foundation 2.5N Nutral","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Kylie Cosmetics Power Plush Foundation 2.5N Nutral"}}}
+{"id":"ean-7350053231214","name":"L:A BRUKET 094 Hand & Body Wash Sage/Rosemary/Lavender 450 ml 450 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"L:A BRUKET 094 Hand & Body Wash Sage/Rosemary/Lavender 450 ml 450 ml","suggested":"L:A BRUKET 094 Hand & Body Wash Sage/Rosemary/Lavender 450 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"L:A BRUKET 094 Hand & Body Wash Sage/Rosemary/Lavender 450 ml"}}}
+{"id":"ean-7350134100477","status":"ok"}
+{"id":"ean-7350134100286","name":"L'Acuila Riviera Bouquet Hand Soap 370ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Cleansing","why":"hand soap, srcCat \"Handsape\""}],"fix":{"patch":{"facets":{"type":"Cleansing"}}}}
+{"id":"ean-654050520096","name":"L'ANZA CBD Revive Shampoo 236 ml 236 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"L'ANZA CBD Revive Shampoo 236 ml 236 ml","suggested":"L'ANZA CBD Revive Shampoo 236 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"L'ANZA CBD Revive Shampoo 236 ml"}}}
+{"id":"ean-654050407311","status":"ok"}
+{"id":"ean-654050407359","status":"ok"}
+{"id":"ean-654050463065","status":"ok"}
+{"id":"ean-654050360043","status":"ok"}
+{"id":"ean-654050173339","status":"ok"}
+{"id":"ean-654050292047","status":"ok"}
+{"id":"ean-654050232333","status":"ok"}
+{"id":"ean-654050232630","status":"ok"}
+{"id":"ean-3253581514153","status":"ok"}
+{"id":"ean-3253581758175","name":"L’Occitane en Provence Immortelle Precious Cream 50ml","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"L’Occitane en Provence","suggested":"L’Occitane","why":"same brand as the other L’Occitane rows in this shard, stored under a second spelling"}],"fix":{"patch":{"brand":"L’Occitane"}}}
+{"id":"ean-3253581521380","status":"ok"}
+{"id":"ean-3600523465255","status":"ok"}
+{"id":"ean-3600524026523","name":"L'Oréal Paris Color Riche Glow Paradise Balm-in-Lipstick 906 Blush Fantasy 3,8g","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":"Lips","why":"a lipstick, srcCat \"Sminke > Lepper > Leppestift\""}],"fix":{"patch":{"facets":{"type":"Lips"}}}}
+{"id":"ean-3600524163754","status":"ok"}
+{"id":"ean-3600523950423","status":"ok"}
+{"id":"ean-3600521708569","status":"ok"}
+{"id":"ean-3600524238674","status":"ok"}
+{"id":"ean-3600524028817","name":"L'Oréal Paris Infaillible 24H Fresh Wear Foundation in a Powder 250 Radiant Sand 250 Radiant Sand","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"L'Oréal Paris Infaillible 24H Fresh Wear Foundation in a Powder 250 Radiant Sand 250 Radiant Sand","suggested":"L'Oréal Paris Infaillible 24H Fresh Wear Foundation in a Powder 250 Radiant Sand","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"L'Oréal Paris Infaillible 24H Fresh Wear Foundation in a Powder 250 Radiant Sand"}}}
+{"id":"ean-3600523951390","status":"ok"}
+{"id":"ean-3600523951543","name":"L'Oréal Paris Infaillible 24H Fresh Wear Foundation In A Powder True Beige 9g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"L’Oreal Infaillible 24H Fresh Wear Foundation in a Powder shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3600523951543","members":["ean-3600523951390","ean-3600524028817"],"axis":"color"}}}
+{"id":"ean-3600524054656","name":"L'Oréal Paris Infaillible Brows 24H Filling Triangular Pencil 5.0 Light Brunette 1ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"brow pencil, srcCat \"Oyenbrynsblyant\""}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-3600523796878","name":"L'Oréal Paris Infaillible Brows 24H Micro Precision Pencil 1.0 Ebony 1.0 Ebony","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"L'Oréal Paris Infaillible Brows 24H Micro Precision Pencil 1.0 Ebony 1.0 Ebony","suggested":"L'Oréal Paris Infaillible Brows 24H Micro Precision Pencil 1.0 Ebony","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Eyes","why":"brow pencil"}],"fix":{"patch":{"name":"L'Oréal Paris Infaillible Brows 24H Micro Precision Pencil 1.0 Ebony","facets":{"type":"Eyes"}}}}
+{"id":"ean-3600524202385","status":"ok"}
+{"id":"ean-3600524167219","status":"ok"}
+{"id":"ean-3600524048938","status":"ok"}
+{"id":"ean-3600524190200","name":"L'Oréal Paris Infaillible Skin Ink Foundation 100 Warm 15ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"L’Oreal Infaillible Skin Ink Foundation shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3600524190200","members":["ean-3600524190156"],"axis":"color"}}}
+{"id":"ean-3600524190156","status":"ok"}
+{"id":"ean-3600524264468","status":"ok"}
+{"id":"ean-3600524077686","status":"ok"}
+{"id":"ean-3600521627426","name":"L'Oréal Paris True Match Blush 165 Rosy Cheeks 165 Rosy Cheeks","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"L'Oréal Paris True Match Blush 165 Rosy Cheeks 165 Rosy Cheeks","suggested":"L'Oréal Paris True Match Blush 165 Rosy Cheeks","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"L'Oréal Paris True Match Blush 165 Rosy Cheeks"}}}
+{"id":"ean-30189225","status":"ok"}
+{"id":"ean-30161214","status":"ok"}
+{"id":"ean-3474637090579","status":"ok"}
+{"id":"ean-3474636974115","status":"ok"}
+{"id":"ean-30165120","status":"ok"}
+{"id":"ean-30160262","status":"ok"}
+{"id":"ean-30162853","status":"ok"}
+{"id":"ean-3760355351932","status":"ok"}
+{"id":"p-la-bonne-brosse-la-bonne-brosse-n-08-the-round-blow-dry-brush-length-m","status":"ok"}
+{"id":"ean-3760355353820","status":"ok"}
+{"id":"ean-3700693207713","name":"La Grande Creme 50ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Moisturisers","why":"face cream, srcCat \"Hudpleie > Ansikt > Anti-aging\""}],"fix":{"patch":{"facets":{"type":"Moisturisers"}}}}
+{"id":"ean-747930146827","status":"ok"}
+{"id":"p-la-mer-la-mer-the-moisturizing-fresh-cream","status":"ok"}
+{"id":"ean-7611773189361","name":"La Prairie Cellular 3-Minute Peel 40ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Cleansing","why":"a peel/exfoliant"}],"fix":{"patch":{"facets":{"type":"Cleansing"}}}}
+{"id":"ean-7611773166775","status":"ok"}
+{"id":"ean-7611773145589","status":"ok"}
+{"id":"ean-7611773160674","status":"ok"}
+{"id":"ean-7611773132107","status":"ok"}
+{"id":"ean-7611773146968","status":"ok"}
+{"id":"ean-3337875761116","status":"ok"}
+{"id":"ean-3337875920742","status":"ok"}
+{"id":"ean-3337875537308","name":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 200 ml 200 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 200 ml 200 ml","suggested":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 200 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 200 ml"}}}
+{"id":"ean-3337875537315","name":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 400 ml 400 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 400 ml 400 ml","suggested":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 400 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"La Roche-Posay Lipikar Syndet AP+ Cream Wash 400 ml"}}}
+{"id":"ean-8809982981909","status":"ok"}
+{"id":"ean-3760211481490","status":"ok"}
+{"id":"ean-3386460149303","status":"ok"}
+{"id":"ean-3386460149082","status":"ok"}
+{"id":"ean-3386460149136","status":"ok"}
+{"id":"ean-3386460149334","status":"ok"}
+{"id":"ean-3386460172684","name":"Lacoste Original Aqua 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Lacoste Original Aqua 100 ml 100 ml","suggested":"Lacoste Original Aqua 100 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Fragrance","why":"Lacoste Original Aqua is an eau de toilette"}],"fix":{"patch":{"name":"Lacoste Original Aqua 100 ml","facets":{"type":"Fragrance"}}}}
+{"id":"ean-3616304997730","status":"ok"}
+{"id":"ean-3147755836274","status":"ok"}
+{"id":"ean-3614274308464","status":"ok"}
+{"id":"ean-3614274633269","status":"ok"}
+{"id":"p-lancome-lancome-hydra-zen-anti-stress-day-cream-50ml","name":"Lancôme Hydra Zen Anti-Stress Day Cream 50ml","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"p-lancome-lancome-hydra-zen-anti-stress-day-cream-50ml","suggested":"ean-3614274158540","why":"identical product, shop and price (Blivakker kr 699) as ean-3614274158540 \"Lancome Hydra Zen Anti-Stress Day Cream 50ml\"; slug row created because the page had no gtin"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-3614274158540","name":"Lancôme Hydra Zen Anti-Stress Day Cream 50ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Lancome Hydra Zen Anti-Stress Day Cream 30 / 50 ml sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614274158540","members":["ean-3614274633269"],"axis":"size"}}}
+{"id":"ean-3614274337556","name":"Lancôme Idôle Goddess Dimension Mono Eyeshadow 02 PINK MOONRISE​ 02 PINK MOONRISE​","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Lancôme Idôle Goddess Dimension Mono Eyeshadow 02 PINK MOONRISE​ 02 PINK MOONRISE​","suggested":"Lancôme Idôle Goddess Dimension Mono Eyeshadow 02 PINK MOONRISE","why":"the shop feed appends the shade/size label to the title, so it renders twice (and carries a zero-width space)"}],"fix":{"patch":{"name":"Lancôme Idôle Goddess Dimension Mono Eyeshadow 02 PINK MOONRISE"}}}
+{"id":"ean-3614274299205","status":"ok"}
+{"id":"ean-3605972352323","name":"Lancôme Juicy Tubes 05 Marshmallow Electro 15ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Lancome Juicy Tubes shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3605972352323","members":["ean-3605972352408"],"axis":"color"}}}
+{"id":"ean-3605972352408","status":"ok"}
+{"id":"ean-3614274196115","status":"ok"}
+{"id":"ean-3614274694758","name":"Lancôme L'Absolu Rouge Glaze Tintation Glazing Liquid Tint 701 Snooze In Nude 4.5 ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Lancome L’Absolu Rouge Glaze Tintation shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614274694758","members":["ean-3614274694802"],"axis":"color"}}}
+{"id":"ean-3614274694802","status":"ok"}
+{"id":"ean-3614274334791","status":"ok"}
+{"id":"ean-3614273307093","status":"ok"}
+{"id":"ean-3614273307604","name":"Lancôme L'Absolu Rouge Lipstick Cream 366 Paris Se'veille Cream 3,4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Lancome L’Absolu Rouge Lipstick Cream shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614273307604","members":["ean-3614273307093"],"axis":"color"}}}
+{"id":"ean-3614274938807","status":"ok"}
+{"id":"ean-3614271579423","status":"ok"}
+{"id":"ean-3614274169737","name":"Lancôme Lip Idôle Butterglow 10 Keep It Glowy 10 Keep It Glowy","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Lancôme Lip Idôle Butterglow 10 Keep It Glowy 10 Keep It Glowy","suggested":"Lancôme Lip Idôle Butterglow 10 Keep It Glowy","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Lancôme Lip Idôle Butterglow 10 Keep It Glowy"}}}
+{"id":"ean-3614274169751","name":"Lancôme Lip Idôle Squalane-12 Butterglow Glowy Color Balm 26 Don't Be Chai 3g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"Lancome Lip Idole Butterglow shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614274169751","members":["ean-3614274169850","ean-3614274169737"],"axis":"color"}}}
+{"id":"ean-3614274169850","status":"ok"}
+{"id":"ean-3147758029406","name":"Lancôme Miracle Eau de Parfum 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Lancôme Miracle Eau de Parfum 30 ml 30 ml","suggested":"Lancôme Miracle Eau de Parfum 30 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Lancôme Miracle Eau de Parfum 30 ml"}}}
+{"id":"ean-3614271774712","status":"ok"}
+{"id":"ean-3614271870711","status":"ok"}
+{"id":"ean-3614271870742","name":"Lancôme Ombre Hypnôse Metallic Stylo Cream Eyeshadow Stick #27 Bronze 1,4g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Lancome Ombre Hypnose Metallic Stylo shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614271870742","members":["ean-3614271870711"],"axis":"color"}}}
+{"id":"ean-3614274344868","name":"Lancôme Skin Idôle 3 Serum Supertint 50W 30ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Lancome Skin Idole 3 Serum Supertint shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614274344868","members":["ean-3614274344844"],"axis":"color"}}}
+{"id":"ean-3614274344844","status":"ok"}
+{"id":"ean-3614273792547","status":"ok"}
+{"id":"ean-3614273792745","name":"Lancôme Teint Idole Ultra Wear 24H Longwear Foundation 440N 30ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"Lancome Teint Idole Ultra Wear 24H Longwear Foundation shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614273792745","members":["ean-3614273792547","ean-3614273792776"],"axis":"color"}}}
+{"id":"ean-3614273792776","status":"ok"}
+{"id":"ean-3614273676052","name":"Lancôme Teint Idôle Ultra Wear Care & Glow 24H Healthy Glow Foundation 450W 30ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Lancome Teint Idole Ultra Wear Care & Glow Foundation shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614273676052","members":["ean-3614273675895"],"axis":"color"}}}
+{"id":"ean-3614273675895","name":"Lancôme Teint Idole Ultra Wear Care & Glow Foundation 240W 240W","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Lancôme Teint Idole Ultra Wear Care & Glow Foundation 240W 240W","suggested":"Lancôme Teint Idole Ultra Wear Care & Glow Foundation 240W","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Lancôme Teint Idole Ultra Wear Care & Glow Foundation 240W"}}}
+{"id":"ean-3614274485462","name":"Lancôme Teint Idole Ultra Wear Shape Sticks Multi-Use Foundation Bisque 250 Beige Lin 9g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"Lancome Teint Idole Ultra Wear Shape Sticks shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3614274485462","members":["ean-3614274485493","ean-3614274485370"],"axis":"color"}}}
+{"id":"ean-3614274485493","status":"ok"}
+{"id":"ean-3614274485370","status":"ok"}
+{"id":"ean-3614274297003","status":"ok"}
+{"id":"ean-8809925198319","status":"ok"}
+{"id":"ean-8809685797371","status":"ok"}
+{"id":"ean-8809803590839","status":"ok"}
+{"id":"ean-5060062999693","name":"Lansinoh NaturalWave Bottle Nipple Slow Flow 2pcs","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Baby","why":"baby bottle teats, srcCat \"Tateflasker\" (baby bottles)"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"ean-736150137302","name":"Laura Mercier Eye Brow Pencil Soft Brunette Soft Brunette","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Laura Mercier Eye Brow Pencil Soft Brunette Soft Brunette","suggested":"Laura Mercier Eye Brow Pencil Soft Brunette","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Laura Mercier Eye Brow Pencil Soft Brunette"}}}
+{"id":"ean-736150167125","name":"Laura Mercier Flawless Lumière Radiance Perfecting Foundation 6W1 Ganache 6W1 Ganache","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Laura Mercier Flawless Lumière Radiance Perfecting Foundation 6W1 Ganache 6W1 Ganache","suggested":"Laura Mercier Flawless Lumière Radiance Perfecting Foundation 6W1 Ganache","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Laura Mercier Flawless Lumière Radiance Perfecting Foundation 6W1 Ganache"}}}
+{"id":"ean-194250046557","name":"Laura Mercier High Vibe Lip Color 140 Buzz 140 Buzz","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Laura Mercier High Vibe Lip Color 140 Buzz 140 Buzz","suggested":"Laura Mercier High Vibe Lip Color 140 Buzz","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Laura Mercier High Vibe Lip Color 140 Buzz"}}}
+{"id":"ean-736150069313","name":"Laura Mercier Matte Eye Colour Morning Dew Morning Dew","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Laura Mercier Matte Eye Colour Morning Dew Morning Dew","suggested":"Laura Mercier Matte Eye Colour Morning Dew","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Laura Mercier Matte Eye Colour Morning Dew"}}}
+{"id":"ean-736150160515","status":"ok"}
+{"id":"ean-736150156532","status":"ok"}
+{"id":"ean-194250094725","name":"Laura Mercier Translucent Loose Setting Powder Ultra-Blur Tone-Up Tone-Up","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Laura Mercier Translucent Loose Setting Powder Ultra-Blur Tone-Up Tone-Up","suggested":"Laura Mercier Translucent Loose Setting Powder Ultra-Blur Tone-Up","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Laura Mercier Translucent Loose Setting Powder Ultra-Blur Tone-Up"}}}
+{"id":"ean-3701139905507","name":"Le Couvent Parfums Remarquables - Anori Eau de Parfum 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Le Couvent Parfums Remarquables - Anori Eau de Parfum 100 ml 100 ml","suggested":"Le Couvent Parfums Remarquables - Anori Eau de Parfum 100 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Le Couvent Parfums Remarquables - Anori Eau de Parfum 100 ml"}}}
+{"id":"ean-842185131458","name":"Le Labo Basil Body Cream 250 ml 250 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Le Labo Basil Body Cream 250 ml 250 ml","suggested":"Le Labo Basil Body Cream 250 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Le Labo Basil Body Cream 250 ml"}}}
+{"id":"ean-842185133773","name":"Le Labo The Matcha 26 Shower Gel 237 ml 237 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Le Labo The Matcha 26 Shower Gel 237 ml 237 ml","suggested":"Le Labo The Matcha 26 Shower Gel 237 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Le Labo The Matcha 26 Shower Gel 237 ml"}}}
+{"id":"ean-5407010910001","status":"ok"}
+{"id":"ean-5407010910568","status":"ok"}
+{"id":"ean-7350136851599","name":"Lenoites Eco-Friendly Claw Clip Medium Cocoa Brown","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"Lenoites Eco-Friendly Claw Clip Medium colours sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-7350136851599","members":["ean-7350136852152","ean-7350136851605"],"axis":"color"}}}
+{"id":"ean-7350136852152","status":"ok"}
+{"id":"ean-7350136851605","status":"ok"}
+{"id":"ean-7350136852176","status":"ok"}
+{"id":"ean-7350136852343","name":"Lenoites Wild Boar Hair Brush & Cleaning Tool Mocha Mousse Limited Edition","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Hair care","suggested":"Tools","why":"a hair brush; other brushes in this shard use type Tools"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-7350085332019","status":"ok"}
+{"id":"ean-3770006262289","status":"ok"}
+{"id":"ean-3770006262494","status":"ok"}
+{"id":"ean-5430001607673","name":"Les Soeurs de Noé Cherry Blush 20ml","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Les Soeurs De Noé","suggested":"Les Soeurs de Noé","why":"casing differs from the other three Les Soeurs de Noe rows"}],"fix":{"patch":{"brand":"Les Soeurs de Noé"}}}
+{"id":"ean-5430001607147","status":"ok"}
+{"id":"ean-5430001607208","status":"ok"}
+{"id":"ean-5430001607031","status":"ok"}
+{"id":"ean-9120035134226","name":"Less Is More Organic Lindengloss Shampoo 500 ml 500 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Less Is More Organic Lindengloss Shampoo 500 ml 500 ml","suggested":"Less Is More Organic Lindengloss Shampoo 500 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Less Is More Organic Lindengloss Shampoo 500 ml"}}}
+{"id":"ean-7350003902362","name":"LH Cosmetics Eyes Wide Open Eyelash Curler","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tools","why":"an eyelash curler, srcCat \"Verktoy og tilbehor > Vippetang\""}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-7350003903284","status":"ok"}
+{"id":"ean-7350003902119","name":"LH cosmetics Velvet Couture Multi-Use Liquid Lipstick Dusty Pink Dusty Pink","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"LH cosmetics Velvet Couture Multi-Use Liquid Lipstick Dusty Pink Dusty Pink","suggested":"LH cosmetics Velvet Couture Multi-Use Liquid Lipstick Dusty Pink","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"brand","severity":"low","field":"brand","current":"LH cosmetics","suggested":"LH Cosmetics","why":"casing differs from the other two LH Cosmetics rows"}],"fix":{"patch":{"name":"LH cosmetics Velvet Couture Multi-Use Liquid Lipstick Dusty Pink","brand":"LH Cosmetics"}}}
+{"id":"p-sea-to-summit-liquid-hand-sanitizer-89ml","status":"ok"}
+{"id":"ean-815305025968","status":"ok"}
+{"id":"ean-815305026002","status":"ok"}
+{"id":"ean-7350087736976","name":"Locobase Itch Relief Coolmousse​ 100 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Locobase Itch Relief Coolmousse​ 100 ml","suggested":"Locobase Itch Relief Coolmousse 100 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice (and carries a zero-width space)"}],"fix":{"patch":{"name":"Locobase Itch Relief Coolmousse 100 ml"}}}
+{"id":"ean-7350129530043","status":"ok"}
+{"id":"ean-8426017078436","status":"ok"}
+{"id":"ean-8426017081177","name":"LOEWE Medium Pistachio Candle 610g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a scented candle (srcCat leaf \"Duftlys\"); the Parfyme parent crumb pulled it into Beauty"}],"fix":{"patch":{"cat":"Home","icon":"flame"}}}
+{"id":"ean-8426017081160","name":"LOEWE Pistachio Candle Small 170g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a scented candle (srcCat leaf \"Duftlys\")"}],"fix":{"patch":{"cat":"Home","icon":"flame"}}}
+{"id":"ean-8426017068086","name":"LOEWE Scent of Marihuana Room Spray 150ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a room spray (home fragrance), not a personal-care product"}],"fix":{"patch":{"cat":"Home","icon":"spray-can"}}}
+{"id":"ean-8426017067881","name":"LOEWE Small Cypress Balls Scented Candle 170g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a scented candle (srcCat leaf \"Duftlys\")"}],"fix":{"patch":{"cat":"Home","icon":"flame"}}}
+{"id":"ean-8426017070546","status":"ok"}
+{"id":"ean-8426017083515","status":"ok"}
+{"id":"ean-8426017079754","status":"ok"}
+{"id":"ean-8426017067942","name":"LOEWE Wax Candleholder Ivy 330g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a candle/candleholder (srcCat leaf \"Duftlys\")"}],"fix":{"patch":{"cat":"Home","icon":"flame"}}}
+{"id":"ean-7899572812288","status":"ok"}
+{"id":"ean-7899572813964","status":"ok"}
+{"id":"ean-5060696790420","status":"ok"}
+{"id":"ean-4580794010646","status":"ok"}
+{"id":"ean-6412600848946","status":"ok"}
+{"id":"ean-6412600832815","status":"ok"}
+{"id":"ean-6412600834932","name":"Lumene CC Color Correcting Cream SPF20 Foundation 2 Medium 2 Medium","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Lumene CC Color Correcting Cream SPF20 Foundation 2 Medium 2 Medium","suggested":"Lumene CC Color Correcting Cream SPF20 Foundation 2 Medium","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Lumene CC Color Correcting Cream SPF20 Foundation 2 Medium"}}}
+{"id":"ean-6412600831436","status":"ok"}
+{"id":"ean-6412600863727","status":"ok"}
+{"id":"ean-6412600832679","status":"ok"}
+{"id":"ean-6412600859843","status":"ok"}
+{"id":"ean-6412600834734","status":"ok"}
+{"id":"ean-7350073863389","status":"ok"}
+{"id":"ean-7350073862092","name":"Löwengrip The Cure Hair Mask 200 ml 200 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Löwengrip The Cure Hair Mask 200 ml 200 ml","suggested":"Löwengrip The Cure Hair Mask 200 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Löwengrip The Cure Hair Mask 200 ml"}}}
+{"id":"ean-8809730958573","status":"ok"}
+{"id":"ean-773602773237","name":"MAC Dazzlelips Crayon Pencil Lipstick Gem Stone 1,5g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"MAC Dazzlelips Crayon Pencil Lipstick shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602773237","members":["ean-773602773183"],"axis":"color"}}}
+{"id":"ean-773602773183","status":"ok"}
+{"id":"ean-773602429899","name":"MAC Extra Dimension Skinfinish Double Gleam Double Gleam","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Extra Dimension Skinfinish Double Gleam Double Gleam","suggested":"MAC Extra Dimension Skinfinish Double Gleam","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"a Skinfinish powder/highlighter"}],"fix":{"patch":{"name":"MAC Extra Dimension Skinfinish Double Gleam","facets":{"type":"Face makeup"}}}}
+{"id":"ean-773602713189","status":"ok"}
+{"id":"ean-773602729685","name":"MAC Lipglass Air Non Sticky Lipgloss Frosting Frosting","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Lipglass Air Non Sticky Lipgloss Frosting Frosting","suggested":"MAC Lipglass Air Non Sticky Lipgloss Frosting","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Lips","why":"name says Lipgloss"}],"fix":{"patch":{"name":"MAC Lipglass Air Non Sticky Lipgloss Frosting","facets":{"type":"Lips"}}}}
+{"id":"ean-773602003679","status":"ok"}
+{"id":"ean-773602411498","name":"MAC Lipglass Cultured 3,1ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"MAC Lipglass 3,1 ml shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602411498","members":["ean-773602411474"],"axis":"color"}}}
+{"id":"ean-773602411474","name":"MAC Lipglass Oyster Girl 3,1ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Lips","why":"a lipgloss, srcCat \"Lipgloss\""}],"fix":{"patch":{"facets":{"type":"Lips"}}}}
+{"id":"ean-773602750870","name":"MAC Lipglazer Glossy Liner Lady Danger Lady Danger 0.25g","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Lips","why":"a glossy lip liner"}],"fix":{"patch":{"facets":{"type":"Lips"}}}}
+{"id":"ean-773602679454","status":"ok"}
+{"id":"ean-773602679331","name":"MAC Locked Kiss 24Hr Lipstick Vicious 1,8g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"MAC Locked Kiss 24Hr Lipstick shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602679331","members":["ean-773602679454"],"axis":"color"}}}
+{"id":"ean-773602685158","name":"MAC Macximal Silky Matte Lipstick Honey Love 3,5g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"MAC Macximal Silky Matte Lipstick shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602685158","members":["ean-773602684939"],"axis":"color"}}}
+{"id":"ean-773602684939","status":"ok"}
+{"id":"ean-773602686216","status":"ok"}
+{"id":"ean-773602746637","name":"MAC Powder Kiss Hazy Matte Lipstick Stay Curious Stay Curious","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Powder Kiss Hazy Matte Lipstick Stay Curious Stay Curious","suggested":"MAC Powder Kiss Hazy Matte Lipstick Stay Curious","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":"Lips","why":"a lipstick"}],"fix":{"patch":{"name":"MAC Powder Kiss Hazy Matte Lipstick Stay Curious","facets":{"type":"Lips"}}}}
+{"id":"ean-773602786404","name":"MAC Powder Kiss Lip + Cheek Mousse Something Borrowed 5ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Lips","why":"a lip + cheek mousse; \"Mousse\" was read as hair styling"}],"fix":{"patch":{"facets":{"type":"Lips"}}}}
+{"id":"ean-773602693955","status":"ok"}
+{"id":"ean-773602693993","name":"MAC Pro Brow Definer 1mm Spiked Spiked","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Pro Brow Definer 1mm Spiked Spiked","suggested":"MAC Pro Brow Definer 1mm Spiked","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"MAC Pro Brow Definer 1mm Spiked"}}}
+{"id":"ean-773602207251","name":"MAC Pro Longwear Concealer NW50 NW50","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Pro Longwear Concealer NW50 NW50","suggested":"MAC Pro Longwear Concealer NW50","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"MAC Pro Longwear Concealer NW50"}}}
+{"id":"ean-773602307326","name":"MAC Pro Longwear Paint Pot Painterly Painterly","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Pro Longwear Paint Pot Painterly Painterly","suggested":"MAC Pro Longwear Paint Pot Painterly","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"MAC Pro Longwear Paint Pot Painterly"}}}
+{"id":"ean-773602625758","name":"MAC Retro Matte Liquid Lipcolor 79 Ruby Phew! 5ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Lips","why":"a liquid lipcolor"}],"fix":{"patch":{"facets":{"type":"Lips"}}}}
+{"id":"ean-773602001354","status":"ok"}
+{"id":"ean-773602043781","name":"MAC Satin Small Eye Shadow Shroom 1,5g","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"MAC Satin Small Eye Shadow shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602043781","members":["ean-773602001354"],"axis":"color"}}}
+{"id":"ean-773602749904","name":"MAC Strobe Cream UvLite UvLite","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Strobe Cream UvLite UvLite","suggested":"MAC Strobe Cream UvLite","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"MAC Strobe Cream UvLite"}}}
+{"id":"ean-773602735006","status":"ok"}
+{"id":"ean-773602734870","status":"ok"}
+{"id":"ean-773602735457","name":"MAC Studio Fix 36Hr Smooth Angles Concealer NW11 7ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 4 rows","why":"MAC Studio Fix 36Hr Smooth Angles Concealer shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602735457","members":["ean-773602735006","ean-773602734870","ean-773602735075"],"axis":"color"}}}
+{"id":"ean-773602735075","status":"ok"}
+{"id":"ean-773602643547","status":"ok"}
+{"id":"ean-773602642915","name":"MAC Studio Fix Fluid Broad Spectrum SPF15 NC37 NC37","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MAC Studio Fix Fluid Broad Spectrum SPF15 NC37 NC37","suggested":"MAC Studio Fix Fluid Broad Spectrum SPF15 NC37","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Face makeup","why":"MAC Studio Fix Fluid is a foundation"}],"fix":{"patch":{"name":"MAC Studio Fix Fluid Broad Spectrum SPF15 NC37","facets":{"type":"Face makeup"}}}}
+{"id":"ean-773602610617","name":"MAC Studio Radiance Face And Body Radiant Sheer Foundation C2 50ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"MAC Studio Radiance Face And Body shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602610617","members":["ean-773602610693"],"axis":"color"}}}
+{"id":"ean-773602610693","status":"ok"}
+{"id":"ean-773602656752","status":"ok"}
+{"id":"ean-773602656806","name":"MAC Studio Radiance Serum-Powered Foundation NC47 30ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"MAC Studio Radiance Serum-Powered Foundation shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-773602656806","members":["ean-773602656752","ean-773602656950"],"axis":"color"}}}
+{"id":"ean-773602656950","status":"ok"}
+{"id":"ean-773602077090","status":"ok"}
+{"id":"ean-4751009821351","name":"Mádara Purifying Foam 150ml","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Hair care","suggested":"Cleansing","why":"Madara Purifying Foam is a face wash; srcCat \"Mousse\" was read as hair styling"}],"fix":{"patch":{"facets":{"type":"Cleansing"}}}}
+{"id":"ean-4751009825557","status":"ok"}
+{"id":"ean-4752223014048","status":"ok"}
+{"id":"ean-3614274258547","name":"Maison Margiela Replica Candle Afternoon Delight 165 g 165 g","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Maison Margiela Replica Candle Afternoon Delight 165 g 165 g","suggested":"Maison Margiela Replica Candle Afternoon Delight 165 g","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a Replica scented candle"}],"fix":{"patch":{"name":"Maison Margiela Replica Candle Afternoon Delight 165 g","cat":"Home","icon":"flame"}}}
+{"id":"ean-3614271664488","name":"Maison Margiela Replica Jazz Club Scented Candle 165 g 165 g","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Maison Margiela Replica Jazz Club Scented Candle 165 g 165 g","suggested":"Maison Margiela Replica Jazz Club Scented Candle 165 g","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a Replica scented candle"}],"fix":{"patch":{"name":"Maison Margiela Replica Jazz Club Scented Candle 165 g","cat":"Home","icon":"flame"}}}
+{"id":"ean-3614273711777","name":"Maison Margiela Replica On A Date Eau de Toilette 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Maison Margiela Replica On A Date Eau de Toilette 30 ml 30 ml","suggested":"Maison Margiela Replica On A Date Eau de Toilette 30 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Maison Margiela Replica On A Date Eau de Toilette 30 ml"}}}
+{"id":"ean-695929028015","name":"Make it Real, Just Be(YOU)tiful Mega Kosmetikkssett","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Toys","why":"a childrens play cosmetics set from a toy retailer (Lekia, srcCat \"Fest\")"}],"fix":{"patch":{"cat":"Toys","icon":"toy-brick"}}}
+{"id":"ean-638241100632","name":"Make it Real, Totalt Trendy Falske Neglesett","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Toys","why":"a childrens play fake-nail set from a toy retailer (Lekia, srcCat \"Fest\")"}],"fix":{"patch":{"cat":"Toys","icon":"toy-brick"}}}
+{"id":"ean-8809495682102","status":"ok"}
+{"id":"ean-856359008712","status":"ok"}
+{"id":"ean-4003349003806","name":"Manart neglesaks 1 stk","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Manart","why":"brand is the \"Unspecified\" placeholder; the name states Manart"}],"fix":{"patch":{"brand":"Manart"}}}
+{"id":"ean-3760265191536","status":"ok"}
+{"id":"ean-3760265190287","status":"ok"}
+{"id":"ean-3760265191802","status":"ok"}
+{"id":"ean-3760265190683","status":"ok"}
+{"id":"ean-7090050871227","status":"ok"}
+{"id":"ean-7090050870602","status":"ok"}
+{"id":"ean-612600110814","status":"ok"}
+{"id":"ean-612600509137","status":"ok"}
+{"id":"ean-3662263500146","name":"Manucurist Green Flash Led Nail Polish Coral Reef 15ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"Manucurist Green Flash Led Nail Polish 15 ml shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3662263500146","members":["ean-3662263500801","ean-3662263500344"],"axis":"color"}}}
+{"id":"ean-3662263500801","status":"ok"}
+{"id":"ean-3662263500344","status":"ok"}
+{"id":"ean-3662263500016","status":"ok"}
+{"id":"ean-3662263332310","status":"ok"}
+{"id":"ean-3662263330651","status":"ok"}
+{"id":"ean-3662263330088","status":"ok"}
+{"id":"ean-3662263332006","name":"Manucurist Green Nail Polish Rose 15ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 5 rows","why":"Manucurist Green Nail Polish 15 ml shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3662263332006","members":["ean-3662263332310","ean-3662263330651","ean-3662263330088","ean-3662263331474"],"axis":"color"}}}
+{"id":"ean-3662263331474","status":"ok"}
+{"id":"ean-7391681403703","status":"ok"}
+{"id":"ean-7391681410077","name":"Maria Nila Color Refresh 9.46 Pink Peach 300ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 2 rows","why":"Maria Nila Colour Refresh shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-7391681410077","members":["ean-7391681037021"],"axis":"color"}}}
+{"id":"ean-7391681037021","status":"ok"}
+{"id":"ean-7391681019362","status":"ok"}
+{"id":"ean-7391681019324","status":"ok"}
+{"id":"ean-7391681130524","name":"Maria Nila Orchid Vetiver Scented Candle 210g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a scented candle"}],"fix":{"patch":{"cat":"Home","icon":"flame"}}}
+{"id":"ean-7391681036123","status":"ok"}
+{"id":"ean-7391681036154","status":"ok"}
+{"id":"ean-7340020100308","name":"MARIA ÅKERBERG AHA & Jojoba Peeling 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MARIA ÅKERBERG AHA & Jojoba Peeling 100 ml 100 ml","suggested":"MARIA ÅKERBERG AHA & Jojoba Peeling 100 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"MARIA ÅKERBERG AHA & Jojoba Peeling 100 ml"}}}
+{"id":"ean-7340020105112","name":"MARIA ÅKERBERG Lip Care Mentha Lip Care Mentha Lip Care Mentha","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"MARIA ÅKERBERG Lip Care Mentha Lip Care Mentha Lip Care Mentha","suggested":"MARIA ÅKERBERG Lip Care Mentha","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"MARIA ÅKERBERG Lip Care Mentha"}}}
+{"id":"ean-785364014305","status":"ok"}
+{"id":"ean-785364134232","status":"ok"}
+{"id":"ean-785364304123","name":"Mario Badescu Caffeine Eye Cream 14 g 14 g","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Mario Badescu Caffeine Eye Cream 14 g 14 g","suggested":"Mario Badescu Caffeine Eye Cream 14 g","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Mario Badescu Caffeine Eye Cream 14 g"}}}
+{"id":"ean-785364104594","status":"ok"}
+{"id":"ean-785364404052","status":"ok"}
+{"id":"ean-785364154216","status":"ok"}
+{"id":"ean-5719807254251","name":"Matas Striber Micellar Water For Dry Skin Fragrance Free 250 ml 250 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Matas Striber Micellar Water For Dry Skin Fragrance Free 250 ml 250 ml","suggested":"Matas Striber Micellar Water For Dry Skin Fragrance Free 250 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"high","field":"facets.type","current":"Fragrance","suggested":"Cleansing","why":"micellar water; \"Fragrance Free\" in the name was read as a fragrance product"}],"fix":{"patch":{"name":"Matas Striber Micellar Water For Dry Skin Fragrance Free 250 ml","facets":{"type":"Cleansing"}}}}
+{"id":"ean-5719808443463","name":"Matas Striber Mild Cleansing Mousse For Sensitive Skin 150 ml 150 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Matas Striber Mild Cleansing Mousse For Sensitive Skin 150 ml 150 ml","suggested":"Matas Striber Mild Cleansing Mousse For Sensitive Skin 150 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Cleansing","why":"a facial cleansing mousse; \"Mousse\" was read as hair styling"}],"fix":{"patch":{"name":"Matas Striber Mild Cleansing Mousse For Sensitive Skin 150 ml","facets":{"type":"Cleansing"}}}}
+{"id":"ean-5719801006764","name":"Matas Striber Scrub Mask For All Skin Types Fragrance Free 80 ml 80 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Matas Striber Scrub Mask For All Skin Types Fragrance Free 80 ml 80 ml","suggested":"Matas Striber Scrub Mask For All Skin Types Fragrance Free 80 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"},{"kind":"facets","severity":"high","field":"facets.type","current":"Fragrance","suggested":"Masks","why":"a scrub mask; \"Fragrance Free\" in the name was read as a fragrance product"}],"fix":{"patch":{"name":"Matas Striber Scrub Mask For All Skin Types Fragrance Free 80 ml","facets":{"type":"Masks"}}}}
+{"id":"ean-5719801010112","name":"Matas Striber Sea Buckthorn & Elderflower Deodorant Roll On 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Matas Striber Sea Buckthorn & Elderflower Deodorant Roll On 50 ml 50 ml","suggested":"Matas Striber Sea Buckthorn & Elderflower Deodorant Roll On 50 ml","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Matas Striber Sea Buckthorn & Elderflower Deodorant Roll On 50 ml"}}}
+{"id":"ean-3770007317155","status":"ok"}
+{"id":"ean-3760372460891","status":"ok"}
+{"id":"ean-3770007317575","status":"ok"}
+{"id":"ean-3760428940513","name":"Matiere Premiere Saffron Kozani Candle 220g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"a scented candle (srcCat leaf \"Duftlys\")"}],"fix":{"patch":{"cat":"Home","icon":"flame"}}}
+{"id":"ean-3579209000304","name":"Matis Réponse Yeux Biphase Eyes & Lips Make-Up Remover 150ml","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Cleansing","why":"an eye and lip make-up remover"}],"fix":{"patch":{"facets":{"type":"Cleansing"}}}}
+{"id":"ean-7618900910911","name":"Mavala Mini Nail Polish 091 Reno 091 Reno","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Mavala Mini Nail Polish 091 Reno 091 Reno","suggested":"Mavala Mini Nail Polish 091 Reno","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Mavala Mini Nail Polish 091 Reno"}}}
+{"id":"ean-3616305243300","status":"ok"}
+{"id":"ean-3616306150126","status":"ok"}
+{"id":"ean-3616306150133","name":"Max Factor 2000 Calorie Lip Glaze Favourite Song 4,4ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"Max Factor 2000 Calorie Lip Glaze shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3616306150133","members":["ean-3616305243300","ean-3616306150126"],"axis":"color"}}}
+{"id":"ean-3616307620628","status":"ok"}
+{"id":"ean-3616307657624","name":"Max Factor 2000 Calorie Pop Art Blush & Bronzer 20 Bouncy 20 Bouncy","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Max Factor 2000 Calorie Pop Art Blush & Bronzer 20 Bouncy 20 Bouncy","suggested":"Max Factor 2000 Calorie Pop Art Blush & Bronzer 20 Bouncy","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Max Factor 2000 Calorie Pop Art Blush & Bronzer 20 Bouncy"}}}
+{"id":"ean-3614227902183","name":"Max Factor Colour Elixir Lipstick 105 Raisen 105 Raisen","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Max Factor Colour Elixir Lipstick 105 Raisen 105 Raisen","suggested":"Max Factor Colour Elixir Lipstick 105 Raisen","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Max Factor Colour Elixir Lipstick 105 Raisen"}}}
+{"id":"ean-3616303407087","status":"ok"}
+{"id":"ean-3614229458169","status":"ok"}
+{"id":"ean-3614229445657","name":"Max Factor False Lash Effect Max Out Primer 13ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":"Eyes","why":"a lash primer, srcCat \"Sminke > Oyne > Mascara\""}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-3616306168657","status":"ok"}
+{"id":"ean-3616303251611","status":"ok"}
+{"id":"ean-3616303184285","status":"ok"}
+{"id":"ean-3616305711694","name":"Max Factor Miracle Pure Serum Foundation 1 Fair 1 Fair","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Max Factor Miracle Pure Serum Foundation 1 Fair 1 Fair","suggested":"Max Factor Miracle Pure Serum Foundation 1 Fair","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Max Factor Miracle Pure Serum Foundation 1 Fair"}}}
+{"id":"ean-3614227962934","status":"ok"}
+{"id":"ean-3616306168817","status":"ok"}
+{"id":"ean-3600531674458","name":"Maybelline New York Brow Ultra Slim Pencil 4,5 Ash Brown 4,5 Ash Brown","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Maybelline New York Brow Ultra Slim Pencil 4,5 Ash Brown 4,5 Ash Brown","suggested":"Maybelline New York Brow Ultra Slim Pencil 4,5 Ash Brown","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Maybelline New York Brow Ultra Slim Pencil 4,5 Ash Brown"}}}
+{"id":"ean-30096585","name":"Maybelline New York Fit Me Concealer 10 Light 10 Light","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Maybelline New York Fit Me Concealer 10 Light 10 Light","suggested":"Maybelline New York Fit Me Concealer 10 Light","why":"the shop feed appends the shade/size label to the title, so it renders twice"}],"fix":{"patch":{"name":"Maybelline New York Fit Me Concealer 10 Light"}}}
+{"id":"ean-3600531324483","status":"ok"}
+{"id":"ean-3600531324513","status":"ok"}
+{"id":"ean-3600531324520","name":"Maybelline New York Fit Me Matte + Poreless Foundation 120 Classic Ivory 30ml","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"variant family of 3 rows","why":"Maybelline Fit Me Matte + Poreless Foundation shades sit as separate top-level rows with no vlabel/family"}],"fix":{"group":{"head":"ean-3600531324520","members":["ean-3600531324483","ean-3600531324513"],"axis":"color"}}}
+{"id":"_summary","shard":"Beauty-04","checked":300,"ok":185,"issues":115,"by_kind":{"facets":29,"category":14,"variant":27,"name":54,"brand":4,"duplicate":1},"high":12,"rule_gaps":["\"Fragrance Free\" in a product name derives facets.type=Fragrance (Matas Striber micellar water and scrub mask) - the rule needs a negative lookahead for \"fragrance free\"/\"parfymefri\"","\"mousse\"/\"foam\" derives facets.type=Hair care regardless of context, so face cleansing mousse and a lip+cheek mousse land in hair care","\"Primer\" in the Beauty vocabulary outranks the srcCat crumb \"Maling og oppussing\" - a paint primer (Jernia) is live as a Beauty product","scented candles and room sprays (srcCat leaf \"Duftlys\") inherit Beauty from the perfumery parent crumb \"Parfyme\"; the leaf should map to Home","the Kicks feed appends the shade/size label to the product title, so 53 of the 56 Kicks rows in this shard render it twice (\"... 214 Play For Keeps 214 Play For Keeps\")"],"notes":"Category quality is high (Blivakker/Parfymeri breadcrumbs are clean); the real damage is cosmetic - 53 Kicks titles print the shade twice, 27 shade/size families sit unwired as separate top-level rows, and 136 of 300 rows (all Blivakker, a sampled shop) still have no product photo."}

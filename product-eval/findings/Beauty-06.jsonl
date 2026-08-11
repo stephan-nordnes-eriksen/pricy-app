@@ -1,0 +1,295 @@
+{"id":"ean-8008860032546","status":"ok"}
+{"id":"ean-8008860032683","status":"ok"}
+{"id":"ean-8008860038876","status":"ok"}
+{"id":"ean-8809506311069","status":"ok"}
+{"id":"ean-8809506310680","status":"ok"}
+{"id":"ean-8809506310536","status":"ok"}
+{"id":"ean-8809506311076","status":"ok"}
+{"id":"ean-5057982096526","name":"S'well Bottle Pyrite 750ml","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Kitchen","why":"insulated drinking bottle, srcCat 'Drikkeflasker'; only in Beauty because the whole Blivakker feed lands there"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"chef-hat","why":"Kitchen default icon"}],"fix":{"patch":{"cat":"Kitchen","icon":"chef-hat"}}}
+{"id":"ean-843461110921","name":"S'well Ice Cream Bowl Azurite Marble","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Kitchen","why":"an ice cream bowl, not a cosmetic; no srcCat, so the shop floor decided"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"chef-hat","why":"Kitchen default icon"}],"fix":{"patch":{"cat":"Kitchen","icon":"chef-hat"}}}
+{"id":"ean-810023678700","name":"Sabrina Carpenter Caramel Dream Body Mist 236 ml 236 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sabrina Carpenter Caramel Dream Body Mist 236 ml 236 ml","suggested":"Sabrina Carpenter Caramel Dream Body Mist 236 ml","why":"Kicks feed appends the variant label to a name that already ends in it"}],"fix":{"patch":{"name":"Sabrina Carpenter Caramel Dream Body Mist 236 ml"}}}
+{"id":"ean-810023678663","status":"ok"}
+{"id":"ean-810023679646","status":"ok"}
+{"id":"ean-810023672913","status":"ok"}
+{"id":"ean-7350016332576","status":"ok"}
+{"id":"ean-7350016332705","status":"ok"}
+{"id":"ean-7350016332774","status":"ok"}
+{"id":"ean-7350016331357","name":"Sachajuan Normal Conditioner 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sachajuan Normal Conditioner 100 ml 100 ml","suggested":"Sachajuan Normal Conditioner 100 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Sachajuan Normal Conditioner 100 ml"}}}
+{"id":"ean-7350016332897","status":"ok"}
+{"id":"ean-5060513681177","status":"ok"}
+{"id":"ean-8809534173929","name":"SARANGHAEYO 32. FLOWER S. Eau de Parfum 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"SARANGHAEYO 32. FLOWER S. Eau de Parfum 100 ml 100 ml","suggested":"SARANGHAEYO 32. FLOWER S. Eau de Parfum 100 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"SARANGHAEYO 32. FLOWER S. Eau de Parfum 100 ml"}}}
+{"id":"ean-8809314952621","status":"ok"}
+{"id":"ean-8809314952225","status":"ok"}
+{"id":"ean-8809314950948","status":"ok"}
+{"id":"ean-5701092115553","status":"ok"}
+{"id":"ean-5701092115157","status":"ok"}
+{"id":"ean-4067971081540","status":"ok"}
+{"id":"ean-7332531128100","status":"ok"}
+{"id":"ean-7332531132206","name":"Schwarzkopf LIVE Ultra Brights 92 Pillar Box Red 80g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"same product in another shade sits as a separate top-level row: ean-7332531134088 (95 Electric Blue)"}],"fix":{"group":{"head":"ean-7332531132206","members":["ean-7332531134088"],"axis":"color"}}}
+{"id":"ean-7332531134088","name":"Schwarzkopf LIVE Ultra Brights 95 Electric Blue 80g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-7332531132206 (92 Pillar Box Red), no vlabel/family"}]}
+{"id":"ean-4045787998214","status":"ok"}
+{"id":"ean-7090036091175","status":"ok"}
+{"id":"ean-4067971012063","status":"ok"}
+{"id":"ean-4045787999488","name":"Schwarzkopf Professional OSiS+ Mighty Matte Strong Matte Cream 100ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Moisturisers","suggested":"Hair care","why":"styling wax, srcCat 'Voks' — 'Cream' in the name pulled it into Moisturisers"}],"fix":{"patch":{"facets":{"type":"Hair care"}}}}
+{"id":"ean-4064666310145","name":"Sebastian Professional Craft Clay Styling Wax 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sebastian Professional Craft Clay Styling Wax 50 ml 50 ml","suggested":"Sebastian Professional Craft Clay Styling Wax 50 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Sebastian Professional Craft Clay Styling Wax 50 ml"}}}
+{"id":"ean-4068359105391","name":"Sebastian Professional Hydre Thirst Quenching Treatment Mask 145ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"size variant of ean-4068359105148 (500ml), no vlabel/family"}]}
+{"id":"ean-4068359105148","name":"Sebastian Professional Hydre Thirst Quenching Treatment Mask 500ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"same product in 145ml sits as a separate top-level row: ean-4068359105391"}],"fix":{"group":{"head":"ean-4068359105148","members":["ean-4068359105391"],"axis":"size"}}}
+{"id":"ean-4068359105162","status":"ok"}
+{"id":"ean-4068359105421","status":"ok"}
+{"id":"ean-4068359105988","name":"Sebastian Professional Potion 9 Nourishing Shampoo 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sebastian Professional Potion 9 Nourishing Shampoo 50 ml 50 ml","suggested":"Sebastian Professional Potion 9 Nourishing Shampoo 50 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Sebastian Professional Potion 9 Nourishing Shampoo 50 ml"}}}
+{"id":"ean-4973167905425","name":"Sensai Cellular Performance Lotion II Moist 60 ml 60 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sensai Cellular Performance Lotion II Moist 60 ml 60 ml","suggested":"Sensai Cellular Performance Lotion II Moist 60 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Sensai Cellular Performance Lotion II Moist 60 ml"}}}
+{"id":"ean-4973167525555","name":"Sensai Silky Bronze Protective Cream Body SPF30 150 ml 150 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sensai Silky Bronze Protective Cream Body SPF30 150 ml 150 ml","suggested":"Sensai Silky Bronze Protective Cream Body SPF30 150 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Sensai Silky Bronze Protective Cream Body SPF30 150 ml"}}}
+{"id":"p-shelas-shelas-4-in-1-multi-tasker-brush-set","status":"ok"}
+{"id":"p-shelas-shelas-selfie-ring-light","name":"Shelas Selfie Ring Light","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Phones","why":"clip-on selfie ring light, srcCat leaf 'Mobiltilbehør' (phone accessories); it is not a cosmetic"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"smartphone","why":"Phones default icon"}],"fix":{"patch":{"cat":"Phones","icon":"smartphone"}}}
+{"id":"ean-768614214465","status":"ok"}
+{"id":"ean-730852147669","status":"ok"}
+{"id":"ean-768614139225","name":"Shiseido Future Solution LX Eye and Lip Contour Regenerating Cream 15 ml 15 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Shiseido Future Solution LX Eye and Lip Contour Regenerating Cream 15 ml 15 ml","suggested":"Shiseido Future Solution LX Eye and Lip Contour Regenerating Cream 15 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Shiseido Future Solution LX Eye and Lip Contour Regenerating Cream 15 ml"}}}
+{"id":"ean-768614220473","status":"ok"}
+{"id":"ean-768614199694","status":"ok"}
+{"id":"ean-729238222991","status":"ok"}
+{"id":"ean-729238177246","name":"Shiseido MicroLiner Ink 07 Grey 0,08g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"same eyeliner in another shade sits as a separate top-level row: ean-729238177260 (09 Violet)"}],"fix":{"group":{"head":"ean-729238177246","members":["ean-729238177260"],"axis":"color"}}}
+{"id":"ean-729238177260","name":"Shiseido MicroLiner Ink 09 Violet 0,08g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-729238177246 (07 Grey), no vlabel/family"}]}
+{"id":"ean-729238147782","name":"Shiseido ModernMatte Powder Lipstick 502 Whisper 4g","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":"Lips","why":"lipstick, srcCat 'Sminke > Lepper > Leppestift'"},{"kind":"variant","severity":"low","why":"shades 509 (ean-729238147850) and 518 (ean-729238147942) are separate top-level rows; head should be this row, axis color — filed as an issue only because this row already carries a facet patch"}],"fix":{"patch":{"facets":{"type":"Lips"}}}}
+{"id":"ean-729238147850","name":"Shiseido ModernMatte Powder Lipstick 509 Flame 4g","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":"Lips","why":"lipstick, srcCat 'Leppestift'"},{"kind":"variant","severity":"low","why":"shade variant of ean-729238147782, no vlabel/family"}],"fix":{"patch":{"facets":{"type":"Lips"}}}}
+{"id":"ean-729238147942","name":"Shiseido Modernmatte Powder Lipstick 518 Selfie 518 Selfie","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Face makeup","suggested":"Lips","why":"lipstick (same line as ean-729238147782)"},{"kind":"name","severity":"low","field":"name","current":"Shiseido Modernmatte Powder Lipstick 518 Selfie 518 Selfie","suggested":"Shiseido ModernMatte Powder Lipstick 518 Selfie","why":"Kicks feed duplicates the shade suffix"},{"kind":"variant","severity":"low","why":"shade variant of ean-729238147782, no vlabel/family"}],"fix":{"patch":{"name":"Shiseido ModernMatte Powder Lipstick 518 Selfie","facets":{"type":"Lips"}}}}
+{"id":"ean-729238187108","name":"Shiseido Synchro Skin Radiant Lifting Concealer 403 403","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Shiseido Synchro Skin Radiant Lifting Concealer 403 403","suggested":"Shiseido Synchro Skin Radiant Lifting Concealer 403","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Shiseido Synchro Skin Radiant Lifting Concealer 403"}}}
+{"id":"ean-729238217676","name":"Shiseido Synchro Skin Radiant Lifting Foundation 440 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade 460 (ean-729238217690) is a separate top-level row of the same foundation"}],"fix":{"group":{"head":"ean-729238217676","members":["ean-729238217690"],"axis":"color"}}}
+{"id":"ean-729238217690","name":"Shiseido Synchro Skin Radiant Lifting Foundation 460 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-729238217676, no vlabel/family"}]}
+{"id":"ean-730852160903","name":"Shiseido Synchro Skin Self Refreshing Foundation #410 Sunstone 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shades 140 (ean-729238217577) and 150 (ean-729238217584) are separate top-level rows of the same foundation"}],"fix":{"group":{"head":"ean-730852160903","members":["ean-729238217577","ean-729238217584"],"axis":"color"}}}
+{"id":"ean-729238217577","name":"Shiseido Synchro Skin Self Refreshing Foundation 140 Porcelain 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-730852160903, no vlabel/family"}]}
+{"id":"ean-729238217584","name":"Shiseido Synchro Skin Self Refreshing Foundation 150 Lace 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-730852160903, no vlabel/family"}]}
+{"id":"ean-729238161245","status":"ok"}
+{"id":"ean-768614210245","status":"ok"}
+{"id":"ean-3474636876785","status":"ok"}
+{"id":"ean-3474636876846","status":"ok"}
+{"id":"ean-3474636956043","status":"ok"}
+{"id":"ean-3473311800138","name":"Sisley Blush Brush","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"a brush, not makeup; srcCat leaf 'Koster for kinn'. Other brushes in this shard (Westman Atelier Blender Brush) already use Tools"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-3473311926012","status":"ok"}
+{"id":"ean-3473311061058","status":"ok"}
+{"id":"ean-3473311800121","name":"SISLEY Foundation brush","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"a brush, srcCat 'Makeup børster'"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-3473311846006","status":"ok"}
+{"id":"ean-3473311415905","status":"ok"}
+{"id":"ean-3473311690104","status":"ok"}
+{"id":"p-sisley-sisley-les-phyto-ombres-luminous-eyeshadow","status":"ok"}
+{"id":"ean-3473311590213","status":"ok"}
+{"id":"ean-3473311592309","status":"ok"}
+{"id":"ean-3473311705105","name":"Sisley Phyto-Rouge Shine Lipstick 41 Sheer Red Love 41 Sheer Red Love","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sisley Phyto-Rouge Shine Lipstick 41 Sheer Red Love 41 Sheer Red Love","suggested":"Sisley Phyto-Rouge Shine Lipstick 41 Sheer Red Love","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Sisley Phyto-Rouge Shine Lipstick 41 Sheer Red Love"}}}
+{"id":"p-sisley-sisley-phyto-teint-poudre-libre","status":"ok"}
+{"id":"ean-3473311840325","name":"Sisley Phyto-Touche Illusion d'été 11 g 11 g","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Sisley Phyto-Touche Illusion d'été 11 g 11 g","suggested":"Sisley Phyto-Touche Illusion d'été 11 g","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Sisley Phyto-Touche Illusion d'été 11 g"}}}
+{"id":"ean-3473311692504","status":"ok"}
+{"id":"ean-3473311693204","status":"ok"}
+{"id":"ean-3473311506009","status":"ok"}
+{"id":"ean-3473311983008","status":"ok"}
+{"id":"ean-3473311694201","status":"ok"}
+{"id":"ean-3473311593009","status":"ok"}
+{"id":"ean-3473311269102","status":"ok"}
+{"id":"p-ogx-sjampo-ogx","status":"ok"}
+{"id":"ean-5711868201397","name":"Skandinavisk SKOG Scented Candle 350g Special Edition","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"scented candle, srcCat 'Dufter til hjemmet > Duftlys' (home fragrance) — interior decor, not personal care"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-5711868220251","name":"Skandinavisk Twilight Scented Candle Giftset 65g x 2","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"scented candle gift set; srcCat 'Gavesett > Hjem & tilbehør' points at home, not cosmetics"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-8809913834960","status":"ok"}
+{"id":"ean-8809913833079","status":"ok"}
+{"id":"ean-7350102401902","name":"Skincity Skincare First Concentrate 10 ml 10 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Skincity Skincare First Concentrate 10 ml 10 ml","suggested":"Skincity Skincare First Concentrate 10 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Skincity Skincare First Concentrate 10 ml"}}}
+{"id":"ean-607710050952","status":"ok"}
+{"id":"ean-607710079137","status":"ok"}
+{"id":"ean-607710003866","status":"ok"}
+{"id":"ean-607710104877","status":"ok"}
+{"id":"p-sminkebord-hanah-home-monroeve-69-4-x-135-x-40-cm-hvit","name":"Sminkebord Hanah Home Monroeve (69,4 x 135 x 40 cm) Hvit","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Furniture","why":"'Sminkebord' is a dressing table — srcCat 'Sminkebord & toalettbord', sold by Chilli at kr 2999; the word sminke put it in Beauty"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Hanah Home","why":"the name states the brand"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"sofa","why":"Furniture default icon"}],"fix":{"patch":{"cat":"Furniture","brand":"Hanah Home","icon":"sofa"}}}
+{"id":"ean-7323160843885","name":"Snö Of Sweden Bennet Tripple Neck 42 Gold/Clear","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"Snö of Sweden necklace; srcCat is only 'Outlet Accessories' so the Blivakker shop floor decided Beauty"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7323160848156","name":"Snö Of Sweden Flora Daisy Small Oval Ear Plain Gold Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"earrings, srcCat 'Smykker & tilbehør > Smykker > Øredobber > Studs' — Smykker is jewellery"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7323160850487","name":"Snö Of Sweden Siri Stone Brace Gold/Yellow Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"bracelet, srcCat 'Armbånd'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7323160846268","name":"Snö Of Sweden Yenni Brace Plain Silver Onesize","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"bracelet, srcCat 'Armbånd'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7350147112245","status":"ok"}
+{"id":"ean-7350147112283","status":"ok"}
+{"id":"ean-5060422893623","status":"ok"}
+{"id":"ean-5060903872178","status":"ok"}
+{"id":"ean-7068600017401","name":"Soft massasjesåpe hvit","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Kid","suggested":"Unspecified","why":"'Kid' is the shop (Kid Interiør), not a manufacturer; the name gives no reliable brand"}],"fix":{"patch":{"brand":"Unspecified"}}}
+{"id":"ean-7330744194363","status":"ok"}
+{"id":"ean-7330744193496","status":"ok"}
+{"id":"ean-7330744180014","status":"ok"}
+{"id":"ean-7330744194370","status":"ok"}
+{"id":"ean-7330744180021","status":"ok"}
+{"id":"ean-810912034730","status":"ok"}
+{"id":"ean-810912033467","status":"ok"}
+{"id":"ean-810196840522","status":"ok"}
+{"id":"ean-810912038707","status":"ok"}
+{"id":"ean-8809326334224","status":"ok"}
+{"id":"ean-7340172101222","status":"ok"}
+{"id":"p-speedpaint-colour-primer-rack","name":"Speedpaint & Colour Primer Rack","status":"issue","issues":[{"kind":"junk","severity":"high","field":"hidden","current":null,"suggested":1,"why":"a retail display rack for Army Painter Speedpaint from Outland's 'Miniatyrspill' section — not a consumer product, and not Beauty either"},{"kind":"price","severity":"med","field":"best","current":36799,"suggested":null,"why":"kr 36 799 is a trade/display price, implausible as a shelf item"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7029350010425","status":"ok"}
+{"id":"ean-5060022303621","status":"ok"}
+{"id":"ean-5060022302273","name":"St. Tropez Self Tan Purity Bronzing Water Mousse 200ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Sun care","why":"self-tanning mousse, srcCat 'Solprodukter > Selvbruning > Self Tan'; 'Mousse' matched the hair vocabulary"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-5060420338256","name":"St. Tropez Tan Applicator Mitt Dual Sided Velvet Luxe Tan Applicator Mitt Tan Applicator Mitt","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"St. Tropez Tan Applicator Mitt Dual Sided Velvet Luxe Tan Applicator Mitt Tan Applicator Mitt","suggested":"St. Tropez Dual Sided Velvet Luxe Tan Applicator Mitt","why":"Kicks feed repeated the product label three times"}],"fix":{"patch":{"name":"St. Tropez Dual Sided Velvet Luxe Tan Applicator Mitt"}}}
+{"id":"ean-5060022303614","name":"St.Tropez Self Tan Extra Dark Bronzing Mousse 200ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Hair care","suggested":"Sun care","why":"self-tanning mousse, srcCat 'Self Tan'; 'Mousse' matched the hair vocabulary"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-8720872362953","name":"Sticky Bestie Button Covers Round Pearl","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Fashion","why":"decorative pearl button covers — a clothing accessory; srcCat is only the brand's own page so the shop floor decided Beauty"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"shirt","why":"Fashion default icon"}],"fix":{"patch":{"cat":"Fashion","icon":"shirt"}}}
+{"id":"ean-8720872362571","name":"Sticky Bestie The Bestie Brown","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Phones","why":"srcCat leaf is 'Mobiltilbehør' (phone accessories); the name alone identifies nothing, so the breadcrumb is the only evidence and it is not Beauty"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"smartphone","why":"Phones default icon"}],"fix":{"patch":{"cat":"Phones","icon":"smartphone"}}}
+{"id":"p-storys-sminkebord-110x52-cm","name":"Storys Sminkebord 110x52 cm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Furniture","why":"dressing table, srcCat 'Møbler > Bord > Sminkebord & toalettbord' — Møbler is furniture"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Storys","why":"the name states the brand"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"sofa","why":"Furniture default icon"}],"fix":{"patch":{"cat":"Furniture","brand":"Storys","icon":"sofa"}}}
+{"id":"ean-3600522466703","status":"ok"}
+{"id":"ean-5037200086522","status":"ok"}
+{"id":"ean-5060081149956","status":"ok"}
+{"id":"ean-5037200110715","status":"ok"}
+{"id":"ean-5037200109955","status":"ok"}
+{"id":"ean-8809548590118","status":"ok"}
+{"id":"p-supracor-spacells-supracor-spacells-facial-sponge-lilla","status":"ok"}
+{"id":"ean-7350080193035","status":"ok"}
+{"id":"ean-7350080195060","name":"Sweed Glass Skin Foundation 06 Medium C/N\n30ml","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Sweed Glass Skin Foundation 06 Medium C/N\n30ml","suggested":"Sweed Glass Skin Foundation 06 Medium C/N 30ml","why":"the stored name contains a raw newline from the scraped page"},{"kind":"variant","severity":"low","why":"shade variant of ean-7350080195114, no vlabel/family"}],"fix":{"patch":{"name":"Sweed Glass Skin Foundation 06 Medium C/N 30ml"}}}
+{"id":"ean-7350080195114","name":"Sweed Glass Skin Foundation 11 Deep W 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shades 06 (ean-7350080195060) and 14 (ean-7350080195145) are separate top-level rows of the same foundation"}],"fix":{"group":{"head":"ean-7350080195114","members":["ean-7350080195060","ean-7350080195145"],"axis":"color"}}}
+{"id":"ean-7350080195145","name":"Sweed Glass Skin Foundation 14 Deep N/W 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-7350080195114, no vlabel/family"}]}
+{"id":"ean-8058159964485","name":"Teatro Fragranze Pura Ambra Home Fragrance Sticks 100ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"reed diffuser, srcCat 'Dufter til hjemmet > Duftpinner' — home fragrance, not personal care"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-8059692630158","name":"Teatro Fragranze Uniche Patchoulove 100ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"reed diffuser, srcCat 'Duftpinner'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-8058159961835","name":"Teatro Fragranze Uniche Pura Ambra Home Fragrance Spray 500ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"room spray, srcCat 'Dufter til hjemmet > Romspray'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-8058159964652","name":"Teatro Fragranze Vento di Mare Home Fragrance Sticks 250ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"reed diffuser, srcCat 'Duftpinner'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-5028197313098","name":"THE BODY SHOP Coconut Hand Balm 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"THE BODY SHOP Coconut Hand Balm 30 ml 30 ml","suggested":"THE BODY SHOP Coconut Hand Balm 30 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"THE BODY SHOP Coconut Hand Balm 30 ml"}}}
+{"id":"ean-5060491385166","status":"ok"}
+{"id":"ean-5060879826410","status":"ok"}
+{"id":"ean-5060879820357","status":"ok"}
+{"id":"ean-5060879826809","name":"The INKEY List Salicylic Acid Cleanser 60 ml 60 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"The INKEY List Salicylic Acid Cleanser 60 ml 60 ml","suggested":"The INKEY List Salicylic Acid Cleanser 60 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"The INKEY List Salicylic Acid Cleanser 60 ml"}}}
+{"id":"ean-769915199277","status":"ok"}
+{"id":"ean-769915233476","status":"ok"}
+{"id":"ean-6430082340260","status":"ok"}
+{"id":"p-kid-therapie-rosemay-pine-handsape-transparent","name":"Therapie Rosemay & Pine håndsåpe transparent","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Kid","suggested":"Therapie","why":"'Kid' is the shop (Kid Interiør); the name states the brand Therapie"}],"fix":{"patch":{"brand":"Therapie"}}}
+{"id":"p-kid-therapie-sandalwood-amber-bodybutter-transparent","name":"Therapie Sandalwood & Amber bodybutter transparent","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Kid","suggested":"Therapie","why":"'Kid' is the shop (Kid Interiør); the name states the brand Therapie"}],"fix":{"patch":{"brand":"Therapie"}}}
+{"id":"p-active-canis-tick-remover","name":"Tick Remover","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Pets","why":"dog tick remover, srcCat 'Hund > Helse og Pleie > Flått og Skadedyr'; 'Pleie' read as personal care"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"paw-print","why":"Pets default icon"}],"fix":{"patch":{"cat":"Pets","icon":"paw-print"}}}
+{"id":"ean-7311890323173","name":"Timi Of Sweden Dexie Smiley Face Stud Earrings Stainless Steel 5mm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"stud earrings, srcCat 'Smykker & tilbehør > Smykker > Øredobber > Studs'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7311890327928","name":"Timi Of Sweden Dorotea Gemstone Heart Necklace Rose Quartz","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"necklace, srcCat 'Smykker & tilbehør > Smykker > Halssmykker'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7311890333240","name":"Timi Of Sweden Hollie Hoop Earrings Stainless Steel Silver 21mm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"hoop earrings, srcCat 'Smykker & tilbehør > Smykker > Øredobber'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7311890329892","name":"Timi of Sweden Viola Letter Necklace Stainless Steel Gold D","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"letter necklace; srcCat only says 'Outlet Accessories' so the Blivakker floor decided Beauty"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7311890329922","name":"Timi of Sweden Viola Letter Necklace Stainless Steel Gold G","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"letter necklace; srcCat only says 'Outlet Accessories'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7311890330102","name":"Timi of Sweden Viola Letter Necklace Stainless Steel Gold Y","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"letter necklace; srcCat only says 'Outlet Accessories'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7311890330355","name":"Timi of Sweden Viola Letter Necklace Stainless Steel Silver X","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"letter necklace; srcCat only says 'Outlet Accessories'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-7311890341320","name":"Timi Of Sweden Winga Butterfly Earrings Stainless Steel","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Jewelry","why":"earrings, srcCat 'Smykker & tilbehør > Smykker > Øredobber'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"gem","why":"Jewelry default icon"}],"fix":{"patch":{"cat":"Jewelry","icon":"gem"}}}
+{"id":"ean-8809928136837","status":"ok"}
+{"id":"ean-8809928134864","name":"TIRTIR Mask Fit Red Cushion 17N Vanilla 17N Vanilla","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Masks","suggested":"Face makeup","why":"'Mask Fit' is the product line of a cushion foundation, not a face mask; the sibling ean-8809928136837 is correctly Face makeup"},{"kind":"name","severity":"low","field":"name","current":"TIRTIR Mask Fit Red Cushion 17N Vanilla 17N Vanilla","suggested":"TIRTIR Mask Fit Red Cushion 17N Vanilla","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"TIRTIR Mask Fit Red Cushion 17N Vanilla","facets":{"type":"Face makeup"}}}}
+{"id":"ean-8809928135656","name":"TIRTIR Mask Fit Red Mini Cushion 21W Natural Ivory 21W Natural Ivory","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Masks","suggested":"Face makeup","why":"cushion foundation, 'Mask Fit' is the line name"},{"kind":"name","severity":"low","field":"name","current":"TIRTIR Mask Fit Red Mini Cushion 21W Natural Ivory 21W Natural Ivory","suggested":"TIRTIR Mask Fit Red Mini Cushion 21W Natural Ivory","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"TIRTIR Mask Fit Red Mini Cushion 21W Natural Ivory","facets":{"type":"Face makeup"}}}}
+{"id":"ean-888066077439","status":"ok"}
+{"id":"ean-888066112727","name":"TOM FORD Black Orchid Parfum 100ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the 50ml (ean-888066112734) is a separate top-level row of the same parfum"}],"fix":{"group":{"head":"ean-888066112727","members":["ean-888066112734"],"axis":"size"}}}
+{"id":"ean-888066112734","name":"TOM FORD Black Orchid Parfum 50ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"size variant of ean-888066112727 (100ml), no vlabel/family"}]}
+{"id":"ean-888066173179","status":"ok"}
+{"id":"ean-888066154772","status":"ok"}
+{"id":"p-tom-ford-tom-ford-eau-de-grey-vetiver-eau-de-toilette","status":"ok"}
+{"id":"p-tom-ford-tom-ford-figue-erotique-eau-de-parfum","status":"ok"}
+{"id":"ean-888066079228","name":"TOM FORD Foundation Brush 01","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"a brush, srcCat 'Makeup børster'"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-888066081870","status":"ok"}
+{"id":"p-tom-ford-tom-ford-lip-color-satin-matte","status":"ok"}
+{"id":"p-tom-ford-tom-ford-neroli-portofino-eau-de-parfum","status":"ok"}
+{"id":"ean-888066173186","status":"ok"}
+{"id":"ean-888066008624","status":"ok"}
+{"id":"ean-888066075138","status":"ok"}
+{"id":"p-tom-ford-tom-ford-shade-illuminate-concealer","status":"ok"}
+{"id":"p-tom-ford-tom-ford-soleil-bronzer","status":"ok"}
+{"id":"p-tom-ford-tom-ford-soleil-glow-highlighter","status":"ok"}
+{"id":"ean-888066149778","status":"ok"}
+{"id":"p-tom-ford-tom-ford-soleil-summer-lip-balm","status":"ok"}
+{"id":"ean-888066152143","status":"ok"}
+{"id":"ean-651986702039","name":"Too Faced Born This Way Foundation Golden Beige Golden Beige","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Too Faced Born This Way Foundation Golden Beige Golden Beige","suggested":"Too Faced Born This Way Foundation Golden Beige","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Too Faced Born This Way Foundation Golden Beige"}}}
+{"id":"ean-8809784600985","status":"ok"}
+{"id":"ean-8809784601272","status":"ok"}
+{"id":"ean-8809784603955","name":"Torriden DIVE-IN Moisture Sun Cream 60ml","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Moisturisers","suggested":"Sun care","why":"sunscreen — name says 'Sun Cream', srcCat 'Solprodukter > Solkrem og solpleie > Ansikt'"}],"fix":{"patch":{"facets":{"type":"Sun care"}}}}
+{"id":"ean-3397696420197","name":"Trudon Classic Scented Candle Abd El Kader 70g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"scented candle, srcCat leaf 'Duftlys' — home decor, not personal care"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-3397696410020","name":"Trudon Classic Scented Candle Balmoral 270g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"scented candle, srcCat leaf 'Duftlys'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-3397696410464","name":"Trudon Classic Scented Candle Cyrnos 270g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"scented candle, srcCat leaf 'Duftlys'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-3397690007943","name":"Trudon Figuerie Scented Candle 800g","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"scented candle, srcCat leaf 'Duftlys'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-3397690004256","status":"ok"}
+{"id":"ean-3397696410648","name":"Trudon Scented Candle The Alabasters - Atria","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"scented candle, srcCat leaf 'Duftlys'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-3397690000784","name":"Trudon The Diffuser Gabriel 350ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"room diffuser; srcCat is only 'Hjem > Nyhet' so nothing supported Beauty"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-3397696460209","name":"Trudon The Room Spray Joséphine 375ml","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Beauty","suggested":"Home","why":"room spray, srcCat leaf 'Room Spray'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"lamp","why":"Home default icon"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"ean-5060472672759","status":"ok"}
+{"id":"ean-5060472673121","status":"ok"}
+{"id":"ean-5060051890321","status":"ok"}
+{"id":"ean-5060472670939","name":"Umberto Giannini Grow Long Conditioner 250 ml 250 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Umberto Giannini Grow Long Conditioner 250 ml 250 ml","suggested":"Umberto Giannini Grow Long Conditioner 250 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Umberto Giannini Grow Long Conditioner 250 ml"}}}
+{"id":"ean-5060051890406","status":"ok"}
+{"id":"ean-8809647771135","status":"ok"}
+{"id":"ean-8809647770930","status":"ok"}
+{"id":"ean-4779040217827","name":"Uoga Uoga Cream Contour Soft Shade 5ml","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Moisturisers","suggested":"Face makeup","why":"contouring makeup, srcCat 'Sminke > Ansikt > Contouring'; 'Cream' pulled it into Moisturisers"}],"fix":{"patch":{"facets":{"type":"Face makeup"}}}}
+{"id":"ean-4779040217803","name":"Uoga Uoga Micellar Water With Cranberry Extract And Hyaluronic Acid 100ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"size variant of ean-4779040216875 (250ml), no vlabel/family"}]}
+{"id":"ean-4779040216875","name":"Uoga Uoga Micellar Water With Cranberry Extract And Hyaluronic Acid 250ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the 100ml (ean-4779040217803) is a separate top-level row of the same micellar water"}],"fix":{"group":{"head":"ean-4779040216875","members":["ean-4779040217803"],"axis":"size"}}}
+{"id":"ean-4779040218787","status":"ok"}
+{"id":"ean-4779040219043","name":"Uoga Uoga Nourishing Sheer Natural Lipstick Chocoberry 4g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the Cuteberry shade (ean-4779040219067) is a separate top-level row of the same lipstick"}],"fix":{"group":{"head":"ean-4779040219043","members":["ean-4779040219067"],"axis":"color"}}}
+{"id":"ean-4779040219067","name":"Uoga Uoga Nourishing Sheer Natural Lipstick Cuteberry 4g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-4779040219043, no vlabel/family"}]}
+{"id":"ean-4779040216936","status":"ok"}
+{"id":"ean-3605973072510","status":"ok"}
+{"id":"ean-7330744200200","status":"ok"}
+{"id":"ean-7330744220369","status":"ok"}
+{"id":"ean-7330744220673","status":"ok"}
+{"id":"ean-3614274626872","name":"Valentino Born in Roma Uomo Purple Melancholia Eau de Toilette 100 ml 100 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Valentino Born in Roma Uomo Purple Melancholia Eau de Toilette 100 ml 100 ml","suggested":"Valentino Born in Roma Uomo Purple Melancholia Eau de Toilette 100 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Valentino Born in Roma Uomo Purple Melancholia Eau de Toilette 100 ml"}}}
+{"id":"p-airbrush-vallejo-primer-black-200ml","name":"Vallejo Primer Black 200ml","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Hobby","why":"Vallejo model-paint airbrush primer sold by Gamezone; 'Primer' matched the makeup vocabulary"},{"kind":"brand","severity":"med","field":"brand","current":"Airbrush","suggested":"Vallejo","why":"'Airbrush' is the product family, the name states the brand"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"palette","why":"Hobby default icon"}],"fix":{"patch":{"cat":"Hobby","brand":"Vallejo","icon":"palette"}}}
+{"id":"ean-4050117639170","status":"ok"}
+{"id":"ean-4050117585798","status":"ok"}
+{"id":"ean-4050117558587","status":"ok"}
+{"id":"ean-8011003993826","name":"Versace Bright Crystal Eau de Toilette 90 ml 90 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Versace Bright Crystal Eau de Toilette 90 ml 90 ml","suggested":"Versace Bright Crystal Eau de Toilette 90 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Versace Bright Crystal Eau de Toilette 90 ml"}}}
+{"id":"ean-8011003826551","name":"Versace Dylan Blue Bath & Shower Gel 250 ml 250 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Versace Dylan Blue Bath & Shower Gel 250 ml 250 ml","suggested":"Versace Dylan Blue Bath & Shower Gel 250 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Versace Dylan Blue Bath & Shower Gel 250 ml"}}}
+{"id":"ean-8011003839094","name":"Versace Dylan Blue Pour Femme Eau De Parfum 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"size variant of ean-8011003839100 (50ml), no vlabel/family"}]}
+{"id":"ean-8011003839100","name":"Versace Dylan Blue Pour Femme Eau De Parfum 50ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the 30ml (ean-8011003839094) is a separate top-level row of the same fragrance"}],"fix":{"group":{"head":"ean-8011003839100","members":["ean-8011003839094"],"axis":"size"}}}
+{"id":"ean-8011003825721","name":"Versace Dylan Blue Pour Homme Eau de Toilette 30 ml 30 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Versace Dylan Blue Pour Homme Eau de Toilette 30 ml 30 ml","suggested":"Versace Dylan Blue Pour Homme Eau de Toilette 30 ml","why":"Kicks feed duplicates the size suffix"},{"kind":"variant","severity":"low","why":"head of the same fragrance in 50ml (ean-8011003825738); the group fix is filed on that row since this one carries a name patch"}],"fix":{"patch":{"name":"Versace Dylan Blue Pour Homme Eau de Toilette 30 ml"}}}
+{"id":"ean-8011003825738","name":"Versace Dylan Blue Pour Homme Eau De Toilette 50ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"same fragrance as ean-8011003825721 (30ml) in another size, no vlabel/family"}],"fix":{"group":{"head":"ean-8011003825721","members":["ean-8011003825738"],"axis":"size"}}}
+{"id":"ean-8011003903238","status":"ok"}
+{"id":"ean-8011003816750","status":"ok"}
+{"id":"ean-8011003995943","name":"Versace Pour Homme Eau De Toilette 30ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"size variant of ean-8011003995950 (50ml), no vlabel/family"}]}
+{"id":"ean-8011003995950","name":"Versace Pour Homme Eau De Toilette 50ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the 30ml (ean-8011003995943) is a separate top-level row of the same fragrance"}],"fix":{"group":{"head":"ean-8011003995950","members":["ean-8011003995943"],"axis":"size"}}}
+{"id":"p-victoria-beckham-beauty-victoria-beckham-blush-stylus","status":"ok"}
+{"id":"ean-810021282633","status":"ok"}
+{"id":"p-victoria-beckham-beauty-victoria-beckham-future-lash-mascara","status":"ok"}
+{"id":"p-victoria-beckham-beauty-victoria-beckham-satin-kajal-liner","status":"ok"}
+{"id":"ean-810021281780","status":"ok"}
+{"id":"ean-810021282060","status":"ok"}
+{"id":"ean-7071053000197","status":"ok"}
+{"id":"ean-3614274760545","name":"Viktor & Rolf Bonbon Collection Cola Fizz Eau de Parfum 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Viktor & Rolf Bonbon Collection Cola Fizz Eau de Parfum 50 ml 50 ml","suggested":"Viktor & Rolf Bonbon Collection Cola Fizz Eau de Parfum 50 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Viktor & Rolf Bonbon Collection Cola Fizz Eau de Parfum 50 ml"}}}
+{"id":"ean-5060850671886","status":"ok"}
+{"id":"ean-8803463010423","status":"ok"}
+{"id":"ean-8809559627490","status":"ok"}
+{"id":"ean-8809695678431","status":"ok"}
+{"id":"ean-8809559626196","status":"ok"}
+{"id":"ean-5065002361004","status":"ok"}
+{"id":"ean-4573518090079","status":"ok"}
+{"id":"ean-4573518090116","status":"ok"}
+{"id":"p-simple-solution-washable-male-wrap-medium","name":"Washable Male Wrap Medium","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Beauty","suggested":"Pets","why":"washable belly band for male dogs, srcCat 'Hund > Helse og Pleie > Tispe- og Hannbeskyttelse'"},{"kind":"icon","severity":"low","field":"icon","current":"sparkles","suggested":"paw-print","why":"Pets default icon"}],"fix":{"patch":{"cat":"Pets","icon":"paw-print"}}}
+{"id":"ean-4001638590273","status":"ok"}
+{"id":"ean-8005610575117","status":"ok"}
+{"id":"ean-8005610533643","name":"Wella EIMI Dry Me Dry Shampoo 180ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the 65ml (ean-8005610533674) is a separate top-level row of the same dry shampoo"}],"fix":{"group":{"head":"ean-8005610533643","members":["ean-8005610533674"],"axis":"size"}}}
+{"id":"ean-8005610533674","name":"Wella EIMI Dry Me Dry Shampoo 65ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"size variant of ean-8005610533643 (180ml), no vlabel/family"}]}
+{"id":"ean-8005610572192","name":"Wella Professionals Color Fresh 10/39 Lightest Gold/Cendre Blonde 10/39 Lightest Gold/Cendre Blonde","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Wella Professionals Color Fresh 10/39 Lightest Gold/Cendre Blonde 10/39 Lightest Gold/Cendre Blonde","suggested":"Wella Professionals Color Fresh 10/39 Lightest Gold/Cendre Blonde","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Wella Professionals Color Fresh 10/39 Lightest Gold/Cendre Blonde"}}}
+{"id":"ean-4064666210902","name":"Wella Professionals Color Fresh Mask Blue Blue","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Masks","suggested":"Hair care","why":"a colour-depositing hair mask; 'Masks' in this facet means face masks"},{"kind":"name","severity":"low","field":"name","current":"Wella Professionals Color Fresh Mask Blue Blue","suggested":"Wella Professionals Color Fresh Mask Blue","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Wella Professionals Color Fresh Mask Blue","facets":{"type":"Hair care"}}}}
+{"id":"ean-4064666326115","status":"ok"}
+{"id":"ean-4064666583242","status":"ok"}
+{"id":"ean-4064666102740","status":"ok"}
+{"id":"ean-4064666052014","status":"ok"}
+{"id":"ean-4064666579931","status":"ok"}
+{"id":"ean-810102030238","status":"ok"}
+{"id":"ean-810102030573","status":"ok"}
+{"id":"p-westman-atelier-westman-atelier-lip-suede-matte-lipstick","status":"ok"}
+{"id":"p-westman-atelier-westman-atelier-vital-skincare-complexion-drops","status":"ok"}
+{"id":"ean-77802168566","status":"ok"}
+{"id":"ean-77802010438","status":"ok"}
+{"id":"ean-77802001399","status":"ok"}
+{"id":"ean-736658479508","status":"ok"}
+{"id":"ean-8809403814878","status":"ok"}
+{"id":"ean-8436611103441","status":"ok"}
+{"id":"ean-8436611104387","status":"ok"}
+{"id":"ean-850050275572","name":"Wonderskin 1440 Longwear Eyeliner Aqua 1,2g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the Pine shade (ean-850050275589) is a separate top-level row of the same eyeliner"}],"fix":{"group":{"head":"ean-850050275572","members":["ean-850050275589"],"axis":"color"}}}
+{"id":"ean-850050275589","name":"Wonderskin 1440 Longwear Eyeliner Pine 1,2g","status":"issue","issues":[{"kind":"variant","severity":"low","why":"shade variant of ean-850050275572, no vlabel/family"}]}
+{"id":"ean-850066488140","name":"Wonderskin FYP Powder Puff Purple 1pcs","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Tools","why":"an applicator puff, srcCat 'Koster' (brushes/tools)"}],"fix":{"patch":{"facets":{"type":"Tools"}}}}
+{"id":"ean-850007254261","status":"ok"}
+{"id":"ean-850066488188","status":"ok"}
+{"id":"ean-7090062510114","status":"ok"}
+{"id":"ean-8054320903048","status":"ok"}
+{"id":"ean-8054320903321","status":"ok"}
+{"id":"ean-8033488159368","status":"ok"}
+{"id":"ean-7350128931766","name":"XLASH Drama Tinted Primer 6,3ml","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Face makeup","suggested":"Eyes","why":"a lash primer, srcCat 'Mascara'; 'Primer' matched the face vocabulary"}],"fix":{"patch":{"facets":{"type":"Eyes"}}}}
+{"id":"ean-7350128931797","status":"ok"}
+{"id":"ean-7350128931575","name":"Xlash Rejuvenating Eye Gels 30 pairs 30 pairs","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Xlash Rejuvenating Eye Gels 30 pairs 30 pairs","suggested":"Xlash Rejuvenating Eye Gels 30 pairs","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"Xlash Rejuvenating Eye Gels 30 pairs"}}}
+{"id":"ean-7350128931773","status":"ok"}
+{"id":"ean-5903760201159","status":"ok"}
+{"id":"ean-3614273593564","name":"Yves Saint Laurent All Hours Foundation LW1 LW1","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Yves Saint Laurent All Hours Foundation LW1 LW1","suggested":"Yves Saint Laurent All Hours Foundation LW1","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Yves Saint Laurent All Hours Foundation LW1"}}}
+{"id":"ean-3614274197037","name":"Yves Saint Laurent All Hours Hyper Luminize 02 Hypnotic Honey 02 Hypnotic Honey","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Yves Saint Laurent All Hours Hyper Luminize 02 Hypnotic Honey 02 Hypnotic Honey","suggested":"Yves Saint Laurent All Hours Hyper Luminize 02 Hypnotic Honey","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Yves Saint Laurent All Hours Hyper Luminize 02 Hypnotic Honey"}}}
+{"id":"ean-3365440787971","status":"ok"}
+{"id":"ean-3614273852814","status":"ok"}
+{"id":"ean-3614273945226","name":"Yves Saint Laurent Rouge Pur Couture Lipstick R7 R7","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Yves Saint Laurent Rouge Pur Couture Lipstick R7 R7","suggested":"Yves Saint Laurent Rouge Pur Couture Lipstick R7","why":"Kicks feed duplicates the shade suffix"}],"fix":{"patch":{"name":"Yves Saint Laurent Rouge Pur Couture Lipstick R7"}}}
+{"id":"ean-3614274266801","name":"Yves Saint Laurent Y Le Parfum 100ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"size variant of ean-3614274266917 (40ml), no vlabel/family"}]}
+{"id":"ean-3614274266917","name":"Yves Saint Laurent Y Le Parfum 40ml","status":"issue","issues":[{"kind":"variant","severity":"low","why":"the 100ml (ean-3614274266801) is a separate top-level row of the same fragrance"}],"fix":{"group":{"head":"ean-3614274266917","members":["ean-3614274266801"],"axis":"size"}}}
+{"id":"ean-5712598001127","status":"ok"}
+{"id":"ean-5712598000151","status":"ok"}
+{"id":"ean-5715012003219","status":"ok"}
+{"id":"ean-5715012002427","status":"ok"}
+{"id":"ean-5715012003097","status":"ok"}
+{"id":"ean-5715012003165","status":"ok"}
+{"id":"ean-5715012001277","name":"ZENZ Shampoo Rhassoul No. 16 50 ml 50 ml","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"ZENZ Shampoo Rhassoul No. 16 50 ml 50 ml","suggested":"ZENZ Shampoo Rhassoul No. 16 50 ml","why":"Kicks feed duplicates the size suffix"}],"fix":{"patch":{"name":"ZENZ Shampoo Rhassoul No. 16 50 ml"}}}
+{"id":"_summary","shard":"Beauty-06","checked":294,"ok":180,"issues":114,"by_kind":{"category":35,"icon":35,"variant":35,"name":33,"facets":16,"brand":6,"junk":1,"price":1},"high":29,"rule_gaps":["Blivakker's whole feed lands in Beauty: its 'Smykker & tilbehør > Smykker' / 'Armbånd' / 'Øredobber' crumbs never reach Jewelry (12 rows here), and its 'Drikkeflasker' / 'Outlet Accessories' rows have no readable crumb at all — CAT_RULES needs the smykker/armbånd/øredobb/halssmykke vocabulary, and Blivakker must not keep a Beauty floor","home fragrance is unmapped: 'Duftlys' (scented candle), 'Duftpinner' (reed diffuser) and 'Romspray' resolve to Beauty instead of Home — 13 rows across Skandinavisk, Teatro Fragranze and Trudon","'Sminkebord' (dressing table) matches the sminke=makeup vocabulary and pulls furniture into Beauty; the Møbler/Bord crumb should win","Kicks appends the variant label to a name that already ends in it ('… 50 ml 50 ml', '… 403 403') on 32 of the 34 Kicks-sourced rows in this shard — a crawler-side dedupe would fix all of them at once","facetrules.js derives Beauty type from the last word rather than the breadcrumb: 'Cream'→Moisturisers on a styling wax and a contour stick, 'Mousse'→Hair care on two self-tans, 'Mask'→Masks on TIRTIR cushion foundations and a Wella colour mask, 'Primer'→Face makeup on a lash primer; makeup brushes split between Face makeup and Tools"],"notes":"Data itself is healthy — prices, EANs and brands are almost all sane; the damage is systematic rather than per-product: 35 rows are not beauty products at all (jewellery, home fragrance, dressing tables, dog gear, model paint), one row is a shop display rack that should be demoted, and 153 of 294 rows (52%) still have no image because their shops are only sampled."}

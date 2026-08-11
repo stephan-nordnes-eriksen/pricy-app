@@ -1,0 +1,301 @@
+{"id":"p-lundhags-gear-bag-5-forest-green","status":"ok"}
+{"id":"p-gerber-gerber-downwind-drop-point","status":"ok"}
+{"id":"p-gerber-gerber-exo-mod-drop-point-orange","status":"ok"}
+{"id":"p-harkila-gevar-byxor-willow-green-shadow-brown","status":"ok"}
+{"id":"p-abu-garcia-gjedde-set-vendetta-komplett","status":"ok"}
+{"id":"p-gsi-outdoors-glacier-1l-sand","status":"ok"}
+{"id":"p-mystery-ranch-glacier-71-m-del-mar","status":"ok"}
+{"id":"p-osprey-glade-20-cascade-blue","status":"ok"}
+{"id":"p-harkila-glomma-fixed-blade-10-cm-med-bukoppnare","status":"ok"}
+{"id":"p-rohnisch-glow-velcro-band-2-pack-black","name":"Glow velcro band 2-pack Black","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":"Accessories","why":"reflective velcro arm bands (srcCat '... > Beskyttelse > Refleks'); '2-pack' in the name matched the bag rule"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7031580003184","status":"ok"}
+{"id":"p-mikael-tham-gralok-svart","status":"ok"}
+{"id":"ean-7031582373551","status":"ok"}
+{"id":"p-gridarmor-gridarmor-thin-merino-tee-wmn-black-beauty","name":"Gridarmor Thin Merino Tee Wmn Black Beauty","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"'Wmn' in the name; the sibling abbreviation 'Wmns' does derive Women elsewhere in this shard"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-gridarmor-gridarmor-women-s-viks-wool-top-2-0-black-beauty","status":"ok"}
+{"id":"p-savotta-griffin-sling-mw-multicam","status":"ok"}
+{"id":"p-swedteam-grip-m-glove-2017-fire","status":"ok"}
+{"id":"p-carinthia-grizzly-fleece-liner-m-185-cm","status":"ok"}
+{"id":"p-primos-group-therapy-anchor-justerbar-skytebenk-m-bak-stotte","status":"ok"}
+{"id":"p-eno-hammock-guardian","name":"Guardian","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Eno Hammock","suggested":"ENO","why":"the brand field carries a category word; the maker is ENO (Eagles Nest Outfitters), the product is a hammock accessory"}],"fix":{"patch":{"brand":"ENO"}}}
+{"id":"p-msr-guardian-gravity-purifier","status":"ok"}
+{"id":"ean-7031581853054","name":"Gunwale to 13,7","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"canoe hull spare part (gunwale for a 13.7 ft canoe) — a component, and the name is unidentifiable to a shopper browsing Outdoor"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031581855058","name":"Gunwale to 15,5","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"canoe hull spare part (gunwale for a 15.5 ft canoe) — a component, and the name is unidentifiable to a shopper browsing Outdoor"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031582128335","status":"ok"}
+{"id":"p-haglofs-haglofs-corker-medium-18l-seaweed-green","status":"ok"}
+{"id":"p-haglofs-haglofs-juniors-tight-15-fresh-pink-purple-fog","name":"Haglöfs Juniors' Tight 15 Fresh Pink/purple Fog","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Kids","why":"name says \"Juniors'\"; 'Kids'/'Youth' derive audience Kids elsewhere in this shard"}],"fix":{"patch":{"facets":{"audience":"Kids"}}}}
+{"id":"p-haglofs-haglofs-korp-mid-hood-men-deep-teal","status":"ok"}
+{"id":"p-haglofs-haglofs-men-s-rosson-down-hood-true-black","status":"ok"}
+{"id":"p-haglofs-haglofs-outsiders-beanie-chalk-beige","status":"ok"}
+{"id":"p-haglofs-haglofs-women-s-lite-standard-zip-off-ii-pant-tarn-blue","status":"ok"}
+{"id":"p-garmin-halsband-t5-mini-svart-rullespenne","name":"Halsband T5 mini - Svart (rullespenne)","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"Garmin T5 mini dog tracking collar; srcCat 'Halsbånd' is the shop's dog-collar category"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-hamax-hamax-free-surfer-design","status":"ok"}
+{"id":"p-hamax-hamax-mini-surfer-orange","status":"ok"}
+{"id":"p-jr-gear-hammock-singel-blue","name":"Hammock Singel Blue","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sleeping","why":"'Hammock' in the name and srcCat 'Hengekøyer og Tilbehør'; sibling hammock rows carry type Sleeping"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-mystery-ranch-hands-free-rifle-sling-foliage","status":"ok"}
+{"id":"ean-7031582049432","status":"ok"}
+{"id":"ean-7031582049456","status":"ok"}
+{"id":"ean-7031582582953","status":"ok"}
+{"id":"ean-7031582571421","status":"ok"}
+{"id":"ean-7031582571513","status":"ok"}
+{"id":"ean-7031582042389","status":"ok"}
+{"id":"ean-7031582380412","name":"Hareid Fleece W Jacket NoHood","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"ean-7031582380412","suggested":"ean-7031582042389","why":"same name, brand and shop as ean-7031582042389 (kr 749 vs kr 550) — two EANs for one Bergans jacket, shown as two products instead of one with two offers"}],"fix":{"alias":{"ean":"7031582380412","product_id":"ean-7031582042389"}}}
+{"id":"p-light-my-fire-harness-shady-green","status":"ok"}
+{"id":"p-db-hauler-backpack-25l","status":"ok"}
+{"id":"p-db-hauler-weekender-40l","status":"ok"}
+{"id":"p-heat-experience-heat-experience-women-s-heated-everyday-vest-tidal-foa","status":"ok"}
+{"id":"p-alaska-1795-heat-system-muff-moss-brown","status":"ok"}
+{"id":"p-under-armour-heatgear-mid-padless-white","status":"ok"}
+{"id":"p-heat-experience-heatx-heated-light-hunt-gloves-olive-green","status":"ok"}
+{"id":"p-hestra-helags-ecocuir-mitt-marin","status":"ok"}
+{"id":"p-spektrum-helags-summit-bio-essential-optical-white","status":"ok"}
+{"id":"ean-5722003604362","status":"ok"}
+{"id":"p-helinox-helinox-sunset-chair-re-black-cyan-blue","status":"ok"}
+{"id":"p-outdoor-research-helios-sun-hat-khaki","status":"ok"}
+{"id":"ean-7031582014195","status":"ok"}
+{"id":"ean-7031582270096","status":"ok"}
+{"id":"ean-7031582270195","status":"ok"}
+{"id":"ean-7031582270119","status":"ok"}
+{"id":"ean-7031581987902","status":"ok"}
+{"id":"p-wiley-x-helix-smoke-grey-matte-black","status":"ok"}
+{"id":"p-hellner-hellner-mid-tech-run-sock-black-beauty","status":"ok"}
+{"id":"p-hellner-hellner-running-low-sock-2-p-bright-white","status":"ok"}
+{"id":"p-hellner-hellner-tech-fleece-hood-men-black-beauty","status":"ok"}
+{"id":"p-hellner-hellner-women-s-core-running-pant-black-beauty","status":"ok"}
+{"id":"p-nordicmaps-hemsedal-1-50-000","status":"ok"}
+{"id":"p-rab-herre-borealis-jakke-firecracker","status":"ok"}
+{"id":"p-rukka-herring-floating-toy-light-grey","name":"Herring Floating Toy Light Grey","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"floating retrieve toy for dogs; srcCat 'Apporteringsleker' (retriever toys) and Rukka is a dog-gear brand"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-hestra-hestra-extra-foder-mitt-offwhite","status":"ok"}
+{"id":"p-hestra-hestra-leather-lotion-white","status":"ok"}
+{"id":"p-hestra-hestra-women-s-xc-primaloft-5-finger-black-black","status":"ok"}
+{"id":"p-crazy-creek-hex-2-0-longback-olive-slate","status":"ok"}
+{"id":"p-crazy-creek-hex-2-0-original-chair-olive-slate","status":"ok"}
+{"id":"p-fjallraven-high-coast-hip-pack-navy","status":"ok"}
+{"id":"p-osprey-hikelite-26-atlas-blue","name":"Hikelite 26 Atlas Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-osprey-hikelite-26-shiitake-grey","why":"same Osprey Hikelite 26 pack as p-osprey-hikelite-26-shiitake-grey, only the colourway differs, but both sit as top-level rows"}],"fix":{"group":{"head":"p-osprey-hikelite-26-shiitake-grey","members":["p-osprey-hikelite-26-atlas-blue"],"axis":"color"}}}
+{"id":"p-osprey-hikelite-26-shiitake-grey","name":"Hikelite 26 Shiitake Grey","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"color family with p-osprey-hikelite-26-atlas-blue","why":"two colourways of the Hikelite 26 are separate top-level rows; this one has an image so it is the better head"}],"fix":{"group":{"head":"p-osprey-hikelite-26-shiitake-grey","members":["p-osprey-hikelite-26-atlas-blue"],"axis":"color"}}}
+{"id":"p-osprey-hikelite-28-sangria-red","status":"ok"}
+{"id":"p-osprey-hikelite-32l-pine-leaf-green","status":"ok"}
+{"id":"p-hilleberg-hilleberg-kaitum-3-footprint-black","status":"ok"}
+{"id":"p-hilleberg-hilleberg-keron-3-gt-green","status":"ok"}
+{"id":"p-hilleberg-hilleberg-nallo-4-gt-red","status":"ok"}
+{"id":"ean-7031582441304","status":"ok"}
+{"id":"ean-7031582574088","status":"ok"}
+{"id":"p-fenix-hm65r-hodelykt-1400lm","status":"ok"}
+{"id":"p-hummel-hmlkey-waistbag-midjeveske","name":"HmlKey Waistbag midjeveske","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Backpacks & bags","why":"name says 'Waistbag'/'midjeveske' and srcCat is 'Sekker og bagger > Hoftevesker og rumpetasker'"}],"fix":{"patch":{"facets":{"type":"Backpacks & bags"}}}}
+{"id":"p-ledlenser-hodelykt-neo3","status":"ok"}
+{"id":"ean-7031582605249","name":"Hogna 2.5L Shell Pants","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"the name says Pants; sibling Bergans trouser rows carry type Trousers"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582577249","status":"ok"}
+{"id":"ean-7031582550952","status":"ok"}
+{"id":"ean-7031582605164","status":"ok"}
+{"id":"ean-7031582511045","status":"ok"}
+{"id":"ean-7031582566854","status":"ok"}
+{"id":"p-saxx-hot-shot-multi-dital-wave","status":"ok"}
+{"id":"p-black-diamond-hotforge-hybrid-quickdraw-12-cm-blue","status":"ok"}
+{"id":"p-black-diamond-hotforge-hybrid-quickpack-12-cm-ultra-pink","status":"ok"}
+{"id":"p-klattermusen-hrid-wp-accessory-bag-1-5-l-raven","status":"ok"}
+{"id":"p-klattermusen-hrid-wp-accessory-bag-3l-meadow-green","name":"Hrid WP Accessory Bag 3L Meadow Green","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"color family with p-klattermusen-hrid-wp-accessory-bag-3l-slate-grey","why":"same 3L Hrid WP bag in two colourways as separate rows (the 1.5 L row is the same family on a size axis, left out because only one axis can be wired)"}],"fix":{"group":{"head":"p-klattermusen-hrid-wp-accessory-bag-3l-meadow-green","members":["p-klattermusen-hrid-wp-accessory-bag-3l-slate-grey"],"axis":"color"}}}
+{"id":"p-klattermusen-hrid-wp-accessory-bag-3l-slate-grey","name":"Hrid WP Accessory Bag 3L Slate Grey","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-klattermusen-hrid-wp-accessory-bag-3l-meadow-green","why":"colourway of the same 3L Hrid WP accessory bag, sitting as its own top-level row"}],"fix":{"group":{"head":"p-klattermusen-hrid-wp-accessory-bag-3l-meadow-green","members":["p-klattermusen-hrid-wp-accessory-bag-3l-slate-grey"],"axis":"color"}}}
+{"id":"ean-7031582510673","status":"ok"}
+{"id":"ean-5715598513492","name":"Hummel - UV-hatt Starfish Navy Blazer - 46-48cm","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Tents","suggested":"Accessories","why":"an infant UV sun hat, not a tent — the shop shelved it under 'Uv-telt' and the crumb won"},{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Baby","why":"baby sun hat sized by head circumference 46-48 cm, brand 'Hummel Barn' (barn = children)"},{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"the shop's department word 'Barn' is stuck to the brand"},{"kind":"name","severity":"low","field":"name","current":"Hummel - UV-hatt Starfish Navy Blazer - 46-48cm","suggested":"UV-hatt Starfish Navy Blazer","why":"brand prefix plus an unwired size suffix in the display name"}],"fix":{"patch":{"cat":"Baby","brand":"Hummel","name":"UV-hatt Starfish Navy Blazer","facets":{"type":"Accessories"}}}}
+{"id":"p-breitler-hunter-ed-8x42-pc-wp-kikkert","status":"ok"}
+{"id":"p-alaska-1795-hunter-wool-socks-2-pairs-package-dark-grey","name":"Hunter Wool Socks 2 pairs package Dark Grey","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"socks are not a top; the name says 'Wool Socks'"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-carinthia-huq-180-underquilt-for-hammock","name":"HUQ 180 Underquilt for Hammock","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Sleeping","why":"an underquilt for a hammock; srcCat 'Hengekøyer og Tilbehør'"}],"fix":{"patch":{"facets":{"type":"Sleeping"}}}}
+{"id":"p-sufix-hx-myth-clear-150m-0-25mm-6-7kg","status":"ok"}
+{"id":"p-osprey-hydraulics-three-magnet-kit-n-a","name":"Hydraulics Three-Magnet Kit N/A","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Hydraulics Three-Magnet Kit N/A","suggested":"Hydraulics Three-Magnet Kit","why":"the shop's empty colourway placeholder 'N/A' is in the display name"}],"fix":{"patch":{"name":"Hydraulics Three-Magnet Kit"}}}
+{"id":"p-hydro-flask-hydro-flask-710-ml-lightweight-wide-mouth-flex-cap-trail-s","name":"Hydro Flask 710 ml Lightweight Wide Mouth Flex Cap Trail Series Obsidian","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-hydro-flask-hydro-flask-946-ml-lightweight-wide-mouth-flex-cap-trail-s","why":"identical bottle to the 946 ml row (same series, same Obsidian colour) — a capacity variant sitting as its own product"}],"fix":{"group":{"head":"p-hydro-flask-hydro-flask-946-ml-lightweight-wide-mouth-flex-cap-trail-s","members":["p-hydro-flask-hydro-flask-710-ml-lightweight-wide-mouth-flex-cap-trail-s"],"axis":"capacity"}}}
+{"id":"p-hydro-flask-hydro-flask-946-ml-lightweight-wide-mouth-flex-cap-trail-s","name":"Hydro Flask 946 ml Lightweight Wide Mouth Flex Cap Trail Series Obsidian","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"capacity family with the 710 ml row","why":"same bottle in two capacities as two top-level rows; this one has an image so it is the better head"}],"fix":{"group":{"head":"p-hydro-flask-hydro-flask-946-ml-lightweight-wide-mouth-flex-cap-trail-s","members":["p-hydro-flask-hydro-flask-710-ml-lightweight-wide-mouth-flex-cap-trail-s"],"axis":"capacity"}}}
+{"id":"p-hydro-flask-hydro-flask-946ml-wide-flex-cap-surf","status":"ok"}
+{"id":"p-hydro-flask-hydroflask-wide-mouth-coffee-473-ml-white","status":"ok"}
+{"id":"p-marmot-hydrogen-down-regular-3-c-vermouth-alpine-green","status":"ok"}
+{"id":"p-caldwell-hylsefanger-universal","status":"ok"}
+{"id":"p-icebreaker-icebreaker-men-merino-150-skiing-yeti-agate","status":"ok"}
+{"id":"p-icebreaker-icebreaker-men-merino-hike-light-crew-2-pack-black-obsidian","name":"Icebreaker Men Merino Hike+ Light Crew 2 Pack Black/obsidian","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":"Accessories","why":"merino hiking socks (Hike+ Light Crew); '2 Pack' in the name matched the bag rule"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-icebreaker-icebreaker-men-s-200-oasis-longsleeve-half-zip-midnight-nav","status":"ok"}
+{"id":"p-icebreaker-icebreaker-unisex-merino-oasis-balaclava-atlantis","status":"ok"}
+{"id":"p-icebreaker-icebreaker-unisex-sierra-gloves-black","status":"ok"}
+{"id":"p-icebreaker-icebreaker-w-300-merinofinepolar-ls-half-zip-black","status":"ok"}
+{"id":"p-icebreaker-icebreaker-wmns-siren-thong-praline","status":"ok"}
+{"id":"p-icom-icom-icom-bp-294-batteri-nocolour","name":"Icom Icom Bp-294 Batteri Nocolour","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Icom Icom Bp-294 Batteri Nocolour","suggested":"Icom BP-294 Batteri","why":"brand repeated twice and the shop's empty colourway placeholder 'Nocolour' left in the display name"}],"fix":{"patch":{"name":"Icom BP-294 Batteri"}}}
+{"id":"p-icom-icom-prohunt-compact-pakke-med-headset-og-langantenne-orange","status":"ok"}
+{"id":"p-ifish-ifish-cob-4-in-1-lanterna-white","status":"ok"}
+{"id":"p-ifish-ifish-hedlund-35mm","status":"ok"}
+{"id":"p-ifish-ifish-icecabin-360-isfisketalt","name":"IFISH IceCabin 360° Isfisketält","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Tents","why":"'Isfisketält' is an ice-fishing tent; the Swedish 'tält' is not in the type vocabulary the way 'telt'/'tent' is"}],"fix":{"patch":{"facets":{"type":"Tents"}}}}
+{"id":"p-ifish-ifish-lux-vintage-lanterna-black","status":"ok"}
+{"id":"p-ifish-ifish-mustad-trekrok","status":"ok"}
+{"id":"p-ifish-ifish-royal-viking-isborr-xl130-mm","status":"ok"}
+{"id":"p-implus-sof-sole-implus-sof-sole-sale-arch-no-colour","name":"Implus/Sof Sole Såle Arch No Colour","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Implus/Sof Sole Såle Arch No Colour","suggested":"Sof Sole Såle Arch","why":"brand prefix plus the shop's empty colourway placeholder 'No Colour' in the display name"}],"fix":{"patch":{"name":"Sof Sole Såle Arch"}}}
+{"id":"p-implus-sof-sole-implus-sof-sole-sale-athlete-no-colour","name":"Implus/Sof Sole Såle Athlete No Colour","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Implus/Sof Sole Såle Athlete No Colour","suggested":"Sof Sole Såle Athlete","why":"brand prefix plus the shop's empty colourway placeholder 'No Colour' in the display name"}],"fix":{"patch":{"name":"Sof Sole Såle Athlete"}}}
+{"id":"p-oakley-industrial-tombstone-spoil-matte-black-grey","status":"ok"}
+{"id":"p-gsi-outdoors-infinity-backpacker-mug-0-5-l-orange","name":"Infinity Backpacker Mug 0,5 L Orange","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":"Camping gear","why":"a 0.5 L mug (srcCat 'Termokopper'); 'Backpacker' in the name matched the bag rule"}],"fix":{"patch":{"facets":{"type":"Camping gear"}}}}
+{"id":"ean-7031580015064","name":"Inner Chine Rod to 15","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"canoe frame component (inner chine rod for a 15 ft hull) — not a shoppable product and unidentifiable from the name"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031580016061","name":"Inner Chine Rod to 16,5","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"canoe frame component (inner chine rod for a 16.5 ft hull) — not a shoppable product and unidentifiable from the name"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031581857021","name":"Inner Chine Rod to 17","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"canoe frame component (inner chine rod for a 17 ft hull) — not a shoppable product and unidentifiable from the name"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031582522782","status":"ok"}
+{"id":"ean-7031582522492","status":"ok"}
+{"id":"ean-7031582171867","status":"ok"}
+{"id":"ean-7031582511588","status":"ok"}
+{"id":"ean-7031582529330","status":"ok"}
+{"id":"ean-7031582172994","status":"ok"}
+{"id":"p-nordeca-innerfolda","status":"ok"}
+{"id":"p-innova-innova-champion-midrange-rollo-yellow","name":"Innova Champion Midrange Rollo Yellow","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Sport","why":"Innova Champion Rollo is a disc golf midrange disc — a sport item, not hiking/camping/fishing/hunting gear"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-innova-innova-star-driver-wraith-orange","name":"Innova Star Driver Wraith Orange","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Sport","why":"Innova Star Wraith is a disc golf driver — a sport item, not hiking/camping/fishing/hunting gear"}],"fix":{"patch":{"cat":"Sport"}}}
+{"id":"p-inov-8-inov-8-women-s-roclite-mid-gore-tex-black-dark-grey","status":"ok"}
+{"id":"p-garmin-inreach-mini-2-black","status":"ok"}
+{"id":"p-garmin-instinct-2-replacement-band-electric-lime","status":"ok"}
+{"id":"p-garmin-instinct-watch-bands-tundra","status":"ok"}
+{"id":"p-hydro-flask-insulated-wide-mouth-flex-591-ml-rain","status":"ok"}
+{"id":"p-elbe-interpilken-gul-glow-500g","status":"ok"}
+{"id":"p-sufix-invisiline-ice-fluorocarbon-50m-0-25mm-4-0kg-clear","status":"ok"}
+{"id":"ean-7031582398332","status":"ok"}
+{"id":"ean-7031582403531","status":"ok"}
+{"id":"p-decoy-gun-dog-jaktproveband-130-cm-gronn","name":"Jaktprøvebånd 130 cm Grønn","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog field-trial lead; srcCat is literally 'Start > Hund > Jakt > Retriever > Kobbel' (dog > leash) and the brand is Decoy Gun Dog"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-janus-janus-airwool-merino-260-longs-m-forest-night","status":"ok"}
+{"id":"p-janus-janus-airwool-merino-350-vest-w-black","status":"ok"}
+{"id":"p-hummel-jazz-back-pack-ryggsekk","status":"ok"}
+{"id":"p-solvkroken-jensen-tobis","status":"ok"}
+{"id":"p-jetboil-jetboil-fuel-stabilizer-2-0-multicolor","status":"ok"}
+{"id":"p-rapala-jigging-rap-wh-5cm-9g-byr","name":"Jigging Rap WH 5cm 9g BYR","status":"issue","issues":[{"kind":"variant","severity":"low","field":"variants","current":null,"suggested":"color family with p-rapala-jigging-rap-wh-5cm-9g-p","why":"same Rapala Jigging Rap 5 cm/9 g lure in two colour codes (BYR, P) as two top-level rows"}],"fix":{"group":{"head":"p-rapala-jigging-rap-wh-5cm-9g-byr","members":["p-rapala-jigging-rap-wh-5cm-9g-p"],"axis":"color"}}}
+{"id":"p-rapala-jigging-rap-wh-5cm-9g-p","name":"Jigging Rap WH 5cm 9g P","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"p-rapala-jigging-rap-wh-5cm-9g-byr","why":"colour code variant of the same 5 cm/9 g Jigging Rap"}],"fix":{"group":{"head":"p-rapala-jigging-rap-wh-5cm-9g-byr","members":["p-rapala-jigging-rap-wh-5cm-9g-p"],"axis":"color"}}}
+{"id":"p-viking-jolly-print-rain-set-kids-pink","status":"ok"}
+{"id":"p-jubileum-jubileum-fiskegaffel","name":"Jubileum, Fiskegaffel","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Kitchen","why":"'Fiskegaffel' is a fish FORK — silver serving cutlery in the Jubileum pattern, sold by the jeweller Mestergull at kr 5 880; the 'fiske' substring matched the fishing vocabulary and srcCat 'Produkter' gave no counter-evidence"},{"kind":"facets","severity":"med","field":"facets.type","current":"Fishing","suggested":null,"why":"cutlery, nothing to do with fishing; the value disappears once the row is re-categorised, since facets are derived per category"}],"fix":{"patch":{"cat":"Kitchen"}}}
+{"id":"p-julbo-julbo-fury-s-spectron-3-matt-black","name":"Julbo Fury S Spectron 3 Matt Black","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"p-julbo-julbo-fury-s-spectron-3-matt-black-pink","why":"same Julbo Fury S Spectron 3 sunglasses, colourway only difference"}],"fix":{"group":{"head":"p-julbo-julbo-fury-s-spectron-3-matt-black-pink","members":["p-julbo-julbo-fury-s-spectron-3-matt-black"],"axis":"color"}}}
+{"id":"p-julbo-julbo-fury-s-spectron-3-matt-black-pink","name":"Julbo Fury S Spectron 3 Matt Black/Pink","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"color family with p-julbo-julbo-fury-s-spectron-3-matt-black","why":"two colourways of one model as separate rows; this one has an image so it is the better head"}],"fix":{"group":{"head":"p-julbo-julbo-fury-s-spectron-3-matt-black-pink","members":["p-julbo-julbo-fury-s-spectron-3-matt-black"],"axis":"color"}}}
+{"id":"p-julbo-julbo-intensity-spectron-3-black","status":"ok"}
+{"id":"ean-7031582538073","status":"ok"}
+{"id":"p-jotunheim-juvass-jakke-jr","status":"ok"}
+{"id":"p-gregory-juxt-28-spark-navy","status":"ok"}
+{"id":"p-camelbak-k-u-d-u-protector-20-dry-deep-forest-brilliant-blue-m-l","status":"ok"}
+{"id":"p-g-eriksson-kaitum-68mm","name":"KAITUM 68MM","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-g-eriksson-kaitum-68mm","suggested":"merge with p-g-eriksson-kaitum-68mm-12g","why":"the same G Eriksson Kaitum 68 mm ice-fishing lure from two shops split into two rows because the names differ ('68MM' vs '68mm 12g') and brand casing differs — the shopper sees two products with one offer each instead of one with two"}],"fix":{"group":{"head":"p-g-eriksson-kaitum-68mm","members":["p-g-eriksson-kaitum-68mm-12g"],"axis":"size"}}}
+{"id":"p-g-eriksson-kaitum-68mm-12g","name":"Kaitum 68mm 12g","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-g-eriksson-kaitum-68mm-12g","suggested":"merge into p-g-eriksson-kaitum-68mm","why":"same lure as the Intersport row p-g-eriksson-kaitum-68mm; no EAN on either so slugId could not dedupe them"}],"fix":{"group":{"head":"p-g-eriksson-kaitum-68mm","members":["p-g-eriksson-kaitum-68mm-12g"],"axis":"size"}}}
+{"id":"ean-7031582349570","status":"ok"}
+{"id":"ean-7031582334620","status":"ok"}
+{"id":"p-karesuandokniven-karesuando-lantalainen-rwl-34","status":"ok"}
+{"id":"p-kari-traa-kari-traa-women-s-emma-midlayer-off-white","status":"ok"}
+{"id":"p-kari-traa-kari-traa-women-s-linnea-run-cap-blue-lagoon","status":"ok"}
+{"id":"p-kari-traa-kari-traa-women-s-ness-top-2-0-bright-pink","status":"ok"}
+{"id":"p-fjallraven-keb-fleece-hoodie-m-dark-navy","status":"ok"}
+{"id":"ean-7031581207703","name":"Keel to 16","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"canoe keel spare part for a 16 ft hull — a component, unidentifiable as a product on its own page"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7031581858011","name":"Keel to 18,5","status":"issue","issues":[{"kind":"junk","severity":"med","field":"hidden","current":null,"suggested":1,"why":"canoe keel spare part for an 18.5 ft hull — a component, unidentifiable as a product on its own page"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-nite-ize-keyrack-locker-steel-s-biner","status":"ok"}
+{"id":"p-rab-khroma-freeride-gtx-army","status":"ok"}
+{"id":"p-klean-kanteen-kid-cup-296-ml-straw-lid-crocus-petal","status":"ok"}
+{"id":"p-ticket-to-the-moon-kid-s-hengekoye","name":"KID`s Hengekøye","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Kids","why":"name says KID's; the backtick apostrophe probably breaks the audience rule"}],"fix":{"patch":{"facets":{"audience":"Kids"}}}}
+{"id":"p-tretorn-kids-frost-neo-black","name":"Kids Frost Neo Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"Tretorn Frost Neo is a children's winter boot; srcCat is 'Vintersko' (winter shoes)"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-vaude-kids-pulex-hooded-jacket-crocus-dark-sea","status":"ok"}
+{"id":"ean-7031581012000","status":"ok"}
+{"id":"p-silva-kikkert-epic-10","status":"ok"}
+{"id":"p-kinetic-kinetic-zathar-tele","status":"ok"}
+{"id":"p-sealskinz-kirstead-waterproof-cap-black","status":"ok"}
+{"id":"p-sea-to-summit-kitchen-sink-ultra-sil-10l","status":"ok"}
+{"id":"p-klymit-klymaloft-extra-large-green","status":"ok"}
+{"id":"p-klattermusen-klattermusen-algir-accessory-bag-putty-grey","status":"ok"}
+{"id":"p-klattermusen-klattermusen-men-s-alfhild-shorts-midnight-blue","status":"ok"}
+{"id":"p-klattermusen-klattermusen-men-s-huge-half-zip-sweater-raven-burnt-russ","status":"ok"}
+{"id":"p-klattermusen-klattermusen-men-s-hodur-zip-jacket-black","status":"ok"}
+{"id":"p-klattermusen-klattermusen-tjalve-2-0-backpack-10l-olive","status":"ok"}
+{"id":"ean-7031582581888","status":"ok"}
+{"id":"p-komperdell-komperdell-fx-lite-carbon-vario-app-compact","status":"ok"}
+{"id":"p-marmot-kompressor-comet-14l-black-slate-grey","status":"ok"}
+{"id":"p-nordisk-kongsberg-65-duffel-four-leaf-clover-green","status":"ok"}
+{"id":"p-alac-koppel-lader-svart-massing-12-mm-x-180-cm","name":"Koppel Läder Svart Mässing 12 mm x 180 cm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"leather dog leash (Swedish 'koppel'), srcCat 'Kobbel' is the shop's dog-leash category; Alac is a dog-equipment brand"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-primus-koppen-mug-0-3-frost-green","status":"ok"}
+{"id":"p-nalgene-kork-till-flaska-1l-wide-mouth-bla","status":"ok"}
+{"id":"p-viking-kunto-gummistovel","name":"Kunto Gummistövel","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"'Gummistövel' is a rubber boot from Viking Footwear; srcCat is brand-only so the name is the evidence"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-fjallraven-kanken","status":"ok"}
+{"id":"ean-7031582400523","status":"ok"}
+{"id":"ean-7031582399636","status":"ok"}
+{"id":"ean-7031582565482","status":"ok"}
+{"id":"p-oakley-leash-kit-small-svart","status":"ok"}
+{"id":"p-hestra-leather-box-offwhite","status":"ok"}
+{"id":"p-leki-leki-cobra-white-black","status":"ok"}
+{"id":"p-leki-leki-spitfire-vario-3d-denimblue-aegeanblue-mustardyellow","status":"ok"}
+{"id":"ean-7031582091967","status":"ok"}
+{"id":"ean-7031582271109","status":"ok"}
+{"id":"p-lifestraw-lifestraw-play-water-bottle-with-filter-orchid","status":"ok"}
+{"id":"p-real-field-meal-light-meal-700-kcal-havregrot-med-eple-og-kanel-gra","status":"ok"}
+{"id":"p-light-my-fire-light-my-fire-spork-original-bio-rusty-orange","status":"ok"}
+{"id":"p-buff-lightweight-merino-wool-hat-solid-purple-raspberry","name":"Lightweight Merino Wool Hat Solid Purple Raspberry","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"the name says Hat; headwear, not a top — sibling beanies/caps in this shard carry type Accessories"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-buff-lightweight-merino-wool-solid-purple-raspberry","name":"Lightweight Merino Wool Solid Purple Raspberry","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Tops & baselayers","suggested":"Accessories","why":"a Buff neck tube (srcCat 'Skjerf' = scarf), not a top or baselayer"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-g-eriksson-lill-skruven-royeblink-58mm-krs","status":"ok"}
+{"id":"ean-7031582271864","name":"Lilletind 18","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"family with ean-7031582497387 and p-bergans-lilletind-18","why":"three top-level rows named 'Lilletind 18' (two Bergans EANs plus an Intersport row with no EAN) — the same 18 L daypack in different colourways, so the price comparison is split three ways"}],"fix":{"group":{"head":"ean-7031582271864","members":["ean-7031582497387","p-bergans-lilletind-18"],"axis":"color"}}}
+{"id":"ean-7031582497387","name":"Lilletind 18","status":"issue","issues":[{"kind":"variant","severity":"med","field":"family","current":null,"suggested":"ean-7031582271864","why":"second EAN of the same Bergans Lilletind 18 daypack, listed as its own product"}],"fix":{"group":{"head":"ean-7031582271864","members":["ean-7031582497387","p-bergans-lilletind-18"],"axis":"color"}}}
+{"id":"p-bergans-lilletind-18","name":"Lilletind 18","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-bergans-lilletind-18","suggested":"ean-7031582271864","why":"Intersport's copy of the Bergans Lilletind 18 arrived without an EAN, so it became a p- row instead of a second offer on the existing product"}],"fix":{"group":{"head":"ean-7031582271864","members":["ean-7031582497387","p-bergans-lilletind-18"],"axis":"color"}}}
+{"id":"ean-7031582557333","status":"ok"}
+{"id":"ean-7031582329107","status":"ok"}
+{"id":"ean-7031582043614","status":"ok"}
+{"id":"ean-7031582605409","status":"ok"}
+{"id":"ean-7031582281368","status":"ok"}
+{"id":"ean-7031582281900","status":"ok"}
+{"id":"ean-7031582433415","status":"ok"}
+{"id":"p-oakley-line-miner-m-matte-black-prizm-snow-argon-iridium","status":"ok"}
+{"id":"p-oakley-line-miner-m-reservelinse-clear","status":"ok"}
+{"id":"ean-7031581496565","status":"ok"}
+{"id":"p-rapala-linesaks-rapala","status":"ok"}
+{"id":"p-houdini-liquid-light-cap-true-black","status":"ok"}
+{"id":"p-black-diamond-liteforge-screwgate-3-pack-gray","name":"Liteforge Screwgate 3-pack Gray","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Backpacks & bags","suggested":"Accessories","why":"three locking carabiners (srcCat 'Klatreutstyr > Karabiner'); '3-pack' in the name matched the bag rule"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-black-diamond-litewire-carabiner-gray","status":"ok"}
+{"id":"p-mammut-lithium-30-black","status":"ok"}
+{"id":"ean-7031582609292","status":"ok"}
+{"id":"ean-7031582573258","status":"ok"}
+{"id":"p-the-north-face-logo-future-lt-hat-goblin-blue","status":"ok"}
+{"id":"ean-7031582572350","status":"ok"}
+{"id":"p-kaari-loimu-x2-plasma-lighter","status":"ok"}
+{"id":"ean-7031582610168","status":"ok"}
+{"id":"p-julbo-loop-s-spectron-4-matt-blue-orange","status":"ok"}
+{"id":"p-vaude-low-chapel-l-xt-2p-avocado","status":"ok"}
+{"id":"p-lowe-alpine-lowe-alpine-sirac-50-deep-ink-ink","status":"ok"}
+{"id":"p-lowepro-lowepro-flipside-trek-450","name":"Lowepro Flipside Trek 450","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Photo","why":"Lowepro camera backpack; srcCat 'Home > Fototilbehør > Kameraveske > Ryggsekk' — leaf-first classification took the leaf 'Ryggsekk' and never saw the 'Fototilbehør'/'Kameraveske' parents"}],"fix":{"patch":{"cat":"Photo"}}}
+{"id":"p-petzl-luna-coral-red","status":"ok"}
+{"id":"p-lundhags-lundhags-jarpen-fleece-w-stone-pink","status":"ok"}
+{"id":"p-lundhags-lundhags-men-s-tived-zip-off-pant-forest-green","status":"ok"}
+{"id":"p-lundhags-lundhags-trucker-cap-black","status":"ok"}
+{"id":"p-lundhags-lundhags-women-s-tived-zip-off-pant-sand","status":"ok"}
+{"id":"ean-7031582577843","status":"ok"}
+{"id":"p-kivalo-luosto-dog-winter-jacket-35-cm-stream","name":"Luosto Dog Winter Jacket 35 cm Stream","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"the name says Dog Winter Jacket and srcCat 'Vinterdekken' is the shop's dog-coat category; the 35 cm is a dog back length, and the derived type 'Jackets' reads as human clothing on the Outdoor rail"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-lupine-lupine-usb-one-black","status":"ok"}
+{"id":"p-barbour-luxury-bed-30-classic-tartan","name":"Luxury Bed 30 Classic Tartan","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Pets","why":"Barbour's Luxury Dog Bed in Classic Tartan, size 30 in — sold alongside the other Milrab dog gear in this shard; srcCat is brand-only so the row has no outdoor evidence either"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"ean-7031582609810","status":"ok"}
+{"id":"p-swedteam-lynx-women-antibite-hunting-jacket-green","status":"ok"}
+{"id":"p-nordicmaps-lysebotn","status":"ok"}
+{"id":"ean-7031582495802","status":"ok"}
+{"id":"ean-7031582288022","status":"ok"}
+{"id":"p-edvardson-laderkoppel-15mm-180cm-morkbrun-med-alachake","name":"Läderkoppel 15mm * 180cm Mörkbrun med Alachake","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"leather dog leash with an Alac hook ('läderkoppel'), srcCat 'Kobbel' is the shop's dog-leash category"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-nordicmaps-lodingen","status":"ok"}
+{"id":"p-black-diamond-m-equipment-for-alpinists-pullover-hoody-black","status":"ok"}
+{"id":"p-hoka-m-kaha-3-gtx","name":"M KAHA 3 GTX","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"HOKA Kaha 3 GTX hiking boot; srcCat 'SKO > Fjell-, jakt- og hikingsko > Hikingsko' is entirely under the shop's shoe department — 'hiking' in the leaf appears to beat 'sko'"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-hoka-m-speedgoat-6-mid-gtx","name":"M SPEEDGOAT 6 MID GTX","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"HOKA Speedgoat 6 Mid GTX trail shoe; srcCat 'SKO > Fjell-, jakt- og hikingsko > Hikingsko' is entirely under the shop's shoe department"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-the-north-face-m-vectiv-infinite-futurelight-grey","name":"M VECTIV Infinite FutureLight Grey","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"TNF Vectiv trail running shoe; srcCat 'Tursko' (hiking shoes)"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-houdini-m-s-aerial-pants-sandstorm","status":"ok"}
+{"id":"p-marmot-m-s-aerobora-ls-arctic-navy","status":"ok"}
+{"id":"p-black-diamond-m-s-anchor-stretch-shorts-flatiron","status":"ok"}
+{"id":"p-houdini-m-s-baseball-jacket-true-black","status":"ok"}
+{"id":"p-black-diamond-m-s-bd-heritage-cap-dark-curry","status":"ok"}
+{"id":"p-beretta-m-s-butte-softshell-vest-moss-brown-bark","status":"ok"}
+{"id":"p-patagonia-m-s-cap-cool-daily-graphic-shirt-p-6-logo-feather-grey","status":"ok"}
+{"id":"p-helly-hansen-m-s-cascade-low-ht-bright-orange-black","name":"M's Cascade Low Ht Bright Orange / Black","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Hverdagssko' — the shop files it as an everyday shoe, which is neither hiking/camping/fishing nor hunting gear"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-camelbak-m-s-chase-adventure-8-vest-8l-black-earth","status":"ok"}
+{"id":"p-beretta-m-s-collo-neckwarmer-green-moss","status":"ok"}
+{"id":"p-alan-paine-m-s-combrook-cap-sage","status":"ok"}
+{"id":"p-alaska-1795-m-s-cooldry-half-zip-top-brown","status":"ok"}
+{"id":"p-barbour-m-s-cord-2-tailored-shirt-navy","status":"ok"}
+{"id":"p-mystery-ranch-m-s-coulee-25-black","status":"ok"}
+{"id":"p-barbour-m-s-country-check-20-regular-shirt-blue","status":"ok"}
+{"id":"p-houdini-m-s-desoli-mid-crew-college-grey","status":"ok"}
+{"id":"p-patagonia-m-s-down-sweater-gather-green","status":"ok"}
+{"id":"p-alaska-1795-m-s-durashield-jacket-night-green","status":"ok"}
+{"id":"p-marmot-m-s-elche-jogger-nori","status":"ok"}
+{"id":"p-patagonia-m-s-essential-boxer-briefs-3-in-black","status":"ok"}
+{"id":"p-klattermusen-m-s-fafne-long-johns-raven","status":"ok"}
+{"id":"p-lundhags-m-s-fulu-cargo-strech-hybrid-pant-m-dark-gold","status":"ok"}
+{"id":"p-darn-tough-m-s-hiker-1-4-midweight-with-cushion-gray","status":"ok"}
+{"id":"p-harkila-m-s-harkila-noctyx-camo-mossa-axis-msp-black","name":"M's Härkila Noctyx Camo Mössa Axis Msp®Black","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"M's Härkila Noctyx Camo Mössa Axis Msp®Black","suggested":"M's Härkila Noctyx Camo Mössa Axis MSP Black","why":"registered-trademark sign glued to the colour word, so the name renders as 'Msp®Black'"}],"fix":{"patch":{"name":"M's Härkila Noctyx Camo Mössa Axis MSP Black"}}}
+{"id":"p-craghoppers-m-s-kiwi-pro-ii-trousers-black","status":"ok"}
+{"id":"p-patagonia-m-s-l-s-fjord-flannel-shirt-plots-burnished-red","status":"ok"}
+{"id":"p-houdini-m-s-lodge-pants-slate","status":"ok"}
+{"id":"p-klattermusen-m-s-loke-2-0-down-hoodie-raven","status":"ok"}
+{"id":"p-houdini-m-s-longsleeve-shirt-true-black","status":"ok"}
+{"id":"p-patagonia-m-s-lw-fjord-flannel-shirt-canopy-bristle-brown","status":"ok"}
+{"id":"p-chevalier-m-s-mainstone-fleece-jacket-khaki-green","status":"ok"}
+{"id":"p-sasta-m-s-mehto-pro-2-0-gtx-trousers-dark-olive","status":"ok"}
+{"id":"p-icebreaker-m-s-merino-260-quantum-iv-ls-zip-hoodie-black","status":"ok"}
+{"id":"_summary","shard":"Outdoor-03","checked":300,"ok":238,"issues":62,"by_kind":{"category":18,"facets":17,"variant":12,"junk":7,"name":6,"duplicate":4,"brand":2},"high":16,"rule_gaps":["an 'N-pack'/'Backpacker' token in the name derives type 'Backpacks & bags' — it mislabelled 2-pack socks, a 3-pack of carabiners, reflective arm bands and a Backpacker Mug in this shard alone","Norwegian/Swedish dog vocabulary is unmapped (kobbel/koppel, halsbånd, apporteringsleker, vinterdekken, a 'Hund' crumb) so hunting-shop dog gear lands in Outdoor instead of Pets — 7 rows here","footwear breadcrumbs resolve to Outdoor rather than Shoes: 'SKO > Fjell-, jakt- og hikingsko > Hikingsko', 'Tursko', 'Vintersko', even 'Hverdagssko'","'fiske' matches inside 'Fiskegaffel' (a silver fish FORK), putting a Mestergull cutlery row in Outdoor with type Fishing","leaf-first breadcrumb walking takes 'Ryggsekk' over its parent 'Fototilbehør > Kameraveske', so a Lowepro camera backpack is Outdoor, not Photo","bag breadcrumbs 'Dagstursekker'/'Tursekker'/'Turbag'/'Hoftevesker' do not derive type 'Backpacks & bags' — about a dozen packs in this shard have no type at all","singular garment nouns don't derive type where plurals do ('Zip-Off Pant', 'M Glove' get nothing; 'Pants'/'Gloves' work)","audience abbreviations 'Wmn' and \"Juniors'\" derive nothing where 'Wmns'/'Kids'/'Youth' work"],"notes":"Broadly healthy — most rows are correctly-categorised outdoor gear with sane brands and facets; the damage is concentrated in three leaks into Outdoor (dog gear from hunting shops, footwear from shoe departments, one camera bag and one silver fish fork) plus a bag-facet rule that fires on any 'N-pack'. Shard-wide, non-per-row observations: every one of the 300 rows carries the category default icon 'tent' (a beanie, a lure and a sleeping bag all show a tent), no row has any variant wiring even though most names end in a colourway, ~95 rows have no image (the sampled-shop policy), Fjellsport rows all repeat the brand at the head of the name, and Intersport/Sport 1 rows are ALL CAPS — none of these are worth 300 individual findings but all four are visible on the category page."}

@@ -1,0 +1,301 @@
+{"id":"p-linocell-linocell-strikkede-touchskjermhansker","name":"Linocell Strikkede touchskjermhansker","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Hobby","suggested":"Fashion","why":"knitted touchscreen gloves from Kjell & Company, srcCat 'Värmekläder' (warm clothing) — a wearable accessory, nothing craft about it; icon should follow to 'shirt'"}],"fix":{"patch":{"cat":"Fashion","icon":"shirt"}}}
+{"id":"p-liquitex-liquitex-heavy-body-akrylmaling-59-ml-275-manganese-blue-hue","name":"Liquitex Heavy Body akrylmaling 59 ml – 275 Manganese blue hue","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"identical 59 ml Liquitex Heavy Body tube as the 730 Turner's yellow row, only the colour differs; both sit as top-level rows"}],"fix":{"group":{"head":"p-liquitex-liquitex-heavy-body-akrylmaling-59-ml-275-manganese-blue-hue","members":["p-liquitex-liquitex-heavy-body-akrylmaling-59-ml-730-turner-s-yellow"],"axis":"color"}}}
+{"id":"p-liquitex-liquitex-heavy-body-akrylmaling-59-ml-730-turner-s-yellow","name":"Liquitex Heavy Body akrylmaling 59 ml – 730 Turner´s yellow","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Paint","why":"name says 'akrylmaling' and srcCat is 'Akrylmaling'; the sibling 275 row carries type Paint"}],"fix":{"patch":{"facets":{"type":"Paint"}}}}
+{"id":"p-liquitex-liquitex-professional-acrylic-ink-30-ml-cadmium-yellow-light","status":"ok"}
+{"id":"p-hobbii-design-lisbon-sjal","status":"ok"}
+{"id":"p-bc-garn-loch-lomond-gots","status":"ok"}
+{"id":"p-casall-long-rubber-band-medium","name":"Long rubber band medium","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Hobby","suggested":"Sport","why":"Casall resistance band, srcCat 'TRENING OG HELSE > Trene hjemme > Treningsstrikker' from Intersport — training gear, not craft; 'band'/'strikk' read as haberdashery"}],"fix":{"patch":{"cat":"Sport","icon":"dumbbell"}}}
+{"id":"p-hobbii-design-loopy-gulvmatte","status":"ok"}
+{"id":"p-liquitex-lx-matt-super-heavy-gel-237-ml","status":"ok"}
+{"id":"p-hobbii-lykkepose-blandede-fibre-500-g","status":"ok"}
+{"id":"p-panduro-hobby-lyserosa-satengband-40-mm-bredt-og-8-meter-langt","name":"Lyserosa satengbånd – 40 mm bredt og 8 meter langt","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Pink","why":"name opens with 'Lyserosa' (light pink)"}],"fix":{"patch":{"facets":{"color":"Pink"}}}}
+{"id":"p-maggotkin-of-nurgle-putrid-blightkings","status":"ok"}
+{"id":"p-panduro-hobby-magic-figurballonger-pumpe-20","status":"ok"}
+{"id":"p-magnani-incisioni-trykkpapir-220g-70x100cm-white","status":"ok"}
+{"id":"p-magnani-italia-akvarellblokk-cp-300g-20ark-36x51cm","name":"Magnani Italia Akvarellblokk CP 300g 20ark - 36x51cm","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Paint","why":"a 20-sheet watercolour paper block, srcCat leaf 'Akvarellpapir' — it is a painting support, not paint; the shard types canvas (Museo Lerret) as 'Painting supplies'","suggested":"Painting supplies"}],"fix":{"patch":{"facets":{"type":"Painting supplies"}}}}
+{"id":"ean-695929017040","status":"ok"}
+{"id":"ean-695929017019","status":"ok"}
+{"id":"p-oklassificerat-malerulle-mini-filt-5-cm","name":"Malerulle Mini Filt 5 cm","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Oklassificerat","suggested":"Unspecified","why":"'Oklassificerat' is Panduro's own 'unclassified' placeholder label, not a brand — it renders as a brand facet value and is filterable"}],"fix":{"patch":{"brand":"Unspecified"}}}
+{"id":"p-malibu-skjort","status":"ok"}
+{"id":"p-malibu-sommerponcho","status":"ok"}
+{"id":"p-panduro-hobby-man-og-hale-i-regnbuefarger-til-hobby-pony-25-20-cm","status":"ok"}
+{"id":"p-manuscript-callicreative-marker-1-4mm-mork-gronn","status":"ok"}
+{"id":"p-maple-woodland-genser","status":"ok"}
+{"id":"p-maple-woodland-skirt-skjort","status":"ok"}
+{"id":"p-marabu-chalky-chic-100ml-161-cocoa","status":"ok"}
+{"id":"p-marabu-decormatt-hobbymaling-50ml-032-karminrod","name":"Marabu Decormatt Hobbymaling 50ml - 032 Karminrød","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Red","why":"name ends in 'Karminrød' (carmine red)"}],"fix":{"patch":{"facets":{"color":"Red"}}}}
+{"id":"p-marabu-do-it-hobbymaling-36ml-070-white","status":"ok"}
+{"id":"p-marabu-do-it-spraymaling-150ml-255-aquamarine","status":"ok"}
+{"id":"p-marabu-do-it-spraymaling-150ml-566-reflecting-green","name":"Marabu DO IT Spraymaling 150ml - 566 Reflecting Green","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same 150 ml Marabu DO IT spray can as the 255 Aquamarine row, only the colour differs"}],"fix":{"group":{"head":"p-marabu-do-it-spraymaling-150ml-566-reflecting-green","members":["p-marabu-do-it-spraymaling-150ml-255-aquamarine"],"axis":"color"}}}
+{"id":"p-marabu-easy-marble-marmoreringsfarge-15ml-033-rosa","name":"Marabu Easy Marble Marmoreringsfarge 15ml  - 033 Rosa","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same 15 ml Marabu Easy Marble bottle as the 095 Asurblå row, only the colour differs"}],"fix":{"group":{"head":"p-marabu-easy-marble-marmoreringsfarge-15ml-033-rosa","members":["p-marabu-easy-marble-marmoreringsfarge-15ml-095-asurbla"],"axis":"color"}}}
+{"id":"p-marabu-easy-marble-marmoreringsfarge-15ml-095-asurbla","name":"Marabu Easy Marble Marmoreringsfarge 15ml  - 095 Asurblå","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Blue","why":"name ends in 'Asurblå' (azure blue); the sibling 033 Rosa row got its colour"}],"fix":{"patch":{"facets":{"color":"Blue"}}}}
+{"id":"p-marabu-glastattoo-433-rose-pink-satin","status":"ok"}
+{"id":"p-marabu-kids-nokkelring-heart","status":"ok"}
+{"id":"p-marabu-pearl-pen-25ml-574-shimmer-black","status":"ok"}
+{"id":"p-marabu-pouring-fluid-250ml","status":"ok"}
+{"id":"p-marabu-scandinavian-glaze-50ml-534-shimmer-rose-pink","status":"ok"}
+{"id":"p-marianne-design-creatable-anja-s-label","status":"ok"}
+{"id":"p-marianne-design-creatable-grein-og-blomst-2","status":"ok"}
+{"id":"p-marianne-design-creatable-tiny-s-tree-and-leaf","status":"ok"}
+{"id":"p-marmordraper-20mm-gyldne-16stk","name":"Marmordråper, 20mm  gyldne, 16stk","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Gold","why":"name says 'gyldne' (golden)"}],"fix":{"patch":{"facets":{"color":"Gold"}}}}
+{"id":"p-maskevaiere-3-mm","status":"ok"}
+{"id":"p-andre-merkevarer-med-barna-pa-norges-tak","name":"Med barna på Norges tak","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Hobby","suggested":"Books","why":"srcCat 'Bøker > Hobbybøker' — it is a book (hiking with kids); the leaf 'Hobbybøker' resolved to Hobby before the 'Bøker' root was reached"},{"kind":"brand","severity":"med","field":"brand","current":"ANDRE MERKEVARER","suggested":"Unspecified","why":"Obs' 'other brands' bucket label stored as a brand"}],"fix":{"patch":{"cat":"Books","icon":"book","brand":"Unspecified"}}}
+{"id":"p-memories-skjell-sjostjerner-oa","status":"ok"}
+{"id":"p-copenhagen-fibers-merino","status":"ok"}
+{"id":"p-kreatima-metallblad-bladgull-uekte-for-leire-8-5-8-5-cm-i-gullfarge-50","status":"ok"}
+{"id":"p-metallklips-500483-2-hull-40mm-88-sort-kobber","status":"ok"}
+{"id":"p-metallknapp-oyeknapp-23mm-gun-metal","status":"ok"}
+{"id":"p-metallknapp-oyeknapp-23mm-messing","name":"Metallknapp - Øyeknapp - 23mm - Messing","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same 23 mm eye button as the 'Gun metal' row, only the finish differs"}],"fix":{"group":{"head":"p-metallknapp-oyeknapp-23mm-messing","members":["p-metallknapp-oyeknapp-23mm-gun-metal"],"axis":"color"}}}
+{"id":"p-metallknapp-454451-oyeknapp-23mm-8088-sort-sort","status":"ok"}
+{"id":"p-go-handmade-metallringer-mix-15-20-25-30-cm-4-stk","status":"ok"}
+{"id":"p-panduro-hobby-miks-dekorstener-eske-1000-stk","status":"ok"}
+{"id":"ean-5712854559645","status":"ok"}
+{"id":"p-panduro-hobby-miniatyrsett-i-tre-147-deler","status":"ok"}
+{"id":"ean-6430062515077","name":"MiniBands 4 stk med oppbevaringspose","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Hobby","suggested":"Sport","why":"Gymstick mini resistance bands, srcCat 'Fitnessutstyr / Treningsstrikk' from Sporttema — training equipment; 'strikk' read as elastic haberdashery"}],"fix":{"patch":{"cat":"Sport","icon":"dumbbell"}}}
+{"id":"p-wwf-x-laura-dalgaard-mint-tiger-barnegenser","status":"ok"}
+{"id":"p-miyuki-miyuki-quarter-tila-solv-4-g-qtl55006-silver","status":"ok"}
+{"id":"p-mjuk-mjuk-storm-tykk-ullgarn","status":"ok"}
+{"id":"p-mjuk-mjuk-vestavind-ullgarn","status":"ok"}
+{"id":"p-model-color-new-wood-18-ml","status":"ok"}
+{"id":"p-oklassificerat-modelldukke-21-cm-mann","name":"Modelldukke 21 cm Mann","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Oklassificerat","suggested":"Unspecified","why":"'Oklassificerat' is Panduro's 'unclassified' placeholder label, not a brand"}],"fix":{"patch":{"brand":"Unspecified"}}}
+{"id":"p-prym-mohairborste","status":"ok"}
+{"id":"p-moleskine-planner-2027-12m-hard-l-dag-myrtle-green","name":"Moleskine Planner 2027 12m Hard L Dag - Myrtle Green","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Hobby","suggested":"Office","why":"a dated 2027 diary/planner — stationery, not an art supply; it only lands in Hobby because the shop (Tegne.no) is an art shop and srcCat is just the product name"}],"fix":{"patch":{"cat":"Office"}}}
+{"id":"p-moleskine-roller-pen-0-5-white","name":"Moleskine Roller Pen 0.5 - White","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Hobby","suggested":"Office","why":"a 0.5 mm writing roller pen — stationery; srcCat is just the product name, so the shop floor decided the category"}],"fix":{"patch":{"cat":"Office"}}}
+{"id":"p-moonlight-06-fine-set-3stk-galaxy","status":"ok"}
+{"id":"p-motivational-washi-tape-sticker-set","status":"ok"}
+{"id":"p-hobbii-multipose-for-my-fluffy-projects","status":"ok"}
+{"id":"p-hobbii-multipose-halloween","status":"ok"}
+{"id":"p-mungyo-tavlekrittholder-6stk-bla","status":"ok"}
+{"id":"p-museo-alu-simple-extender-15x120mm","status":"ok"}
+{"id":"p-museo-feltstaffeli-e23-toscana","status":"ok"}
+{"id":"p-museo-lerret-5m-bomull-naturell-500g-365cm-brettet","status":"ok"}
+{"id":"p-museo-lerret-cx-bomull-3d-41mm-120x120cm","status":"ok"}
+{"id":"p-museo-lerret-cx-bomull-3d-41mm-120x140cm","name":"Museo Lerret CX Bomull 3D 41mm-120x140cm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"size family","why":"three top-level rows for the same Museo Lerret CX Bomull 3D 41mm canvas, differing only in format (120x120, 120x140, 60x180)"}],"fix":{"group":{"head":"p-museo-lerret-cx-bomull-3d-41mm-120x140cm","members":["p-museo-lerret-cx-bomull-3d-41mm-120x120cm","p-museo-lerret-cx-bomull-3d-41mm-60x180cm"],"axis":"size"}}}
+{"id":"p-museo-lerret-cx-bomull-3d-41mm-60x180cm","status":"ok"}
+{"id":"p-museo-lerret-l-100-lin-22mm-120x120cm","status":"ok"}
+{"id":"p-museo-lerret-lx-100-lin-xtra-3d-41mm-120x120cm","status":"ok"}
+{"id":"p-museo-lerret-lx-100-lin-xtra-3d-41mm-120x180cm","name":"Museo Lerret LX 100% Lin Xtra 3D 41mm - 120x180cm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"size family","why":"same Museo Lerret LX linen canvas as the 120x120cm row, only the format differs"}],"fix":{"group":{"head":"p-museo-lerret-lx-100-lin-xtra-3d-41mm-120x180cm","members":["p-museo-lerret-lx-100-lin-xtra-3d-41mm-120x120cm"],"axis":"size"}}}
+{"id":"p-museo-soft-grip-art-panel-34mm-20x30cm","status":"ok"}
+{"id":"p-my-mandarine-cooky-klistremerker-halloween","status":"ok"}
+{"id":"p-myboshi-bamboo-bambusgarn-50g-125m-295-anthracite","name":"Myboshi Bamboo Bambusgarn 50g 125m - 295 Anthracite","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Yarn & knitting","why":"name says 'Bambusgarn' (bamboo yarn)"},{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Grey","why":"colourway 'Anthracite'"}],"fix":{"patch":{"facets":{"type":"Yarn & knitting","color":"Grey"}}}}
+{"id":"p-myboshi-bomullsgarn-no-2-50g-2210-lime","name":"Myboshi Bomullsgarn No.2 50g - 2210 Lime","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Yarn & knitting","why":"name says 'Bomullsgarn' (cotton yarn); the colour was derived but the type was not"}],"fix":{"patch":{"facets":{"type":"Yarn & knitting"}}}}
+{"id":"p-myboshi-garn-no-1-50g-127-mint","status":"ok"}
+{"id":"p-monster-petiteknit-amelie-tee-junior","status":"ok"}
+{"id":"p-viking-garn-monsterbok-2203-babyull-kid-silk-10-monstre-med-en-spesiel","status":"ok"}
+{"id":"p-nagle-501126-9mm-835-titan","status":"ok"}
+{"id":"p-hobbii-nakkelampe-deluxe-champagne","status":"ok"}
+{"id":"ean-810179270469","status":"ok"}
+{"id":"p-necromunda-core-gang-tactics-cards","status":"ok"}
+{"id":"p-necromunda-orlock-gang","status":"ok"}
+{"id":"p-hobbii-nett-bag-of-happiness","status":"ok"}
+{"id":"p-new-masters-60ml-b613-napels-yellow-reddish-extra","status":"ok"}
+{"id":"p-new-masters-60ml-b688-old-holland-blue-grey","status":"ok"}
+{"id":"p-new-masters-60ml-b827-iridescent-pewter","status":"ok"}
+{"id":"p-new-masters-60ml-b831-iridescent-light-copper","status":"ok"}
+{"id":"p-new-masters-60ml-c616-nickel-azo-brown-lemon","status":"ok"}
+{"id":"p-new-masters-60ml-c622-indian-yellow-extra","name":"New Masters 60ml, C622 Indian Yellow Extra","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"eight top-level rows for the same New Masters 60 ml acrylic tube, differing only in the pigment/colour"}],"fix":{"group":{"head":"p-new-masters-60ml-c622-indian-yellow-extra","members":["p-new-masters-60ml-b613-napels-yellow-reddish-extra","p-new-masters-60ml-b688-old-holland-blue-grey","p-new-masters-60ml-b827-iridescent-pewter","p-new-masters-60ml-b831-iridescent-light-copper","p-new-masters-60ml-c616-nickel-azo-brown-lemon","p-new-masters-60ml-c632-indian-yellow-brown-extra","p-new-masters-60ml-d619-cadmium-yellow-lemon"],"axis":"color"}}}
+{"id":"p-new-masters-60ml-c632-indian-yellow-brown-extra","status":"ok"}
+{"id":"p-new-masters-60ml-d619-cadmium-yellow-lemon","status":"ok"}
+{"id":"p-nightvault-eyes-of-the-nine-dice-set","status":"ok"}
+{"id":"p-nitram-bloc-de-saule-15x46x152mm-ekstra-myk","status":"ok"}
+{"id":"p-knitpro-nova-cubics-utskiftbare-rundpinner","status":"ok"}
+{"id":"p-go-handmade-nylon-glidelas","status":"ok"}
+{"id":"p-knitpro-oasis-utskiftelig-heklenalsett","status":"ok"}
+{"id":"p-obsession","name":"Obsession","status":"issue","issues":[{"kind":"metadata","severity":"low","field":"name","current":"Obsession","why":"one bare word, brand Unspecified, no image, srcCat only 'Hobby & fritid' — probably the Outland board game, but nothing in the row says what it is; needs a source check before it can be judged live or junk"}]}
+{"id":"p-old-holland-125ml-b8-yellow-deep","status":"ok"}
+{"id":"p-old-holland-225ml-b112-naples-yellow-reddish-extra","name":"Old Holland 225ml - B112 Naples Yellow Reddish Extra","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"three top-level rows for the same Old Holland 225 ml oil tube, differing only in the pigment/colour"}],"fix":{"group":{"head":"p-old-holland-225ml-b112-naples-yellow-reddish-extra","members":["p-old-holland-225ml-a74-ivory-black","p-old-holland-225ml-b103-brilliant-yellow-light"],"axis":"color"}}}
+{"id":"p-old-holland-225ml-a74-ivory-black","status":"ok"}
+{"id":"p-old-holland-225ml-b103-brilliant-yellow-light","status":"ok"}
+{"id":"p-old-holland-40ml-a74-ivory-black-extra","name":"Old Holland 40ml, A74 Ivory Black Extra","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"five top-level rows for the same Old Holland 40 ml oil tube, differing only in the pigment/colour"}],"fix":{"group":{"head":"p-old-holland-40ml-a74-ivory-black-extra","members":["p-old-holland-40ml-b292-sap-green-lake-extra","p-old-holland-40ml-b316-naples-yellow-deep-extra","p-old-holland-40ml-c121-nickel-titanium-yellow","p-old-holland-40ml-c241-manganese-blue-deep"],"axis":"color"}}}
+{"id":"p-old-holland-40ml-b292-sap-green-lake-extra","status":"ok"}
+{"id":"p-old-holland-40ml-b316-naples-yellow-deep-extra","status":"ok"}
+{"id":"p-old-holland-40ml-c121-nickel-titanium-yellow","status":"ok"}
+{"id":"p-old-holland-40ml-c241-manganese-blue-deep","status":"ok"}
+{"id":"p-old-holland-c1108-hurtigtorkende-medium-100ml","status":"ok"}
+{"id":"p-oldes-sommerhatt","status":"ok"}
+{"id":"p-hobbii-oppspretter","status":"ok"}
+{"id":"p-go-handmade-organiser-inkl-ekstra-markorpung","status":"ok"}
+{"id":"p-panda-3d-crystal-puzzle","status":"ok"}
+{"id":"p-panduro-colour-marker-panduro-colour-marker-brush-penselspiss-og-skras","name":"Panduro Colour Marker Brush, penselspiss og skråskjært spiss – Purple grey 88","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Panduro Colour Marker","suggested":"Panduro","why":"the product line was concatenated into the brand and is repeated verbatim at the head of the name"}],"fix":{"patch":{"brand":"Panduro"}}}
+{"id":"p-panduro-panokitt-panokitt-lim-allround-1l","name":"Panokitt lim Allround 1L","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Panduro Panokitt","suggested":"Panduro","why":"the product line 'Panokitt' was concatenated into the brand and already opens the name"}],"fix":{"patch":{"brand":"Panduro"}}}
+{"id":"p-panpastel-8024703-470-3-violet-sh","name":"PanPastel - 8024703 470.3 Violet Sh.","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"three top-level rows for the same PanPastel single pan, differing only in the colour"}],"fix":{"group":{"head":"p-panpastel-8024703-470-3-violet-sh","members":["p-panpastel-8027803-780-3-raw-umber-sh","p-panpastel-8028408-840-8-payne-s-gray-tint"],"axis":"color"}}}
+{"id":"p-panpastel-8027803-780-3-raw-umber-sh","status":"ok"}
+{"id":"p-panpastel-8028408-840-8-payne-s-gray-tint","status":"ok"}
+{"id":"p-panpastel-sett-8032010-3-oppbevaringsbokser-1-lokk","status":"ok"}
+{"id":"p-panpastel-tilbehor-8065002-sofft-knife-no-2-flat","status":"ok"}
+{"id":"p-papicolor-302x302mm-200g-10ark-970-dus-gronn","status":"ok"}
+{"id":"p-parafinfigur-agurk-6-halve","status":"ok"}
+{"id":"p-pastelgrain-pastellpapir-50x70cm-5ark-360g-charcoal-grey","status":"ok"}
+{"id":"p-pastelmat-pastellblokk-24x30cm-12ark-360g-no-8-brun","status":"ok"}
+{"id":"p-pc1m-extrafine-0-71mm-66-coral-pink","name":"PC1M  ExtraFine 0,71mm  66 Coral Pink","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"PC1M  ExtraFine 0,71mm  66 Coral Pink","suggested":"Posca PC-1M ExtraFine 0,7-1mm - 66 Coral Pink","why":"the hyphen in the tip-width range was swallowed ('0,71mm' is really 0,7-1 mm) and the name is a bare SKU code with doubled spaces"},{"kind":"brand","severity":"low","field":"brand","current":"Unspecified","suggested":"Posca","why":"PC-1M with that tip width is a Posca marker; other Posca rows in this shard carry the brand"}],"fix":{"patch":{"name":"Posca PC-1M ExtraFine 0,7-1mm - 66 Coral Pink","brand":"Posca"}}}
+{"id":"p-pc3m-fine-0-91-3mm-15-red","name":"PC3M  Fine 0,91,3mm  15 Red","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"PC3M  Fine 0,91,3mm  15 Red","suggested":"Posca PC-3M Fine 0,9-1,3mm - 15 Red","why":"the hyphen in the tip-width range was swallowed ('0,91,3mm' is 0,9-1,3 mm); bare SKU code with doubled spaces"},{"kind":"brand","severity":"low","field":"brand","current":"Unspecified","suggested":"Posca","why":"PC-3M 0,9-1,3 mm is a Posca marker"}],"fix":{"patch":{"name":"Posca PC-3M Fine 0,9-1,3mm - 15 Red","brand":"Posca"}}}
+{"id":"p-pc5m-medium-1-82-5mm-m33-metallic-blue","name":"PC5M  Medium 1,82,5mm  M33 Metallic Blue","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"PC5M  Medium 1,82,5mm  M33 Metallic Blue","suggested":"Posca PC-5M Medium 1,8-2,5mm - M33 Metallic Blue","why":"the hyphen in the tip-width range was swallowed ('1,82,5mm' is 1,8-2,5 mm); bare SKU code with doubled spaces"},{"kind":"brand","severity":"low","field":"brand","current":"Unspecified","suggested":"Posca","why":"PC-5M 1,8-2,5 mm is a Posca marker"}],"fix":{"patch":{"name":"Posca PC-5M Medium 1,8-2,5mm - M33 Metallic Blue","brand":"Posca"}}}
+{"id":"p-pebeo-pebeo-lino-ink-80-ml-vannbasert-linoleumsfarge-gold","status":"ok"}
+{"id":"p-lavanche-pensel-lavanche-2117-flat-k-5","name":"Pensel LaVanche 2117 Flat.k 5","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Paint","suggested":"Painting supplies","why":"'Pensel' is a brush, srcCat leaf 'Kunstnerpensler akryl' — the word 'akryl' in the breadcrumb typed it as paint"}],"fix":{"patch":{"facets":{"type":"Painting supplies"}}}}
+{"id":"p-panduro-hobby-pensel-panduro-acrylic-flat-4","name":"Pensel Panduro Acrylic Flat 4","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Paint","suggested":"Painting supplies","why":"'Pensel' is a brush, srcCat leaf 'Hobbypensler akryl' — 'acrylic'/'akryl' typed it as paint"}],"fix":{"patch":{"facets":{"type":"Painting supplies"}}}}
+{"id":"p-tombow-penselpenn-tombow-abt-dual-brush-pen-port-red-757","status":"ok"}
+{"id":"p-pony-perfect-utskiftbare-rundpinner-kort","status":"ok"}
+{"id":"p-panduro-jewellery-perlemiks-med-720-glassperler-i-24-farger-24-lange-t","status":"ok"}
+{"id":"p-panduro-jewellery-perlemiks-stabel-solv-5-typer","status":"ok"}
+{"id":"ean-7333380008001","name":"Perleplate XL 1 stk","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Lekia","suggested":"Unspecified","why":"Lekia is the shop selling it (it is also the only offer), not the manufacturer"}],"fix":{"patch":{"brand":"Unspecified"}}}
+{"id":"p-perlesett-treperler-7-mix","status":"ok"}
+{"id":"p-pilot-pilot-frixion-light-lilla","status":"ok"}
+{"id":"p-kids-dream-store-pippi-langstrompe-hobby-hest","name":"Pippi Langstrømpe Hobby hest","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Hobby","suggested":"Toys","why":"a Pippi Longstocking hobby horse (kjepphest) — a children's toy; srcCat is the useless crumb 'Home', so the word 'Hobby' in the product name decided the category"},{"kind":"brand","severity":"med","field":"brand","current":"Kids Dream Store","suggested":"Unspecified","why":"that is the shop name (offer shop 'Kidsdreamstore'), not a brand"}],"fix":{"patch":{"cat":"Toys","icon":"toy-brick","brand":"Unspecified"}}}
+{"id":"ean-7315624438713","status":"ok"}
+{"id":"p-faber-castell-pitt-artist-pen-brush-167","status":"ok"}
+{"id":"p-plastoyne-farget-m-oyenvipper-mix-100stk","status":"ok"}
+{"id":"p-playcut-hobbykartong-a2-solgul-100ark","name":"Playcut Hobbykartong A2 - Solgul - 100ark","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Yellow","why":"'Solgul' (sun yellow) in the name"}],"fix":{"patch":{"facets":{"color":"Yellow"}}}}
+{"id":"p-playcut-hobbykartong-a6-postrod-100ark","name":"Playcut Hobbykartong A6 - Postrød - 100ark","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Red","why":"'Postrød' (post red) in the name"}],"fix":{"patch":{"facets":{"color":"Red"}}}}
+{"id":"p-playcut-silkepapir-25ark-brun","status":"ok"}
+{"id":"p-andre-merkevarer-pocket-money-growing-dino-dinosauregg","name":"Pocket Money Growing Dino dinosauregg","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"ANDRE MERKEVARER","suggested":"Unspecified","why":"Obs' 'other brands' bucket label stored as a brand"}],"fix":{"patch":{"brand":"Unspecified"}}}
+{"id":"p-polersvamp-fin","status":"ok"}
+{"id":"p-go-handmade-pompon-hvit","status":"ok"}
+{"id":"p-pony-beading-needles-ultra-long","status":"ok"}
+{"id":"p-pony-beading-needles-ultra-long-with-colour-eye","status":"ok"}
+{"id":"p-pony-black-certain-stitch-needles-betweens","status":"ok"}
+{"id":"p-pony-black-colour-eye-needles-crewels","status":"ok"}
+{"id":"p-pony-bodkins","status":"ok"}
+{"id":"p-pony-chenille-embroidery-needles-pony-black","status":"ok"}
+{"id":"p-pony-colour-headed-pins-assorted-colours","status":"ok"}
+{"id":"p-pony-colour-interchangeable-needle-tips-in-the-felt-pouch","status":"ok"}
+{"id":"p-pony-crewels-sy-og-heklenalwith-gold-eye","name":"PONY Crewels Sy- og heklenålwith gold eye","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"PONY Crewels Sy- og heklenålwith gold eye","suggested":"PONY Crewels Sy- og heklenål with gold eye","why":"the space before 'with' was lost when the shop's Norwegian and English name fragments were concatenated"}],"fix":{"patch":{"name":"PONY Crewels Sy- og heklenål with gold eye"}}}
+{"id":"p-pony-easy-threading-hand-sewing-needles-pony-black","status":"ok"}
+{"id":"p-pony-easy-threading-synaler-black-with-white-eye","status":"ok"}
+{"id":"p-pony-glass-headed-pins-assorted-colours","status":"ok"}
+{"id":"p-pony-hook-on-bra-extender-beige","name":"PONY Hook-on bra extender, beige","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same PONY hook-on bra extender as the white row, only the colour differs"}],"fix":{"group":{"head":"p-pony-hook-on-bra-extender-beige","members":["p-pony-hook-on-bra-extender-white"],"axis":"color"}}}
+{"id":"p-pony-hook-on-bra-extender-white","status":"ok"}
+{"id":"p-pony-household-hand-sewing-needle-set-black-with-white-eye","status":"ok"}
+{"id":"p-pony-plastic-canvas-dark-pink","name":"PONY Plastic canvas, dark pink","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same PONY plastic canvas as the orange row, only the colour differs"}],"fix":{"group":{"head":"p-pony-plastic-canvas-dark-pink","members":["p-pony-plastic-canvas-orange"],"axis":"color"}}}
+{"id":"p-pony-plastic-canvas-orange","status":"ok"}
+{"id":"p-pony-safety-pins-gilt-brass","status":"ok"}
+{"id":"p-pony-safety-pins-steel","status":"ok"}
+{"id":"p-pony-straws-hand-sewing-needles-in-the-loosewrap-pack","status":"ok"}
+{"id":"p-pony-tapestry-embroidery-needles-with-gold-eye","status":"ok"}
+{"id":"p-pony-yarn-darners-hand-sewing-needles-with-gold-eye","status":"ok"}
+{"id":"p-porselensfarge-blyfri-algul-ek","name":"Porselensfarge blyfri - Algul.ek","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Porselensfarge blyfri - Algul.ek","why":"the colour suffix is truncated shop shorthand ('Algul.ek') that no shopper can read; the real colourway needs to come from the source page"}]}
+{"id":"p-porselensfarge-blyfri-gulbrun","name":"Porselensfarge blyfri - Gulbrun","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same lead-free porcelain paint as the 'Algul.ek' row, only the colourway differs"}],"fix":{"group":{"head":"p-porselensfarge-blyfri-gulbrun","members":["p-porselensfarge-blyfri-algul-ek"],"axis":"color"}}}
+{"id":"p-porselenspensel-marhar-pennepose-167-4-str-5","status":"ok"}
+{"id":"p-posca-posca-pc-1mr-pink-56-0-7-mm","status":"ok"}
+{"id":"p-posca-posca-pc-5m-brown-45-1-8-2-5-mm","status":"ok"}
+{"id":"p-hobbii-postkort-made-with-love","status":"ok"}
+{"id":"p-pre-cut-planner-s-day-washi-tape-set","status":"ok"}
+{"id":"p-princeton-catalyst-contour-c-62","status":"ok"}
+{"id":"p-hobbii-prosjektveske","status":"ok"}
+{"id":"p-prym-1530-knitpro-parpinne-35cm-5","status":"ok"}
+{"id":"p-prym-1530-knitpro-parpinne-35cm-6","name":"Prym 1530 Knitpro Parpinne 35cm - 6","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"size family","why":"same Prym 1530 35 cm needle pair as the '- 5' row, only the needle gauge differs"}],"fix":{"group":{"head":"p-prym-1530-knitpro-parpinne-35cm-6","members":["p-prym-1530-knitpro-parpinne-35cm-5"],"axis":"size"}}}
+{"id":"p-prym-bikini-og-beltespenner-plast-12mm-gjennomsiktig","status":"ok"}
+{"id":"p-prym-elastisk-band-lateral-stivhet-30mm-hvit","name":"Prym Elastisk Bånd lateral stivhet 30mm - Hvit","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same 30 mm Prym elastic as the 'Svart' row, only the colour differs"}],"fix":{"group":{"head":"p-prym-elastisk-band-lateral-stivhet-30mm-hvit","members":["p-prym-elastisk-band-lateral-stivhet-30mm-svart"],"axis":"color"}}}
+{"id":"p-prym-elastisk-band-lateral-stivhet-30mm-svart","status":"ok"}
+{"id":"p-prym-elastisk-snor-2-5mm-gra","status":"ok"}
+{"id":"p-prym-engangs-klesbeskyttere-selvklebende-one-size-hvit","status":"ok"}
+{"id":"p-prym-ergonomics-parpinne-2stk-5-5-35cm","status":"ok"}
+{"id":"p-prym-ergonomics-parpinne-2stk-6-0-40cm","name":"Prym Ergonomics - Parpinne 2stk - 6,0 - 40cm","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"size family","why":"same Prym Ergonomics needle pair as the 5,5-35cm row, only the gauge/length differs"}],"fix":{"group":{"head":"p-prym-ergonomics-parpinne-2stk-6-0-40cm","members":["p-prym-ergonomics-parpinne-2stk-5-5-35cm"],"axis":"size"}}}
+{"id":"p-prym-ergonomics-rundpinne-6-0-60cm","status":"ok"}
+{"id":"p-prym-ergonomics-fingerboll-18-5-20mm-xl","status":"ok"}
+{"id":"p-prym-farget-elastisk-band-25mm-7m-turkis-monstret","status":"ok"}
+{"id":"p-prym-knapper-38564-2-hull-15mm-20-brun-4stk","status":"ok"}
+{"id":"p-prym-knapper-38564-2-hull-15mm-22-mork-brun-4stk","status":"ok"}
+{"id":"p-prym-knapper-38564-2-hull-18mm-20-brun-3stk","status":"ok"}
+{"id":"p-prym-knapper-453066-2-hull-15mm-12-hvit-4stk","status":"ok"}
+{"id":"p-prym-knapper-453066-2-hull-15mm-68-marinebla-4stk","name":"Prym Knapper 453066 - 2-hull 15mm 68 Marineblå  - 4stk","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same Prym article 453066, 15 mm, 4-pack as the '12 Hvit' row — only the colour differs"}],"fix":{"group":{"head":"p-prym-knapper-453066-2-hull-15mm-68-marinebla-4stk","members":["p-prym-knapper-453066-2-hull-15mm-12-hvit-4stk"],"axis":"color"}}}
+{"id":"p-prym-knapper-453683-2-hull-15mm-12-hvit-3stk","status":"ok"}
+{"id":"p-prym-lintrad-20m-hvit","status":"ok"}
+{"id":"p-prym-love-dobbelsidig-tape-forsvinner-i-vask-6mm","status":"ok"}
+{"id":"p-prym-magnetisk-nalepute-m-sugekopp-katt","status":"ok"}
+{"id":"p-prym-nagler-rorformet-9mm-15stk-messing-solv","status":"ok"}
+{"id":"p-prym-non-sew-color-snaps-o12-4-transp-matt","name":"Prym Non-sew Color Snaps - Ø12.4 - Transp.matt","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Paint","suggested":"Sewing","why":"plastic snap fasteners, srcCat leaf 'Hekter og trykknapper' — the word 'Color' in the product name is what typed them as paint"}],"fix":{"patch":{"facets":{"type":"Sewing"}}}}
+{"id":"p-prym-non-slip-linjal-12-5-x-12-5-inch-omnigrip","status":"ok"}
+{"id":"p-prym-non-slip-linjal-6-x-24-inch-omnigrip","status":"ok"}
+{"id":"p-prym-plastringer-26mm-96stk-hvite-flat","status":"ok"}
+{"id":"p-prym-reparasjonslapp-nylon-selvklebende-6-5x14cm-ecru","status":"ok"}
+{"id":"p-prym-reparasjonsstoff-bomull-12x45cm-gronn","status":"ok"}
+{"id":"p-prym-rullepennal-for-strikkepinner-o95x515mm-kyoto","status":"ok"}
+{"id":"p-prym-skraband-bomull-40-20mm-3-5m-bla","status":"ok"}
+{"id":"p-prym-skraband-bomull-40-20mm-3-5m-marinebla","name":"Prym Skråbånd Bomull 40/20mm 3,5m - Marineblå","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same Prym 40/20 mm 3,5 m cotton bias binding as the 'Blå' row, only the colour differs"}],"fix":{"group":{"head":"p-prym-skraband-bomull-40-20mm-3-5m-marinebla","members":["p-prym-skraband-bomull-40-20mm-3-5m-bla"],"axis":"color"}}}
+{"id":"p-prym-skraband-bomull-40-20mm-30m-pastellrosa","name":"Prym Skråbånd Bomull 40/20mm 30m - Pastellrosa","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Pink","why":"'Pastellrosa' (pastel pink) in the name"}],"fix":{"patch":{"facets":{"color":"Pink"}}}}
+{"id":"p-prym-skraband-bomull-40-20mm-30m-stovet-gronn","name":"Prym Skråbånd Bomull 40/20mm 30m - Støvet Grønn","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same Prym 40/20 mm 30 m cotton bias binding as the 'Pastellrosa' row, only the colour differs"}],"fix":{"group":{"head":"p-prym-skraband-bomull-40-20mm-30m-stovet-gronn","members":["p-prym-skraband-bomull-40-20mm-30m-pastellrosa"],"axis":"color"}}}
+{"id":"p-prym-skraband-bomull-60-30mm-3-5m-dongeribla","name":"Prym Skråbånd Bomull 60/30mm 3,5m - Dongeriblå","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Blue","why":"'Dongeriblå' (denim blue) in the name"}],"fix":{"patch":{"facets":{"color":"Blue"}}}}
+{"id":"p-prym-skulderputer-raglan-vattering-hvit-one-size","status":"ok"}
+{"id":"p-prym-skulderputer-raglan-set-in-med-stroppfeste-hvit","status":"ok"}
+{"id":"p-prym-skulderputer-set-in-uten-borrelasfeste-hudfarget-m-l","status":"ok"}
+{"id":"p-prym-stoppenaler-korte-ht3-25stk","status":"ok"}
+{"id":"p-prym-strikkepinnemappe-hard-430x200mm-polka","status":"ok"}
+{"id":"p-prym-strykelapp-imitert-semsket-skinn-2stk-steingra","name":"Prym Strykelapp imitert semsket skinn  2stk - Steingrå","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Grey","why":"'Steingrå' (stone grey) in the name"}],"fix":{"patch":{"facets":{"color":"Grey"}}}}
+{"id":"p-prym-strykemerke-bjorn-gra-beige","status":"ok"}
+{"id":"p-prym-strykemerke-great-capricorn-beetle-red-brown","status":"ok"}
+{"id":"p-prym-strykemerke-sementbil-gul","status":"ok"}
+{"id":"p-prym-strykemerke-jeans-lapp-morkebla-rektangel-speed-wear","name":"Prym Strykemerke Jeans Lapp Mørkeblå Rektangel Speed Wear","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Blue","why":"'Mørkeblå' (dark blue) in the name; the sibling 'Svart' row did get its colour"}],"fix":{"patch":{"facets":{"color":"Blue"}}}}
+{"id":"p-prym-strykemerke-jeans-lapp-svart-rektangel-casual-menswear","status":"ok"}
+{"id":"p-prym-strykemerke-oval-refleks-selvklebende","status":"ok"}
+{"id":"p-prym-strykemerke-selvklebende-2stk-connect","status":"ok"}
+{"id":"p-prym-syl-ergonomic","status":"ok"}
+{"id":"p-prym-symaskinnaler-tvillingnal-strech-130-705-75-4-0mm","status":"ok"}
+{"id":"p-prym-treknapper-42134-2-hull-28mm-1stk","name":"Prym Treknapper 42134 - 2-hull 28mm - 1stk","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"size family","why":"same Prym article 42134 wooden button as the 38 mm row, only the diameter differs"}],"fix":{"group":{"head":"p-prym-treknapper-42134-2-hull-28mm-1stk","members":["p-prym-treknapper-42134-2-hull-38mm-1stk"],"axis":"size"}}}
+{"id":"p-prym-treknapper-42134-2-hull-38mm-1stk","status":"ok"}
+{"id":"p-prym-trykknapper-jersey-10mm-10stk-kobber","status":"ok"}
+{"id":"p-prym-trykknapper-messing-15mm-sort","name":"Prym Trykknapper messing - 15mm - Sort","status":"issue","issues":[{"kind":"price","severity":"med","field":"best","current":5548,"why":"kr 5 548 for black 15 mm brass snap fasteners while every comparable Prym fastener row in this shard is kr 40-120 — either a wholesale roll sold as one unit or a unit/price error; the row is unusable at this price"}]}
+{"id":"p-prym-trykknapper-messing-7mm-sort","name":"Prym Trykknapper messing - 7mm - Sort","status":"issue","issues":[{"kind":"price","severity":"low","field":"best","current":1361,"why":"kr 1 361 for 7 mm snap fasteners, same suspicious pattern as the 15 mm row (siblings are kr 40-120)"}]}
+{"id":"p-prym-universaletui-beige","status":"ok"}
+{"id":"p-prym-vaskepose-28x38cm-hvit","status":"ok"}
+{"id":"p-prym-veskehandtak-lenke-madonna-sort-gunmetal","status":"ok"}
+{"id":"p-prym-veskelas-fiona","status":"ok"}
+{"id":"p-prym-x-fabpatch-reparasjonslapp-stretch-sort-hvit-3stk","status":"ok"}
+{"id":"p-prym-oyeknapper-15029-14mm-851-antikk-messing-3stk","status":"ok"}
+{"id":"p-prym-oyeknapper-22695-15mm-831-antikk-nikkel-4stk","status":"ok"}
+{"id":"p-go-handmade-pu-skinnremmer","status":"ok"}
+{"id":"p-hobbii-design-puerhtea-sjal","status":"ok"}
+{"id":"p-qor-artist-akvarell-11ml-7000126-bnzmdzln-yellow","status":"ok"}
+{"id":"p-qor-artist-akvarell-11ml-7000146-india-yellow","name":"QoR Artist Akvarell 11ml - 7000146 India Yellow","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"three top-level rows for the same QoR 11 ml watercolour tube, differing only in the colour"}],"fix":{"group":{"head":"p-qor-artist-akvarell-11ml-7000146-india-yellow","members":["p-qor-artist-akvarell-11ml-7000126-bnzmdzln-yellow","p-qor-artist-akvarell-11ml-7000340-prussian-blue"],"axis":"color"}}}
+{"id":"p-qor-artist-akvarell-11ml-7000340-prussian-blue","status":"ok"}
+{"id":"p-qor-artist-akvarell-halfpan-sett-7000030-intensity","status":"ok"}
+{"id":"p-hobbii-quiltet-prosjektveske-avlang-medium","status":"ok"}
+{"id":"p-hobbii-rainbow-cotton-8-6","status":"ok"}
+{"id":"p-rainbow-loom-rainbow-loom-600-glow-pastel","status":"ok"}
+{"id":"p-rauma-garn-finull-mork-gammelrosa","name":"Rauma Garn - FINULL Mørk gammelrosa","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Pink","why":"'Mørk gammelrosa' (dark dusty pink) in the name"}],"fix":{"patch":{"facets":{"color":"Pink"}}}}
+{"id":"p-rauma-garn-finull-vargronn","name":"Rauma Garn - FINULL Vårgrønn","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same Rauma FINULL yarn as the 'Mørk gammelrosa' row, only the colourway differs"}],"fix":{"group":{"head":"p-rauma-garn-finull-vargronn","members":["p-rauma-garn-finull-mork-gammelrosa"],"axis":"color"}}}
+{"id":"p-rauma-garn-pt-5-rustrod","name":"Rauma Garn - PT 5  Rustrød","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Red","why":"'Rustrød' (rust red) in the name"}],"fix":{"patch":{"facets":{"color":"Red"}}}}
+{"id":"p-regia-regia-4-ply-color","name":"Regia 4-ply Color","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Paint","suggested":"Yarn & knitting","why":"Regia 4-ply is self-patterning sock yarn sold by Hobbii — the word 'Color' in the name typed it as paint"}],"fix":{"patch":{"facets":{"type":"Yarn & knitting"}}}}
+{"id":"p-rembrandt-akryl-master-box-malerkasse","status":"ok"}
+{"id":"p-rembrandt-akvarell-halfpan-224-naples-yellow-red","status":"ok"}
+{"id":"p-rembrandt-akvarell-halfpan-231-gold-ochre","status":"ok"}
+{"id":"p-rembrandt-akvarell-halfpan-238-gamboge","name":"Rembrandt Akvarell Halfpan - 238 gamboge","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"five top-level rows for the same Rembrandt watercolour half pan, differing only in the colour"}],"fix":{"group":{"head":"p-rembrandt-akvarell-halfpan-238-gamboge","members":["p-rembrandt-akvarell-halfpan-224-naples-yellow-red","p-rembrandt-akvarell-halfpan-231-gold-ochre","p-rembrandt-akvarell-halfpan-321-perm-madder-deep","p-rembrandt-akvarell-halfpan-357-rose"],"axis":"color"}}}
+{"id":"p-rembrandt-akvarell-halfpan-321-perm-madder-deep","status":"ok"}
+{"id":"p-rembrandt-akvarell-halfpan-357-rose","status":"ok"}
+{"id":"p-rembrandt-akvarell-tube-10ml-318-carmine","status":"ok"}
+{"id":"p-rembrandt-akvarell-tube-10ml-324-perm-madder-brown","name":"Rembrandt Akvarell tube 10ml - 324 Perm. madder brown","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"three top-level rows for the same Rembrandt 10 ml watercolour tube, differing only in the colour"}],"fix":{"group":{"head":"p-rembrandt-akvarell-tube-10ml-324-perm-madder-brown","members":["p-rembrandt-akvarell-tube-10ml-318-carmine","p-rembrandt-akvarell-tube-10ml-682-cobalt-turquoise-green"],"axis":"color"}}}
+{"id":"p-rembrandt-akvarell-tube-10ml-682-cobalt-turquoise-green","status":"ok"}
+{"id":"p-rembrandt-akvarell-tube-20ml-847-interference-violet","status":"ok"}
+{"id":"p-rembrandt-akvarell-tube-20ml-860-chameleon-gold-red-violet","status":"ok"}
+{"id":"p-rembrandt-akvarell-tube-20ml-863-chameleon-blue-green-gold","name":"Rembrandt Akvarell tube 20ml - 863 Chameleon Blue Green Gold","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"three top-level rows for the same Rembrandt 20 ml watercolour tube, differing only in the colour"}],"fix":{"group":{"head":"p-rembrandt-akvarell-tube-20ml-863-chameleon-blue-green-gold","members":["p-rembrandt-akvarell-tube-20ml-847-interference-violet","p-rembrandt-akvarell-tube-20ml-860-chameleon-gold-red-violet"],"axis":"color"}}}
+{"id":"p-rembrandt-rembrandt-akvarellmaling-halvkopp-permanent-yellow-green-633","status":"ok"}
+{"id":"p-rembrandt-olje-15ml-211-cadmium-orange","name":"Rembrandt Olje 15ml - 211 Cadmium orange","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same Rembrandt 15 ml oil tube as the '342 Permanent madder deep' row, only the colour differs"}],"fix":{"group":{"head":"p-rembrandt-olje-15ml-211-cadmium-orange","members":["p-rembrandt-olje-15ml-342-permanent-madder-deep"],"axis":"color"}}}
+{"id":"p-rembrandt-olje-15ml-342-permanent-madder-deep","status":"ok"}
+{"id":"p-rembrandt-olje-40ml-224-naples-yellow-red","status":"ok"}
+{"id":"p-rembrandt-olje-40ml-311-vermillion","status":"ok"}
+{"id":"p-rembrandt-olje-40ml-314-cadmium-red-medium","status":"ok"}
+{"id":"p-rembrandt-olje-40ml-342-permanent-madder-deep","status":"ok"}
+{"id":"p-rembrandt-olje-40ml-377-permanent-red-medium","status":"ok"}
+{"id":"p-rembrandt-olje-40ml-583-phthalo-blue-red","name":"Rembrandt Olje 40ml - 583 Phthalo blue red","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"seven top-level rows for the same Rembrandt 40 ml oil tube, differing only in the colour"}],"fix":{"group":{"head":"p-rembrandt-olje-40ml-583-phthalo-blue-red","members":["p-rembrandt-olje-40ml-224-naples-yellow-red","p-rembrandt-olje-40ml-311-vermillion","p-rembrandt-olje-40ml-314-cadmium-red-medium","p-rembrandt-olje-40ml-342-permanent-madder-deep","p-rembrandt-olje-40ml-377-permanent-red-medium","p-rembrandt-olje-40ml-626-cinnabar-green-light"],"axis":"color"}}}
+{"id":"p-rembrandt-olje-40ml-626-cinnabar-green-light","status":"ok"}
+{"id":"p-rembrandt-rembrandt-oljemaling-40-ml-oxide-black-735","status":"ok"}
+{"id":"p-rembrandt-rembrandt-oljemaling-40-ml-phthalo-blue-red-583","name":"Rembrandt oljemaling 40 ml Phthalo Blue Red - 583","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"p-rembrandt-rembrandt-oljemaling-40-ml-phthalo-blue-red-583","suggested":"p-rembrandt-olje-40ml-583-phthalo-blue-red","why":"the identical product (Rembrandt oil 40 ml, 583 Phthalo Blue Red) is already live as the Tegne.no row p-rembrandt-olje-40ml-583-phthalo-blue-red at kr 272; Panduro's kr 250 offer sits on a second product page instead of undercutting it, so the comparison never happens. No EAN on either row, so alias can't fix it"}],"fix":{"rule":"slugId(brand,name) never merges the same article across shops when the shops word the name differently ('Rembrandt Olje 40ml - 583 Phthalo blue red' vs 'Rembrandt oljemaling 40 ml Phthalo Blue Red - 583') — normalising the slug (drop the shop's language/word order, keep brand + colour code + volume) or a colour-code alias table would merge these paint ranges"}}
+{"id":"p-rembrandt-soft-pastel-231-3-gold-ochre-3","status":"ok"}
+{"id":"p-rembrandt-soft-pastel-397-1-permanent-rose-10","status":"ok"}
+{"id":"p-rembrandt-soft-pastel-411-1-burnt-sienna-10","name":"Rembrandt Soft Pastel - 411,1 burnt sienna 10","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"seven top-level rows for the same Rembrandt soft pastel stick, differing only in the colour/shade"}],"fix":{"group":{"head":"p-rembrandt-soft-pastel-411-1-burnt-sienna-10","members":["p-rembrandt-soft-pastel-231-3-gold-ochre-3","p-rembrandt-soft-pastel-397-1-permanent-rose-10","p-rembrandt-soft-pastel-411-9-burnt-sienna-9","p-rembrandt-soft-pastel-508-5-prussian-blue-5","p-rembrandt-soft-pastel-536-2-violet-2","p-rembrandt-soft-pastel-627-8-cinnabar-green-dp-8"],"axis":"color"}}}
+{"id":"p-rembrandt-soft-pastel-411-9-burnt-sienna-9","status":"ok"}
+{"id":"p-rembrandt-soft-pastel-508-5-prussian-blue-5","status":"ok"}
+{"id":"p-rembrandt-soft-pastel-536-2-violet-2","status":"ok"}
+{"id":"p-rembrandt-soft-pastel-627-8-cinnabar-green-dp-8","status":"ok"}
+{"id":"p-rembrandt-rembrandt-soft-pastel-bluish-grey-8","status":"ok"}
+{"id":"p-rembrandt-soft-pastel-half-sett-set-earth-reds5-5","status":"ok"}
+{"id":"p-rembrandt-rembrandt-soft-pastel-red-violet-3","status":"ok"}
+{"id":"ean-7391998591834","name":"Ribbestrikket genser","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Hobby","suggested":"Fashion","why":"a KappAhl women's ribbed knit sweater, srcCat 'Dame > Gensere & cardigans > Strikkede gensere' — a finished garment; 'strikk'/'strikkede' in the breadcrumb read as knitting supplies"}],"fix":{"patch":{"cat":"Fashion","icon":"shirt"}}}
+{"id":"p-rilakkuma-and-korilakkuma-crystal-puzzle","status":"ok"}
+{"id":"p-andre-merkevarer-rindalslist-18x400-hobbyplate","name":"Rindalslist 18x400 Hobbyplate","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"ANDRE MERKEVARER","suggested":"RINDALSLIST","why":"Obs Bygg's 'other brands' bucket label stored as a brand; the name states the real one, and the sibling row p-rindalslist-rindalslist-18x500-melaminplate already carries brand RINDALSLIST"}],"fix":{"patch":{"brand":"RINDALSLIST"}}}
+{"id":"p-rindalslist-rindalslist-18x500-melaminplate","status":"ok"}
+{"id":"p-ring-55442-25mm-851-antikk-messing","status":"ok"}
+{"id":"p-ring-55442-30mm-821-nikkelfarget","name":"Ring 55442 30mm 821 Nikkelfarget","status":"issue","issues":[{"kind":"variant","severity":"med","field":"variants","current":null,"suggested":"colour family","why":"same Prym article 55442 ring, 30 mm, as the '84 Gull' row — only the finish differs"}],"fix":{"group":{"head":"p-ring-55442-30mm-821-nikkelfarget","members":["p-ring-55442-30mm-84-gull"],"axis":"color"}}}
+{"id":"p-ring-55442-30mm-84-gull","status":"ok"}
+{"id":"p-ring-rektangulaer-501108-25mm-68-marinebla","status":"ok"}
+{"id":"p-ring-rektanulaer-500511-20mm-82-solv","status":"ok"}
+{"id":"_summary","shard":"Hobby-04","checked":300,"ok":227,"issues":73,"by_kind":{"variant":29,"facets":21,"brand":12,"category":8,"name":5,"price":2,"metadata":1,"duplicate":1},"high":8,"rule_gaps":["srcCat leaves 'Oljemaling'/'Akrylmaling'/'Akvarellmaling'/'Akvarellpapir' do not derive facets.type=Paint — every Old Holland and New Masters row (~20 here) carries a colour but no type, while Rembrandt rows get one only because 'Olje'/'Akvarell' is in the product NAME","the word 'Color'/'Colour' anywhere in a name derives type=Paint: it mis-typed Regia 4-ply Color (sock yarn) and Prym Non-sew Color Snaps (fasteners); 'pensel'/'akryl' in a brush breadcrumb does the same to brushes","Norwegian compound colour words are missing from the colour vocabulary: lyserosa, asurblå, gyldne, pastellrosa, dongeriblå, steingrå, rustrød, karminrød, solgul, postrød, mørkeblå, mørk gammelrosa (12 rows here)","the literal word 'hobby' in a product name or breadcrumb crumb promotes non-hobby goods into Hobby: 'Pippi Langstrømpe Hobby hest' (a toy), 'Bøker > Hobbybøker' (a book), and it is also why 'strikk'/'strikkede' rows (Casall/Gymstick resistance bands, a KappAhl sweater) land here","shop bucket labels are stored as brands: 'Oklassificerat' (Panduro), 'ANDRE MERKEVARER' (Obs/Obs Bygg), and plain shop names 'Lekia'/'Kids Dream Store' — these show up as filterable brand values","brand is left 'Unspecified' on roughly half the shard (nearly every Tegne.no row) although the name opens with it — Prym, PONY, Rembrandt, Old Holland, Museo, Marabu, Moleskine, Myboshi, Playcut, PanPastel, QoR; not reported per row, it is one extraction gap"],"notes":"Genuinely a Hobby shard — the category itself is right for ~97% of rows; the real damage is structural, not topical. Five rows are outright in the wrong department (two resistance-band products, a sweater, a hobby horse, a book) and all five got here through 'hobby'/'strikk' word matches rather than a bad breadcrumb. The dominant defect is fragmentation: 29 paint/haberdashery colour and size families sit as separate top-level rows (New Masters 60 ml alone is 8 rows), plus one confirmed cross-shop duplicate of the same Rembrandt oil tube that keeps two prices from ever meeting. About half the rows have no image and many Tegne.no rows have a srcCat that is just the product name repeated, so the breadcrumb signal is absent exactly where brand and type extraction also fail."}

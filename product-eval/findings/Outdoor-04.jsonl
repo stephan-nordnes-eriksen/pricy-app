@@ -1,0 +1,301 @@
+{"id":"p-mountain-equipment-m-s-moreno-jacket-caramel-cafe","status":"ok"}
+{"id":"p-smartwool-m-s-ms150-tee-slim-black","status":"ok"}
+{"id":"p-craghoppers-m-s-nosilife-adventure-gilet-iv-pebble","status":"ok"}
+{"id":"p-teva-m-s-original-universal-green-multi","status":"ok"}
+{"id":"p-gregory-m-s-paragon-48l-ferrous-orange","status":"ok"}
+{"id":"p-black-diamond-m-s-pocket-label-black","status":"ok"}
+{"id":"p-marmot-m-s-precip-jacket-bomber-green","status":"ok"}
+{"id":"p-black-diamond-m-s-recon-bibs-tundra","name":"M's Recon Bibs Tundra","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Black","suggested":null,"why":"colourway is 'Tundra'; 'Black' was read out of the brand name Black Diamond"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"p-alan-paine-m-s-ripon-silk-tie-bordeaux","name":"M's Ripon Silk Tie Bordeaux","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Fashion","why":"a silk necktie; srcCat is the bare brand 'Alan Paine' so nothing supports Outdoor"}],"fix":{"patch":{"cat":"Fashion"}}}
+{"id":"p-mammut-m-s-runbold-lv-pants-black","status":"ok"}
+{"id":"p-alaska-1795-m-s-superior-pant-blindmax-hd","status":"ok"}
+{"id":"p-osprey-m-s-talon-velocity-30l-matcha-green-lemongrass","status":"ok"}
+{"id":"p-teva-m-s-terra-fi-lite-dark-olive-desert-palm","status":"ok"}
+{"id":"p-swazi-m-s-the-clansman-hoodie-ranger","status":"ok"}
+{"id":"p-houdini-m-s-tree-tank-true-black","status":"ok"}
+{"id":"p-houdini-m-s-up-jacket-true-black","status":"ok"}
+{"id":"p-houdini-m-s-up-message-tee-rasberry-rush-red","status":"ok"}
+{"id":"p-lundhags-m-s-vanner-shorts-shorts-charcoal-black","status":"ok"}
+{"id":"p-helly-hansen-m-s-veir-tur-pant-black","status":"ok"}
+{"id":"p-le-chameau-m-s-vierzonord-neoprene-lined-boot-green","status":"ok"}
+{"id":"p-black-diamond-m-s-vision-down-parka-dark-crimson","name":"M's Vision Down Parka Dark Crimson","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.color","current":"Black","suggested":"Red","why":"colourway is 'Dark Crimson'; 'Black' was read out of the brand name Black Diamond"}],"fix":{"patch":{"facets":{"color":"Red"}}}}
+{"id":"p-chevalier-m-s-wellington-walton-light-cord-shirt-midnight-pine","status":"ok"}
+{"id":"p-kamik-m-s-william-gaucho-brown","status":"ok"}
+{"id":"p-canada-snow-m-s-william-laces-cognac","status":"ok"}
+{"id":"p-eka-machblade-w1-wood-pattern","status":"ok"}
+{"id":"p-marmot-mad-river-30-foliage-rosin-green","status":"ok"}
+{"id":"p-mad-rock-mad-rock-mad-monkey-iii-lavender","status":"ok"}
+{"id":"p-lowa-maddox-pro-gtx-lo-black-olive","name":"Maddox Pro GTX Lo Black/Olive","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Hverdagssko' (everyday shoes) — the shop itself does not file it as outdoor gear"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"ean-7031582401117","status":"ok"}
+{"id":"ean-7031582401018","status":"ok"}
+{"id":"p-gerber-magniplier-7-5-locking-pliers","status":"ok"}
+{"id":"p-lundhags-makke-lt-ws-pant-jade-dark-agave","status":"ok"}
+{"id":"p-maloja-maloja-lucaniam-deep-black","status":"ok"}
+{"id":"p-mammut-mammut-10-1-gym-station-classic-rope-200m-blue-white","status":"ok"}
+{"id":"p-mammut-mammut-4-slide-climbing-package-black-black","name":"Mammut 4 Slide Climbing Package black Black","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Mammut 4 Slide Climbing Package black Black","suggested":"Mammut 4 Slide Climbing Package Black","why":"colour token repeated (\"black Black\")"}],"fix":{"patch":{"name":"Mammut 4 Slide Climbing Package Black"}}}
+{"id":"p-mammut-mammut-6-0-glacier-cord-dry-60m-yellow-melange","status":"ok"}
+{"id":"p-mammut-mammut-9-5-crag-classic-rope-70m-blue-white","status":"ok"}
+{"id":"p-mammut-mammut-adam-ondra-sender-light-chalk-bag-mammut-red","status":"ok"}
+{"id":"p-mammut-mammut-aenergy-harness-white","status":"ok"}
+{"id":"p-mammut-mammut-aenergy-ultra-low-gtx-men-black-white","status":"ok"}
+{"id":"p-mammut-mammut-broad-peak-in-hooded-jacket-men-marine-black","status":"ok"}
+{"id":"p-mammut-mammut-broad-peak-light-in-hooded-jacket-men-deep-teal","status":"ok"}
+{"id":"p-mammut-mammut-courmayeur-so-pants-women-black","name":"Mammut Courmayeur So Pants Women Black","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of p-mammut-mammut-courmayeur-so-pants-women-marine (grouped there)"}]}
+{"id":"p-mammut-mammut-courmayeur-so-pants-women-marine","name":"Mammut Courmayeur So Pants Women Marine","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"same trousers as the Black colourway, sitting as a separate top-level row"}],"fix":{"group":{"head":"p-mammut-mammut-courmayeur-so-pants-women-marine","members":["p-mammut-mammut-courmayeur-so-pants-women-black"],"axis":"color"}}}
+{"id":"p-mammut-mammut-eiger-nordwand-advanced-hs-pants-men-black","status":"ok"}
+{"id":"p-mammut-mammut-eiger-nordwand-pro-hs-pants-women-black","status":"ok"}
+{"id":"p-mammut-mammut-nirvana-28-women-black","status":"ok"}
+{"id":"p-mammut-mammut-pro-45-removable-airbag-3-0-ready-black","status":"ok"}
+{"id":"p-mammut-mammut-probe-240-speed-lock-vibrant-orange","status":"ok"}
+{"id":"p-mammut-mammut-protect-mat-7-5-cm-charcoal","status":"ok"}
+{"id":"p-mammut-mammut-trion-28-white-black","status":"ok"}
+{"id":"p-mammut-mammut-trion-38-women-marine-black","status":"ok"}
+{"id":"p-mammut-mammut-workhorse-climbing-pants-women-black","status":"ok"}
+{"id":"p-stoix-marcus-regular-sky-blue-forest-green","status":"ok"}
+{"id":"p-marker-marker-f12-tour-epf-l-110mm-305-365-500black-antracite","status":"ok"}
+{"id":"p-marker-marker-jester-16-100mm-anthracit-black","status":"ok"}
+{"id":"p-dubarry-marlin-cap-pesto","status":"ok"}
+{"id":"p-sea-to-summit-mat-ultralight-xr-insulated-asc-mat-regular-arrowwood","status":"ok"}
+{"id":"p-eagle-mattermos-0-6l-m-skje-rosa","status":"ok"}
+{"id":"p-rapala-max-rap-13cm-mul","status":"ok"}
+{"id":"p-abu-garcia-max-stx-10-sp-reel","status":"ok"}
+{"id":"p-abu-garcia-max-x-combo-7-ml-teleskop","status":"ok"}
+{"id":"p-coleman-maxi-comfort-bed-single","status":"ok"}
+{"id":"p-warne-maxima-tikka-30mm-medium","status":"ok"}
+{"id":"p-savotta-med-organizer-15x15-cm-orange","status":"ok"}
+{"id":"ean-7031582398196","status":"ok"}
+{"id":"p-viking-men-stride-mid-spike-warm-boa-waterproof-black","status":"ok"}
+{"id":"p-rojk-men-s-badland-jacket-juniper-2017","status":"ok"}
+{"id":"p-mepps-mepps-aglia-2","status":"ok"}
+{"id":"p-mepps-mepps-black-fury-2","status":"ok"}
+{"id":"p-alaska-1795-merino-beanie-bright-orange","name":"Merino Beanie Bright Orange","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"same Merino Beanie as the Moss Brown row (kr 299 / kr 297)"}],"fix":{"group":{"head":"p-alaska-1795-merino-beanie-bright-orange","members":["p-alaska-1795-merino-beanie-moss-brown"],"axis":"color"}}}
+{"id":"p-alaska-1795-merino-beanie-moss-brown","name":"Merino Beanie Moss Brown","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of p-alaska-1795-merino-beanie-bright-orange (grouped there)"}]}
+{"id":"ean-7031582512783","status":"ok"}
+{"id":"ean-7031582512875","name":"Merino Tech Headband","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Headband' is headwear; the rules give it no type at all"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-merrell-merrell-men-s-agility-peak-5-gore-tex-beluga-talus","status":"ok"}
+{"id":"p-exped-meshbag-m-8l","status":"ok"}
+{"id":"p-mystery-ranch-metcalf-71l-foliage","status":"ok"}
+{"id":"p-led-lenser-mh11-grey-black","status":"ok"}
+{"id":"p-hydro-flask-micro-hydro-200ml-black","status":"ok"}
+{"id":"ean-7031582083108","status":"ok"}
+{"id":"ean-7031582546191","status":"ok"}
+{"id":"p-lifesystems-midge-mosquito-head-net","status":"ok"}
+{"id":"ean-7031582600053","status":"ok"}
+{"id":"ean-7031582550273","status":"ok"}
+{"id":"ean-7031582599043","status":"ok"}
+{"id":"ean-7031582578512","status":"ok"}
+{"id":"ean-7031582599722","status":"ok"}
+{"id":"p-chevalier-milestone-fleece-vest-brown-herre","status":"ok"}
+{"id":"p-lidmans-millenium-blanket-80-mm-kbr","status":"ok"}
+{"id":"p-millet-millet-grands-montets-beanie-w-foggy-dew","status":"ok"}
+{"id":"p-millet-millet-short-intense-essential-sh-m-7-men-black-noir","status":"ok"}
+{"id":"p-millet-millet-short-ubic-stretch-short-m-men-dorite","status":"ok"}
+{"id":"p-millet-millet-trilogy-icon-down-mitten-black-noir","status":"ok"}
+{"id":"p-millet-millet-trilogy-jorasses-down-hd-m-black-noir","status":"ok"}
+{"id":"p-milrab-milrab-original-se-spyttmaske","status":"ok"}
+{"id":"p-lafayette-miniheadset-inre-oronmussla-2-5-3-5mm-rak","status":"ok"}
+{"id":"ean-4013674189755","status":"ok"}
+{"id":"p-tasmanian-tiger-mission-mkii-37l-svart","status":"ok"}
+{"id":"p-gregory-miwok-24-flame-black","status":"ok"}
+{"id":"p-mjm-mjm-broker-52-virgin-wool-brown-green","status":"ok"}
+{"id":"p-jack-wolfskin-moab-jam-30-brownstone","status":"ok"}
+{"id":"p-grand-trunk-monarch-chair-red","status":"ok"}
+{"id":"p-moon-moon-climbing-bouldering-chalk-bag-retro-stripe-true-red","status":"ok"}
+{"id":"p-moon-moon-climbing-warrior-crash-pad-true-red","status":"ok"}
+{"id":"p-cmp-moon-low-wmn-vibram-trekking-wp-antracite","name":"Moon Low Wmn Vibram Trekking WP Antracite","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"'Wmn' in the name; the same row's sibling spellings ('Wmns', \"W'S\") do resolve"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-eno-hammock-moonshine-lantern-black","status":"ok"}
+{"id":"p-ergobio-morec-white","name":"Morec White","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Fritidssko' (leisure shoes); Ergobio makes comfort footwear, not hiking gear"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-mountain-equipment-moreno-mitt-cosmos","status":"ok"}
+{"id":"ean-7031586057112","name":"Mosquito Netting for 6051","status":"issue","issues":[{"kind":"junk","severity":"med","field":null,"current":null,"suggested":null,"why":"spare mosquito net for tent model '6051' — the row identifies itself only by an internal model number, no shopper can match it"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-2xu-motion-racerback-crop-wmn-mineral-white","status":"ok"}
+{"id":"p-mountain-equipment-mountain-equipment-chamois-wmns-pant-black","status":"ok"}
+{"id":"p-mountain-equipment-mountain-equipment-comici-mens-short-alto-majolica","status":"ok"}
+{"id":"p-mountain-equipment-mountain-equipment-comici-wmns-pant-black","status":"ok"}
+{"id":"p-mountain-equipment-mountain-equipment-highpile-mens-jacket-anvil-grey","name":"Mountain Equipment Highpile Mens Jacket Anvil Grey/black","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of p-mountain-equipment-mountain-equipment-highpile-mens-jacket-black (grouped there)"}]}
+{"id":"p-mountain-equipment-mountain-equipment-highpile-mens-jacket-black","name":"Mountain Equipment Highpile Mens Jacket Black","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"same jacket as the Anvil Grey/black colourway, split across two top-level rows"}],"fix":{"group":{"head":"p-mountain-equipment-mountain-equipment-highpile-mens-jacket-black","members":["p-mountain-equipment-mountain-equipment-highpile-mens-jacket-anvil-grey"],"axis":"color"}}}
+{"id":"p-mountain-equipment-mountain-equipment-jorasses-wmns-pant-black","status":"ok"}
+{"id":"p-harkila-mountain-hunter-expedition-hws-packable-trousers-axis-msp-moun","status":"ok"}
+{"id":"p-harkila-mountain-hunter-insulated-hunting-green-shadow-brown","status":"ok"}
+{"id":"p-ollydog-mountain-leash-raven-bark","name":"Mountain Leash Raven Bark","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog leash (srcCat 'Kobbel' = leash, brand OllyDog is a dog-gear maker)"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-smartwool-mountaineering-x-heavy-mid-calf-grey-crimson","status":"ok"}
+{"id":"ean-7031581550373","name":"Mounting Patches Sparycover","status":"issue","issues":[{"kind":"junk","severity":"med","field":null,"current":null,"suggested":null,"why":"kr 19 pack of self-adhesive repair patches ('Sparycover' is a typo for Spraycover) — a spare part, not a shoppable product"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-primos-mouse-squeeze","status":"ok"}
+{"id":"p-ray-ban-mr-burbank-black-green","status":"ok"}
+{"id":"p-thermacell-mr150-myggskydd-korall","status":"ok"}
+{"id":"p-msr-msr-elixir-3-tent-v2-green-2018mod","status":"ok"}
+{"id":"p-msr-msr-hubba-hubba-hd-2p-green","status":"ok"}
+{"id":"p-msr-msr-msr-windpro-2-stove","name":"MSR Msr Windpro 2 Stove","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"MSR Msr Windpro 2 Stove","suggested":"MSR Windpro 2 Stove","why":"brand token repeated twice in the name"}],"fix":{"patch":{"name":"MSR Windpro 2 Stove"}}}
+{"id":"p-msr-msr-reactor-1-7l-stove-system-grey","status":"ok"}
+{"id":"p-msr-msr-reactor-2-5l-pot-assorted","status":"ok"}
+{"id":"p-muck-boot-muck-boot-women-s-muck-sport-ii-agat-ice-mid-black","status":"ok"}
+{"id":"p-condor-multi-wrap-multicam","status":"ok"}
+{"id":"p-eagle-myggnett-for-hode","status":"ok"}
+{"id":"ean-7031582324188","status":"ok"}
+{"id":"ean-7031582324584","status":"ok"}
+{"id":"ean-7031582128069","status":"ok"}
+{"id":"ean-7031582358435","status":"ok"}
+{"id":"ean-7031582000143","status":"ok"}
+{"id":"p-remen-moresild-10g-solv-rod","status":"ok"}
+{"id":"p-remen-moresilda-15g-solv-bla","status":"ok"}
+{"id":"p-remen-moresilda-holo-32g-so-sv","status":"ok"}
+{"id":"p-remen-moresilda-holo-hd-trout-10g-hs","status":"ok"}
+{"id":"p-remen-moresilda-nordlys-15g-bl","status":"ok"}
+{"id":"p-remen-moresilda-sjoorret-15g-gfru","status":"ok"}
+{"id":"p-remen-moreungen-chili-7g-gybl","status":"ok"}
+{"id":"p-buff-neckwear-original-ecostretch-youth-thale-pansy","name":"Neckwear Original Ecostretch Youth Thale Pansy","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.audience","current":"Men","suggested":"Kids","why":"name says 'Youth'; 'Men' came from the shop crumb 'Start > Herre > Hodeplagg > Halser'"}],"fix":{"patch":{"facets":{"audience":"Kids"}}}}
+{"id":"p-rapala-ned-s-blt-7-5cm-3-p-3pk","status":"ok"}
+{"id":"p-beretta-neo-backpack-sling-green","status":"ok"}
+{"id":"p-therm-a-rest-neoair-all-season-sv-large-20-c","status":"ok"}
+{"id":"p-therm-a-rest-neoair-xlite-nxt-large-solar-flare","status":"ok"}
+{"id":"p-therm-a-rest-neoair-xtherm-max-regular-wide-gra","status":"ok"}
+{"id":"p-mammut-neon-smart-35l-olive","status":"ok"}
+{"id":"p-coghlan-s-net-toss-set","status":"ok"}
+{"id":"p-rab-neutrino-12c-10f-graphene-dark-pollen","status":"ok"}
+{"id":"p-rab-neutrino-600-wmns-left-zip-12-c-nightfall-blue","status":"ok"}
+{"id":"p-rab-neutrino-800-right-zip-nightfall-blue","status":"ok"}
+{"id":"p-barbour-new-check-tartan-scarf-forest-bronze-brown","status":"ok"}
+{"id":"p-flexi-new-comfort-s-band-5m-max-12-kg-flere-farger","name":"New Comfort S Bånd 5m max 12 kg Flere Farger","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"Flexi retractable dog lead, srcCat 'Kobbel' (leash); 'max 12 kg' is the dog's weight"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-nikwax-nikwax-down-wash-direct-300-ml-classicdesertwhite","name":"Nikwax Down Wash Direct 300 ml Classicdesertwhite","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.material","current":"Down","suggested":null,"why":"this is a detergent FOR down garments; it is not made of down, and the filter would list it among down products"}],"fix":{"patch":{"facets":{"material":null}}}}
+{"id":"p-chevalier-nimrod-windblocker-jacket-men-deer-camouflage","status":"ok"}
+{"id":"p-nitecore-nitecore-um2-black","status":"ok"}
+{"id":"p-hoppe-s-no-9-vapenolje-2-25oz","status":"ok"}
+{"id":"p-nocs-nocs-provisions-inspector-microscope","status":"ok"}
+{"id":"p-non-stop-dogwear-non-stop-dogwear-dog-ball-70x70-orange-black","name":"Non-stop Dogwear Dog Ball 70x70 Orange/black","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog toy ball from a dog-gear brand"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-non-stop-dogwear-non-stop-dogwear-halfchoke-red","name":"Non-stop Dogwear Halfchoke Red","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"half-choke dog collar"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-non-stop-dogwear-non-stop-dogwear-protector-life-jacket-size-2-4-black","name":"Non-stop Dogwear Protector Life Jacket Size 2-4 Black/Orange","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog life vest ('Size 2-4' is a dog size, brand Non-stop Dogwear)"},{"kind":"facets","severity":"low","field":"facets.type","current":"Jackets","suggested":null,"why":"derived from \"Life Jacket\"; it is a dog vest, not outdoor apparel — moot once the row moves to Pets"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-non-stop-dogwear-non-stop-dogwear-roam-collar-orange","name":"Non-stop Dogwear Roam Collar Orange","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog collar"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-non-stop-dogwear-non-stop-dogwear-rock-collar-3-0-orange","name":"Non-stop Dogwear Rock Collar 3.0 Orange","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"dog collar"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-non-stop-dogwear-non-stop-dogwear-trekking-bowl-s-black","name":"Non-stop Dogwear Trekking Bowl S Black","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Outdoor","suggested":"Pets","why":"collapsible dog bowl from a dog-gear brand"},{"kind":"facets","severity":"low","field":"facets.type","current":"Hiking gear","suggested":null,"why":"\"Trekking\" in the name; it is a dog bowl — moot once the row moves to Pets"}],"fix":{"patch":{"cat":"Pets"}}}
+{"id":"p-non-stop-polar-non-stoppolar-arctic-buksa-2-0-black","status":"ok"}
+{"id":"p-tipton-nope-rope-kal-38-9-mm","status":"ok"}
+{"id":"p-nordeca-norge-serien-1-50-00-norge-serien","name":"Nordeca Norge-serien 1:50 00 Norge-serien","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Nordeca","why":"the name itself starts with the brand, and the sibling row p-nordeca-oslo-nordmark-vinter-1-50-000 carries brand 'NORDECA'"},{"kind":"name","severity":"low","field":"name","current":"Nordeca Norge-serien 1:50 00 Norge-serien","suggested":"Nordeca Norge-serien 1:50 000","why":"series name repeated at the tail and the scale is truncated ('1:50 00')"}],"fix":{"patch":{"brand":"Nordeca","name":"Nordeca Norge-serien 1:50 000"}}}
+{"id":"p-nordeca-turkart-1-25-000-turkart","name":"Nordeca Turkart 1:25 000 Turkart","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Nordeca","why":"name starts with the brand"},{"kind":"name","severity":"low","field":"name","current":"Nordeca Turkart 1:25 000 Turkart","suggested":"Nordeca Turkart 1:25 000","why":"'Turkart' repeated at the tail"}],"fix":{"patch":{"brand":"Nordeca","name":"Nordeca Turkart 1:25 000"}}}
+{"id":"p-nordeca-veikart-norge-1-1-mill-veikart","name":"Nordeca Veikart Norge 1:1 mill. Veikart","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Nordeca","why":"name starts with the brand"},{"kind":"name","severity":"low","field":"name","current":"Nordeca Veikart Norge 1:1 mill. Veikart","suggested":"Nordeca Veikart Norge 1:1 mill.","why":"'Veikart' repeated at the tail"}],"fix":{"patch":{"brand":"Nordeca","name":"Nordeca Veikart Norge 1:1 mill."}}}
+{"id":"ean-7031582437277","name":"Nordmarka 2L Shell Pants Men","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"name is 'Nordmarka 2L Shell Pants Men' — these are trousers, not a jacket"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582365143","status":"ok"}
+{"id":"ean-7031582536901","status":"ok"}
+{"id":"ean-7031582537106","status":"ok"}
+{"id":"ean-7031582616030","name":"Nordmarka Merino Headband","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Headband' is headwear; the rules give it no type at all"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7031582465294","status":"ok"}
+{"id":"ean-7031582464952","status":"ok"}
+{"id":"ean-7031582514480","status":"ok"}
+{"id":"ean-7031582378402","status":"ok"}
+{"id":"ean-7031582332299","status":"ok"}
+{"id":"ean-7031582332190","status":"ok"}
+{"id":"p-mammut-nordwand-alpine-belay-svart","status":"ok"}
+{"id":"p-norrona-norrona-falketind-light-weight-merino-socks-caviar","status":"ok"}
+{"id":"p-norrona-norrona-femund-cotton-flex1-light-pants-m-s-navy-blazer","status":"ok"}
+{"id":"p-norrona-norrona-femund-flannel-shirt-m-s-oatmeal","status":"ok"}
+{"id":"p-norrona-norrona-femund-flex1-tech-pants-m-s-caviar-black","status":"ok"}
+{"id":"p-norrona-norrona-femund-warm3-jacket-m-s-olive-night","status":"ok"}
+{"id":"p-norrona-norrona-fjora-equaliser-lightweight-t-shirt-m-s-winter-twig-be","status":"ok"}
+{"id":"p-norrona-norrona-fjora-equaliser-lightweight-t-shirt-w-s-aqua-haze","status":"ok"}
+{"id":"p-norrona-norrona-men-s-femund-thermo60-zip-hood-exuberance","status":"ok"}
+{"id":"p-norrona-norrona-men-s-lofoten-gore-tex-pro-jacket-deep-lichen-green","status":"ok"}
+{"id":"p-norrona-norrona-men-s-senja-alpha90-zip-hood-olive-night","status":"ok"}
+{"id":"p-norrona-norrona-men-s-trollveggen-warm3-jacket-whisper-white","status":"ok"}
+{"id":"p-norrona-norrona-more-gore-tex-jacket-w-s-caviar","status":"ok"}
+{"id":"p-norrona-norrona-more-gore-tex-salopette-w-s-oatmeal","status":"ok"}
+{"id":"p-norrona-norrona-tamok-wool-plain-shirt-m-s-drizzle-melange","status":"ok"}
+{"id":"p-norrona-norrona-women-s-lofoten-gore-tex-jacket-dark-ivy","status":"ok"}
+{"id":"p-norrona-norrona-women-s-lofoten-gore-tex-pro-jacket-whisper-white","status":"ok"}
+{"id":"p-norrona-norrona-women-s-senja-aero90-vest-brittany-blue-snow-white","status":"ok"}
+{"id":"p-norrona-norrona-women-s-senja-equaliser-sleeveless-t-shirt-caviar","status":"ok"}
+{"id":"p-norrona-norrona-women-s-senja-flex1-trackster-pant-caviar","status":"ok"}
+{"id":"p-norrona-norrona-women-s-trollveggen-warm3-zip-hood-whisper-white","status":"ok"}
+{"id":"p-norrona-norrona-womens-femund-thermo60-zip-hood-indigo-night","status":"ok"}
+{"id":"p-nya-evo-nya-evo-fjord-50-c-econyl-adventure-pine-green-ryggsekk","status":"ok"}
+{"id":"p-nya-evo-nya-evo-fjord-60-c-econyl-g4-pine-green-ryggsekk","status":"ok"}
+{"id":"p-oakley-oakley-actuator-sq-trans-balsam-prizm-sapphire","status":"ok"}
+{"id":"p-oakley-oakley-flight-deck-pro-m-matte-black-prizm-torch-prizm-iced","status":"ok"}
+{"id":"p-oakley-oakley-latch-matte-clear-prizm-sapphire","status":"ok"}
+{"id":"p-oakley-oakley-medium-soft-vault-07-005-medium-soft-vault","name":"Oakley Medium Soft Vault 07-005 Medium Soft Vault","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Oakley Medium Soft Vault 07-005 Medium Soft Vault","suggested":"Oakley Medium Soft Vault","why":"product name repeated around an SKU fragment (07-005)"}],"fix":{"patch":{"name":"Oakley Medium Soft Vault"}}}
+{"id":"p-oakley-oakley-meta-vanguard-white-prizm-sapphire","status":"ok"}
+{"id":"p-oakley-oakley-microbag-flag-usa","status":"ok"}
+{"id":"p-oakley-oakley-mod1-mips-white","status":"ok"}
+{"id":"p-oakley-oakley-mod1-mips-youth-blackout","status":"ok"}
+{"id":"p-beretta-oiled-cloth-clean-ufi","status":"ok"}
+{"id":"p-stabilotherm-olea-kuksa","status":"ok"}
+{"id":"p-13-fishing-omen-quest-casting-10-1-308cm-m-10-30g-4-delt","status":"ok"}
+{"id":"ean-7031582554523","status":"ok"}
+{"id":"ean-7031582554912","status":"ok"}
+{"id":"ean-7031582551966","name":"Oppdal Insulated Shell Pants Women","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Jackets","suggested":"Trousers","why":"name is 'Oppdal Insulated Shell Pants Women' — trousers, not a jacket"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7031582327387","status":"ok"}
+{"id":"ean-7031581935699","status":"ok"}
+{"id":"ean-7031581935590","status":"ok"}
+{"id":"p-exped-organizer-ultra-zip-13-sunshine","status":"ok"}
+{"id":"p-rapala-original-f-7cm-rt","status":"ok"}
+{"id":"p-ticket-to-the-moon-original-hengekoye","status":"ok"}
+{"id":"p-buff-original-snus-black","status":"ok"}
+{"id":"p-buff-original-solid-night-blue","status":"ok"}
+{"id":"p-blundstone-originals-1615-dark-olive","name":"Originals 1615 Dark Olive","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Outdoor","suggested":"Shoes","why":"srcCat 'Fritidssko' (leisure shoes); Blundstone Originals 1615 is a lifestyle Chelsea boot"}],"fix":{"patch":{"cat":"Shoes"}}}
+{"id":"p-exped-orion-ii-extreme-2p-terracotta","status":"ok"}
+{"id":"p-exped-orion-iii-extreme-moss","status":"ok"}
+{"id":"p-ortlieb-ortlieb-back-roller-classic-sunyellow-black","status":"ok"}
+{"id":"p-ortovox-ortovox-diract-voice-blue-ocean","status":"ok"}
+{"id":"p-ortovox-ortovox-haute-route-40-black-raven","name":"Ortovox Haute Route 40 Black Raven","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"same 40 L pack as the Petrol Blue row, same price, two top-level rows"}],"fix":{"group":{"head":"p-ortovox-ortovox-haute-route-40-black-raven","members":["p-ortovox-ortovox-haute-route-40-petrol-blue"],"axis":"color"}}}
+{"id":"p-ortovox-ortovox-haute-route-40-petrol-blue","name":"Ortovox Haute Route 40 Petrol Blue","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of p-ortovox-ortovox-haute-route-40-black-raven (grouped there)"}]}
+{"id":"p-ortovox-ortovox-sequence-hip-pack-3-90201-black-raven","status":"ok"}
+{"id":"p-orvis-orvis-pro-wading-boot-black","status":"ok"}
+{"id":"p-orvis-orvis-tactical-sighter-tippet-multi","status":"ok"}
+{"id":"p-orvis-orvis-ultralight-waders","status":"ok"}
+{"id":"ean-7031582577409","status":"ok"}
+{"id":"ean-7031582552512","status":"ok"}
+{"id":"ean-7031582552697","status":"ok"}
+{"id":"p-nordeca-oslo-nordmark-vinter-1-50-000","name":"Oslo Nordmark Vinter 1:50 000","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"NORDECA","suggested":"Nordeca","why":"all-caps brand from the Sport 1 feed; the other Nordeca rows should land on the same string"}],"fix":{"patch":{"brand":"Nordeca"}}}
+{"id":"ean-7031582371502","status":"ok"}
+{"id":"ean-7031582331353","status":"ok"}
+{"id":"ean-7031582330615","status":"ok"}
+{"id":"ean-7031582371809","status":"ok"}
+{"id":"ean-7031582377443","status":"ok"}
+{"id":"ean-7031582377429","status":"ok"}
+{"id":"ean-7031581893081","status":"ok"}
+{"id":"p-osprey-osprey-duro-15-w-flasks-phantom-grey-toffee-orange","status":"ok"}
+{"id":"p-osprey-osprey-dyna-15-w-flasks-cascade-blue-silver-lining","status":"ok"}
+{"id":"p-osprey-osprey-high-vis-raincover-xs-mars-orange","status":"ok"}
+{"id":"p-osprey-osprey-hydraulics-lt-1-5l-lumbar-reservoir-red","status":"ok"}
+{"id":"p-osprey-osprey-hydraulics-reservoir-hose-kit-nocolor","name":"Osprey Hydraulics Reservoir Hose Kit NoColor","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Osprey Hydraulics Reservoir Hose Kit NoColor","suggested":"Osprey Hydraulics Reservoir Hose Kit","why":"'NoColor' is the feed's empty-colour placeholder, not part of the name"}],"fix":{"patch":{"name":"Osprey Hydraulics Reservoir Hose Kit"}}}
+{"id":"p-osprey-osprey-liquids-pouch-black","status":"ok"}
+{"id":"p-osprey-osprey-men-s-syncro-12-cascade-blue","status":"ok"}
+{"id":"p-osprey-osprey-mutant-38-lemongrass","status":"ok"}
+{"id":"p-osprey-osprey-poco-soft-carrier-lt-ef-black","status":"ok"}
+{"id":"ean-843820146929","status":"ok"}
+{"id":"p-osprey-osprey-rolling-transporter-60-raven-black-black","status":"ok"}
+{"id":"p-osprey-osprey-talon-33-phantom-grey-dark-charcoal","status":"ok"}
+{"id":"p-osprey-osprey-ultralight-raincover-xl-black","status":"ok"}
+{"id":"p-osprey-osprey-women-s-sylva-12-space-travel-grey","status":"ok"}
+{"id":"p-osprey-osprey-women-s-tempest-11-black-coal-grey","status":"ok"}
+{"id":"p-houdini-osprey-x-houdini-allt-sandstorm","status":"ok"}
+{"id":"p-rapala-ott-s-garage-tiny-4cm-9g-ccw","status":"ok"}
+{"id":"p-solvkroken-otto-oter-krabbeteine","status":"ok"}
+{"id":"p-solvkroken-otto-oter-sluksett-lyr-makrell-2-pk","status":"ok"}
+{"id":"p-solvkroken-otto-oter-stolsekk","status":"ok"}
+{"id":"ean-7031581853030","name":"Outer Chine Rod to 13,7","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"length variant of ean-7031580015057 (grouped there)"}]}
+{"id":"ean-7031580015057","name":"Outer Chine Rod to 15","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"four 'Outer Chine Rod to <length>' rows are one Ally-canoe part in four lengths (13,7 / 15 / 15,5 / 18); they also read as spare parts, so demote the family instead if ops would rather not list it"}],"fix":{"group":{"head":"ean-7031580015057","members":["ean-7031581853030","ean-7031581855034","ean-7031580018058"],"axis":"size"}}}
+{"id":"ean-7031581855034","name":"Outer Chine Rod to 15,5","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"length variant of ean-7031580015057 (grouped there)"}]}
+{"id":"ean-7031580018058","name":"Outer Chine Rod to 18","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"length variant of ean-7031580015057 (grouped there)"}]}
+{"id":"p-rab-outpost-hut-boot-deep-ink","status":"ok"}
+{"id":"p-under-armour-outrun-the-cold-ls-capri-petrol-blue-reflective","status":"ok"}
+{"id":"p-salomon-outsnap-cswp-dark-earth-delicioso-gum-8","status":"ok"}
+{"id":"p-outwell-outwell-classic-king-black-grey","status":"ok"}
+{"id":"p-outwell-outwell-convertible-fibersovepose-junior-2026","name":"Outwell Convertible fibersovepose junior 2026","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"OUTWELL","suggested":"Outwell","why":"same brand stored twice in two casings in this shard ('Outwell' on the Fjellsport rows), which splits the brand filter"}],"fix":{"patch":{"brand":"Outwell"}}}
+{"id":"p-easy-camp-outwell-convertible-junior-fibersovepose","name":"Outwell Convertible Junior fibersovepose","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"EASY CAMP","suggested":"Outwell","why":"the name says Outwell; Obs's feed put a different brand on it. Very likely the same sleeping bag as p-outwell-outwell-convertible-fibersovepose-junior-2026 (same shop, kr 629 vs 599) — merge by hand if so"}],"fix":{"patch":{"brand":"Outwell"}}}
+{"id":"p-outwell-outwell-katmai-duo-stove-silver-grey","status":"ok"}
+{"id":"p-peerless-oversize-svart","name":"Oversize Svart","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Oversize Svart","suggested":"Peerless Oversize Håndjern Svart","why":"the stored name names no product at all — only srcCat 'Håndjern' (handcuffs) says what it is"}],"fix":{"patch":{"name":"Peerless Oversize Håndjern Svart"}}}
+{"id":"p-patagonia-p-6-logo-lopro-trucker-hat-white-w-buckhorn-green","status":"ok"}
+{"id":"p-mystery-ranch-pack-fly-large-charcoal","name":"Pack Fly Large Charcoal","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"Mystery Ranch Pack Fly rain cover in Large and Small as two top-level rows"}],"fix":{"group":{"head":"p-mystery-ranch-pack-fly-large-charcoal","members":["p-mystery-ranch-pack-fly-small-25-45l-orange"],"axis":"size"}}}
+{"id":"p-mystery-ranch-pack-fly-small-25-45l-orange","name":"Pack Fly Small 25-45L Orange","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"size variant of p-mystery-ranch-pack-fly-large-charcoal (grouped there)"}]}
+{"id":"ean-7031580081229","status":"ok"}
+{"id":"p-lundhags-padje-60-l-regular-short-black","status":"ok"}
+{"id":"p-panos-emporio-panos-emporio-pe-wool-bamboo-half-zip-sweater-black","status":"ok"}
+{"id":"p-patagonia-patagonia-fitz-roy-icon-trad-cap-text-logo-birch-white-w-gum","name":"Patagonia Fitz Roy Icon Trad Cap Text Logo: Birch White W/gumtree Green","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of p-patagonia-patagonia-fitz-roy-icon-trad-cap-text-logo-smolder-blue (grouped there)"}]}
+{"id":"p-patagonia-patagonia-fitz-roy-icon-trad-cap-text-logo-smolder-blue","name":"Patagonia Fitz Roy Icon Trad Cap Text Logo: Smolder Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"same cap as the Birch White colourway, same price"}],"fix":{"group":{"head":"p-patagonia-patagonia-fitz-roy-icon-trad-cap-text-logo-smolder-blue","members":["p-patagonia-patagonia-fitz-roy-icon-trad-cap-text-logo-birch-white-w-gum"],"axis":"color"}}}
+{"id":"p-patagonia-patagonia-homepool-mitt-gloves-black","status":"ok"}
+{"id":"p-patagonia-patagonia-m-s-cap-cool-sun-hoody-fitz-roy-trout-crisp-grey-s","name":"Patagonia M'S Cap Cool Sun Hoody - Fitz Roy Trout Crisp Grey - Salt Grey X-dye","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Accessories","suggested":"Tops & baselayers","why":"'Cap' here is Patagonia's Capilene baselayer line, not headwear — the product is a sun hoody"}],"fix":{"patch":{"facets":{"type":"Tops & baselayers"}}}}
+{"id":"p-patagonia-patagonia-men-s-nano-puff-jacket-black","status":"ok"}
+{"id":"p-patagonia-patagonia-men-s-r1-air-crew-marlow-brown","status":"ok"}
+{"id":"p-patagonia-patagonia-range-earflap-cap-cascade-burnished-red","status":"ok"}
+{"id":"p-patagonia-patagonia-take-a-stand-trucker-hat-casting-logo-forever-grey","status":"ok"}
+{"id":"p-patagonia-patagonia-women-s-p-6-logo-responsibili-tee-concrete-purple","name":"Patagonia Women's P-6 Logo Responsibili-Tee Concrete Purple","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"colour variant of p-patagonia-patagonia-women-s-p-6-logo-responsibili-tee-p-6-outline-virt (grouped there)"}]}
+{"id":"p-patagonia-patagonia-women-s-p-6-logo-responsibili-tee-p-6-outline-virt","name":"Patagonia Women's P-6 Logo Responsibili-Tee P-6 Outline: Virtually Blue","status":"issue","issues":[{"kind":"variant","severity":"med","field":null,"current":null,"suggested":null,"why":"same tee as the Concrete Purple row, same price"}],"fix":{"group":{"head":"p-patagonia-patagonia-women-s-p-6-logo-responsibili-tee-p-6-outline-virt","members":["p-patagonia-patagonia-women-s-p-6-logo-responsibili-tee-concrete-purple"],"axis":"color"}}}
+{"id":"_summary","shard":"Outdoor-04","checked":300,"ok":247,"issues":53,"by_kind":{"facets":12,"category":12,"name":8,"variant":18,"junk":2,"brand":6},"high":12,"rule_gaps":["singular 'Pant' / 'Short' derive no facets.type (only the plurals 'Pants'/'Shorts' do) — ~10 rows here (M's Superior Pant, Veir Tur Pant, Comici Wmns Pant, Comici Mens Short, Senja Flex1 Trackster Pant …) show no Type at all","'Headband' / 'pannebånd' maps to no type; a headband should derive type Accessories like beanies and caps do","the colour rule reads the BRAND: Black Diamond rows come out color=Black regardless of colourway (M's Recon Bibs Tundra, M's Vision Down Parka Dark Crimson)","Norwegian dog vocabulary is unmapped — 'Kobbel' (leash), collar/bowl/dog-vest names and the brands Non-stop Dogwear / OllyDog / Flexi all land in Outdoor instead of Pets","Norwegian shoe crumbs 'Hverdagssko' (everyday shoes) and 'Fritidssko' (leisure shoes) resolve to Outdoor instead of Shoes","'Pants' in a Bergans name still loses to an earlier 'Shell'/'Jacket'-ish token on some rows (Nordmarka 2L Shell Pants Men, Oppdal Insulated Shell Pants Women both derive type Jackets)"],"notes":"Healthy shard overall — 300 machine-promoted rows from six outdoor retailers, Outdoor is right for the large majority and the derived colour/audience/material facets are mostly sound. The two real problems are the dog-gear block (8 Non-stop Dogwear / OllyDog / Flexi rows sitting in Outdoor) and facet derivation: 165 of 300 rows have no type at all, largely because singular 'Pant'/'Short' and headwear words like 'Headband' aren't in the rules. Not flagged per row but worth knowing: 122 of 300 rows have no product photo (the sampled-crawl gap, all shops here are unapproved), no row has a rating or a second offer so every 'best price' is a single shop, and the Sport 1 / Intersport fishing rows carry ALL-CAPS abbreviated trade names ('MØRESILDA HOLO 32G SØ/SV') which are terse but readable to a fishing shopper, so I left them alone. Nearly every row ends in a colourway with no vlabel/family; only the eight groups above are the same product twice in this shard."}

@@ -1,0 +1,267 @@
+{"id":"p-shimano-shimano-xtr-hollowtech-2-sm-bb93","name":"Shimano XTR Hollowtech 2 SM-BB93","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Shimano XTR Hollowtech II bottom bracket — a bicycle drivetrain part"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-sigma-sigma-ts-61-stativfeste-for-150-600mm-f-5-6-3-dg-os-hsm-sports","name":"Sigma TS-61 Stativfeste for 150-600mm f/5-6.3 DG OS HSM Sports","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Photo","why":"tripod collar for a Sigma camera lens, sold by Japan Photo; 'Sports' is the lens line name, not a category"}],"fix":{"patch":{"cat":"Photo","icon":"camera"}}}
+{"id":"p-silva-silva-free-bar-mount-kit","name":"Silva Free Bar Mount Kit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"handlebar mount kit for the Silva Free lamp — a bicycle fitting"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-silva-silva-soft-flask-m-sugeror-500ml","status":"ok"}
+{"id":"ean-7318860209222","status":"ok"}
+{"id":"p-asnes-silvretta-feller-50-200-mix","name":"SILVRETTA FELLER 50/200 MIX","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Multicolour","suggested":null,"why":"'MIX' is the skin fibre mix (mohair/nylon) on climbing skins, not a colour"},{"kind":"name","severity":"low","field":"name","current":"SILVRETTA FELLER 50/200 MIX","suggested":"Silvretta Feller 50/200 Mix","why":"ALL CAPS shop boilerplate"}],"fix":{"patch":{"name":"Silvretta Feller 50/200 Mix","facets":{"color":null}}}}
+{"id":"p-sis-beta-fuel-electrolyte-raspb-lemon","name":"SIS Beta Fuel + Electrolyte Raspb/Lemon","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Science in sport","why":"'SIS' = Science in Sport; two sibling rows from the same shop already carry that brand"}],"fix":{"patch":{"brand":"Science in sport"}}}
+{"id":"p-science-in-sport-sis-go-energy-caffeine-cola-60ml","status":"ok"}
+{"id":"p-science-in-sport-sis-go-hydro-tabletter-sitron","status":"ok"}
+{"id":"ean-8595153612283","status":"ok"}
+{"id":"ean-8595153604578","status":"ok"}
+{"id":"p-smartwool-ski-full-cushion-otc-socks-deep-navy","status":"ok"}
+{"id":"ean-8596084099860","name":"SKI2000","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Cardio machines","why":"srcCat 'Kondisjon / Stakemaskin' is a double-poling ergometer — cardio equipment"}],"fix":{"patch":{"facets":{"type":"Cardio machines"}}}}
+{"id":"ean-7340075114541","status":"ok"}
+{"id":"ean-7333380014675","status":"ok"}
+{"id":"ean-7340075120924","status":"ok"}
+{"id":"p-foss-sport-skiservice-turprepp-ps","name":"Skiservice Turprepp PS","status":"issue","issues":[{"kind":"junk","severity":"high","field":null,"current":null,"suggested":null,"why":"a ski-waxing SERVICE sold by the shop, not a product"},{"kind":"brand","severity":"med","field":"brand","current":"Foss Sport","suggested":null,"why":"brand is the shop name"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7330101225860","name":"Skitrainer S120 AIR","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Cardio machines","why":"srcCat 'Kondisjon / Stakemaskin' — a cardio ergometer"}],"fix":{"patch":{"facets":{"type":"Cardio machines"}}}}
+{"id":"ean-8595153609061","status":"ok"}
+{"id":"ean-8596084079053","status":"ok"}
+{"id":"ean-9120083725377","name":"Skjermsett Woom Snap Click-On (Woom 2)","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"mudguard set for the Woom 2 children's bicycle"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-6430062511581","name":"Skrivebordssykkel","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.type","current":"Strength","suggested":"Cardio machines","why":"an under-desk exercise bike; 'Strength' came from the shop mis-shelving it under Håndvekter"}],"fix":{"patch":{"facets":{"type":"Cardio machines"}}}}
+{"id":"p-sks-sks-mudguard-blade-set-26-27-5-black","name":"SKS Mudguard Blade Set 26\"-27,5\" Black","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle mudguard set sized by wheel diameter"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-sks-sks-mudguard-shockboard-xl-frontskjerm","name":"SKS Mudguard Shockboard XL Frontskjerm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle front mudguard"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-sks-sks-mudguard-x-tra-dry-xl-bakskjerm","name":"SKS Mudguard X-Tra Dry XL Bakskjerm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle rear mudguard"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-8596084034793","status":"ok"}
+{"id":"p-iciw-snake-seamless-sports-bra-graphite","name":"Snake Seamless Sports Bra Graphite","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Grey","why":"name ends in 'Graphite'"}],"fix":{"patch":{"facets":{"color":"Grey"}}}}
+{"id":"p-abilica-snore-for-xc-classic-2000","name":"Snøre for XC-Classic 2000","status":"issue","issues":[{"kind":"junk","severity":"med","field":null,"current":null,"suggested":null,"why":"replacement cord for one specific machine; srcCat is literally 'Annen / Reservedeler'"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-ogawa-sonic-x-black","name":"Sonic-X Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Health","why":"srcCat 'Rehabilitering og restitusjon / Massasjestol' — a kr 39 999 massage chair"}],"fix":{"patch":{"cat":"Health","icon":"heart-pulse"}}}
+{"id":"ean-888818685738","name":"Specialized 2FO Roost flat mountian 43","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Shoes","why":"Specialized 2FO Roost Flat is an MTB shoe, size 43"},{"kind":"name","severity":"low","field":"name","current":"Specialized 2FO Roost flat mountian 43","suggested":"Specialized 2FO Roost Flat Mountain 43","why":"shop typo 'mountian'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints","name":"Specialized 2FO Roost Flat Mountain 43"}}}
+{"id":"p-specialized-specialized-air-tool-comp-sykkelpumpe","name":"Specialized Air Tool Comp Sykkelpumpe","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'sykkelpumpe' = bicycle pump"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-air-trak-flex-lite-t5-t7","name":"Specialized Air Trak Flex Lite T5/T7","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"Specialized T5/T7 Flex Lite is an MTB tyre casing/compound spec"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-airtool-sport-switch-hitter","name":"Specialized AirTool Sport Switch Hitter","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"AirTool Switch Hitter is a bicycle pump head/pump"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-196625215551","name":"Specialized BG Footbed Gen 2 Blue 42-43","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"Body Geometry footbed for Specialized cycling shoes"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-196625215568","name":"Specialized BG Footbed Gen 2 Green 46-47","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"Body Geometry footbed for Specialized cycling shoes"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-888818680108","name":"Specialized Bridge Comp w/mimic 168 Blk","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Bridge Comp with MIMIC is a bicycle saddle, 168 mm width"},{"kind":"facets","severity":"low","field":"facets.color","current":null,"suggested":"Black","why":"name ends in 'Blk'"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","facets":{"color":"Black"}}}}
+{"id":"ean-888818852420","status":"ok"}
+{"id":"ean-719676270357","name":"Specialized Dekk All Conditions  700X25C","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'Dekk 700x25C' = road bicycle tyre"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-fast-trak-flex-lite-t5-t7-xc","name":"Specialized Fast Trak Flex Lite T5/T7 XC","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Fast Trak is a mountain bike tyre"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-fast-trak-grid-lite-29x2-35","name":"Specialized Fast Trak Grid Lite 29x2.35","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"29x2.35 MTB tyre"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-flash-300-headlight","name":"Specialized Flash 300 Headlight","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle front light"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-flash-500-headlight","name":"Specialized Flash 500 Headlight","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle front light"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-ground-control-2br-650bx2-3","name":"Specialized Ground Control 2BR 650BX2.3","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"650B x 2.3 MTB tyre"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-888818787166","name":"Specialized Hjelm Camber Trail CE  S","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Camber Trail is a mountain-bike helmet"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-krankdrev-sett-110x50-34t","name":"Specialized Krankdrev Sett 110x50/34T","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'krankdrev' = chainring set, a bicycle drivetrain part"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-maskinlager-sett-my14-epic","name":"Specialized Maskinlager sett MY14 Epic","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bearing kit for the Specialized Epic frame"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-nipel-dt-swiss-alu-2-0mmx","name":"Specialized Nipel DT Swiss Alu. 2.0mmX","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"DT Swiss spoke nipple — a wheel-building part"},{"kind":"name","severity":"low","field":"name","current":"Specialized Nipel DT Swiss Alu. 2.0mmX","suggested":null,"why":"name looks truncated at '2.0mmX'"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-888818559879","name":"Specialized Phenom W/MIMIC Exp sadel143","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'sadel143' — Phenom Expert MIMIC bicycle saddle, 143 mm"},{"kind":"name","severity":"low","field":"name","current":"Specialized Phenom W/MIMIC Exp sadel143","suggested":null,"why":"abbreviated and run together ('Exp sadel143')"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-pv-tube-24x2-4-3-0","name":"SPECIALIZED PV TUBE 24x2.4/3.0","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Presta-valve bicycle inner tube"},{"kind":"name","severity":"low","field":"name","current":"SPECIALIZED PV TUBE 24x2.4/3.0","suggested":"Specialized PV Tube 24x2.4/3.0","why":"ALL CAPS"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","name":"Specialized PV Tube 24x2.4/3.0"}}}
+{"id":"p-specialized-specialized-range-extender-levo-sl","name":"Specialized Range Extender Levo SL","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"auxiliary battery for the Levo SL e-bike"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-rim-strip-29x19mm","name":"Specialized Rim Strip 29x19mm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle rim strip"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-roadsport-700x24-dekk","name":"Specialized RoadSport 700x24 Dekk","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"700x24 road bicycle tyre"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-roubaix-armadillo-elite","name":"Specialized Roubaix Armadillo Elite","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Roubaix Armadillo Elite is a road bicycle tyre"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Specialized","why":"name begins with the brand"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"Specialized"}}}
+{"id":"p-specialized-specialized-roval-control-cockpit","name":"Specialized Roval Control Cockpit","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Roval integrated bar/stem cockpit for a bicycle"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-888818929399","name":"Specialized S-Works Prevail 3 Hjelm L","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"S-Works Prevail 3 is a road cycling helmet"},{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"size L of the same helmet as ean-888818961962 (M), sitting as a separate top-level row"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-888818961962","name":"Specialized S-Works Prevail 3 Hjelm M","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"S-Works Prevail 3 is a road cycling helmet"},{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same helmet as ean-888818929399, only the size differs"}],"fix":{"group":{"head":"ean-888818961962","members":["ean-888818929399"],"axis":"size"}}}
+{"id":"p-specialized-specialized-s-works-recon-sl-47","name":"Specialized S-Works Recon SL 47","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Shoes","why":"S-Works Recon SL is a gravel/MTB cycling shoe, size 47"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-specialized-specialized-super-sticky-kush-bar-tape","name":"Specialized Super Sticky Kush Bar Tape","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"handlebar tape for a road bicycle"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-sv-tube-18x1-5-2-3-32mm","name":"Specialized SV Tube 18x1.5-2.3 32mm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Schrader-valve bicycle inner tube"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-sv-tube-24x1-9-2-4-32mm","name":"Specialized SV Tube 24x1.9-2.4 32mm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle inner tube"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-sv-tube-650bx1-75-2-4-40mm","name":"SPECIALIZED SV TUBE 650BX1.75-2.4 40MM","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"650B bicycle inner tube"},{"kind":"name","severity":"low","field":"name","current":"SPECIALIZED SV TUBE 650BX1.75-2.4 40MM","suggested":"Specialized SV Tube 650Bx1.75-2.4 40mm","why":"ALL CAPS"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","name":"Specialized SV Tube 650Bx1.75-2.4 40mm"}}}
+{"id":"p-specialized-specialized-sw-rib-cage-iii-flaskeholder","name":"Specialized SW Rib Cage III flaskeholder","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'flaskeholder' = bicycle bottle cage"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-sw-sl-stem-expan-31-8x90","name":"SPECIALIZED SW SL STEM  EXPAN  31.8X90","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"31.8 mm x 90 mm bicycle stem"},{"kind":"name","severity":"low","field":"name","current":"SPECIALIZED SW SL STEM  EXPAN  31.8X90","suggested":"Specialized SW SL Stem Expand 31.8x90","why":"ALL CAPS with doubled spaces"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","name":"Specialized SW SL Stem Expand 31.8x90"}}}
+{"id":"ean-196625180194","name":"Specialized SW Turbo Race TLR 700x30","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"700x30 tubeless road bicycle tyre"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-sykkelslange-26x1-75-2-4","name":"Specialized Sykkelslange 26x1.75-2.4","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'sykkelslange' = bicycle inner tube"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-tero-fender-rack-kit","name":"Specialized Tero Fender Rack Kit","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"fender and rack kit for the Specialized Tero e-bike"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-196625206641","name":"Specialized Turbo Levo 4 Alloy S4","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"a kr 67 990 full-suspension e-mountain bike"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-888818953264","name":"Specialized Turbo Levo 4 Comp Carbon S4","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"a kr 98 990 e-mountain bike"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-196625266195","name":"Specialized Turbo Tero 4.0 EQ M","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"a complete e-bike"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-196625273407","name":"Specialized Vado 3 Evo 4.0 L","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"a complete e-bike"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-specialized-specialized-zee-cage-hoyre-flaskeholder","name":"Specialized Zee Cage Høyre Flaskeholder","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'flaskeholder' = bicycle bottle cage"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"ean-7043811880068","status":"ok"}
+{"id":"p-fischer-speedmax-3d-skate-plus-medium-ifp","status":"ok"}
+{"id":"p-insportline-spikermatte","status":"ok"}
+{"id":"ean-8595153693053","status":"ok"}
+{"id":"p-salming-split-vision-eyewearjr","name":"Split Vision EyewearJR","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Kids","why":"the 'JR' suffix marks the junior model; other JR rows in this shard carry audience Kids"}],"fix":{"patch":{"facets":{"audience":"Kids"}}}}
+{"id":"p-sport-plast-decoys-sport-plast-decoy-hubro-ugle-med-bevegelige-vinger","name":"Sport Plast Decoy Hubro Ugle med bevegelige vinger 51 cm","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Outdoor","why":"an eagle-owl hunting decoy; srcCat 'Bulvaner og Lokkeender' is hunting gear, and only the brand name says 'Sport'"}],"fix":{"patch":{"cat":"Outdoor","icon":"tent"}}}
+{"id":"p-comply-sport-pro-smartcore","name":"Sport Pro SmartCore","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Audio","why":"Comply foam eartips; srcCat 'Forside > Hodetelefon > Headset tilbehør > COMSCSPORT1MX' — the leaf crumb is the SKU code, which is where 'SPORT' came from"}],"fix":{"patch":{"cat":"Audio","icon":"headphones"}}}
+{"id":"p-harkila-sporting-sweatshirt-brun","name":"Sporting Sweatshirt Brun","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Outdoor","why":"Härkila hunting midlayer from Widforss (srcCat 'Mellomlag og Fleecetrøyer'); 'Sporting' is the model name"}],"fix":{"patch":{"cat":"Outdoor","icon":"tent"}}}
+{"id":"p-nike-sportswear-club-men-s-lightweight-pants","status":"ok"}
+{"id":"p-nike-sportswear-tech-fleece-women-s-mid-rise-joggers","status":"ok"}
+{"id":"p-eurosport-fitness-spotter-arms","status":"ok"}
+{"id":"p-sram-sram-kassett-xg-1270-12-spd-10-33t","name":"Sram Kassett XG-1270 12 spd 10-33T","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"12-speed bicycle cassette"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-sram-sram-kranklager-bb30-pressfit","name":"Sram Kranklager BB30 Pressfit","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"BB30 bicycle bottom bracket"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-sram-sram-power-pack-8s-11-32t-kjede-kassett","name":"Sram Power Pack 8s 11-32T Kjede+Kassett","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"bicycle chain + cassette pack"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-sram-sykkelkjede-pc-gx-eagle","name":"Sram Sykkelkjede PC GX Eagle","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'sykkelkjede' = bicycle chain"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Sram","why":"name begins with the brand, sibling Sram rows carry it"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"Sram"}}}
+{"id":"ean-8596084076137","name":"Step-Up Multi","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.color","current":"Multicolour","suggested":null,"why":"'Multi' here means multi-function step box, not a colour"}],"fix":{"patch":{"facets":{"color":null}}}}
+{"id":"ean-8596084165329","status":"ok"}
+{"id":"p-deler-as-sunrace-kassett-ms1-10-delt","name":"SunRace Kassett MS1 10-delt","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"10-speed bicycle cassette"},{"kind":"brand","severity":"med","field":"brand","current":"Deler AS","suggested":"SunRace","why":"'Deler AS' is the distributor; the name states the real brand"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"SunRace"}}}
+{"id":"p-oakley-sutro-lite-prizm-matte-black-sapphire","name":"Sutro Lite Prizm Matte Black Sapphire","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Yoga & recovery","suggested":null,"why":"Oakley Sutro Lite are sports sunglasses (srcCat 'Briller og goggles > Sportsbriller'); nothing here is yoga or recovery"}],"fix":{"patch":{"facets":{"type":null}}}}
+{"id":"p-suunto-suunto-race-all-black","status":"ok"}
+{"id":"p-suunto-suunto-race-s-gravel-gray","status":"ok"}
+{"id":"p-suunto-suunto-race-titanium","status":"ok"}
+{"id":"ean-7048652327093","name":"Sweet Elbow Pads L","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same pads as ean-7048652327109, only the size differs"}],"fix":{"group":{"head":"ean-7048652327093","members":["ean-7048652327109"],"axis":"size"}}}
+{"id":"ean-7048652327109","name":"Sweet Elbow Pads M","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"size M of ean-7048652327093, sitting as a separate top-level row"}]}
+{"id":"ean-7048653018099","name":"Sweet Junior Trøye Hunter SS 140","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"size 140 of ean-7048653018105, sitting as a separate top-level row"}]}
+{"id":"ean-7048653018105","name":"Sweet Junior Trøye Hunter SS 152","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same jersey as ean-7048653018099, only the size differs"}],"fix":{"group":{"head":"ean-7048653018105","members":["ean-7048653018099"],"axis":"size"}}}
+{"id":"p-swenor-swenor-fibreglass-rulleski-3er-hjul","status":"ok"}
+{"id":"p-swenor-swenor-komplett-forhjul-1er-hjul","status":"ok"}
+{"id":"p-swenor-swenor-rulleskipigg-11-0-mm-bla","status":"ok"}
+{"id":"p-swenor-swenor-skate-junior-pink-rulleski","status":"ok"}
+{"id":"p-swenor-skate-rulleski","name":"Swenor Skate Rulleski","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Swenor","why":"name begins with the brand, sibling Swenor rows carry it"}],"fix":{"patch":{"brand":"Swenor"}}}
+{"id":"p-swenor-swenor-skate-long-rulleskihjul-1-er","status":"ok"}
+{"id":"ean-7045952415901","status":"ok"}
+{"id":"p-swix-swix-base-protection-liquid-500ml","status":"ok"}
+{"id":"p-swix-swix-basket-triac-black-leaf-small","status":"ok"}
+{"id":"p-swix-swix-basket-triac-white-paw-l-trinse","status":"ok"}
+{"id":"ean-7045952492445","status":"ok"}
+{"id":"ean-7045953324844","status":"ok"}
+{"id":"ean-7045953294918","status":"ok"}
+{"id":"ean-7045952781372","status":"ok"}
+{"id":"p-swix-swix-elite-sonic-langrennsstav-voksen","status":"ok"}
+{"id":"ean-7045953324523","status":"ok"}
+{"id":"ean-7045952867960","status":"ok"}
+{"id":"ean-7045952775494","status":"ok"}
+{"id":"ean-7045953287309","status":"ok"}
+{"id":"p-swix-swix-hs8-rod-glider-4-c-4-c-180g","status":"ok"}
+{"id":"p-swix-swix-k70c-red-quick-klister-150ml","status":"ok"}
+{"id":"p-swix-swix-kn44-nero-3-5","status":"ok"}
+{"id":"p-swix-swix-panneband-focus","status":"ok"}
+{"id":"p-swix-swix-ps7-lilla-glider-2-c-8-c-60g","status":"ok"}
+{"id":"p-swix-swix-ps8-liq-rod-4-c-4-c-80ml","status":"ok"}
+{"id":"p-swix-swix-pure-marathon-hvit-180g","status":"ok"}
+{"id":"ean-7045952277806","name":"Swix RaceX bodyw Underdel Jr 116/6Yrs","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Swix RaceX bodyw Underdel Jr 116/6Yrs","suggested":"Swix RaceX Bodywear Underdel Jr 116/6Yrs","why":"'bodyw' is a truncated feed abbreviation"}],"fix":{"patch":{"name":"Swix RaceX Bodywear Underdel Jr 116/6Yrs"}}}
+{"id":"p-swix-swix-racing-mask-with-replaceable-filter","status":"ok"}
+{"id":"p-swix-swix-racing-polishing-cloths-20m","status":"ok"}
+{"id":"ean-7045952841236","name":"Swix Roadline 1 Rulleskistav 140","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"length 140 of ean-7045952883052, sitting as a separate top-level row"}]}
+{"id":"ean-7045952883052","name":"Swix Roadline 1 Rulleskistav 142,5","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same pole as ean-7045952841236, only the length differs"}],"fix":{"group":{"head":"ean-7045952883052","members":["ean-7045952841236"],"axis":"size"}}}
+{"id":"p-swix-swix-roadline-rulleski-skate-730","status":"ok"}
+{"id":"p-swix-runners-cap","name":"Swix Runners Cap","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Swix","why":"name begins with the brand, every sibling Swix row carries it"}],"fix":{"patch":{"brand":"Swix"}}}
+{"id":"p-swix-swix-skin-cleaner","status":"ok"}
+{"id":"p-swix-swix-stavholder","status":"ok"}
+{"id":"p-swix-swix-stavkogger-7-par","status":"ok"}
+{"id":"ean-7045952770451","name":"Swix Surmount Vott 8","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"size 8 of ean-7045952770468, sitting as a separate top-level row"}]}
+{"id":"ean-7045952770468","name":"Swix Surmount Vott 9","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same mitten as ean-7045952770451, only the size differs"}],"fix":{"group":{"head":"ean-7045952770468","members":["ean-7045952770451"],"axis":"size"}}}
+{"id":"p-swix-swix-t0019s-rotor-stalborste-xc-70mm","status":"ok"}
+{"id":"p-swix-swix-t0076w-vegghengt-wax-table","status":"ok"}
+{"id":"p-swix-swix-t0766-xc-profile-set-for-wax-tables","status":"ok"}
+{"id":"p-swix-swix-t11-synthetic-cork-w-sandpaper","status":"ok"}
+{"id":"p-swix-swix-t191b-brush-rectangular-fine-steel","status":"ok"}
+{"id":"p-swix-swix-t42-smoremaske","status":"ok"}
+{"id":"p-swix-swix-t42375v-structure-v-0-75mm","status":"ok"}
+{"id":"ean-7045952551654","status":"ok"}
+{"id":"ean-7045952489209","name":"Swix Triac G-Tex Inf Hanske 11","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"same glove as ean-7045952489223, only the size differs"}],"fix":{"group":{"head":"ean-7045952489209","members":["ean-7045952489223"],"axis":"size"}}}
+{"id":"ean-7045952489223","name":"Swix Triac G-Tex Inf Hanske 7","status":"issue","issues":[{"kind":"variant","severity":"low","field":null,"current":null,"suggested":null,"why":"size 7 of ean-7045952489209, sitting as a separate top-level row"}]}
+{"id":"ean-7045952613864","status":"ok"}
+{"id":"p-swix-swix-ts10-sort-glider-0-c-10-c-180g","status":"ok"}
+{"id":"p-swix-swix-v30-blue-hardwax-2-10c-45g","status":"ok"}
+{"id":"p-swix-swix-vp40-pro-blue-10-4-45g","status":"ok"}
+{"id":"p-swix-swix-wastebag-holder","status":"ok"}
+{"id":"ean-7391998712079","status":"ok"}
+{"id":"p-specialized-sykkelslange-700x28-38-40mm","name":"Sykkelslange 700X28-38 40MM","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'sykkelslange' = bicycle inner tube"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-swix-t18w-140-merino-wool-140mm","status":"ok"}
+{"id":"p-swix-t42-2f-filters-for-economy-mask","status":"ok"}
+{"id":"p-tailwind-panier-left","name":"Tailwind Panier Left","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"a left-side bicycle pannier"},{"kind":"brand","severity":"low","field":"brand","current":"Unspecified","suggested":"Tailwind","why":"name begins with what reads as the brand"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"Tailwind"}}}
+{"id":"ean-6430061242806","status":"ok"}
+{"id":"p-christopeit-sport-talje-al1-al2","name":"Talje AL1 & AL2","status":"issue","issues":[{"kind":"junk","severity":"med","field":null,"current":null,"suggested":null,"why":"replacement pulley for two specific machine models; srcCat 'Annen / Reservedeler'"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-puma-team-liga-socks-core","status":"ok"}
+{"id":"p-under-armour-tech-textured-1-2-zip-bayou","status":"ok"}
+{"id":"p-bergans-of-norway-tent-poles-for-4-pers-tent-3poles","name":"Tent Poles for 4-Pers Tent (3Poles)","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Outdoor","why":"srcCat 'FRILUFT > Telt > Tilbehør telt og lavvo' — tent poles are camping gear"}],"fix":{"patch":{"cat":"Outdoor","icon":"tent"}}}
+{"id":"p-thule-sweden-ab-thule-epos-bike-repair-holder","name":"Thule Epos Bike Repair Holder","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"holder for repairing a bicycle on the Thule Epos carrier"},{"kind":"brand","severity":"med","field":"brand","current":"Thule Sweden AB","suggested":"Thule","why":"legal entity name used as brand"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"Thule"}}}
+{"id":"p-thule-sweden-ab-thule-epos-storage-bag-3bike","name":"Thule Epos Storage Bag 3Bike","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"storage bag for a 3-bike Thule Epos carrier"},{"kind":"brand","severity":"med","field":"brand","current":"Thule Sweden AB","suggested":"Thule","why":"legal entity name used as brand"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"Thule"}}}
+{"id":"p-thule-sweden-ab-thule-outpace-2-bike-platform","name":"Thule Outpace 2-Bike Platform","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Bikes","why":"a 2-bike carrier platform"},{"kind":"brand","severity":"med","field":"brand","current":"Thule Sweden AB","suggested":"Thule","why":"legal entity name used as brand"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"Thule"}}}
+{"id":"p-thule-thule-thule-chariot-ski-kit-nocolour","name":"Thule Thule Chariot Ski Kit NoColour","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Thule Thule Chariot Ski Kit NoColour","suggested":"Thule Chariot Ski Kit","why":"brand duplicated in the name plus the feed's 'NoColour' placeholder"}],"fix":{"patch":{"name":"Thule Chariot Ski Kit"}}}
+{"id":"p-adidas-tiro-primegreen-duffel-bag-medium-treningsbag","status":"ok"}
+{"id":"p-adidas-tiro-pro-fotball","status":"ok"}
+{"id":"p-titan-life-titan-life-amroc-9-0-tredemolle","status":"ok"}
+{"id":"p-titan-life-titan-life-nbr-fitnessmatte","status":"ok"}
+{"id":"p-toko-toko-base-perf-liquid-paraffin-blue","status":"ok"}
+{"id":"p-toko-toko-jet-powder-cold-30g","status":"ok"}
+{"id":"p-toko-toko-nordic-base-wax-27g-green","status":"ok"}
+{"id":"p-topps-topps-match-attax-uefa-premier-league-2026-startpakke-samlekort","name":"Topps Match Attax UEFA Premier League 2026 startpakke samlekort","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Toys","why":"srcCat 'Leker > Samleobjekter og merchandise > Fotballkort' — trading cards, not sports equipment"},{"kind":"facets","severity":"med","field":"facets.type","current":"Ball sports","suggested":null,"why":"derived from 'Fotball' in the card series name"}],"fix":{"patch":{"cat":"Toys","icon":"toy-brick","facets":{"type":null}}}}
+{"id":"p-topps-topps-ucc-match-attax-uefa-champions-league-25-26-multi-pack-sam","name":"Topps UCC Match Attax UEFA Champions League 25/26 multi pack samlekort","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Toys","why":"srcCat 'Leker > Samleobjekter og merchandise > Fotballkort' — trading cards"},{"kind":"facets","severity":"med","field":"facets.type","current":"Ball sports","suggested":null,"why":"derived from the football card series name"},{"kind":"facets","severity":"med","field":"facets.color","current":"Multicolour","suggested":null,"why":"'multi pack' is a pack size, not a colour"}],"fix":{"patch":{"cat":"Toys","icon":"toy-brick","facets":{"type":null,"color":null}}}}
+{"id":"p-workhouse-torsonator-for-vektstang","status":"ok"}
+{"id":"ean-7043811880174","status":"ok"}
+{"id":"ean-6430016908283","status":"ok"}
+{"id":"ean-207098151663","status":"ok"}
+{"id":"p-grayl-transport-hip-pack-4l-olive-drab","name":"Transport Hip Pack 4L Olive Drab","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Outdoor","why":"4 L hip pack from Widforss (srcCat 'Midjevesker'), an outdoor/hunting retailer"}],"fix":{"patch":{"cat":"Outdoor","icon":"tent"}}}
+{"id":"p-osprey-transporter-flap-black","name":"Transporter Flap Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Outdoor","why":"Osprey Transporter duffel accessory sold by an outdoor retailer"}],"fix":{"patch":{"cat":"Outdoor","icon":"tent"}}}
+{"id":"ean-6430062513615","status":"ok"}
+{"id":"p-insportline-tredemolle-insportline-zenrun-120","status":"ok"}
+{"id":"ean-8596084167293","status":"ok"}
+{"id":"ean-4005251516306","name":"Tredemølle Q Vadis 10.0 BEST I TEST","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Tredemølle Q Vadis 10.0 BEST I TEST","suggested":"Tredemølle Q Vadis 10.0","why":"shop marketing boilerplate ('BEST I TEST') inside the product name"}],"fix":{"patch":{"name":"Tredemølle Q Vadis 10.0"}}}
+{"id":"ean-4044163019352","status":"ok"}
+{"id":"ean-8596084166326","status":"ok"}
+{"id":"ean-233514933063","status":"ok"}
+{"id":"ean-8596084108449","status":"ok"}
+{"id":"ean-7330101055238","status":"ok"}
+{"id":"ean-4005251387401","status":"ok"}
+{"id":"ean-7391998521022","status":"ok"}
+{"id":"ean-6430016905978","status":"ok"}
+{"id":"ean-7391998532073","status":"ok"}
+{"id":"ean-8595153635619","status":"ok"}
+{"id":"ean-7051944081306","status":"ok"}
+{"id":"ean-8595153627256","status":"ok"}
+{"id":"p-workhouse-tricepsrep-naturlig-i-hamp-lin","status":"ok"}
+{"id":"ean-7043811820972","status":"ok"}
+{"id":"ean-7611174440719","status":"ok"}
+{"id":"p-sweet-protection-trooper-ii-helmet","status":"ok"}
+{"id":"ean-7333380000463","status":"ok"}
+{"id":"p-fischer-twin-skin-comp-medium-felleski","status":"ok"}
+{"id":"p-fischer-twin-skin-sprint-jr-felleski","status":"ok"}
+{"id":"p-under-armour-ua-sportstyle-lc-ss-red","status":"ok"}
+{"id":"p-under-armour-ua-vanish-elite-seamless-ss-enamel-blue","status":"ok"}
+{"id":"p-umara-umara-energibar-eple-og-kanel-45g","status":"ok"}
+{"id":"p-umara-umara-gelcola-med-koffein-33ml","status":"ok"}
+{"id":"p-umara-umara-hydrate-salttabletter-rode-baer","status":"ok"}
+{"id":"p-umara-umara-u-sport-appelsin-2-kg","status":"ok"}
+{"id":"p-arena-unix-ii-badehette-junior","status":"ok"}
+{"id":"ean-296687997270","name":"Vaiersett GCCO-150","status":"issue","issues":[{"kind":"junk","severity":"med","field":null,"current":null,"suggested":null,"why":"replacement cable set for one machine model; srcCat 'Annen / Reservedeler'"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-4044163022659","status":"ok"}
+{"id":"p-vauhti-vauhti-pure-race-cold-powder","status":"ok"}
+{"id":"p-vauhti-vauhti-pure-race-os-silver-1-4","status":"ok"}
+{"id":"p-vauhti-vauhti-pure-race-violet","status":"ok"}
+{"id":"p-vauhti-vauhti-pure-up-ldr-flytende-glider","status":"ok"}
+{"id":"p-vauhti-vauhti-race-violet-powder-1-7-35g","status":"ok"}
+{"id":"p-vauhti-vauthi-race-violet-liquid-1-7-60ml","name":"Vauthi Race Violet Liquid -1/-7 60ML","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Vauthi Race Violet Liquid -1/-7 60ML","suggested":"Vauhti Race Violet Liquid -1/-7 60ml","why":"brand misspelled 'Vauthi' in the name (brand field and sibling rows say Vauhti)"}],"fix":{"patch":{"name":"Vauhti Race Violet Liquid -1/-7 60ml"}}}
+{"id":"ean-7051943729827","status":"ok"}
+{"id":"ean-8595153607456","status":"ok"}
+{"id":"ean-8595153607463","status":"ok"}
+{"id":"ean-8595153609207","status":"ok"}
+{"id":"ean-168593635846","status":"ok"}
+{"id":"ean-7051943003835","status":"ok"}
+{"id":"ean-8596084105998","status":"ok"}
+{"id":"p-workhouse-vektstangstativ-workhouse","status":"ok"}
+{"id":"ean-8595153650841","status":"ok"}
+{"id":"ean-4005251520303","status":"ok"}
+{"id":"ean-8595153635374","status":"ok"}
+{"id":"ean-8595153693633","status":"ok"}
+{"id":"ean-8596084038500","status":"ok"}
+{"id":"p-umbro-velocita-vi-1-0-ag-ve-jr","name":"Velocita VI 1.0 AG VE Jr","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Shoes","why":"srcCat 'SKO > Fotballsko > Fotballsko - kunstrgress' — the shop files it under footwear"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-head-vibe-2026-bl-yl","name":"Vibe 2026_bl_yl","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"Vibe 2026_bl_yl","suggested":"Vibe 2026","why":"trailing feed colour code '_bl_yl' is SKU noise"}],"fix":{"patch":{"name":"Vibe 2026"}}}
+{"id":"ean-8596084098948","status":"ok"}
+{"id":"p-christopeit-sport-vis-eldre-al2","name":"Vis eldre AL2","status":"issue","issues":[{"kind":"junk","severity":"high","field":null,"current":null,"suggested":null,"why":"a screw/part for older AL2 machines (srcCat 'Annen / Reservedeler'); no shopper can identify this row"}],"fix":{"patch":{"hidden":1}}}
+{"id":"ean-7350132943014","status":"ok"}
+{"id":"p-vittoria-vittoria-airliner-protect-e-bike","name":"Vittoria Airliner Protect E-Bike","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"tyre insert for e-bike wheels"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-shimano-vittoria-magic-mastik-tube-lim","name":"Vittoria Magic Mastik Tube Lim","status":"issue","issues":[{"kind":"brand","severity":"high","field":"brand","current":"Shimano","suggested":"Vittoria","why":"stored brand contradicts the name — this is Vittoria tubular glue"},{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"tubular rim cement for bicycle tyres"}],"fix":{"patch":{"brand":"Vittoria","cat":"Bikes","icon":"bike"}}}
+{"id":"p-vj-sport-vj-sport-flow-black","name":"VJ Sport Flow Black","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Shoes","why":"VJ Flow is a trail running shoe; srcCat is only the brand name"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-vj-sport-vj-sport-ultra-3-navy-orange","name":"VJ Sport Ultra 3 Navy/Orange","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Shoes","why":"VJ Ultra 3 is a trail running shoe; srcCat is only 'Varemerker > VJ Sport'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-vj-sport-vj-sport-vj-xtrm-2-rod","name":"VJ Sport VJ XTRM 2 RØD","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Shoes","why":"VJ XTRM 2 is a trail running shoe; srcCat is only the brand name"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-rongve-vm-26-skjerf","status":"ok"}
+{"id":"p-molten-volleyball-m4000","status":"ok"}
+{"id":"p-the-north-face-w-active-l-s-crew-neck","name":"W Active L/S Crew Neck","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.audience","current":null,"suggested":"Women","why":"leading 'W' marks the women's cut; rows written \"W's …\" in this shard do get audience Women"}],"fix":{"patch":{"facets":{"audience":"Women"}}}}
+{"id":"p-merrell-w-s-snowcreek-sport-mid-waterproof-charcoal","name":"W's Snowcreek Sport Mid Waterproof Charcoal","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Shoes","why":"srcCat 'Vintersko' — a winter boot; 'Sport' is part of the model name"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-merrell-w-s-west-rim-sport-gtx-black","name":"W's West Rim Sport GTX Black","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Shoes","why":"srcCat 'Hverdagssko' — an everyday shoe; 'Sport' is part of the model name"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"ean-4044163024257","status":"ok"}
+{"id":"p-johaug-warm-jacket","status":"ok"}
+{"id":"p-head-wc-e-race-team-sw-jrs-jrs-7-5-gw-ca-brake-78-h","name":"WC e.Race Team SW JRS  + JRS 7.5 GW CA BRAKE 78 [H]","status":"issue","issues":[{"kind":"name","severity":"med","field":"name","current":"WC e.Race Team SW JRS  + JRS 7.5 GW CA BRAKE 78 [H]","suggested":"WC e.Race Team SW JRS + JRS 7.5 GW CA Brake 78","why":"doubled spaces and a trailing '[H]' internal code"}],"fix":{"patch":{"name":"WC e.Race Team SW JRS + JRS 7.5 GW CA Brake 78"}}}
+{"id":"p-sweet-protection-winder-mips-alpinhjelm","status":"ok"}
+{"id":"ean-7051947229712","status":"ok"}
+{"id":"p-withings-withings-body-comp-personvekt-med-wifi-hvit","name":"Withings Body Comp Personvekt med wifi Hvit","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Health","why":"srcCat 'Kropp og helse > Personvekter' — a smart body-composition scale"}],"fix":{"patch":{"cat":"Health","icon":"heart-pulse"}}}
+{"id":"p-icebreaker-wmns-anatomica-seamless-svart","status":"ok"}
+{"id":"p-adidas-womens-world-cup-oceaunz-pro-fotball","status":"ok"}
+{"id":"p-woom-woom-2-go-barnesykkel-14-metallic-blue","name":"Woom 2 Go Barnesykkel 14\" Metallic Blue","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'barnesykkel' = children's bicycle"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-woom-woom-4-go-barnesykkel-20-metallic-pet","name":"Woom 4 Go Barnesykkel 20\" Metallic Pet","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'barnesykkel' = children's bicycle"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-woom-woom-bing-ringeklokke","name":"Woom Bing Ringeklokke","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'ringeklokke' = bicycle bell"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-woom-hjelm-3-0-s","name":"Woom Hjelm 3.0 S","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Woom children's cycling helmet"},{"kind":"brand","severity":"med","field":"brand","current":"Unspecified","suggested":"Woom","why":"name begins with the brand, sibling Woom rows carry it"}],"fix":{"patch":{"cat":"Bikes","icon":"bike","brand":"Woom"}}}
+{"id":"p-woom-woom-off-air-5-24-black-7-11-ar","name":"Woom Off Air 5 24\" Black 7-11 år","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"Woom OFF AIR 5 is a 24\" children's mountain bike"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-woom-woom-pop-kurv","name":"Woom Pop Kurv","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Sport","suggested":"Bikes","why":"'kurv' = basket for the Woom bicycle"}],"fix":{"patch":{"cat":"Bikes","icon":"bike"}}}
+{"id":"p-adidas-x-speedportal-4-tf-j","name":"X SPEEDPORTAL.4 TF J","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Sport","suggested":"Shoes","why":"srcCat leaf 'Fotballsko' — junior turf football boots"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"ean-7051943733251","status":"ok"}
+{"id":"p-abilica-xc-classic-2000-complete","status":"ok"}
+{"id":"p-medex-xper-td-4289-laktatmaler","name":"XPER TD-4289 Laktatmåler","status":"issue","issues":[{"kind":"category","severity":"low","field":"cat","current":"Sport","suggested":"Health","why":"a blood lactate meter — a measuring device, closer to Health than to training gear"}],"fix":{"patch":{"cat":"Health","icon":"heart-pulse"}}}
+{"id":"p-zandstra-zandstra-redningsline-25-meter","status":"ok"}
+{"id":"ean-8596084195326","status":"ok"}
+{"id":"p-poc-zonula-rouge-blanc-partly-sunny-ivory","status":"ok"}
+{"id":"_summary","shard":"Sport-03","checked":266,"ok":149,"issues":117,"by_kind":{"category":84,"facets":12,"brand":12,"variant":12,"name":11,"junk":5},"high":65,"rule_gaps":["Bikes never wins over Sport for Foss Sport's bicycle catalogue: 63 rows here are bicycles or bike parts (dekk, slange, sykkelpumpe, krankdrev, kassett, skjerm, flaskeholder, ringeklokke, complete e-bikes) sitting in Sport — the shop publishes no srcCat, so CAT_RULES needs a bicycle vocabulary matched on the NAME (sykkel*, dekk 700x/29x, slange, skjerm/mudguard, kassett, kjede, krank*, sadel, flaskeholder, barnesykkel, e-bike model lines) ahead of the Sport floor","the word 'sport'/'sports' inside a MODEL or SKU string promotes to Sport: Sigma '…HSM Sports' lens mount → Photo, Comply 'Sport Pro' eartips whose breadcrumb leaf is the SKU 'COMSCSPORT1MX' → Audio, Merrell 'West Rim Sport'/'Snowcreek Sport' shoes → Shoes, Härkila 'Sporting' sweatshirt → Outdoor; a breadcrumb leaf that is an alphanumeric SKU should be skipped like CAT_WEAK","facetrules colour matching fires on non-colour words: 'MIX' (ski-skin fibre mix), 'Multi' in 'Step-Up Multi' and 'multi pack' all derive color=Multicolour","facetrules type has no mapping for the Sporttema cardio breadcrumbs 'Kondisjon / Stakemaskin' and 'Kondisjon / Promenadebånd', so ski ergometers and walking pads get no type; and 'Sportsbriller' derives type='Yoga & recovery' (Oakley Sutro), which is simply wrong","type='Apparel' is missing on most Norwegian garment nouns — Bukse, Vott, Hanske, Cap, sock/ankle sock, shorts and bra rows carry audience but no type; audience also misses the bare 'W ' women's prefix (only \"W's\" is recognised)"],"notes":"Data is honest and prices are plausible; the health problem is placement, not content — one shop (Foss Sport, no srcCat) contributes a whole bicycle department that landed in Sport, and 90 of 266 rows have no image at all because their shops are sampled rather than crawled. Six obvious size-variant pairs (helmets, pads, mittens, gloves, poles, junior jerseys) sit as separate top-level rows; size suffixes appear in ~40 more names with no vlabel/family, which is worth one pass once the variant wiring is generalised."}

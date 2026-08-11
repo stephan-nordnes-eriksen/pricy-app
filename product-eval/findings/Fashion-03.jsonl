@@ -1,0 +1,301 @@
+{"id":"p-hudson-hudson-5-pakning-sokker","status":"ok"}
+{"id":"p-mammut-hueco-shorts-women-terracotta","status":"ok"}
+{"id":"ean-5715598566238","name":"Hummel - 5-pk Ankelsokker Match Me Bright White/ Bright White - 24-27","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715819413532","name":"Hummel - Fotballdrakt 2-delt Shimmer Skyway/Black - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715454656011","name":"Hummel - Hettegenser Clean Black - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715819527703","name":"Hummel - Hettegenser Logo Essen Dutch Blue - 110","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688845397","name":"Hummel - Hettegenser Loose Hoodie Bee Cornstalk - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688778022","name":"Hummel - Joggebukse Bee Dress Blues - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688778008","name":"Hummel - Joggebukse Loose Sweatpants Bee Polignac - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688805100","name":"Hummel - Joggebukse Mini Loose Adj Waist Rock Ridge - 80","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688253109","name":"Hummel - Joggedress 2-delt Mini Jersey Crewsuit Bee Dress Blues - 80","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Dresses & skirts","suggested":null,"why":"'Joggedress' is a two-piece tracksuit, not a dress; Norwegian '-dress' means suit/overall"},{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel","facets":{"type":null}}}}
+{"id":"ean-5715819429373","name":"Hummel - Joggedress 2-delt Mini Reg Bumble Set Black Plum - 86","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688248419","name":"Hummel - Joggedress Mini Jersey Crewsuit Bee Polignac - 80","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688065702","name":"Hummel - Longs i Ull og Bambus Vintage Indigo - 80","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715819206639","name":"Hummel - Sandaler Flip Flops Jr Mauve Shadow - 28","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Sandaler Flip Flops' in size 28 is footwear; the shop's srcCat 'Heldress' is a mis-slot and the name is the better evidence"},{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints","brand":"Hummel"}}}
+{"id":"ean-5715819279725","name":"Hummel - Shorts Jr Loose Sweat Bee Rock Ridge - 104","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Shorts","why":"name and srcCat both say Shorts; 'Sweat' matched the knitwear rule"},{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel","facets":{"type":"Shorts"}}}}
+{"id":"ean-5715819096759","name":"Hummel - T-skjorte Graphic White - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688779319","name":"Hummel - T-skjorte Loose Bee Black - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5700498892464","name":"Hummel - Tights Onze Rosa - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715819218830","name":"Hummel - Tracksuit Mini Co Reg Shadow - 80","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688068239","name":"Hummel - Trøye i Ull Grey Melange - 104","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688699686","name":"Hummel - Trøye i Ull Twilight Mauve - 98","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688064989","name":"Hummel - Ullbukse Ull og Bambus Vintage Indigo - 80","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"ean-5715688699297","name":"Hummel - Ulljakke Zip Ull og Bomull Grey Melange - 92","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Hummel Barn","suggested":"Hummel","why":"'Barn' (children) is the shop's department, not part of the brand"}],"fix":{"patch":{"brand":"Hummel"}}}
+{"id":"p-thundershirt-hund-l-xl","name":"Hund L-XL","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Pets","why":"ThunderShirt is a calming vest for dogs; 'Hund' = dog, size L-XL. The shop's 'Gensere' crumb made it human knitwear"},{"kind":"name","severity":"med","field":"name","current":"Hund L-XL","suggested":"ThunderShirt Hund L-XL","why":"name is only the shop's size label, no shopper can identify the product from it"},{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":null,"why":"a dog vest is not knitwear"}],"fix":{"patch":{"cat":"Pets","icon":"paw-print","name":"ThunderShirt Hund L-XL","facets":{"type":null}}}}
+{"id":"p-sweet-protection-hunter-ii-pants-m-black","status":"ok"}
+{"id":"ean-5711136906788","status":"ok"}
+{"id":"ean-5711136896577","name":"Hust & Claire - Joggebukse Ull/Bambus Gaby Blues - 62","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with ean-5711136896645","why":"same model 'Gaby' joggebukse, same size 62 and price, only the colourway differs"}],"fix":{"group":{"head":"ean-5711136896577","members":["ean-5711136896645"],"axis":"color"}}}
+{"id":"ean-5711136896645","name":"Hust & Claire - Joggebukse Ull/Bambus Gaby Heather - 62","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of ean-5711136896577","why":"colour variant of the same 'Gaby' joggebukse, size 62"}]}
+{"id":"ean-5711136904241","status":"ok"}
+{"id":"ean-5711135953745","status":"ok"}
+{"id":"ean-5711136514082","status":"ok"}
+{"id":"ean-5711136558710","status":"ok"}
+{"id":"ean-5711136521943","status":"ok"}
+{"id":"ean-5711136385408","status":"ok"}
+{"id":"ean-5711135813049","status":"ok"}
+{"id":"ean-5711135965472","status":"ok"}
+{"id":"ean-5711135555215","status":"ok"}
+{"id":"ean-5711135438228","status":"ok"}
+{"id":"ean-5711136522438","status":"ok"}
+{"id":"ean-5711136859299","status":"ok"}
+{"id":"ean-5711136338657","status":"ok"}
+{"id":"ean-5711136646646","name":"Hust And Claire - Body Ull/ Bambus Baloo Hearts Puff Adobe Rose - 62","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"ean-5711136646646","suggested":"p-hust-claire-hust-claire-baloo-hearts-puff-body","why":"same Hust&Claire 'Baloo Hearts Puff' body sold by Guttelus and Junior Barneklær as two separate rows, so the PDP shows one shop instead of two"}],"fix":{"alias":{"ean":"5711136646646","product_id":"p-hust-claire-hust-claire-baloo-hearts-puff-body"}}}
+{"id":"ean-5711136647599","status":"ok"}
+{"id":"ean-5711136857592","status":"ok"}
+{"id":"ean-5711136527709","status":"ok"}
+{"id":"ean-5711136839154","status":"ok"}
+{"id":"ean-5711136518899","status":"ok"}
+{"id":"ean-5711136781040","status":"ok"}
+{"id":"ean-5711136700003","status":"ok"}
+{"id":"ean-5711136321505","status":"ok"}
+{"id":"ean-5711136649272","status":"ok"}
+{"id":"ean-5711135812165","status":"ok"}
+{"id":"ean-5711136497026","status":"ok"}
+{"id":"ean-5711135192601","status":"ok"}
+{"id":"ean-5711136638818","status":"ok"}
+{"id":"ean-5711136800437","status":"ok"}
+{"id":"ean-5711136157937","name":"Hust and Claire - Julestrømpe Reinsdyr Teaberry - Onesize","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Home","why":"'Julestrømpe' is a Christmas gift stocking (decor), not hosiery — 'Onesize' rather than a shoe size confirms it; no srcCat to contradict"},{"kind":"facets","severity":"high","field":"facets.type","current":"Socks & hosiery","suggested":null,"why":"'strømpe' matched the hosiery rule on a decorative Christmas stocking"}],"fix":{"patch":{"cat":"Home","icon":"lamp","facets":{"type":null}}}}
+{"id":"ean-5711136315962","name":"Hust and Claire - Longs Ull og Lyocell French oak - 56","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with ean-5711136315801","why":"same 'Longs Ull og Lyocell' in size 56, only the colourway differs"}],"fix":{"group":{"head":"ean-5711136315962","members":["ean-5711136315801"],"axis":"color"}}}
+{"id":"ean-5711136315801","name":"Hust and Claire - Longs Ull og Lyocell Rose Cloud - 56","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of ean-5711136315962","why":"colour variant of the same longs, size 56"}]}
+{"id":"ean-5711136773809","status":"ok"}
+{"id":"ean-5711136580407","status":"ok"}
+{"id":"ean-5711136311803","status":"ok"}
+{"id":"ean-5711136158101","status":"ok"}
+{"id":"ean-5711136160975","status":"ok"}
+{"id":"ean-5711136701413","status":"ok"}
+{"id":"ean-5711136638160","status":"ok"}
+{"id":"ean-5711135808892","status":"ok"}
+{"id":"ean-5711136525125","name":"Hust and Claire - Strømpebukse Bambus Fuxie Strømpebukse Dusty Rose - 60","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Hust and Claire - Strømpebukse Bambus Fuxie Strømpebukse Dusty Rose - 60","suggested":"Hust and Claire - Strømpebukse Bambus Fuxie Dusty Rose - 60","why":"'Strømpebukse' appears twice in the shop's title"}],"fix":{"patch":{"name":"Hust and Claire - Strømpebukse Bambus Fuxie Dusty Rose - 60"}}}
+{"id":"ean-5711136251406","status":"ok"}
+{"id":"ean-5711136531287","status":"ok"}
+{"id":"ean-5711136529956","status":"ok"}
+{"id":"ean-5711136768300","status":"ok"}
+{"id":"ean-5711136778545","status":"ok"}
+{"id":"ean-5711136320959","status":"ok"}
+{"id":"ean-5711136825270","name":"Hust and Claire - UV-drakt Malaz French Oak - 9-12 mnd","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Swimwear","why":"'UV-drakt' is a UV swimsuit; the sibling 'Badedrakt' row in the same srcCat got Swimwear"}],"fix":{"patch":{"facets":{"type":"Swimwear"}}}}
+{"id":"ean-5711136824051","name":"Hust and Claire - UV-hatt Fasai Ivory - 9-12 mnd","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with ean-5711136189495","why":"same 'UV-hatt Fasai' in the same age size, only the colourway differs"}],"fix":{"group":{"head":"ean-5711136824051","members":["ean-5711136189495"],"axis":"color"}}}
+{"id":"ean-5711136189495","name":"Hust and Claire - UV-hatt Fasai Seagrass - 9-12 mnd","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of ean-5711136824051","why":"colour variant of the same UV-hatt Fasai"}]}
+{"id":"ean-5711136773939","status":"ok"}
+{"id":"p-hust-claire-hust-claire-abba-hearts-puff-troye","name":"Hust&Claire Abba Hearts Puff Trøye","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"print family with p-hust-claire-hust-claire-abba-line-dancer-troye","why":"same 'Abba' trøye at the same price from the same shop, only the print/colourway differs"}],"fix":{"group":{"head":"p-hust-claire-hust-claire-abba-hearts-puff-troye","members":["p-hust-claire-hust-claire-abba-line-dancer-troye"],"axis":"color"}}}
+{"id":"p-hust-claire-hust-claire-abba-line-dancer-troye","name":"Hust&Claire Abba Line Dancer Trøye","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of p-hust-claire-hust-claire-abba-hearts-puff-troye","why":"print/colour variant of the same Abba trøye"}]}
+{"id":"p-hust-claire-hust-claire-anton-snowleopard-longsleeve","name":"Hust&Claire Anton Snowleopard Longsleeve","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"T-shirts & tops","why":"'Longsleeve' states the garment"}],"fix":{"patch":{"facets":{"type":"T-shirts & tops"}}}}
+{"id":"p-hust-claire-hust-claire-badebleie","name":"Hust&Claire Badebleie","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Swimwear","why":"'Badebleie' is a swim nappy, worn as swimwear"}],"fix":{"patch":{"facets":{"type":"Swimwear"}}}}
+{"id":"p-hust-claire-hust-claire-badedrakt","status":"ok"}
+{"id":"p-hust-claire-hust-claire-badesko","name":"Hust&Claire Badesko","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Badesko' = water/swim shoes; the srcCat is the shop's useless 'Home' crumb so the name is the only evidence"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-hust-claire-hust-claire-baldur-body","status":"ok"}
+{"id":"p-hust-claire-hust-claire-baloo-flor","status":"ok"}
+{"id":"p-hust-claire-hust-claire-baloo-hearts-puff-body","name":"Hust&Claire Baloo Hearts Puff Body","status":"issue","issues":[{"kind":"duplicate","severity":"med","field":"id","current":"p-hust-claire-hust-claire-baloo-hearts-puff-body","suggested":"merge target for ean-5711136646646","why":"the Guttelus row ean-5711136646646 is the same body; alias it here so both shops' prices land on one product"}]}
+{"id":"p-hust-claire-hust-claire-baloo-omslag-strong-man-body","status":"ok"}
+{"id":"p-hust-claire-hust-claire-baloo-playing-body","status":"ok"}
+{"id":"p-hust-claire-hust-claire-body","status":"ok"}
+{"id":"p-hust-claire-hust-claire-body-bambus","status":"ok"}
+{"id":"p-hust-claire-hust-claire-body-m-krage","status":"ok"}
+{"id":"p-hust-claire-hust-claire-bukse","status":"ok"}
+{"id":"p-hust-claire-hust-claire-bukse-bambus","status":"ok"}
+{"id":"p-hust-claire-hust-claire-bukser","status":"ok"}
+{"id":"p-hust-claire-hust-claire-duri-ull-strikket-kjole","name":"Hust&Claire Duri Ull Strikket Kjole","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Dresses & skirts","why":"'Kjole' = dress; 'strikket' (knitted) hijacked the type"}],"fix":{"patch":{"facets":{"type":"Dresses & skirts"}}}}
+{"id":"p-hust-claire-hust-claire-gaby-bukse","status":"ok"}
+{"id":"p-hust-claire-hust-claire-galon-bukse","status":"ok"}
+{"id":"p-hust-claire-hust-claire-heldrakt-bambus","status":"ok"}
+{"id":"p-hust-claire-hust-claire-joe-sweat-denim-bukse","name":"Hust&Claire Joe Sweat Denim Bukse","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Trousers","why":"'Bukse' = trousers; 'Sweat' in the style name matched the knitwear rule"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"p-hust-claire-hust-claire-joggebukse","status":"ok"}
+{"id":"p-hust-claire-hust-claire-kjole","status":"ok"}
+{"id":"p-hust-claire-hust-claire-laki-longs","name":"Hust&Claire Laki Longs","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Longs' are long johns; sibling 'Longs' rows in this shard are typed Trousers"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"p-hust-claire-hust-claire-leggings","status":"ok"}
+{"id":"p-hust-claire-hust-claire-lisa-knit-rib-longs","name":"Hust&Claire Lisa Knit Rib Longs","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Longs' are long johns; sibling 'Longs' rows in this shard are typed Trousers"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"p-hust-claire-hust-claire-longsleeve","name":"Hust&Claire Longsleeve","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"T-shirts & tops","why":"'Longsleeve' states the garment"}],"fix":{"patch":{"facets":{"type":"T-shirts & tops"}}}}
+{"id":"p-hust-claire-hust-claire-overall","status":"ok"}
+{"id":"p-hust-claire-hust-claire-pants","status":"ok"}
+{"id":"p-hust-claire-hust-claire-pledd","name":"Hust&Claire Pledd","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"'Pledd' is a blanket — an interior textile, not clothing; it rode in on the shop's clothing feed"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"p-hust-claire-hust-claire-shorts","status":"ok"}
+{"id":"p-hust-claire-hust-claire-sokker-bambus","status":"ok"}
+{"id":"p-hust-claire-hust-claire-strikket-genser","status":"ok"}
+{"id":"p-hust-claire-hust-claire-svommebriller","name":"Hust&Claire Svømmebriller","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Sport","why":"'Svømmebriller' are swim goggles — swimming equipment, not clothing or a clothing accessory"}],"fix":{"patch":{"cat":"Sport","icon":"dumbbell"}}}
+{"id":"p-hust-claire-hust-claire-svommebrilller","name":"Hust&Claire Svømmebrilller","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"p-hust-claire-hust-claire-svommebrilller","suggested":"p-hust-claire-hust-claire-svommebriller","why":"same product, same shop, same price — this row only exists because the shop misspelled 'Svømmebrilller' (three l's), so slugId minted a second product"},{"kind":"name","severity":"low","field":"name","current":"Hust&Claire Svømmebrilller","suggested":"Hust&Claire Svømmebriller","why":"typo in the shop's title"}],"fix":{"patch":{"hidden":1}}}
+{"id":"p-hust-claire-hust-claire-t-skjorte","status":"ok"}
+{"id":"p-hust-claire-hust-claire-tammy-big-leo-bukse","status":"ok"}
+{"id":"p-hust-claire-hust-claire-troye","status":"ok"}
+{"id":"p-hust-claire-hustclaire-dresses","name":"HustClaire Dresses","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Dresses & skirts","why":"'Dresses' states the garment"}],"fix":{"patch":{"facets":{"type":"Dresses & skirts"}}}}
+{"id":"p-hust-claire-hustclaire-pants","status":"ok"}
+{"id":"p-hust-claire-hustclaire-shirt","status":"ok"}
+{"id":"ean-5713438732980","name":"Huttelihut - Balaclava Kaninører Bomullsfleece Windward Blue - 48cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear; 'Balaclava' is both the name and the whole srcCat"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5713438733871","name":"Huttelihut - Balaclava med Ører Bomullsribb Deauville Mauve - 44cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear; 'Balaclava' is both the name and the whole srcCat"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5713438485763","name":"Huttelihut - Balaclava Ull Alpakka Pompoms Medium Grey Melange - 48cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear; 'Balaclava' is both the name and the whole srcCat"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5713438486913","name":"Huttelihut - Balaclava Ull Ører Burlwood - 48cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear; 'Balaclava' is both the name and the whole srcCat"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5714999644392","name":"Huttelihut - Balaclava Ullfleece Alpakkadusk Snow White - 48cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear; 'Balaclava' is both the name and the whole srcCat"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5713438485480","name":"Huttelihut - Balaclava Ullfleece Kaninører Sand Melange - 48cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear; 'Balaclava' is both the name and the whole srcCat"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5713438511196","status":"ok"}
+{"id":"ean-5713438492419","name":"Huttelihut - Lue Strikket Ull Overture - 52cm","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Knitwear & hoodies","suggested":"Accessories","why":"'Lue' is a beanie (srcCat 'Lue', sized 52cm head circumference); 'Strikket' matched the knitwear rule"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5713438736483","name":"Huttelihut - Solhatt Bucket Hat Muslin Pale Mauve - 50cm","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Solhatt'/'Bucket Hat' is headwear"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-huttelihut-huttelihut-beanie-wool-knit","status":"ok"}
+{"id":"p-huttelihut-huttelihut-body-ls-rib","status":"ok"}
+{"id":"p-huttelihut-huttelihut-body-ss-rib","status":"ok"}
+{"id":"p-huttelihut-huttelihut-bonnet-rib","name":"Huttelihut Bonnet Rib","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a bonnet is headwear"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-huttelihut-huttelihut-dress-ls-tulle","status":"ok"}
+{"id":"p-huttelihut-huttelihut-hat-knit-alpaca-pompom","name":"Huttelihut Hat Knit Alpaca Pompom","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Hat' states the garment"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-huttelihut-huttelihut-hat-wool-knit-windstop","name":"Huttelihut Hat Wool Knit Windstop","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Hat' states the garment"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-huttelihut-huttelihut-hatt-ull-med-velour-lining","status":"ok"}
+{"id":"p-huttelihut-huttelihut-leggings-rib","status":"ok"}
+{"id":"p-huttelihut-huttelihut-neck-warmer-wool-knit","name":"Huttelihut Neck Warmer Wool Knit","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a neck warmer is an accessory, not a garment"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-huttelihut-huttelihut-pants-muslin","status":"ok"}
+{"id":"p-huttelihut-huttelihut-playsuit-ss-muslin","status":"ok"}
+{"id":"p-huttelihut-huttelihut-tofler-ull","name":"Huttelihut Tøfler Ull","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Tøfler' = slippers, i.e. footwear; the srcCat is the shop's useless 'Home' crumb"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-huxbaby-huxbaby-cherry-bow-joggebukse","status":"ok"}
+{"id":"p-huxbaby-huxbaby-collegiate-huxette-jakke","status":"ok"}
+{"id":"p-huxbaby-huxbaby-collegiate-patches-genser","status":"ok"}
+{"id":"p-huxbaby-huxbaby-collegieate-huxette-cord-caps","name":"HuxBaby Collegieate Huxette Cord Caps","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"HuxBaby Collegieate Huxette Cord Caps","suggested":"HuxBaby Collegiate Huxette Cord Caps","why":"'Collegieate' is a typo in the shop's title; the sibling rows spell it 'Collegiate'"}],"fix":{"patch":{"name":"HuxBaby Collegiate Huxette Cord Caps"}}}
+{"id":"p-huxbaby-huxbaby-dreamy-denim-hearts-denimkjole","name":"HuxBaby Dreamy Denim Hearts Denimkjole","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Dresses & skirts","why":"'Denimkjole' = denim dress"}],"fix":{"patch":{"facets":{"type":"Dresses & skirts"}}}}
+{"id":"p-huxbaby-huxbaby-dreamy-denim-snekkebukse","name":"HuxBaby Dreamy Denim Snekkebukse","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Snekkebukse' = dungarees/bib trousers"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"p-huxbaby-huxbaby-furry-huxbear-cobalt-genser","status":"ok"}
+{"id":"p-huxbaby-huxbaby-furry-huxbear-cobalt-joggebukse","status":"ok"}
+{"id":"ean-7024342608970","name":"Høibo - Pensko Junior Sort - 20","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Pensko' = dress shoes, srcCat is literally 'Pensko' and the size is 20 (EU shoe size)"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"ean-7023242570011","name":"Høibo - Pensko Liam Sort - 25","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Pensko' = dress shoes, srcCat is literally 'Pensko'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"ean-7024341981647","name":"Høibo- Bunadsko Setesdal II - 22","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Bunadsko' = traditional-costume shoes, srcCat 'Pensko'"},{"kind":"name","severity":"low","field":"name","current":"Høibo- Bunadsko Setesdal II - 22","suggested":"Høibo - Bunadsko Setesdal II - 22","why":"missing space after the brand, unlike every sibling row"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints","name":"Høibo - Bunadsko Setesdal II - 22"}}}
+{"id":"p-rusta-home-handkle-ellen","name":"Håndkle Ellen","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"'Håndkle' = towel; srcCat 'Interiør og tekstil > Bad > Badehåndklær' says bathroom textile outright"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"p-andre-merkevarer-harboyle","name":"Hårbøyle","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"ANDRE MERKEVARER","suggested":null,"why":"'ANDRE MERKEVARER' means 'other brands' — a shop placeholder, not a brand, and it becomes a brand filter option"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Hårbøyle' = hair band/headband"}],"fix":{"patch":{"brand":null,"facets":{"type":"Accessories"}}}}
+{"id":"p-kids-dream-store-ice-princess-drakt-dress-up","name":"Ice Princess drakt dress up","status":"issue","issues":[{"kind":"brand","severity":"med","field":"brand","current":"Kids Dream Store","suggested":null,"why":"that is the shop (offers come from Kidsdreamstore), not the product's brand"}],"fix":{"patch":{"brand":null}}}
+{"id":"p-icebug-icebug-piggsko-svart-f13092-9","name":"Icebug Piggsko Svart F13092-9","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Piggsko' = studded shoes; srcCat 'Herre / Støvletter / Piggsko' is footwear all the way down"},{"kind":"name","severity":"low","field":"name","current":"Icebug Piggsko Svart F13092-9","suggested":"Icebug Piggsko Svart","why":"'F13092-9' is the shop's SKU"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints","name":"Icebug Piggsko Svart"}}}
+{"id":"ean-7310710315176","name":"IceBug Pytho6 BuGrip Løpesko Herre 45","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'Løpesko' = running shoes, size 45; no srcCat, so the name is the only evidence and it is unambiguous"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints"}}}
+{"id":"p-tretorn-icon-rain-coat-incense","name":"Icon Rain Coat Incense","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Rain Coat', srcCat 'Regnjakker og Regnkapper'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"p-casall-iconic-printed-7-8-haze-dark-grey","status":"ok"}
+{"id":"p-champion-icons-beanie-c-logo","status":"ok"}
+{"id":"p-champion-icons-crewneck-t-shirt-contrast-logo","status":"ok"}
+{"id":"p-lundhags-idu-light-ms-dark-agave","name":"Idu Light Ms Dark Agave","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat leaf is 'Vester' (gilets), which this shard types as Jackets elsewhere"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-7031582576587","status":"ok"}
+{"id":"p-rab-incline-light-shorts","name":"Incline Light Shorts","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"Trousers","suggested":"Shorts","why":"name says Shorts and the srcCat leaf is 'Shorts'; the parent crumb 'Bukser, shorts og skjørt' won instead"}],"fix":{"patch":{"facets":{"type":"Shorts"}}}}
+{"id":"p-infra-red-classic-high-voltage-hair-dye","name":"Infra Red Classic High Voltage Hair Dye","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Beauty","why":"hair dye is a cosmetic; Outland's whole-site 'Klær' crumb put it in clothing"},{"kind":"brand","severity":"low","field":"brand","current":"Unspecified","suggested":null,"why":"'Unspecified' is a placeholder that shows up as a brand filter option"}],"fix":{"patch":{"cat":"Beauty","icon":"sparkles","brand":null}}}
+{"id":"p-bergans-inner-light-boxer-men","status":"ok"}
+{"id":"ean-7031582512509","name":"Inner:Pure Merino Half Zip Men","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"ean-7031582512509","suggested":"p-bergans-inner-pure-merino-half-zip-men","why":"identical product name and price (kr 999) from Bergans' own shop and Intersport, split into two rows because one arrived with an EAN and one without — exactly the comparison a shopper came for"}],"fix":{"alias":{"ean":"7031582512509","product_id":"p-bergans-inner-pure-merino-half-zip-men"}}}
+{"id":"p-bergans-inner-pure-merino-half-zip-men","name":"Inner:Pure Merino Half Zip Men","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"p-bergans-inner-pure-merino-half-zip-men","suggested":"merge target for ean-7031582512509","why":"same product as the Bergans EAN row; alias that EAN here to join the two offers"}]}
+{"id":"ean-7031582353058","name":"Inner:Pure W Half Zip","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Underwear & nightwear","why":"Inner:Pure is a merino base layer; the men's row in this shard is typed Underwear & nightwear"}],"fix":{"patch":{"facets":{"type":"Underwear & nightwear"}}}}
+{"id":"ean-7031582395522","status":"ok"}
+{"id":"p-harkila-instinct-l-s-t-shirt-women-willow-green","status":"ok"}
+{"id":"p-peak-performance-insulated-vest-herre","status":"ok"}
+{"id":"p-isbjorn-isbjorn-frost-light-weight-jacket-petrol","status":"ok"}
+{"id":"p-twentyfour-isbre-lang-parkas-blekkbla","status":"ok"}
+{"id":"p-ivanhoe-of-sweden-ivanhoe-w-s-beata-vest-light-navy","status":"ok"}
+{"id":"ean-5715828953456","status":"ok"}
+{"id":"ean-5715316645917","status":"ok"}
+{"id":"ean-5715733725797","status":"ok"}
+{"id":"ean-5715715765858","status":"ok"}
+{"id":"ean-5715725667661","status":"ok"}
+{"id":"ean-5715505545394","status":"ok"}
+{"id":"ean-5715717745520","status":"ok"}
+{"id":"ean-5715507723165","status":"ok"}
+{"id":"ean-5715319151361","status":"ok"}
+{"id":"ean-5715874985241","status":"ok"}
+{"id":"ean-5715869445170","name":"Jack & Jones- Linshorts Tjaiden Dark Navy - 128","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"Jack & Jones- Linshorts Tjaiden Dark Navy - 128","suggested":"Jack & Jones - Linshorts Tjaiden Dark Navy - 128","why":"missing space after the brand, unlike every sibling Jack & Jones row"}],"fix":{"patch":{"name":"Jack & Jones - Linshorts Tjaiden Dark Navy - 128"}}}
+{"id":"p-jack-jones-jack-jones-solaris-bukse","status":"ok"}
+{"id":"ean-7325708512840","name":"Jacquard Herringbone Håndkle 30x50 cm, Faded Brick","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Home","why":"a 30x50 cm 'Håndkle' (towel); srcCat 'Tekstil & Tepper > Baderomtekstiler > Håndklær & Badelaken' is unambiguous bathroom textile"}],"fix":{"patch":{"cat":"Home","icon":"lamp"}}}
+{"id":"p-jana-softline-jana-softline-korte-damestovletter-svart-8-25366-45","name":"Jana Softline Korte damestøvletter Svart 8-25366-45","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Shoes","why":"'damestøvletter' = women's ankle boots; srcCat 'Dame / Støvletter / Komfortstøvletter'"},{"kind":"name","severity":"low","field":"name","current":"Jana Softline Korte damestøvletter Svart 8-25366-45","suggested":"Korte damestøvletter Svart","why":"brand repeated inside the name plus the shop SKU '8-25366-45'"}],"fix":{"patch":{"cat":"Shoes","icon":"footprints","name":"Korte damestøvletter Svart"}}}
+{"id":"p-janus-janus-afterski-ulltroye-dame","status":"ok"}
+{"id":"p-janus-janus-ullsokker-3-pk-unisex","name":"Janus ullsokker 3-pk unisex","status":"issue","issues":[{"kind":"facets","severity":"med","field":"facets.audience","current":"Women","suggested":null,"why":"the name says 'unisex'; the value came from Obs' 'Ullsokker dame' shelf, so the filter hides it from men"}],"fix":{"patch":{"facets":{"audience":null}}}}
+{"id":"p-browning-javelin-pant-green","status":"ok"}
+{"id":"ean-7391998547756","name":"Jeansjakke med mønster","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Jeansjakke' = denim jacket; srcCat 'Dame > Jakker & kåper > Jeansjakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-7391998556307","status":"ok"}
+{"id":"ean-7333569191562","status":"ok"}
+{"id":"ean-5715346153451","name":"Joha - Balaclava i Ull og Silke Dusty Blue - 1-2 år (50cm)","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear; srcCat is 'Balaclava'"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-5715346194713","status":"ok"}
+{"id":"ean-5703059618244","status":"ok"}
+{"id":"ean-5715346296486","status":"ok"}
+{"id":"ean-5715346242278","status":"ok"}
+{"id":"ean-5715346168660","status":"ok"}
+{"id":"ean-5715346266700","name":"Joha - Body i Ull Snøfnugg Beige - 70","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with ean-5715346266762","why":"same 'Body i Ull Snøfnugg' in size 70, only the colourway differs"}],"fix":{"group":{"head":"ean-5715346266700","members":["ean-5715346266762"],"axis":"color"}}}
+{"id":"ean-5715346266762","name":"Joha - Body i Ull Snøfnugg Rosa - 70","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of ean-5715346266700","why":"colour variant of the same Snøfnugg body, size 70"}]}
+{"id":"ean-5715346239445","status":"ok"}
+{"id":"ean-5715346147795","status":"ok"}
+{"id":"ean-5715346248768","status":"ok"}
+{"id":"ean-5715346054734","status":"ok"}
+{"id":"ean-5715346238851","status":"ok"}
+{"id":"ean-5715346147238","status":"ok"}
+{"id":"ean-5715346298169","status":"ok"}
+{"id":"ean-5703059165021","name":"Joha - Heldress i Ull Basic Marine - 50","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with ean-5703059361027","why":"same 'Heldress i Ull Basic' in size 50 at the same price, only the colourway differs"}],"fix":{"group":{"head":"ean-5703059165021","members":["ean-5703059361027"],"axis":"color"}}}
+{"id":"ean-5703059361027","name":"Joha - Heldress i Ull Basic Prime Rose - 50","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of ean-5703059165021","why":"colour variant of the same Heldress Basic, size 50"}]}
+{"id":"ean-5715346241271","status":"ok"}
+{"id":"ean-5715346238578","status":"ok"}
+{"id":"ean-5715346271896","status":"ok"}
+{"id":"ean-5715346057926","status":"ok"}
+{"id":"ean-5715346245309","status":"ok"}
+{"id":"ean-5705492153528","status":"ok"}
+{"id":"ean-5715346153734","status":"ok"}
+{"id":"p-joha-joha-balaclava","name":"Joha Balaclava","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a balaclava is headwear"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-joha-joha-body","status":"ok"}
+{"id":"p-joha-joha-body-omslag","status":"ok"}
+{"id":"p-joha-joha-body-omslag-ull-bambus","status":"ok"}
+{"id":"p-joha-joha-body-ull","status":"ok"}
+{"id":"p-joha-joha-body-ull-bambus","status":"ok"}
+{"id":"p-joha-joha-body-w-side-closing","status":"ok"}
+{"id":"p-joha-joha-buff","name":"Joha Buff","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a buff/neck tube is an accessory"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"p-joha-joha-cardigan-ull","status":"ok"}
+{"id":"p-joha-joha-jumpsuit-m-fot","status":"ok"}
+{"id":"p-joha-joha-leggings","status":"ok"}
+{"id":"p-joha-joha-leggings-med-fot-ull-bambus","status":"ok"}
+{"id":"p-joha-joha-leggings-med-fot-ull-silke","status":"ok"}
+{"id":"p-joha-joha-leggings-ull","status":"ok"}
+{"id":"p-joha-joha-leggings-ull-bambus","status":"ok"}
+{"id":"p-joha-joha-leggings-ull-silke","status":"ok"}
+{"id":"p-joha-joha-lue","status":"ok"}
+{"id":"p-joha-joha-nattkjole","name":"Joha Nattkjole","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Underwear & nightwear","why":"'Nattkjole' = nightdress"}],"fix":{"patch":{"facets":{"type":"Underwear & nightwear"}}}}
+{"id":"p-joha-joha-overall","status":"ok"}
+{"id":"p-joha-joha-overall-ull-bambus","status":"ok"}
+{"id":"p-joha-joha-overall-ull-silke","status":"ok"}
+{"id":"p-joha-joha-pinafore-kjole","status":"ok"}
+{"id":"p-joha-joha-shorts","status":"ok"}
+{"id":"p-joha-joha-siklesmekke","name":"Joha Siklesmekke","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Baby","why":"'Siklesmekke' = dribble bib — baby gear rather than clothing; the shop's srcCat is the useless 'Home' crumb"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"p-joha-joha-smekke","name":"Joha Smekke","status":"issue","issues":[{"kind":"category","severity":"med","field":"cat","current":"Fashion","suggested":"Baby","why":"'Smekke' = bib — baby gear rather than clothing"}],"fix":{"patch":{"cat":"Baby","icon":"baby"}}}
+{"id":"p-joha-joha-sommer-pyjamas","name":"Joha Sommer Pyjamas","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Underwear & nightwear","why":"pyjamas are nightwear"}],"fix":{"patch":{"facets":{"type":"Underwear & nightwear"}}}}
+{"id":"p-joha-joha-summer-overall","status":"ok"}
+{"id":"p-joha-joha-summer-romper","status":"ok"}
+{"id":"p-joha-joha-truser","name":"Joha Truser","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Underwear & nightwear","why":"'Truser' = briefs"}],"fix":{"patch":{"facets":{"type":"Underwear & nightwear"}}}}
+{"id":"p-joha-joha-troye-ull","status":"ok"}
+{"id":"p-joha-joha-troye-ull-bambus","status":"ok"}
+{"id":"p-joha-joha-troye-ull-silke","status":"ok"}
+{"id":"ean-7048652993618","status":"ok"}
+{"id":"ean-7048652830821","name":"Johaug Dame Elevate Wool Half Zip S","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Knitwear & hoodies","why":"a wool half-zip top; sibling Johaug half-zip rows in this shard are typed Knitwear & hoodies"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies"}}}}
+{"id":"ean-7048652993816","status":"ok"}
+{"id":"ean-7048653052031","status":"ok"}
+{"id":"p-johaug-johaug-hair-elastic-8pk","status":"ok"}
+{"id":"ean-7048653260177","status":"ok"}
+{"id":"p-helly-hansen-jr-legendary-pant","name":"JR LEGENDARY PANT","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"JR LEGENDARY PANT","suggested":"Jr Legendary Pant","why":"ALL-CAPS feed title"}],"fix":{"patch":{"name":"Jr Legendary Pant"}}}
+{"id":"p-peak-performance-jr-original-hood","name":"Jr Original Hood","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"T-shirts & tops","suggested":"Knitwear & hoodies","why":"a 'Hood' from srcCat 'Gensere og t-skjorter > Gensere' is a hoodie, not a tee"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies"}}}}
+{"id":"ean-5059118922655","status":"ok"}
+{"id":"ean-5059118922594","status":"ok"}
+{"id":"ean-5063127203179","status":"ok"}
+{"id":"ean-7391998244983","status":"ok"}
+{"id":"ean-7391998420325","status":"ok"}
+{"id":"ean-7391998646992","status":"ok"}
+{"id":"ean-7031582537991","status":"ok"}
+{"id":"p-just-chilling-black-tote-bag","name":"Just Chilling Black Tote Bag","status":"issue","issues":[{"kind":"brand","severity":"low","field":"brand","current":"Unspecified","suggested":null,"why":"'Unspecified' is a placeholder that shows up as a brand filter option"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"a tote bag is a bag/accessory"}],"fix":{"patch":{"brand":null,"facets":{"type":"Accessories"}}}}
+{"id":"p-harkila-kamko-windstopper-fleece-jacket-brown-red","status":"ok"}
+{"id":"p-rab-kangri-gtx-skallbukse-herre","status":"ok"}
+{"id":"p-kari-traa-kari-crew-genser-dame","name":"Kari Crew genser dame","status":"issue","issues":[{"kind":"facets","severity":"high","field":"facets.type","current":"T-shirts & tops","suggested":"Knitwear & hoodies","why":"'genser' and the srcCat leaf 'Gensere' both say sweater; 'Crew' matched the tops rule"}],"fix":{"patch":{"facets":{"type":"Knitwear & hoodies"}}}}
+{"id":"p-kari-traa-kari-fleece-headband","name":"KARI FLEECE HEADBAND","status":"issue","issues":[{"kind":"name","severity":"low","field":"name","current":"KARI FLEECE HEADBAND","suggested":"Kari Fleece Headband","why":"ALL-CAPS feed title"}],"fix":{"patch":{"name":"Kari Fleece Headband"}}}
+{"id":"p-whistler-kate-w-cft-oatmeal","name":"Kate W CFT+ Oatmeal","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with p-whistler-kate-w-cft-pine-bark","why":"same Whistler 'Kate W CFT+' jacket at the same price, only the colourway differs"},{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"srcCat 'Dun- og isolasjonsjakker' says insulated jacket"}],"fix":{"group":{"head":"p-whistler-kate-w-cft-oatmeal","members":["p-whistler-kate-w-cft-pine-bark"],"axis":"color"}}}
+{"id":"p-whistler-kate-w-cft-pine-bark","name":"Kate W CFT+ Pine Bark","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of p-whistler-kate-w-cft-oatmeal","why":"colour variant of the same Kate W CFT+ jacket"}]}
+{"id":"ean-7072394973829","name":"Kattnakken - Bobleregnjakke Sludd Barn Slåtterøy - 1-2 år","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Jackets","why":"'Bobleregnjakke' = puffer rain jacket, srcCat 'Jakker'"}],"fix":{"patch":{"facets":{"type":"Jackets"}}}}
+{"id":"ean-7072394957263","status":"ok"}
+{"id":"ean-7072394942771","name":"Kattnakken - Regnbukse med sele Kattesvart - 86","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Trousers","why":"'Regnbukse' = rain trousers"}],"fix":{"patch":{"facets":{"type":"Trousers"}}}}
+{"id":"ean-7072394939726","status":"ok"}
+{"id":"ean-7072394956334","status":"ok"}
+{"id":"ean-7072394975625","name":"Kattnakken - Regnsett Plask Supergrønn - 86","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with ean-7072394975298","why":"same 'Regnsett Plask' in size 86 at the same price, only the colourway differs"}],"fix":{"group":{"head":"ean-7072394975625","members":["ean-7072394975298"],"axis":"color"}}}
+{"id":"ean-7072394974970","status":"ok"}
+{"id":"ean-7072394975298","name":"Kattnakken - Regnsett Plask Viola - 86","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of ean-7072394975625","why":"colour variant of the same Regnsett Plask, size 86"}]}
+{"id":"ean-7072394979333","status":"ok"}
+{"id":"ean-7072394958796","name":"Kattnakken - Regnvotter Månefjell - 0-1 år","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Regnvotter' = rain mittens, an accessory"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7072394895589","name":"Kattnakken - Sydvest Hav Dueblå - 1-3 år","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Sydvest' is a rain hat (headwear), not a garment"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7072394892199","name":"Kattnakken - Sydvest Hav Orange Love - 1-3 år","status":"issue","issues":[{"kind":"facets","severity":"low","field":"facets.type","current":null,"suggested":"Accessories","why":"'Sydvest' is a rain hat (headwear), not a garment"}],"fix":{"patch":{"facets":{"type":"Accessories"}}}}
+{"id":"ean-7072394969617","status":"ok"}
+{"id":"ean-7072394968801","status":"ok"}
+{"id":"p-fjallraven-keb-trousers-m-reg","name":"Keb Trousers M Reg","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"p-fjallraven-keb-trousers-m-reg","suggested":"p-fjallraven-keb-trousers-turbukse-herre","why":"same Fjällräven Keb trousers at the same kr 2 699 from Sport 1 and Intersport; the two shops name it differently so slugId minted two products and neither PDP shows a comparison. No EAN on either row, so this needs a manual merge, not an alias"}]}
+{"id":"p-fjallraven-keb-trousers-turbukse-herre","name":"Keb Trousers turbukse herre","status":"issue","issues":[{"kind":"duplicate","severity":"high","field":"id","current":"p-fjallraven-keb-trousers-turbukse-herre","suggested":"p-fjallraven-keb-trousers-m-reg","why":"same Fjällräven Keb trousers as the Sport 1 row, split by naming; neither row has an EAN"}]}
+{"id":"p-swazi-keiler-jacket-euro-green","status":"ok"}
+{"id":"p-kellen-kellen-garden-hagehanske","name":"Kellen Garden hagehanske","status":"issue","issues":[{"kind":"category","severity":"high","field":"cat","current":"Fashion","suggested":"Garden","why":"'hagehanske' = garden glove; srcCat 'Hage og utemiljø > Hageredskaper > Arbeidshansker' is garden tools, not clothing"}],"fix":{"patch":{"cat":"Garden","icon":"flower"}}}
+{"id":"p-firefly-ken-iii-badeshorts-herre","status":"ok"}
+{"id":"p-rab-khroma-volition-skallbukse-dame","status":"ok"}
+{"id":"ean-3760216366365","status":"ok"}
+{"id":"ean-3760216366044","name":"Ki ET LA - Solbriller Uknuselige Wazz Black - 1-2 år","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"colour family with ean-3760216367904","why":"same 'Wazz' sunglasses in the same age size at the same price, only the colourway differs"}],"fix":{"group":{"head":"ean-3760216366044","members":["ean-3760216367904"],"axis":"color"}}}
+{"id":"ean-3760216367904","name":"Ki ET LA - Solbriller Uknuselige Wazz Denim Blue - 1-2 år","status":"issue","issues":[{"kind":"variant","severity":"low","field":"family","current":null,"suggested":"member of ean-3760216366044","why":"colour variant of the same Wazz sunglasses"}]}
+{"id":"p-ulvang-kids-barnehagepakke-3-pack-stellar-mix","status":"ok"}
+{"id":"p-icebreaker-kids-hike-light-light-crew-macro-stripe-jet-jet-hthr-chili","status":"ok"}
+{"id":"_summary","shard":"Fashion-03","checked":300,"ok":184,"issues":116,"by_kind":{"brand":26,"category":19,"facets":50,"variant":18,"duplicate":7,"name":10},"high":30,"rule_gaps":["facetrules.js never derives `size` for Fashion even though ~200 rows end in an explicit size token ('- 104', '- 56', '- 24-27', '- 9-12 mnd', '- 48cm', '- Onesize') — 4 of 300 rows carry a size facet, so the Size filter is effectively dead on this shard","`audience` is derived on ~15% of rows although nearly the whole shard is children's wear (Guttelus / Junior Barneklær / Newbie, sizes 50-134 cm and '0-1 år'); a body/heldress in cm sizes should imply audience Kids","Norwegian '-dress' compounds mean suit/overall, not dress: 'Joggedress', 'Heldress', 'Vinterdress', 'Ulldress', 'Regndress' — 'Joggedress' currently derives type 'Dresses & skirts'","headwear vocabulary is missing from the Fashion type rules: 'balaclava', 'lue' (beanie, currently derives Knitwear via 'strikket'), 'solhatt', 'sydvest', 'bonnet', 'hat', 'neck warmer', 'buff', 'votter', 'hårbøyle' all fall through to no type or to Knitwear","the knitwear rule outranks the garment noun: 'Strikket Kjole' → Knitwear not Dresses, 'Sweat Denim Bukse' → Knitwear not Trousers, 'Shorts ... Loose Sweat' → Knitwear not Shorts; the garment noun at the end of the name should win","footwear nouns in a clothing feed are not caught: 'sandaler', 'flip flops', 'badesko', 'tøfler', 'pensko', 'bunadsko', 'piggsko', 'løpesko', 'støvletter' all stayed in Fashion — CAT_RULES should let a shoe noun in the NAME override a clothing breadcrumb","the same product from two shops splits into two `p-` slugs when the shops name it differently (Keb Trousers M Reg vs Keb Trousers turbukse herre; Inner:Pure Merino Half Zip Men as both ean-* and p-*) — slugId matches on the full name, so no-EAN shops never merge"],"notes":"Broadly healthy: 300 rows, all auto-promoted, and the Fashion cat is right for ~94% of them. The real damage is concentrated in three places — (1) 9 footwear rows and 6 outright non-clothing rows (2 bath towels, a dog vest, a blanket, hair dye, garden gloves, 2 baby bibs, swim goggles) sitting in Fashion, (2) the type facet, where a knitwear/material keyword beats the actual garment noun, and (3) a large low-quality feed from Junior Barneklær (~70 rows) whose titles are brand + garment type with no model or colour ('Hust&Claire Bukse', 'Hust&Claire Bukser', 'Hust&Claire Pants', 'HustClaire Pants'), which both blocks any variant/duplicate matching and gave us one pure duplicate from a shop typo. Brand fragmentation is visible across shops for the same label (Hust and Claire / Hust & Claire / Hust&Claire; Hummel / Hummel Barn) and several ALL-CAPS shop brand strings (HELLY HANSEN, KARI TRAA, FJÄLLRÄVEN) — only the 'Hummel Barn' case is patched here since the others need a canonical-brand table rather than per-row fixes. Image coverage is roughly 55%, and every row's icon is the Fashion default 'shirt' including the towels and the dog vest."}
