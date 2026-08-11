@@ -6,6 +6,7 @@
     "test": "node build.js && node --test test/*.test.js",
     "test:e2e": "node build.js && playwright test",
     "test:crawlers": "node --test test/live-crawl.mjs",
+    "latency": "node tools/latency.mjs",
     "dev": "node build.js && wrangler dev --persist-to \"${TMPDIR:-/tmp}/pricy-wrangler-state\"",
     "deploy": "node build.js && wrangler deploy"
   },
