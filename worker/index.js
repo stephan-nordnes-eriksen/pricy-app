@@ -1199,7 +1199,26 @@ function listFilters(p) {
 // 85 ms of it. Next, in order: stored facet values + a SQL ORDER BY.
 // Retained heap is ~440 B/row against a 128 MB isolate (a row without the meta
 // blob is ~280 B, if 100k-row categories ever arrive).
-async function listIds(db, { node = null, limit = PAGE_MAX, offset = 0, sort = null, dir = 'asc', filters = null } = {}) {
+// Filterless list pages (mount prefetch, every sort click) recur identically
+// for every visitor and only change when the catalog version bumps — memoise
+// the whole listIds result per (query, ver), same pattern as catMeta. Filtered
+// queries pass through: fcounts are cross-filtered, so their results vary per
+// request (read-path-whats-left.md §0). A falsy ver (the request that just
+// seeded) bypasses the memo the same way it bypasses catMeta's.
+const listCache = new WeakMap(); // db → { ver, map }
+async function listIds(db, opts = {}) {
+  if (opts.filters || !opts.ver) return listIdsRaw(db, opts);
+  let lc = listCache.get(db);
+  if (lc?.ver !== opts.ver) listCache.set(db, lc = { ver: opts.ver, map: new Map() });
+  const key = [opts.node, opts.sort, opts.dir, opts.limit, opts.offset].join('|');
+  let val = lc.map.get(key);
+  if (!val) {
+    val = await listIdsRaw(db, opts);
+    if (lc.map.size < 64) lc.map.set(key, val); // ponytail: cap so an offset-walking crawler can't grow it unbounded
+  }
+  return val;
+}
+async function listIdsRaw(db, { node = null, limit = PAGE_MAX, offset = 0, sort = null, dir = 'asc', filters = null, ver = null } = {}) {
   const base = `json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')}`;
   // node= is one or more GPC codes (comma-joined, any level) or 'uncat'.
   // uncat = the NULL bucket; a brick code binds directly (expression index);
@@ -1258,17 +1277,20 @@ async function listIds(db, { node = null, limit = PAGE_MAX, offset = 0, sort = n
     const ord = sort
       ? `(${SQL_SORT[sort]} IS NULL OR ${SQL_SORT[sort]} = ''), ${SQL_SORT[sort]} ${dir === 'desc' ? 'DESC' : 'ASC'}, COUNT(o.product_id) DESC, p.rowid`
       : 'COUNT(o.product_id) DESC, p.rowid';
-    const [page, count, brandRows, pr] = await Promise.all([
+    // total comes from catMeta's histogram (meta.uncat / meta.products — the
+    // exact same WHERE), not a fourth COUNT(*) scan; catMeta is ver-memoised
+    // and the handler awaits it later in this same request anyway
+    const [page, meta, brandRows, pr] = await Promise.all([
       db.prepare(`SELECT p.id FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${w}
                   GROUP BY p.id ORDER BY ${ord} LIMIT ? OFFSET ?`).bind(limit, offset).all(),
-      db.prepare(`SELECT COUNT(*) AS n FROM products p WHERE ${w}`).first(),
+      catMeta(db, ver),
       node ? db.prepare(`SELECT json_extract(p.meta,'$.brand') AS b, COUNT(*) AS n FROM products p
                          WHERE ${w} AND json_extract(p.meta,'$.brand') IS NOT NULL AND json_extract(p.meta,'$.brand') != '' GROUP BY b`).all() : null,
       node ? db.prepare(`SELECT MIN(t.b) AS lo, MAX(t.b) AS hi FROM (SELECT ${BEST} AS b FROM products p
                          JOIN offers o ON o.product_id = p.id WHERE ${w} GROUP BY p.id) t`).first() : null,
     ]);
     return {
-      ids: page.results.map(r => r.id), total: count.n,
+      ids: page.results.map(r => r.id), total: node === 'uncat' ? meta.uncat : meta.products,
       brands: brandRows && brandRows.results.map(r => [r.b, r.n]).sort((a, b) => a[0].localeCompare(b[0])),
       prange: pr && pr.lo != null ? [pr.lo, pr.hi] : undefined,
     };
@@ -1984,6 +2006,17 @@ export default {
     // Query-based catalog: the SPA's lazy cache fetches slices from here.
     // Precedence ids > q > top=drop > list (node= or all heads).
     if (route === 'GET /api/products') {
+      // the ops bearer is the only way to see meta.hidden rows (see visible())
+      const denied = ingestAuth(request, env);
+      const ops = !denied;
+      // Anonymous responses are catalog-version-stable, and Worker responses
+      // are never edge-cached implicitly — the Cache API is the opt-in. Repeat
+      // queries (every visitor's mount prefetch) serve from the colo instead
+      // of re-running the D1 aggregates; ≤5 min stale, prices move hourly at
+      // best. Ops requests bypass both directions.
+      const cache = ops ? null : globalThis.caches?.default;
+      const hit = cache && await cache.match(request);
+      if (hit) return hit;
       const ver = await seedCatalog(db);
       const p = url.searchParams;
       const limit = Math.min(100, Math.max(1, Number(p.get('limit')) || 4));
@@ -1998,9 +2031,6 @@ export default {
         filters: listFilters(p),
       };
       let products, extra;
-      // the ops bearer is the only way to see meta.hidden rows (see visible())
-      const denied = ingestAuth(request, env);
-      const ops = !denied;
       if (p.get('hidden') === '1') {
         // enrichment listing (tools/enrich.mjs): auto-discovered rows awaiting
         // a hand-written worker/extra.json entry. Not used by the SPA — it is
@@ -2031,11 +2061,15 @@ export default {
         // actually shows; `total` (matching rows) and `fcounts` (the category's
         // facet histogram) come back as meta — neither is computable from the
         // partial cache the screen holds.
-        const slice = await listIds(db, { node: p.get('node'), ...page });
+        const slice = await listIds(db, { node: p.get('node'), ...page, ver });
         extra = { total: slice.total, fcounts: slice.fcounts || undefined, prange: slice.prange, brands: slice.brands || undefined, acounts: slice.acounts };
         products = await rowsFor(db, slice.ids, { expand: false });
       }
-      return json({ meta: { ...await catMeta(db, ver), ...extra }, products });
+      const res = json({ meta: { ...await catMeta(db, ver), ...extra }, products },
+        200, ops ? {} : { 'cache-control': 'public, max-age=0, s-maxage=300' });
+      // a put failure must not 500 the listing — the response is already built
+      if (cache) await cache.put(request, res.clone()).catch(() => {});
+      return res;
     }
 
     // 4d interim: the laptop crawler (tools/crawl.mjs) pushes ingest()-shaped

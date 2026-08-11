@@ -2195,6 +2195,32 @@ test('uncat SQL fast path: filterless sort pages in SQL with total/brands/prange
   assert.ok(!body.meta.prange || (body.meta.prange[0] <= body.meta.prange[1]), 'prange is [lo, hi]');
 });
 
+test('filterless list memo invalidates on ingest: a new row reaches the page and the total at once', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const req = admin(env);
+  const list = async () => (await (await call('/api/products?node=uncat&sort=updated&dir=desc')).json());
+  // warm the memo (first request seeds and returns no version, second caches)
+  await list();
+  const base = await list();
+  // a discovered row lands in uncat; the ver bump must evict the memoised page
+  await req('/api/ingest', 'POST', [{ product_id: 'ean-7099920000077', shop: 'Dyrebutikken', price: 149, name: 'Kattetunnel', brand: 'Acme' }]);
+  const after = await list();
+  assert.strictEqual(after.meta.total, base.meta.total + 1, 'total moves without waiting for a TTL');
+  assert.ok(after.products.some(p => p.id === 'ean-7099920000077'), 'freshest-sorted page serves the new row, not the memoised one');
+});
+
+test('anonymous product GETs carry the edge TTL, ops requests never do', async () => {
+  const DB = d1();
+  const env = { DB, INGEST_TOKEN: 'sekrit-token' };
+  const call = api(env);
+  const anon = await call('/api/products?node=uncat');
+  assert.strictEqual(anon.headers.get('cache-control'), 'public, max-age=0, s-maxage=300', 'anonymous listings are edge-cacheable');
+  const ops = await call('/api/products?node=uncat', { token: 'sekrit-token' });
+  assert.strictEqual(ops.headers.get('cache-control'), null, 'a bearer response (hidden rows visible) must never be cached');
+});
+
 test('seed re-upsert merges meta: runtime specs/facets survive a deploy, seed keys still win', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };
