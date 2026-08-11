@@ -10,5 +10,5 @@ tools/.gpc-en.json
 tools/.vapid-private.jwk
 tools/.vapid-public.txt
 tools/.latency-probe.json
-tools/latency.db
 tools/latency-report.html
+.DS_Store
