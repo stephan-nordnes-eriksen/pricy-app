@@ -110,6 +110,15 @@ Two Claude Design projects feed this repo:
   hold rows from an `ids=`/`top=drop` fetch. `ensureRoute` prefetches the
   screen's own default sort (`sort=best&dir=asc`) so the mount call is a
   FETCHED hit rather than a second 400-row fetch.
+  **Anonymous `/api/products` GETs are edge-cached** (2026-08-11): served
+  through `caches.default` with `s-maxage=300` (Worker responses are never
+  edge-cached implicitly), so repeat queries answer from the colo in ~60 ms
+  and a change can look stale for ≤5 min — cache-bust with `cb=` when
+  verifying. Ops bearer requests bypass the cache both ways. Filterless
+  `listIds` results are also memoised per (query, catalog version) in-isolate
+  (same WeakMap pattern as `catMeta`), and the SQL fast path's `total` is
+  catMeta's own histogram number, not a COUNT(*) scan. `tools/latency.mjs`
+  (manual, `npm run latency`) probes prod and graphs the trend.
   `/api/catalog.json` remains a full dump for ops/tools only — the SPA must
   never call it, and it is **bearer-gated on `INGEST_TOKEN`** (7.2 MB per
   hit at 14k rows); `tools/` send the token. Upstream is synced (2026-07-21): SignedHome "Biggest drops" ranks
