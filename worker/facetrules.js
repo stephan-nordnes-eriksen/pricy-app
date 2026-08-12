@@ -688,7 +688,7 @@ const RULES = {
 const NOT_INCL = /(?<!(?:\bmed|\bog|\bm|\bu|\binkl[\w.]*|\bincl[\w.]*|&|\+|\band|\bwith|\bw)[\s/])/.source;
 // Strong tier: words that MEAN accessory (the shop's own filing) plus nouns
 // that are accessories in every category (a deksel is never the product).
-const ACC_RE = new RegExp(NOT_INCL + String.raw`(?:\btilbehør|\baccessor|\bdeksel|skjermbeskytt|screen ?protector|panzerglass|\bhylster)|\breservedel|\bspare ?parts?\b|\breplacement\b`, 'i');
+const ACC_RE = new RegExp(NOT_INCL + String.raw`(?:\btilbehør|\baccessor|\bdeksel|skjermbeskytt|screen ?protector|panzerglass|\bhylster|\breservedel|\bspare ?parts?\b|\breplacement\b)`, 'i');
 // Fallback tier, consulted only when the category's own rules stay silent:
 // nouns that are usually an accessory but sometimes the product itself —
 // "Case of the Trampled Garden" is a Magic card (typed Trading cards by

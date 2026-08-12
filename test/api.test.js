@@ -909,6 +909,9 @@ test('facet values derive from the product name, per category', async () => {
     // med tilbehør", "Karnevalsdrakter & Tilbehør" are the real deal)
     [{ cat: 'Tools', name: 'DYSE 60° 110-145 BAR', srcCat: 'Verktøy > Høytrykkspyler tilbehør' }, { type: 'Accessories' }],
     [{ cat: 'Pets', name: 'VarioGate sett 2 Reservedeler' }, { type: 'Accessories' }],
+    // "med X = included, not is" applies to spare-parts wording too — a
+    // bundled mower is a mower (the lookbehind must scope the WHOLE alternation)
+    [{ cat: 'Garden', name: 'Gressklipper med reservedeler' }, { type: 'Lawn care' }],
     [{ cat: 'Office', name: 'Canon iSENSYS LBP122DW Laserskriver', srcCat: 'Skrivere og tilbehør > Laserskrivere' }, undefined],
     [{ cat: 'Toys', name: 'Romskip med tilbehør og belysning og lyd, 20cm' }, undefined],
     [{ cat: 'Toys', name: 'Spiderman maske', srcCat: 'Karnevalsdrakter & Tilbehør' }, undefined],
