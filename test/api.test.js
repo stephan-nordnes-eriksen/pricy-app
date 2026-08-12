@@ -217,6 +217,12 @@ test('magic link: with a SEND_EMAIL binding the link is emailed, not logged', as
   // a failing send surfaces as an error, not a silent ok
   const broken = api({ DB: d1(), SEND_EMAIL: { send: async () => { throw new Error('boom'); } } });
   assert.strictEqual((await broken('/api/auth/request', { method: 'POST', body: { email: 'kari.nordmann@example.no' } })).status, 502);
+
+  // unauthenticated endpoint that emails arbitrary addresses = rate-limited
+  const req = () => call('/api/auth/request', { method: 'POST', body: { email: 'kari.nordmann@example.no' } });
+  for (let i = 0; i < 5; i++) assert.strictEqual((await req()).status, 200, 'resends stay allowed');
+  assert.strictEqual((await req()).status, 429, 'a stranger cannot bomb an inbox');
+  assert.strictEqual((await call('/api/auth/request', { method: 'POST', body: { email: 'other@example.no' } })).status, 200, 'per-address, not global');
 });
 
 test('bad email is rejected on all auth endpoints', async () => {

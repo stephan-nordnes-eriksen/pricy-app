@@ -2235,6 +2235,12 @@ export default {
     if (route === 'POST /api/auth/request') {
       const email = await bodyEmail(request);
       if (!email) return json({ error: 'invalid email' }, 400);
+      // unauthenticated trust boundary: each request writes a row and (once
+      // SEND_EMAIL is live) emails the address — cap per address on live
+      // tokens so a stranger can't bomb an inbox. Resend stays within 5.
+      const { n } = await db.prepare('SELECT COUNT(*) AS n FROM login_tokens WHERE email = ? AND expires_at > ?')
+        .bind(email, Date.now()).first();
+      if (n >= 5) return json({ error: 'too many login links requested — try again later' }, 429);
       const token = newToken();
       await db.prepare('INSERT INTO login_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)')
         .bind(await sha(token), email, Date.now() + TOKEN_MINUTES * 60e3).run();
