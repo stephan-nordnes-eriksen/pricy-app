@@ -1686,6 +1686,7 @@ test('mcp oauth: register → authorize (login page) → code → token = workin
   assert.ok(client.client_id, 'registration must mint a client_id');
   assert.deepStrictEqual(client.grant_types, ['authorization_code', 'refresh_token'], 'requested grant types are echoed');
   assert.strictEqual((await post('/register', { redirect_uris: ['https://evil.example/cb'] })).status, 400, 'unknown callback hosts must be refused');
+  assert.strictEqual((await post('/register', { redirect_uris: ['http://localhost:6274/cb'] })).status, 400, 'localhost is dev-only (OAUTH_DEV), never live in prod');
 
   // authorize: GET serves the login form
   const verifier = 'test-verifier-abcdefghijklmnop';

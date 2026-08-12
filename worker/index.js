@@ -1759,9 +1759,11 @@ async function mcpTool(db, sid, name, a) {
 // reconnects), no scopes, no client table — redirect_uris are allowlisted
 // to known AI-client callbacks instead; extend the list per new client.
 const OAUTH_CODE_MINUTES = 5;
-const redirectAllowed = (u) =>
+const redirectAllowed = (u, env) =>
   ['https://claude.ai/api/mcp/auth_callback', 'https://claude.com/api/mcp/auth_callback'].includes(u)
-  || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u); // MCP inspector / local dev
+  // MCP inspector / local dev only — in prod a malicious local app could
+  // register and receive an auth code; set OAUTH_DEV=1 in wrangler dev
+  || (!!env?.OAUTH_DEV && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u));
 
 const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1828,13 +1830,13 @@ ${error ? `<p class="err">${esc(error)}</p>` : ''}
 </main></body></html>`, { status: error ? 401 : 200, headers: { 'content-type': 'text/html; charset=utf-8' } });
 }
 
-async function oauth(request, db, url) {
+async function oauth(request, db, url, env) {
   const route = request.method + ' ' + url.pathname;
 
   if (route === 'POST /register') {
     const body = await request.json().catch(() => ({}));
     const uris = Array.isArray(body.redirect_uris) ? body.redirect_uris : [];
-    if (!uris.length || !uris.every(redirectAllowed)) return json({ error: 'invalid_redirect_uri' }, 400);
+    if (!uris.length || !uris.every(u => redirectAllowed(u, env))) return json({ error: 'invalid_redirect_uri' }, 400);
     // no client table: the allowlist is the registration. client_id is opaque.
     return json({
       client_id: newToken(),
@@ -1851,7 +1853,7 @@ async function oauth(request, db, url) {
       ? Object.fromEntries(url.searchParams)
       : Object.fromEntries((await request.formData().catch(() => new FormData())).entries());
     // re-validated on POST too — the hidden fields are attacker-writable
-    if (!redirectAllowed(String(q.redirect_uri || ''))) return json({ error: 'invalid redirect_uri' }, 400);
+    if (!redirectAllowed(String(q.redirect_uri || ''), env)) return json({ error: 'invalid redirect_uri' }, 400);
     if (!q.code_challenge) return json({ error: 'code_challenge (PKCE S256) required' }, 400);
     if (request.method === 'GET') {
       if (q.response_type !== 'code' || (q.code_challenge_method || 'S256') !== 'S256') {
@@ -1977,7 +1979,7 @@ export default {
     }
     if (['/authorize', '/token', '/register'].includes(url.pathname)) {
       await ensureSchema(env.DB);
-      return oauth(request, env.DB, url);
+      return oauth(request, env.DB, url, env);
     }
     if (url.pathname.startsWith('/img/') && request.method === 'GET') {
       // onlyIf: browser revalidations (If-None-Match) come back body-less → 304
