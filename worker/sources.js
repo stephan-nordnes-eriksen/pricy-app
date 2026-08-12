@@ -310,7 +310,7 @@ export function breadcrumbCat(html, productName) {
   for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     let doc;
     try { doc = JSON.parse(body.trim()); } catch { continue; }
-    for (const n of [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])]) {
+    for (const n of [doc, ...(Array.isArray(doc) ? doc : []), ...(doc?.['@graph'] || [])]) {
       if (n?.['@type'] !== 'BreadcrumbList' || !Array.isArray(n.itemListElement)) continue;
       const names = n.itemListElement.map(i => i?.name ?? i?.item?.name).filter(n => typeof n === 'string' && n.trim());
       const path = crumbPath(names, productName);
@@ -357,7 +357,7 @@ function productOffer(html) {
   for (const [, body] of html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     let doc;
     try { doc = JSON.parse(body.trim()); } catch { continue; }
-    const top = [doc, ...(Array.isArray(doc) ? doc : []), ...(doc['@graph'] || [])];
+    const top = [doc, ...(Array.isArray(doc) ? doc : []), ...(doc?.['@graph'] || [])];
     // ProductGroup shops (KappAhl, Skomani, Maanesten) carry no offer of their
     // own — the price lives on a hasVariant entry, which inherits name/brand/
     // image/category from the group when it doesn't repeat them itself

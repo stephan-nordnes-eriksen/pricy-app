@@ -2331,6 +2331,24 @@ test('discover samples by default and only crawls in full when approved', async 
   } finally { globalThis.fetch = realFetch; }
 });
 
+// JSON.parse("null") succeeds, so a shop template emitting a literal-null
+// JSON-LD block on every page must not TypeError past the parse catch —
+// that scraped the whole shop as zero rows, indistinguishable from an outage
+test('a literal null JSON-LD block does not abort the page scrape', async () => {
+  const html = `<script type="application/ld+json">null</script>
+    <script type="application/ld+json">${JSON.stringify({
+    '@type': 'Product', name: 'Stol',
+    offers: { '@type': 'Offer', price: '1499', priceCurrency: 'NOK' },
+  })}</script>`;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(html);
+  try {
+    const [row] = await scrapeSource('Chilli', { urls: { stol: 'https://www.chilli.no/stol' } });
+    assert.strictEqual(row?.price, 1499, 'the real Product block after the null one still scrapes');
+  } finally { globalThis.fetch = realFetch; }
+  assert.strictEqual(breadcrumbCat('<script type="application/ld+json">null</script>', 'X'), null);
+});
+
 test('a self-referencing sitemapindex terminates instead of recursing forever', async () => {
   const realFetch = globalThis.fetch;
   let fetches = 0;
