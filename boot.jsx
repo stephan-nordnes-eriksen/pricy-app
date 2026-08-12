@@ -508,7 +508,15 @@ function ensureRoute(name, params = {}) {
   // ascending) — the screen re-queries with its sort on mount, and a prefetch
   // of a different slice would just be a second 400-row fetch per visit
   else if (name === 'results' && (params.brick || params.dept)) return gpcRoute(params);
-  else if (name === 'results') wants.push(params.query ? { q: params.query } : listQuery({ node: scopeNode(params), sort: 'best', dir: 'asc' }));
+  else if (name === 'results' && params.query) wants.push({ q: params.query });
+  else if (name === 'results') return (async () => {
+    // cold /search?cat= deep link: CAT_NODE hydrates off meta.tree, so pull
+    // the cheap drops slice first (same bootstrap as gpcRoute) — else
+    // scopeNode is undefined and this fires the expensive all-heads query
+    // for 400 rows the screen never uses
+    if (params.cat && !CATALOG.meta?.tree) await fetchProducts({ top: 'drop', limit: 3 }).catch(() => {});
+    await fetchProducts(listQuery({ node: scopeNode(params), sort: 'best', dir: 'asc' })).catch(() => {});
+  })();
   // server adds family + same-cat neighbors; reviews ride the same prefetch.
   // pickSimilar/"More in" pool: the ids= fetch only carries ≤4 arbitrary
   // neighbors, so chain the cat slice (same FETCHED key as the results
