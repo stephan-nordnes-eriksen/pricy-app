@@ -759,7 +759,9 @@ function App() {
     const password = opts && opts.password;
     return serverLogin(email || 'demo@pricy.no', signup || !email ? '/api/auth/signup' : '/api/auth/login', password)
       .then(ok => {
-        if (ok === true) { setSession(true); nav(signup ? 'onboarding' : 'home'); }
+        // setupPush ran at boot for reloads; a fresh login needs it here or
+        // granted-permission users get no re-subscribe until a full reload
+        if (ok === true) { setSession(true); nav(signup ? 'onboarding' : 'home'); setupPush(); }
         return ok;
       });
   };
@@ -789,7 +791,7 @@ function App() {
         done = true;
         fetchJson('/api/alerts').catch(() => [])
           .then(alerts => hydrateSession(me, alerts))
-          .then(() => { setSession(true); nav('home'); });
+          .then(() => { setSession(true); nav('home'); setupPush(); });
       }).catch(() => {});
     };
     const check = () => {
