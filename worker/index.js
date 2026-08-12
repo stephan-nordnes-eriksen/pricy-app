@@ -664,8 +664,10 @@ async function drainImages(db, env, n = 40) {
   const one = async ({ product_id: pid, src }) => {
     try {
       const res = await fetch(src, { headers: { 'user-agent': BROWSER_UA, accept: 'image/*' } });
-      const type = res.headers.get('content-type') || '';
-      if (!res.ok || !type.startsWith('image/')) throw new Error(`http ${res.status} ${type}`);
+      const type = (res.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+      // allowlist raster formats only: svg+xml (and anything else exotic) can
+      // carry scripts, and /img/ serves these bytes inline on our own origin
+      if (!res.ok || !['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'].includes(type)) throw new Error(`http ${res.status} ${type}`);
       // stream body → R2: pulling 40 images through the isolate as
       // arrayBuffers is per-byte CPU, and it tripped the free plan's ceiling
       // (503) 115 drains into the 2026-07-26 backfill. Missing content-length

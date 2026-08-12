@@ -2411,6 +2411,7 @@ test('ingest images: queued on ingest, drained on demand, served at /img/:id wit
   globalThis.fetch = async (url) => {
     fetched.push(url);
     if (url.includes('/gone.jpg')) return new Response('nope', { status: 404 });
+    if (url.includes('/evil.svg')) return new Response('<svg><script>1</script></svg>', { headers: { 'content-type': 'image/svg+xml' } });
     return new Response(new Uint8Array([1, 2, 3]), { headers: { 'content-type': 'image/jpeg' } });
   };
   const push = (rows) => worker.fetch(new Request('http://pricy.test/api/ingest', {
@@ -2446,6 +2447,12 @@ test('ingest images: queued on ingest, drained on demand, served at /img/:id wit
     await push([{ product_id: 'xm5', shop: 'Elkjøp', price: 999, image: 'https://cdn.example/gone.jpg' }]);
     assert.deepStrictEqual(await drain(), { done: 0, failed: 1, remaining: 0 }, 'a failed download stops blocking the queue');
     assert.strictEqual((await catBody(api(env))).find(p => p.id === 'xm5').img, undefined, 'failed download = no img link');
+
+    // scriptable formats are refused: an SVG served from /img/ would execute
+    // same-origin — only raster types may land in the bucket
+    await push([{ product_id: 'switch', shop: 'Elkjøp', price: 4499, image: 'https://cdn.example/evil.svg' }]);
+    assert.deepStrictEqual(await drain(), { done: 0, failed: 2, remaining: 0 }, 'image/svg+xml is refused (gone.jpg retries alongside)');
+    assert.ok(!store.has('products/switch'), 'no SVG bytes in the bucket');
   } finally {
     globalThis.fetch = realFetch;
   }
