@@ -1116,6 +1116,20 @@ Promise.all([
   // a deep link has no history entry state — seed it so Results can read
   // params.facets (sliced-brick pin) exactly like a pushed nav
   try { history.replaceState({ ...history.state, name: s.name, params: s.params }, ''); } catch (e) {}
-  ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
+  mount();
   if (loggedIn) setupPush(); // subscriptions are session-bound, no point earlier
+}).catch((e) => {
+  // the fetches above are individually caught, but the synchronous hydration
+  // bodies are not — one malformed row in a user's own data must degrade to
+  // the demo state, not a permanently blank page (per-user, so invisible in
+  // your own testing)
+  console.error('boot hydration failed', e);
+  mount();
 });
+
+let mounted = false;
+function mount() {
+  if (mounted) return;
+  mounted = true;
+  ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
+}

@@ -622,6 +622,13 @@ test('/autobuy hydrates the persisted fullmakt + armed orders; revoking persists
   assert.ok(await until(() => q(win, '.fm-cer')), 'revoked state must render the sign-again ceremony');
 });
 
+test('a throw during logged-in hydration still mounts the app', async () => {
+  // watches as a non-array makes hydrateMe throw synchronously — per-user
+  // data-dependent, so it must degrade to a rendered page, never stay blank
+  const win = boot('http://pricy.test/', { session: true, me: { user: mari, watches: { bad: true } } });
+  assert.ok(await until(() => win.document.querySelector('#root').children.length > 0), 'the app must mount despite the hydration throw');
+});
+
 test('an order whose product failed to hydrate still rides every autobuy PUT', async () => {
   const me = {
     user: mari, watches: [], purchases: [],
