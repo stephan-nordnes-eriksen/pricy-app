@@ -945,6 +945,12 @@ test('facet values derive from the product name, per category', async () => {
     [{ cat: 'Gaming', name: 'Nintendo Switch OLED' }, { type: 'Consoles' }],
     [{ cat: 'Books', name: 'Cable And X-force Volume 4: Vendetta (marvel Now)' }, { format: 'Comics & graphic novels' }],
     [{ cat: 'Fashion', name: 'Soft Texture Long Sleeve' }, undefined],
+    // ASCII \b never anchors next to ø — these need explicit lookarounds
+    [{ cat: 'Garden', name: 'Fiskars Øks X10' }, { type: 'Garden tools' }],
+    [{ cat: 'Outdoor', name: 'Øks 60 cm' }, { type: 'Camping gear' }],
+    [{ cat: 'Garden', name: 'Blomsterfrø solsikke' }, { type: 'Plants & pots' }],
+    [{ cat: 'Pets', name: 'Strø til kanin 10 l' }, { type: 'Litter & hygiene', animal: 'Small pets' }],
+    [{ cat: 'Pets', name: 'Hundestrømpe 4-pk' }, { animal: 'Dog' }], // strømpe is NOT strø
     [{ cat: 'Toys', name: 'NEGLESETT M/ARMBÅND OG STICKE.' }, undefined],
   ];
   for (const [row, want] of cases) assert.deepStrictEqual(deriveFacets(row), want, row.name);
