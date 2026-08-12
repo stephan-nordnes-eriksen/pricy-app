@@ -12,3 +12,4 @@ tools/.vapid-public.txt
 tools/.latency-probe.json
 tools/latency-report.html
 .DS_Store
+tools/latency.db
