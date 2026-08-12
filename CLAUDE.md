@@ -481,11 +481,9 @@ Two Claude Design projects feed this repo:
   more measured than its old stars were). Shop-rating UGC is v2 — the
   reviews table's `shop` column is the reserved TARGET (`buy_shop` is the
   reviewer's own free-text "where I bought it"), no endpoint accepts it yet.
-  Two upstream fixes are still pending in the plan file: `Results.jsx:399`
-  reads `pRating` after the rename to `pDom` (typing in the filter search
-  unmounts the screen — `test/ui.test.js` "filter search: narrows groups"
-  is red for exactly this), and `_calcStats` needs the branch that reads
-  the served `p.dom`, without which none of the above is visible.
+  Both formerly-pending upstream fixes landed (verified 2026-08-12):
+  Results.jsx uses `pDom` and `_calcStats` reads the served `p.dom` —
+  the full suite is green.
   (`{currentPassword, newPassword}`) verifies the current password (skipped
   for passwordless magic-link/BankID accounts, which just set one) and
   re-hashes with the same PBKDF2 scheme as signup. `meBody`'s user object
