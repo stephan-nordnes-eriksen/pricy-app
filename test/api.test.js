@@ -2331,6 +2331,22 @@ test('discover samples by default and only crawls in full when approved', async 
   } finally { globalThis.fetch = realFetch; }
 });
 
+test('a self-referencing sitemapindex terminates instead of recursing forever', async () => {
+  const realFetch = globalThis.fetch;
+  let fetches = 0;
+  // every URL answers with an index pointing at more indexes — third-party
+  // content, so the walk must be depth-bounded, not trust-bounded
+  globalThis.fetch = async (u) => {
+    fetches++;
+    return new Response(`<sitemapindex><sitemap><loc>${u}product-a.xml</loc></sitemap><sitemap><loc>${u}product-b.xml</loc></sitemap></sitemapindex>`);
+  };
+  try {
+    const rows = await discoverSource('S', { sitemap: 'https://s.no/s.xml', delayMs: 0 });
+    assert.deepStrictEqual(rows, [], 'no product pages found');
+    assert.ok(fetches <= 1 + 40, `bounded fetch count, got ${fetches}`);
+  } finally { globalThis.fetch = realFetch; }
+});
+
 // A site-relative JSON-LD image is not fetchable, and queueing one only ever
 // produces a failed drain — Obs/Trademax/Chilli/Kid Interiør/Zooservice ship
 // exactly that, and it left 3,814 products image-less.

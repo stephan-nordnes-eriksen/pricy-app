@@ -231,10 +231,13 @@ export function parseSitemapXml(xml) {
 // category URLs into separate named sub-sitemaps, so filtering the INDEX
 // entries by name (sitemapFilter) already isolates the product sub-sitemap(s)
 // without needing a per-shop URL-path pattern.
-async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|vare|artikkel/i, maxSitemaps = 40 } = {}) {
+async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|vare|artikkel/i, maxSitemaps = 40 } = {}, depth = 1) {
   const res = await fetch(sitemapUrl, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(60_000) });
   if (!res.ok) throw new Error(`sitemap fetch ${res.status}`);
   const { isIndex, locs } = parseSitemapXml(await res.text());
+  // depth-bounded: the content is third-party — a nested or self-referencing
+  // sitemapindex must not recurse forever at ~40 fetches per level
+  if (isIndex && depth <= 0) { console.warn(`ingest: ${sitemapUrl} is an index below the depth bound, skipping`); return []; }
   if (isIndex) {
     // Bounded: a big shop (Hobbii — one sub-sitemap per yarn colour) can list
     // hundreds of sub-sitemaps, and walking them all downloaded so much XML
@@ -244,7 +247,7 @@ async function sitemapUrls(sitemapUrl, { pathFilter, sitemapFilter = /product|va
     const all = locs.filter(u => sitemapFilter.test(u));
     const subs = all.slice(0, maxSitemaps);
     if (all.length > subs.length) console.warn(`ingest: ${sitemapUrl} lists ${all.length} sub-sitemaps, walking the first ${subs.length}`);
-    const nested = await Promise.all(subs.map(u => sitemapUrls(u, { pathFilter, sitemapFilter, maxSitemaps })));
+    const nested = await Promise.all(subs.map(u => sitemapUrls(u, { pathFilter, sitemapFilter, maxSitemaps }, depth - 1)));
     return [...new Set(nested.flat())];
   }
   return [...new Set(pathFilter ? locs.filter(u => pathFilter.test(u)) : locs)];
