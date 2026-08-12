@@ -9,7 +9,7 @@ import FACETS from './facets.json' with { type: 'json' }; // facet registry: { r
 import SHIPPING from './shipping.json' with { type: 'json' }; // per-shop shipping fallback: { shop: { flat, freeOver? } } — curated from shop terms pages, never guessed (plans/shipping-totals.md). Offer-level ship strings win; measured 2026-08-03 they cover 0.3% of offers, so this registry is the real source.
 import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
 import { collectRows, BROWSER_UA, eanKey } from './sources.js';
-import { sendPush } from './push.js';
+import { sendPush, unb64u } from './push.js';
 import GPC from './gpc.json' with { type: 'json' }; // condensed GS1 GPC taxonomy (tools/gpc-build.mjs) — segs/fams/classes/bricks, the ONLY category vocabulary (gpc-strict)
 import NO from './gpcno.json' with { type: 'json' }; // curated Norwegian overlay: names/icons/syn per GPC code, browse dept tiles, facetKeys (GPC code → facet ruleset id)
 import { resolveGtins, RESOLVER_SOURCE } from './gpc-resolver.js';
@@ -2349,6 +2349,13 @@ export default {
       if (typeof endpoint !== 'string' || !endpoint.startsWith('https://') || endpoint.length > 1024
         || typeof keys?.p256dh !== 'string' || typeof keys?.auth !== 'string'
         || keys.p256dh.length > 200 || keys.auth.length > 100) return json({ error: 'bad subscription' }, 400);
+      // a garbage key makes encrypt() THROW per send later — sendPush maps that
+      // to status 0, never 404/410, so the row would burn a device slot forever
+      try {
+        new URL(endpoint);
+        const pk = unb64u(keys.p256dh), au = unb64u(keys.auth);
+        if (pk.length !== 65 || pk[0] !== 4 || au.length !== 16) throw 0;
+      } catch { return json({ error: 'bad subscription' }, 400); }
       await db.prepare('INSERT INTO push_subs (endpoint, user_id, p256dh, auth, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(endpoint) DO UPDATE SET user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth')
         .bind(endpoint, user.id, keys.p256dh, keys.auth, Date.now()).run();
       return json({ ok: true });

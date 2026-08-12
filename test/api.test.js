@@ -2982,6 +2982,10 @@ test('web push: subscribe is session-bound, admin push sends VAPID-signed posts 
   };
   assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/a', keys } })).status, 401, 'session required');
   assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'http://push.test/a', keys }, cookie })).status, 400, 'https endpoints only');
+  // a key that isn't a P-256 point (or a non-decodable one) makes encrypt()
+  // throw on every future send — refuse it here, not at delivery time
+  assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/a', keys: { ...keys, p256dh: 'AAAA' } }, cookie })).status, 400, 'not a P-256 point');
+  assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/a', keys: { ...keys, auth: '!!!not-base64url!!!' } }, cookie })).status, 400, 'undecodable auth');
   assert.strictEqual((await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/a', keys }, cookie })).status, 200);
   await call('/api/push/subscribe', { method: 'POST', body: { endpoint: 'https://push.test/gone', keys }, cookie });
 
