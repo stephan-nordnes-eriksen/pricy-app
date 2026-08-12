@@ -62,7 +62,15 @@ function xmlFields(el) {
 }
 
 const pick = (f, ...names) => names.map(n => f[n]).find(v => v != null && v !== '');
-const truthyStock = (v) => /^(yes|true|1|in ?stock)$/i.test(String(v ?? '').trim());
+// three-state: 1 in stock, 0 out, 2 unknown. Only KNOWN wording maps to 0 —
+// a feed writing "på lager" or a schema.org URL must not read as sold out
+export const stockOf = (v) => {
+  if (v == null || String(v).trim() === '') return 2;
+  const s = String(v).trim().toLowerCase().replace(/^https?:\/\/schema\.org\//, '').replace(/[\s_-]+/g, '');
+  if (/^(yes|true|1|instock|instoreonly|onlineonly|pålager|paalager)$/.test(s)) return 1;
+  if (/^(no|false|0|outofstock|soldout|discontinued|utsolgt|ikkepålager)$/.test(s)) return 0;
+  return 2;
+};
 
 // Adtraction per-brand product feed: XML, one flat <product> element per
 // offer. Field names vary a bit per brand, so match by candidate names and
@@ -97,7 +105,7 @@ export async function adtractionSource(shop, _cfg, env) {
         brand: pick(f, 'brand', 'manufacturer') ?? null,
         srcCat: pick(f, 'category', 'categoryname', 'producttype', 'productcategory') ?? null,
         ship: pick(f, 'shippingcost', 'shipping', 'shippingprice') ?? null,
-        stock: (v => v == null ? 2 : truthyStock(v) ? 1 : 0)(pick(f, 'instock', 'availability', 'stock')),
+        stock: stockOf(pick(f, 'instock', 'availability', 'stock')),
         eta: null,
         url: pick(f, 'trackingurl', 'producturl', 'url', 'deeplink') ?? null,
         image: pick(f, 'imageurl', 'image', 'graphicurl', 'productimage') ?? null,

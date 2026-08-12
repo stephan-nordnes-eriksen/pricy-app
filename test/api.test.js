@@ -1442,6 +1442,17 @@ test('decodeXml survives out-of-range numeric refs (one bad entity must not free
   assert.strictEqual(decodeXml('&#x110000;'), '&#x110000;', 'hex out-of-range too');
 });
 
+test('stockOf: unrecognized feed wording is unknown, never out-of-stock', async () => {
+  const { stockOf } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js')));
+  assert.strictEqual(stockOf('in stock'), 1);
+  assert.strictEqual(stockOf('http://schema.org/InStock'), 1);
+  assert.strictEqual(stockOf('på lager'), 1);
+  assert.strictEqual(stockOf('outofstock'), 0);
+  assert.strictEqual(stockOf('utsolgt'), 0);
+  assert.strictEqual(stockOf(null), 2);
+  assert.strictEqual(stockOf('3-5 dager'), 2, 'unknown wording = unknown');
+});
+
 test('parsePrice handles Norwegian and feed formats', () => {
   assert.strictEqual(parsePrice('2990'), 2990);
   assert.strictEqual(parsePrice('2 990,00'), 2990);
