@@ -1236,7 +1236,7 @@ async function listIdsRaw(db, { node = null, limit = PAGE_MAX, offset = 0, sort 
     if (keys.size === 1) ruleset = [...keys][0];
     let bricks = codes;
     if (!codes.every(c => GPC.bricks[c])) {
-      const stocked = (await db.prepare(`SELECT DISTINCT json_extract(meta,'$.brick') AS b FROM products WHERE json_extract(meta,'$.brick') IS NOT NULL`).all()).results.map(r => String(r.b));
+      const stocked = (await db.prepare(`SELECT DISTINCT json_extract(meta,'$.brick') AS b FROM products WHERE json_extract(meta,'$.brick') IS NOT NULL AND ${visible()}`).all()).results.map(r => String(r.b));
       bricks = bricksUnder(node, stocked);
     }
     if (!bricks.length) return { ids: [], total: 0 };
