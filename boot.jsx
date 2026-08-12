@@ -58,6 +58,16 @@ function serverLogin(email, path = '/api/auth/login', password) {
 // (hits()/saved()), so setting items is enough.
 const shortDate = ms => new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
+// WATCHED rows are COPIES ({...p, target}) — a watch needs target/hit/spark
+// the shared catalog row can't carry. Copies go stale when hydrateCatalog
+// merges fresh prices, so it re-runs this after every merge.
+function refreshWatched() {
+  WATCHED.splice(0, WATCHED.length, ...WatchStore.items.map(w => {
+    const p = WatchStore.prod(w.id);
+    return p && { ...p, target: w.target, hit: w.hit, spark: (p.history || []).slice(-12) };
+  }).filter(Boolean));
+}
+
 function hydrateMe(me) {
   ME = me;
   Object.assign(USER, me.user);
@@ -66,10 +76,7 @@ function hydrateMe(me) {
   WatchStore.items = (me.watches || []).map(w =>
     ({ id: w.id, target: w.target, paused: !!w.paused, hit: !!w.hit, inclShip: !!w.inclShip }));
   ListStore.lists = me.lists || []; // server lists replace the baked demo ones
-  WATCHED.splice(0, WATCHED.length, ...WatchStore.items.map(w => {
-    const p = WatchStore.prod(w.id);
-    return p && { ...p, target: w.target, hit: w.hit, spark: (p.history || []).slice(-12) };
-  }).filter(Boolean));
+  refreshWatched();
   // Real purchase history + the persisted fullmakt/active-orders blob replace
   // the store's demo state. New users have signed nothing → signed=false and
   // /autobuy shows the real "Auto-buy is off" ceremony.
@@ -905,7 +912,8 @@ function hydrateCatalog(data) {
   // variantListing/variantBest prefer over their synth fallback.
   // Heads first, then children: a child's head may ride the same payload.
   // Existing rows are mutated in place (Object.assign) so references held
-  // by WATCHED/RECENT/listings stay live.
+  // by RECENT/listings stay live. WATCHED holds copies (it adds target/hit/
+  // spark per row) — refreshWatched() at the end of this merge re-cuts them.
   // Indexed by id, because this used to be CATALOG.find() per incoming row —
   // O(page x cache), and the cache grows all session. Merging one 400-row page
   // measured 2.5 ms into a fresh cache but 36 ms once it held 14k rows (Node;
@@ -1053,6 +1061,7 @@ function hydrateCatalog(data) {
   }
   Object.keys(CAT_OF).forEach(k => delete CAT_OF[k]);
   CATALOG.forEach(p => { (CAT_OF[p.cat] = CAT_OF[p.cat] || []).push(p); });
+  if (ME) refreshWatched(); // WATCHED holds copies; merged prices must reach the home rail
   return data;
 }
 
