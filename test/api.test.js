@@ -1435,6 +1435,13 @@ test('dept tiles serve live histogram counts that equal their node page total', 
   assert.strictEqual(Object.values(meta.bricks).reduce((x, y) => x + y, 0) + meta.uncat, meta.products);
 });
 
+test('decodeXml survives out-of-range numeric refs (one bad entity must not freeze a feed)', async () => {
+  const { decodeXml } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'sources.js')));
+  assert.strictEqual(decodeXml('Eikenø&#248;kkel'), 'Eikenøøkkel');
+  assert.strictEqual(decodeXml('a &#99999999999; b'), 'a &#99999999999; b', 'left verbatim, no throw');
+  assert.strictEqual(decodeXml('&#x110000;'), '&#x110000;', 'hex out-of-range too');
+});
+
 test('parsePrice handles Norwegian and feed formats', () => {
   assert.strictEqual(parsePrice('2990'), 2990);
   assert.strictEqual(parsePrice('2 990,00'), 2990);

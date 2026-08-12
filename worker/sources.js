@@ -44,9 +44,13 @@ const XML_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '
 // otherwise reaches the UI verbatim and mangles every derived slug id.
 export const decodeXml = (s) => String(s)
   .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-  .replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e) => e[0] === '#'
-    ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : Number(e.slice(1)))
-    : XML_ENTITIES[e.toLowerCase()] ?? m);
+  .replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e) => {
+    if (e[0] !== '#') return XML_ENTITIES[e.toLowerCase()] ?? m;
+    const cp = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : Number(e.slice(1));
+    // out-of-range refs make fromCodePoint THROW — inside adtractionSource's
+    // scan() that rejects the whole feed promise and freezes the shop's offers
+    return cp <= 0x10FFFF ? String.fromCodePoint(cp) : m;
+  });
 
 // flat <product> element → lowercased tag→text map
 function xmlFields(el) {
