@@ -224,6 +224,9 @@ html = html.includes('</body>')
   ? html.replace('</body>', `<script src="app.js"></script>\n${beacon}\n</body>`)
   : html + `\n<script src="app.js"></script>\n${beacon}\n</body>\n</html>\n`;
 if (!html.includes('<script src="app.js">')) throw new Error('app.js injection failed');
+// the <title> replace carries <base>/manifest/apple-* — if a sync reshapes the
+// title it no-ops silently and every deep link ships blank (no <base href="/">)
+if (!html.includes('rel="manifest"')) throw new Error('PWA/head injection failed — <title> replace missed');
 for (const cdn of ['unpkg.com', 'text/babel']) {
   if (html.includes(cdn)) throw new Error(`build output still references ${cdn}`);
 }
