@@ -622,6 +622,24 @@ test('/autobuy hydrates the persisted fullmakt + armed orders; revoking persists
   assert.ok(await until(() => q(win, '.fm-cer')), 'revoked state must render the sign-again ceremony');
 });
 
+test('an order whose product failed to hydrate still rides every autobuy PUT', async () => {
+  const me = {
+    user: mari, watches: [], purchases: [],
+    autobuy: { ...signedFullmakt, orders: [
+      { id: 'xm5', max: 2800, expires: '10 Aug 2026', shops: 'Any shop' },
+      { id: 'ghost-404', max: 100, expires: '10 Aug 2026', shops: 'Any shop' },
+    ] },
+  };
+  const win = boot('http://pricy.test/autobuy', { session: true, me });
+  assert.ok(await until(() => qa(win, '.abrow').length === 1), 'only the resolvable order renders');
+  // any mutation funnels through emit and whole-object-replaces the blob —
+  // the unresolved order must ride along or it is deleted server-side
+  win.AutobuyStore.emit();
+  const put = await until(() => win.api.find(c => c.call === 'PUT /api/autobuy'));
+  assert.ok(put.body.orders.some(o => o.id === 'ghost-404'), 'unresolved order must not be deleted server-side');
+  assert.ok(put.body.orders.some(o => o.id === 'xm5'), 'resolved active order still persists');
+});
+
 test('new user on /autobuy: nothing signed → the real "Auto-buy is off" ceremony; signing persists today\'s date', async () => {
   const win = boot('http://pricy.test/autobuy', { session: true }); // no autobuy blob
   assert.ok(await until(() => q(win, '.fm-cer')), 'unsigned user must see the fullmakt ceremony');

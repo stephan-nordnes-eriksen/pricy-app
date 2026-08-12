@@ -78,6 +78,13 @@ function hydrateMe(me) {
   AutobuyStore.signedAt = ab.signedAt || null;
   if (ab.cap != null) AutobuyStore.cap = ab.cap;
   if (ab.payment) AutobuyStore.payment = ab.payment;
+  // Orders whose product didn't resolve (flaky or >100-id-sliced ids= batch)
+  // can't render — but they still exist server-side, and the emit PUT below
+  // whole-object-replaces the blob. Stash them so every PUT carries them;
+  // filtering them out of the payload would DELETE them on the next mutation.
+  AutobuyStore.unresolved = (ab.orders || [])
+    .filter(o => !AutobuyStore.prod(o.id))
+    .map(o => ({ id: o.id, max: o.max, expires: o.expires, shops: o.shops }));
   AutobuyStore.orders = [
     ...(ab.orders || [])
       .filter(o => AutobuyStore.prod(o.id)) // an order for a product gone from the catalog can't render
@@ -381,8 +388,11 @@ AutobuyStore.emit = function () {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         signed: this.signed, signedAt: this.signedAt, cap: this.cap, payment: this.payment,
-        orders: this.orders.filter(o => o.status === 'active')
-          .map(o => ({ id: o.id, max: o.max, expires: o.expires, shops: o.shops })),
+        orders: [
+          ...this.orders.filter(o => o.status === 'active')
+            .map(o => ({ id: o.id, max: o.max, expires: o.expires, shops: o.shops })),
+          ...(this.unresolved || []), // hydration couldn't render these; never drop them server-side
+        ],
       }),
     }).catch(() => {});
   }
