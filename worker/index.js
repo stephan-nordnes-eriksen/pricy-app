@@ -1551,41 +1551,51 @@ async function myReviews(db, userId) {
 // honest cold start, since the demo `rating` synth never ships.
 // ponytail: the whole blob rides every list row (~150 B); serve {n, c} only
 // for list queries and the rest on ids= if a page ever gets tight
-async function refreshReviewMeta(db, productId) {
-  const [rows, cur] = await Promise.all([
-    db.prepare('SELECT claims, plus, minus, paid FROM reviews WHERE product_id = ? AND hidden = 0').bind(productId).all(),
-    db.prepare('SELECT meta FROM products WHERE id = ?').bind(productId).first(),
+// Batched so GDPR delete's per-product loop can't exceed the subrequest
+// budget (PROBLEMS.md #8): N products = ~2 reads + 1 write per 45, not 3 each.
+async function refreshReviewMetas(db, productIds) {
+  const pids = [...new Set(productIds)];
+  if (!pids.length) return;
+  const [rows, prods] = await Promise.all([
+    chunked(pids, async c => (await db.prepare(`SELECT product_id, claims, plus, minus, paid FROM reviews WHERE product_id IN (${ph(c)}) AND hidden = 0`).bind(...c).all()).results),
+    chunked(pids, async c => (await db.prepare(`SELECT id, meta FROM products WHERE id IN (${ph(c)})`).bind(...c).all()).results),
   ]);
-  if (!cur) return;
-  const meta = JSON.parse(cur.meta);
-  delete meta.urating; delete meta.ureviews; // pre-Folkedommen stars; migration is this write
-  const rs = rows.results;
-  if (!rs.length) delete meta.udom;
-  else {
-    const c = { worth: [0, 0, 0], durable: [0, 0, 0], described: [0, 0, 0] };
-    const traits = new Map(); // '<1|0><trait>' → count
-    const paids = [];
-    for (const r of rs) {
-      const s = String(r.claims || 'uuu');
-      CLAIM_KEYS.forEach((k, i) => { const j = 'ynu'.indexOf(s[i]); c[k][j < 0 ? 2 : j]++; });
-      for (const [col, pos] of [['plus', 1], ['minus', 0]]) {
-        for (const t of JSON.parse(r[col] || '[]')) traits.set(pos + t, (traits.get(pos + t) || 0) + 1);
+  const byPid = new Map(pids.map(p => [p, []]));
+  for (const r of rows) byPid.get(r.product_id)?.push(r);
+  const stmts = [];
+  for (const { id, meta: cur } of prods) {
+    const meta = JSON.parse(cur);
+    delete meta.urating; delete meta.ureviews; // pre-Folkedommen stars; migration is this write
+    const rs = byPid.get(id);
+    if (!rs.length) delete meta.udom;
+    else {
+      const c = { worth: [0, 0, 0], durable: [0, 0, 0], described: [0, 0, 0] };
+      const traits = new Map(); // '<1|0><trait>' → count
+      const paids = [];
+      for (const r of rs) {
+        const s = String(r.claims || 'uuu');
+        CLAIM_KEYS.forEach((k, i) => { const j = 'ynu'.indexOf(s[i]); c[k][j < 0 ? 2 : j]++; });
+        for (const [col, pos] of [['plus', 1], ['minus', 0]]) {
+          for (const t of JSON.parse(r[col] || '[]')) traits.set(pos + t, (traits.get(pos + t) || 0) + 1);
+        }
+        if (r.paid > 0) paids.push(r.paid);
       }
-      if (r.paid > 0) paids.push(r.paid);
+      // 6 covers the PDP's 3 plus + 2 minus with slack, and a row shows 1–2
+      const t = [...traits.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
+        .map(([k, n]) => [k.slice(1), n, Number(k[0])]);
+      meta.udom = { n: rs.length, c, t };
+      // "alltid spennet, aldri enkeltkjøp": upstream renders lo === hi as ONE
+      // amount, so with fewer than 3 reporters (or unrounded ends) that is a
+      // named person's exact receipt — hidden toggle or not.
+      if (paids.length >= 3) {
+        meta.udom.p = [Math.floor(Math.min(...paids) / 10) * 10, Math.ceil(Math.max(...paids) / 10) * 10, paids.length];
+      }
     }
-    // 6 covers the PDP's 3 plus + 2 minus with slack, and a row shows 1–2
-    const t = [...traits.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
-      .map(([k, n]) => [k.slice(1), n, Number(k[0])]);
-    meta.udom = { n: rs.length, c, t };
-    // "alltid spennet, aldri enkeltkjøp": upstream renders lo === hi as ONE
-    // amount, so with fewer than 3 reporters (or unrounded ends) that is a
-    // named person's exact receipt — hidden toggle or not.
-    if (paids.length >= 3) {
-      meta.udom.p = [Math.floor(Math.min(...paids) / 10) * 10, Math.ceil(Math.max(...paids) / 10) * 10, paids.length];
-    }
+    stmts.push(db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id));
   }
-  await db.batch([db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), productId), bumpVer(db)]);
+  if (stmts.length) await db.batch([...stmts, bumpVer(db)]);
 }
+const refreshReviewMeta = (db, productId) => refreshReviewMetas(db, [productId]);
 
 async function purchasesBody(db, userId) {
   const { results } = await db.prepare(
@@ -2427,7 +2437,7 @@ export default {
         db.prepare('DELETE FROM login_tokens WHERE email = ?').bind(user.email),
         db.prepare('DELETE FROM users WHERE id = ?').bind(user.id),
       ]);
-      for (const pid of reviewed) await refreshReviewMeta(db, pid);
+      await refreshReviewMetas(db, reviewed);
       return json({ ok: true }, 200, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
     }
 

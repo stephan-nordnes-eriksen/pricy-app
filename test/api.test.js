@@ -483,6 +483,17 @@ test('GDPR: export downloads the session user\'s data; delete removes every row 
   const kariData = await (await call('/api/account/export', { cookie: kari })).json();
   assert.deepStrictEqual(kariData.watches, []);
 
+  // both users review two products — delete must recompute BOTH aggregates
+  // in one batched pass (PROBLEMS.md #8: the per-product loop blew the
+  // subrequest budget and left deleted users in meta.udom)
+  for (const [cookie, claims] of [[ola, 'yyy'], [kari, 'nnn']]) {
+    for (const pid of ['xm5', 'ps5']) {
+      await call('/api/reviews', { method: 'POST', body: { product_id: pid, claims: { worth: claims[0], durable: claims[1], described: claims[2] } }, cookie });
+    }
+  }
+  const domOf = async (id) => (await (await call('/api/products?ids=' + id)).json()).products.find(q => q.id === id).dom;
+  assert.strictEqual((await domOf('xm5')).n, 2);
+
   const del = await call('/api/account', { method: 'DELETE', cookie: ola });
   assert.strictEqual(del.status, 200);
   assert.match(del.headers.get('set-cookie'), /pricy_session=;.*Max-Age=0/, 'delete must expire the cookie');
@@ -491,6 +502,11 @@ test('GDPR: export downloads the session user\'s data; delete removes every row 
   const login = await call('/api/auth/login', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } });
   assert.notStrictEqual(login.status, 200, 'the account itself must be gone');
   assert.strictEqual((await call('/api/me', { cookie: kari })).status, 200, 'other users unaffected');
+  for (const pid of ['xm5', 'ps5']) {
+    const dom = await domOf(pid);
+    assert.strictEqual(dom.n, 1, pid + ': deleted user must leave the aggregate');
+    assert.deepStrictEqual(dom.c.worth, [0, 1, 0], pid + ': only kari\'s claims remain');
+  }
 });
 
 // ── Reviews / Folkedommen (plans/folkedommen-reviews.md) ───────────────────

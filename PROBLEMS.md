@@ -2,9 +2,9 @@
 
 Owner review 2026-08-12: per-item **Review** lines below.
 
-**Status 2026-08-12: 19 of 27 solved** (✅ in the heading, commit hash on the
+**Status 2026-08-13: 20 of 27 solved** (✅ in the heading, commit hash on the
 Review line). Open: #2 (verify — www may redirect fine), #5 (upstream fix),
-#8 GDPR-delete aggregates + #9 CPU 503 (need design work), #13–15 stale tools
+#9 CPU 503 (needs design work), #13–15 stale tools
 (undecided, possibly deprecate), #16 missing-currency guard (undecided).
 
 Scope: all hand-written code (worker/, boot.jsx, build.js, tools/, configs).
@@ -102,8 +102,8 @@ individually but the synchronous hydration bodies (`hydrateMe`/`hydrateFeed`/
 (it never mounted), and it's per-user data-dependent so invisible in your own
 testing. **Fix:** `.catch` that still calls `render`.
 
-### 8. GDPR account deletion can 503 mid-way, leaving deleted users in review aggregates
-**Review 2026-08-12:** Must be resolved.
+### 8. ✅ GDPR account deletion can 503 mid-way, leaving deleted users in review aggregates
+**Review 2026-08-12:** Must be resolved. — FIXED 2026-08-13: `refreshReviewMetas` batches all products (~3 subrequests per 45 products, not 3 each).
 `worker/index.js:2393-2414`
 After the atomic delete batch, `refreshReviewMeta` runs per reviewed product
 (~3 subrequests each). A user with 16+ reviewed products exceeds the ~50-
