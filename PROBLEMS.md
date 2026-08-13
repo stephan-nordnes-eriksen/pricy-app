@@ -2,10 +2,10 @@
 
 Owner review 2026-08-12: per-item **Review** lines below.
 
-**Status 2026-08-13: 20 of 27 solved** (✅ in the heading, commit hash on the
-Review line). Open: #2 (verify — www may redirect fine), #5 (upstream fix),
-#9 CPU 503 (needs design work), #13–15 stale tools
-(undecided, possibly deprecate), #16 missing-currency guard (undecided).
+**Status 2026-08-13: 26 of 27 solved** (✅ in the heading, commit hash on the
+Review line). Open: #2 only (verify — www may redirect fine). #5's
+WatchStore/ListStore offline-PUT swallow remains tracked under the PWA
+offline story.
 
 Scope: all hand-written code (worker/, boot.jsx, build.js, tools/, configs).
 proto/ is sync-owned and was only read to verify contract drift. `npm test`
@@ -168,8 +168,8 @@ the row is never deleted and every future alert burns one of the ≤40 devices
 per call on a subscription that can never work. **Fix:** validate at
 subscribe, or prune on persistent throw.
 
-### 13. tools/group.mjs prints admin curls the server rejects (stale since gpc-strict)
-**Review 2026-08-12:** Undecided — possibly mark the tool deprecated.
+### 13. ✅ tools/group.mjs prints admin curls the server rejects (stale since gpc-strict)
+**Review 2026-08-12:** Undecided — possibly mark the tool deprecated. — FIXED 2026-08-13 (db1abff): mirrors enrich.mjs (`brick: FILL_ME_8_DIGITS`).
 `tools/group.mjs:110`
 It emits `PATCH { cat: 'FILL_ME', icon: 'package', kw: '', … }` — the admin
 validator (worker/index.js:2146) accepts neither `cat` nor `icon`, and
@@ -179,8 +179,8 @@ brick → Ukategorisert with variants attached. enrich.mjs was updated to
 `brick:`; group.mjs wasn't. **Fix:** mirror enrich.mjs
 (`brick: 'FILL_ME_8_DIGITS'`, drop cat/icon/kw).
 
-### 14. tools/score-facets.mjs scores the wrong ruleset per row — reports "0 would change" on real changes
-**Review 2026-08-12:** Undecided — possibly mark the tool deprecated.
+### 14. ✅ tools/score-facets.mjs scores the wrong ruleset per row — reports "0 would change" on real changes
+**Review 2026-08-12:** Undecided — possibly mark the tool deprecated. — FIXED 2026-08-13 (894a45c): resolves the key via a local facetKeyOf over gpc.json/gpcno.json, passed to both sides of the diff.
 `tools/score-facets.mjs:39` → `worker/facetrules.js:715`
 It calls `deriveFacets(r)` which defaults the ruleset key to `r.cat` — post
 gpc-strict that's the SEGMENT display name, not a RULES key, so most rows
@@ -189,8 +189,8 @@ rule-change blast radius against the live catalog and currently can't.
 **Fix:** resolve the key via `facetKeyOf(r.brick)` like production does
 (worker/index.js:829).
 
-### 15. Four tools still depend on GET /api/catalog.json, which 503s at the current catalog size
-**Review 2026-08-12:** Undecided — possibly mark the tools deprecated.
+### 15. ✅ Four tools still depend on GET /api/catalog.json, which 503s at the current catalog size
+**Review 2026-08-12:** Undecided — possibly mark the tools deprecated. — FIXED 2026-08-13 (ad9812a): shared tools/catalog.mjs pages the all-heads listing; fetch-specs detail-fetches its candidates via `ids=` for specs.
 `tools/group.mjs:48`, `tools/fetch-specs.mjs:24`, `tools/gpc-coverage.mjs:23`,
 `tools/score-facets.mjs:22`
 The endpoint dies with exceededCpu at ~52k rows (see memory note; gpc-llm.mjs
@@ -201,8 +201,8 @@ paged `/api/products` pattern gpc-llm.mjs already uses.
 
 ## LOW
 
-### 16. Missing NOK guard when JSON-LD carries no currency at all
-**Review 2026-08-12:** Undecided.
+### 16. ✅ Missing NOK guard when JSON-LD carries no currency at all
+**Review 2026-08-12:** Undecided. — FIXED 2026-08-13 (c56078c): no declared currency = row refused. Live dry crawl of all 50 shops lost zero rows.
 `worker/sources.js:147-148` — a SEK-priced page that omits `priceCurrency`
 ingests as NOK; the guard only fires when a currency IS present. Money path.
 
