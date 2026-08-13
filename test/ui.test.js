@@ -175,6 +175,8 @@ function boot(url = 'http://pricy.test/', { session = false, me, catalog, alerts
         return ok({ reviews: reviews.filter(r => r.prodId === gone.prodId) });
       }
       if (opts.method === 'POST') {
+        // the worker's free-text caps (PROBLEMS.md #5) — oversize input 400s
+        if ((body.body || '').length > 2000 || (body.title || '').length > 80) return ok({ error: 'bad review' }, 400);
         const row = { id: 900, prodId: body.product_id, author: 'Mari N.',
           claims: ['worth', 'durable', 'described'].map(k => (body.claims || {})[k] || 'u').join(''),
           plus: body.plus || [], minus: body.minus || [], shop: body.shop || null,
@@ -1288,6 +1290,35 @@ test('account "My reviews" prefetches your reviews across products, and their pr
   assert.ok(win.api.some(c => c.call === 'GET /api/reviews?mine=1'),
     'the account route must fetch mine=1, got: ' + win.api.map(c => c.call).join(' | '));
   assert.match(q(win, '.myrev__prod').textContent, /LEGO/, 'the referenced product must be fetched so prodOf resolves');
+});
+
+// PROBLEMS.md #5: a write the server refuses used to keep its optimistic card
+// on screen while `.catch(() => {})` swallowed the 400 — "saved" until the
+// next load. Now the modal awaits the store's verdict: refusal rolls the card
+// back, shows the error, and keeps the modal open for a retry.
+test('a refused review write rolls back the card, shows the error, and a retry succeeds', async () => {
+  const win = boot('http://pricy.test/product/xm5', { session: true });
+  assert.ok(await until(() => q(win, '.revsec')), 'reviews section missing');
+  qa(win, '.revsec .btn').find(b => /Skriv omtale/.test(b.textContent)).click();
+  assert.ok(await until(() => q(win, '.revmodal')), 'write modal did not open');
+  // answer the three claims («Enig»), then a body past the worker's 2000 cap —
+  // set programmatically: maxLength stops typing, not paste-restored state,
+  // and the contract must hold for whatever the server refuses
+  qa(win, '.revq .revseg').forEach(seg => seg.querySelector('button').click());
+  const ta = q(win, '.revmodal textarea');
+  Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, 'value').set.call(ta, 'x'.repeat(2100));
+  ta.dispatchEvent(new win.Event('input', { bubbles: true }));
+  qa(win, '.revmodal .btn').find(b => /Send omtalen/.test(b.textContent)).click();
+  assert.ok(await until(() => q(win, '.revmodal__err')), 'refusal must surface in the modal');
+  assert.match(q(win, '.revmodal__err').textContent, /Kunne ikke lagre/, 'human message, not a URL/status');
+  assert.ok(q(win, '.revmodal'), 'modal stays open with the text intact');
+  assert.strictEqual(qa(win, '.revsec .revcard').length, 0, 'the optimistic card must be rolled back');
+  // shorten and retry — the same modal must go through
+  Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, 'value').set.call(ta, 'Helt grei.');
+  ta.dispatchEvent(new win.Event('input', { bubbles: true }));
+  qa(win, '.revmodal .btn').find(b => /Send omtalen/.test(b.textContent)).click();
+  assert.ok(await until(() => !q(win, '.revmodal')), 'successful retry must close the modal');
+  assert.ok(await until(() => qa(win, '.revsec .revcard').length === 1), 'the canonical server row lands');
 });
 
 test('offer rows: updated_at renders a "checked … ago" stamp, absent otherwise', async () => {

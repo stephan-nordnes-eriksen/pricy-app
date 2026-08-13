@@ -342,7 +342,11 @@ function fetchMyReviews() {
 // upserts (create-or-edit-your-own) and the refetched canonical rows replace
 // the optimistic one — which is also what dedupes an edit instead of stacking
 // a second card.
-function postReview(r) {
+// PROBLEMS.md #5: a refused write must not leave the optimistic card looking
+// saved. `prev` is the pre-mutation items snapshot — on failure the store
+// rolls back and the rejection (a short Norwegian message, which is what the
+// modal's err slot renders) propagates to the awaiting WriteReviewModal.
+function postReview(r, prev) {
   return fetchJson('/api/reviews', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -350,19 +354,27 @@ function postReview(r) {
       product_id: r.prodId, claims: r.claims, plus: r.plus, minus: r.minus,
       shop: r.shop, paid: r.paid, show_paid: r.showPaid, title: r.title, body: r.body,
     }),
-  }).then(({ reviews }) => applyReviews(r.prodId, reviews)).catch(() => {});
+  }).then(({ reviews }) => applyReviews(r.prodId, reviews)).catch(() => {
+    ReviewStore.items = prev;
+    ReviewStore.emit();
+    throw new Error('Kunne ikke lagre omtalen — prøv igjen.');
+  });
 }
 const _revAdd = ReviewStore.add;
 ReviewStore.add = function (r) {
+  // slice: update() assigns into the live array, so a bare reference would
+  // snapshot the post-edit row
+  const prev = this.items.slice();
   _revAdd.call(this, r);
-  if (ME && typeof fetch === 'function') postReview(r);
+  if (ME && typeof fetch === 'function') return postReview(r, prev);
 };
 const _revUpdate = ReviewStore.update;
 ReviewStore.update = function (id, patch) {
   const cur = this.items.find(x => x.id === id);
+  const prev = this.items.slice();
   _revUpdate.call(this, id, patch);
   // same create-or-edit endpoint; the patch carries no prodId, the row does
-  if (ME && cur && typeof fetch === 'function') postReview({ ...cur, ...patch });
+  if (ME && cur && typeof fetch === 'function') return postReview({ ...cur, ...patch }, prev);
 };
 const _revRemove = ReviewStore.remove;
 ReviewStore.remove = function (id) {
