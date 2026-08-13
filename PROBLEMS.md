@@ -103,7 +103,7 @@ individually but the synchronous hydration bodies (`hydrateMe`/`hydrateFeed`/
 testing. **Fix:** `.catch` that still calls `render`.
 
 ### 8. ✅ GDPR account deletion can 503 mid-way, leaving deleted users in review aggregates
-**Review 2026-08-12:** Must be resolved. — FIXED 2026-08-13: `refreshReviewMetas` batches all products (~3 subrequests per 45 products, not 3 each).
+**Review 2026-08-12:** Must be resolved. — FIXED 2026-08-13 (4b92f14): `refreshReviewMetas` batches all products (~3 subrequests per 45, not 3 each).
 `worker/index.js:2393-2414`
 After the atomic delete batch, `refreshReviewMeta` runs per reviewed product
 (~3 subrequests each). A user with 16+ reviewed products exceeds the ~50-
