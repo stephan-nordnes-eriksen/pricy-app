@@ -122,6 +122,7 @@ function WriteReviewModal({ p, review, onClose, onDone }) {
   const [csign, setCsign] = useState(true);
   const [ctext, setCtext] = useState('');
   const [err, setErr] = useState(null);
+  const [busy, setBusy] = useState(false);
   const pool = TRAIT_POOL[p.cat] || TRAIT_POOL._;
   const sugP = [...new Set([...pool.plus, ...plus])];
   const sugM = [...new Set([...pool.minus, ...minus])];
@@ -129,12 +130,19 @@ function WriteReviewModal({ p, review, onClose, onDone }) {
   const toggle = (setter) => (t) => setter(s => { const x = new Set(s); x.has(t) ? x.delete(t) : x.add(t); return x; });
   const togglePlus = toggle(setPlus), toggleMinus = toggle(setMinus);
   const addCustom = () => { const t = ctext.trim(); if (!t) return; (csign ? togglePlus : toggleMinus)(t); setCtext(''); };
-  const submit = () => {
+  const submit = async () => {
     if (CLAIMS.some(c => !claims[c.key])) { setErr('Ta stilling til de tre påstandene først — «Vet ikke» er også et svar.'); return; }
-    const payload = { claims, plus: [...plus], minus: [...minus], shop, paid: +paid > 0 ? Math.round(+paid) : null, showPaid: +paid > 0 ? showPaid : false, title: title.trim(), body: body.trim() };
-    if (review) ReviewStore.update(review.id, payload);
-    else ReviewStore.add({ prodId: p.id, author: 'Du', ...payload });
-    onDone();
+    const payload = { claims, plus: [...plus], minus: [...minus], shop, paid: +paid > 0 ? Math.min(1_000_000, Math.round(+paid)) : null, showPaid: +paid > 0 ? showPaid : false, title: title.trim(), body: body.trim() };
+    setBusy(true); setErr(null);
+    try {
+      const res = review ? ReviewStore.update(review.id, payload) : ReviewStore.add({ prodId: p.id, author: 'Du', ...payload });
+      await Promise.resolve(res);
+      onDone();
+    } catch (e) {
+      const m = e && typeof e.message === 'string' && e.message.trim() && e.message.length <= 120 ? e.message : 'Kunne ikke lagre omtalen — prøv igjen.';
+      setErr(m);
+      setBusy(false);
+    }
   };
   return (
     <div className="overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -169,7 +177,7 @@ function WriteReviewModal({ p, review, onClose, onDone }) {
             <RevStep n="3" t="Hvor og til hvilken pris?" />
             <div className="revseg revseg--wrap">
               {shops.map(s => <button key={s} type="button" className={shop === s ? 'is-on is-y' : ''} onClick={() => { setOtherOn(false); setShop(shop === s ? null : s); }}>{s}</button>)}
-              {otherOn ? <input className="othershop" autoFocus placeholder="butikknavn" defaultValue={shops.includes(shop) ? '' : shop || ''} onChange={e => setShop(e.target.value.trim() || null)} /> : <button type="button" className="is-dash" onClick={() => { setShop(null); setOtherOn(true); }}>annen butikk…</button>}
+              {otherOn ? <input className="othershop" autoFocus placeholder="butikknavn" defaultValue={shops.includes(shop) ? '' : shop || ''} maxLength={60} onChange={e => setShop(e.target.value.trim() || null)} /> : <button type="button" className="is-dash" onClick={() => { setShop(null); setOtherOn(true); }}>annen butikk…</button>}
             </div>
             <div className="paidrow">
               <span className="paidin">kr <input type="number" min="0" placeholder="—" value={paid} onChange={e => setPaid(e.target.value)} /></span>
@@ -183,7 +191,7 @@ function WriteReviewModal({ p, review, onClose, onDone }) {
               <input value={title} maxLength={80} placeholder="Oppsummer med én setning" onChange={e => setTitle(e.target.value)} />
             </div>
             <div className="revmodal__field">
-              <textarea rows={3} value={body} placeholder="Hva bør andre vite? Hold det konkret." onChange={e => setBody(e.target.value)}></textarea>
+              <textarea rows={3} value={body} maxLength={2000} placeholder="Hva bør andre vite? Hold det konkret." onChange={e => setBody(e.target.value)}></textarea>
             </div>
           </div>
           {err && <div className="revmodal__err"><Icon name="alert-triangle" size={14} /> {err}</div>}
@@ -191,7 +199,7 @@ function WriteReviewModal({ p, review, onClose, onDone }) {
             <span className="revhint">Bare steg 1 kreves — resten gjør omtalen rikere.</span>
             <div style={{ display: 'flex', gap: 'var(--s-3)' }}>
               <Btn variant="ghost" onClick={onClose}>Avbryt</Btn>
-              <Btn variant="primary" icon="check" onClick={submit}>{review ? 'Lagre endringer' : 'Send omtalen'}</Btn>
+              <Btn variant="primary" icon="check" disabled={busy} onClick={submit}>{review ? 'Lagre endringer' : 'Send omtalen'}</Btn>
             </div>
           </div>
         </div>
