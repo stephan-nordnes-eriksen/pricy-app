@@ -27,6 +27,14 @@ if (has('--fetch') || !existsSync(CACHE)) {
 }
 const { products } = JSON.parse(readFileSync(CACHE, 'utf8'));
 
+// The ruleset key comes from the BRICK (worker/index.js facetKeyOf), not
+// r.cat — post gpc-strict that's the segment display name, which names no
+// RULES entry, so scoring with the default derived undefined on every row.
+const GPC = JSON.parse(readFileSync(new URL('../worker/gpc.json', import.meta.url), 'utf8'));
+const NO = JSON.parse(readFileSync(new URL('../worker/gpcno.json', import.meta.url), 'utf8'));
+const gpcParent = (c) => GPC.bricks[c]?.[1] ?? GPC.classes[c]?.[1] ?? GPC.fams[c]?.[1];
+const facetKeyOf = (code) => { for (let c = code; c; c = gpcParent(c)) if (NO.facetKeys[c]) return NO.facetKeys[c]; return undefined; };
+
 // The baseline is the COMMITTED rules, imported straight from git — no temp
 // file, facetrules.js is self-contained (keep it that way or this breaks).
 const ref = arg('--ref', 'HEAD');
@@ -36,7 +44,8 @@ const base = (await import('data:text/javascript;base64,' + Buffer.from(src).toS
 const moves = {};
 let changed = 0;
 for (const r of products) {
-  const a = base(r) ?? {}, b = deriveFacets(r) ?? {};
+  const key = facetKeyOf(r.brick);
+  const a = base(r, key) ?? {}, b = deriveFacets(r, key) ?? {};
   let hit = false;
   for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
     if (JSON.stringify(a[k]) === JSON.stringify(b[k])) continue;
