@@ -1627,7 +1627,7 @@ test('a failing source freezes its shop without aborting the others', async () =
   const call = api({ DB });
   const before = await catBody(call); // seeds
 
-  const html = `<html><script type="application/ld+json">{"@type":"Product","offers":{"price":"1111","availability":"https://schema.org/InStock"}}</script></html>`;
+  const html = `<html><script type="application/ld+json">{"@type":"Product","offers":{"price":"1111","priceCurrency":"NOK","availability":"https://schema.org/InStock"}}</script></html>`;
   const env = {
     DB,
     SOURCES: { Komplett: { type: 'adtraction' }, Power: { type: 'scrape', urls: { airpods: 'https://www.power.no/airpods-pro' } } },
@@ -2413,6 +2413,22 @@ test('a literal null JSON-LD block does not abort the page scrape', async () => 
     assert.strictEqual(row?.price, 1499, 'the real Product block after the null one still scrapes');
   } finally { globalThis.fetch = realFetch; }
   assert.strictEqual(breadcrumbCat('<script type="application/ld+json">null</script>', 'X'), null);
+});
+
+// A SEK-priced page that omits priceCurrency used to ingest as NOK — the
+// guard only fired when a currency was present (PROBLEMS.md #16). Money
+// path: no declared currency = no row, never a guess.
+test('a JSON-LD offer without priceCurrency is refused, not assumed NOK', async () => {
+  const page = (offers) => `<script type="application/ld+json">${JSON.stringify({
+    '@type': 'Product', name: 'Stol', offers })}</script>`;
+  const realFetch = globalThis.fetch;
+  const rowsAt = async (offers) => {
+    globalThis.fetch = async () => new Response(page(offers));
+    try { return await scrapeSource('Chilli', { urls: { stol: 'https://www.chilli.no/stol' } }); }
+    finally { globalThis.fetch = realFetch; }
+  };
+  assert.deepStrictEqual(await rowsAt({ '@type': 'Offer', price: '1499' }), [], 'currency missing → no row');
+  assert.strictEqual((await rowsAt({ '@type': 'Offer', price: '1499', priceCurrency: 'nok' }))[0]?.price, 1499, 'lowercase nok still accepted');
 });
 
 test('a self-referencing sitemapindex terminates instead of recursing forever', async () => {

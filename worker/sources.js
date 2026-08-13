@@ -155,9 +155,12 @@ function scrapeRow(html, pageUrl) {
   if (!price) throw new Error('no JSON-LD offer price');
   // money path: multi-country shops (clasohlson.com/se, cdon SE mirrors)
   // serve the same JSON-LD shape in SEK — never ingest those as NOK.
-  // Skoringen sends a lowercase "nok" — compare case-insensitively
+  // Skoringen sends a lowercase "nok" — compare case-insensitively.
+  // No currency at all is refused too (PROBLEMS.md #16): a SEK page that
+  // omits priceCurrency used to ingest as NOK. schema.org/Google both
+  // require the field, so a legit shop carries it — don't guess.
   const currency = offer.priceCurrency ?? spec?.priceCurrency;
-  if (currency && currency.toUpperCase() !== 'NOK') throw new Error(`currency ${currency}, want NOK`);
+  if (currency?.toUpperCase?.() !== 'NOK') throw new Error(`currency ${currency ?? 'missing'}, want NOK`);
   return {
     price,
     name: name ? decodeXml(name).trim() : null,
