@@ -66,8 +66,16 @@ freezes every offer for that shop. **Fix:** try/clamp in `decodeXml`.
 
 ## MEDIUM
 
-### 5. Rejected reviews are silently discarded while the optimistic card stays on screen
+### 5. ✅ Rejected reviews are silently discarded while the optimistic card stays on screen
 **Review 2026-08-12:** Fix upstream: input limits + exception handling in the front-end.
+**Fixed 4a75850 + 4977e87 (2026-08-13):** upstream WriteReviewModal caps its
+free-text inputs at the server limits (textarea 2000, shop 60, paid clamped)
+and awaits the store call's verdict AuthCard-style — busy-disabled submit, a
+rejection renders in the err slot with the modal open. Boot's add/update
+wrappers return the postReview promise; on failure the store snapshot is
+restored (optimistic card gone) and a short Norwegian message rethrown.
+The WatchStore/ListStore offline-PUT swallow noted here remains open —
+tracked as part of the PWA offline story, not this fix.
 `boot.jsx:331-345` (and `ReviewStore.update` at 346-352)
 `postReview`'s `.catch(() => {})` swallows every failure and the optimistic
 `ReviewStore.add` card stays visible. Concrete trigger today: the worker 400s
