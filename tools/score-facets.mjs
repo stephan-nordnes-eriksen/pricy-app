@@ -10,20 +10,17 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { deriveFacets } from '../worker/facetrules.js';
+import { fetchHeads } from './catalog.mjs';
 
 const CACHE = new URL('.catalog.json', import.meta.url);
 const arg = (f, d) => { const i = process.argv.indexOf(f); return i < 0 ? d : (process.argv[i + 1] ?? true); };
 const has = f => process.argv.includes(f);
 
 if (has('--fetch') || !existsSync(CACHE)) {
-  const token = readFileSync(new URL('.ingest-token', import.meta.url), 'utf8').trim();
-  let body;
-  for (let i = 1; i <= 6 && !body; i++) {
-    const res = await fetch('https://pricy.no/api/catalog.json', { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) body = await res.text(); else console.error(`attempt ${i}: HTTP ${res.status}`);
-  }
-  if (!body) { console.error('catalog.json never returned 200 — it 503s under its own size, try again'); process.exit(1); }
-  writeFileSync(CACHE, body);
+  const token = process.env.INGEST_TOKEN || readFileSync(new URL('.ingest-token', import.meta.url), 'utf8').trim();
+  const base = process.env.PRICY_URL || 'https://pricy.no';
+  console.error(`paging ${base}/api/products …`);
+  writeFileSync(CACHE, JSON.stringify({ products: await fetchHeads(base, token) }));
 }
 const { products } = JSON.parse(readFileSync(CACHE, 'utf8'));
 

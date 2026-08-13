@@ -9,8 +9,10 @@
 // WILL misfire sometimes — a human reads, edits, runs. Env: PRICY_URL,
 // INGEST_TOKEN (falls back to tools/.ingest-token — the ops dump is gated).
 import { readFileSync } from 'node:fs';
+import { fetchHeads } from './catalog.mjs';
 const base = process.env.PRICY_URL || 'https://pricy.no';
-const auth = { authorization: `Bearer ${process.env.INGEST_TOKEN || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim()}` };
+const token = process.env.INGEST_TOKEN || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim();
+const auth = { authorization: `Bearer ${token}` };
 
 // NO + EN colour words → canonical option id (never contains '-' or '~')
 const COLORS = {
@@ -45,7 +47,7 @@ function tokensOf(p) {
 }
 
 const hidden = (await (await fetch(`${base}/api/products?hidden=1`, { headers: auth })).json()).products ?? [];
-const visible = (await (await fetch(`${base}/api/catalog.json`, { headers: auth })).json()).products ?? [];
+const visible = await fetchHeads(base, token); // catalog.json 503s at this size (PROBLEMS.md #15)
 // cluster pool: every discovered row, plus visible catalog heads so a
 // discovered SKU can match an existing product's family
 const pool = [

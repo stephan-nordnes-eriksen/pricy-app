@@ -19,17 +19,27 @@ const eans = JSON.parse(readFileSync(new URL('../worker/eans.json', import.meta.
 // hand-written) — never overwrite those; thin runtime-PATCHed sheets are
 // fair game, Icecat depth replaces them
 const curated = new Set(JSON.parse(readFileSync(new URL('../worker/seed.json', import.meta.url), 'utf8')).filter(p => p.specs).map(p => p.id));
-// the ops dump is bearer-gated (7.2 MB per hit) — same token as ingest
 const token = process.env.INGEST_TOKEN || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim();
-const { products } = await (await fetch(`${base}/api/catalog.json`, { headers: { authorization: `Bearer ${token}` } })).json();
+const { fetchHeads } = await import('./catalog.mjs');
+const candsOf = (p) => eans[p.id] || (/^ean-\d+$/.test(p.id) ? [p.id.slice(4)] : []);
+// catalog.json 503s at this size (PROBLEMS.md #15): page the lean all-heads
+// listing, then detail-fetch (`ids=`, which serves specs — list rows don't)
+// only the EAN-bearing candidates, to see which already have a sheet.
+const heads = await fetchHeads(base, token);
+const candIds = heads.filter(p => (force || !curated.has(p.id)) && candsOf(p).length).map(p => p.id);
+console.error(`${heads.length} heads, ${candIds.length} with an EAN — checking for existing sheets …`);
+const products = [];
+for (let i = 0; i < candIds.length; i += 100) {
+  const r = await fetch(`${base}/api/products?ids=${candIds.slice(i, i + 100).map(encodeURIComponent).join(',')}&cb=${Date.now()}`, { headers: { authorization: `Bearer ${token}` } });
+  if (!r.ok) { console.error(`ids page @${i}: HTTP ${r.status}`); process.exit(1); }
+  products.push(...(await r.json()).products);
+}
 const sheets = {};
-const miss = [];
+const miss = [`(${heads.length - candIds.length} heads skipped: no EAN, or curated)`];
 for (const p of products) {
   if (p.family) continue; // heads only — the PDP renders the head's sheet
-  if (curated.has(p.id) && !force) continue;
   if (p.specs?.groups && !force) continue; // already Icecat-depth
-  const cands = eans[p.id] || (/^ean-\d+$/.test(p.id) ? [p.id.slice(4)] : []);
-  if (!cands.length) { miss.push(`${p.id}: no EAN`); continue; }
+  const cands = candsOf(p);
   let hit = null;
   for (const ean of cands) {
     const r = await fetch(`https://live.icecat.biz/api?UserName=${user}&Language=${lang}&GTIN=${ean}`);

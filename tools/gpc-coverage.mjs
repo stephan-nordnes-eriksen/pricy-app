@@ -2,8 +2,9 @@
 // GPC coverage report (gpc-strict): how much of the live catalog the
 // resolver has categorized, where the GTINs are missing, and which stocked
 // bricks still render English titles (the overlay curation worklist).
-// Replays the bearer-gated /api/catalog.json — same discipline as the old
-// score-cats.mjs: measure the WHOLE catalog, never a sample.
+// Pages the all-heads /api/products listing (catalog.json 503s at this
+// size, PROBLEMS.md #15) — same discipline as the old score-cats.mjs:
+// measure the WHOLE catalog, never a sample.
 //
 //   node tools/gpc-coverage.mjs [--fetch] [--worklist N]
 //
@@ -12,6 +13,7 @@
 //     "SELECT status, COUNT(*) FROM gpc GROUP BY status"
 import fs from 'node:fs';
 import path from 'node:path';
+import { fetchHeads } from './catalog.mjs';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname);
 const CACHE = path.join(HERE, '.catalog.json');
@@ -19,10 +21,8 @@ const base = process.env.PRICY_URL || 'https://pricy.no';
 
 if (!fs.existsSync(CACHE) || process.argv.includes('--fetch')) {
   const token = process.env.INGEST_TOKEN || fs.readFileSync(path.join(HERE, '.ingest-token'), 'utf8').trim();
-  console.error(`fetching ${base}/api/catalog.json …`);
-  const res = await fetch(`${base}/api/catalog.json`, { headers: { authorization: `Bearer ${token}` } });
-  if (!res.ok) { console.error(`fetch failed: ${res.status}`); process.exit(1); }
-  fs.writeFileSync(CACHE, await res.text());
+  console.error(`paging ${base}/api/products …`);
+  fs.writeFileSync(CACHE, JSON.stringify({ products: await fetchHeads(base, token) }));
 }
 
 const { products } = JSON.parse(fs.readFileSync(CACHE, 'utf8'));
@@ -33,7 +33,7 @@ const pct = (a, b) => b ? (100 * a / b).toFixed(1) + '%' : '—';
 
 const withBrick = heads.filter(p => p.brick);
 const withEan = heads.filter(p => p.ean);
-console.log(`catalog: ${heads.length} heads (${products.length} rows incl. variants)`);
+console.log(`catalog: ${heads.length} heads`); // list rows are heads-only — variants never appear here
 console.log(`  gtin known:      ${withEan.length}  (${pct(withEan.length, heads.length)})`);
 console.log(`  brick resolved:  ${withBrick.length}  (${pct(withBrick.length, heads.length)})`);
 console.log(`  Ukategorisert:   ${heads.length - withBrick.length}  (${pct(heads.length - withBrick.length, heads.length)})`);
