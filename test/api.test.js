@@ -87,6 +87,22 @@ async function magicLogin(call, email) {
   return cookieOf(await call(link[1]));
 }
 
+// Seen live 2026-08-13: one transient D1 "internal error" at cold start got
+// its REJECTED promise cached in the schemaReady memo, and the isolate
+// replayed that same failure on every request until it died.
+test('a transient schema failure does not poison the isolate — the next request retries', async () => {
+  const DB = d1();
+  const realExec = DB.exec;
+  let failures = 1;
+  DB.exec = async (sql) => {
+    if (failures > 0) { failures--; throw new Error('D1_EXEC_ERROR: internal error'); }
+    return realExec(sql);
+  };
+  const call = api({ DB });
+  await assert.rejects(call('/api/products?ids=xm5'), /internal error/, 'the failing request itself still fails');
+  assert.strictEqual((await call('/api/products?ids=xm5')).status, 200, 'the retry succeeds instead of replaying the cached rejection');
+});
+
 test('signup issues an HttpOnly session cookie and /api/me returns the user', async () => {
   const call = api({ DB: d1() });
   assert.strictEqual((await call('/api/me')).status, 401, 'unauthenticated /api/me must 401');

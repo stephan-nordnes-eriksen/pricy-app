@@ -85,7 +85,8 @@ const SCHEMA = [
 // when the schema first has to *change* on the deployed db
 const schemaReady = new WeakMap();
 async function ensureSchema(db) {
-  if (!schemaReady.has(db)) schemaReady.set(db, (async () => {
+  if (!schemaReady.has(db)) {
+    const p = (async () => {
     await db.exec(SCHEMA);
     // migration for DBs created before password auth / settings existed
     await db.prepare('ALTER TABLE users ADD COLUMN password_hash TEXT').run().catch(() => {});
@@ -103,7 +104,14 @@ async function ensureSchema(db) {
       'show_paid INTEGER NOT NULL DEFAULT 0', 'updated_at INTEGER']) {
       await db.prepare(`ALTER TABLE reviews ADD COLUMN ${col}`).run().catch(() => {});
     }
-  })());
+    })();
+    // a transient D1 error must not poison the isolate: caching the REJECTED
+    // promise made every later request replay the same failure until the
+    // isolate died (seen live 2026-08-13, one internal error at cold start
+    // 500'd the colo for minutes) — evict so the next request retries
+    p.catch(() => schemaReady.delete(db));
+    schemaReady.set(db, p);
+  }
   await schemaReady.get(db);
 }
 
