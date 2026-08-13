@@ -112,8 +112,14 @@ remaining products keep `meta.udom` counting the deleted person's claims and
 paid amounts until someone else touches a review there. **Fix:** batch the
 refreshes, or queue them for the cron.
 
-### 9. Reachable free-plan CPU 503 on "All products"/Ukategorisert with a rating sort or facet filter
+### 9. ✅ Reachable free-plan CPU 503 on "All products"/Ukategorisert with a rating sort or facet filter
 **Review 2026-08-12:** Should be resolved.
+**Fixed 3d114ce (2026-08-13):** both halves of the suggested fix, no stored
+column: `rating` joined SQL_SORT as a SQL domScore expression (mirrors the JS
+one claim for claim), so the filterless Folkedommen sort rides the fast path;
+the residual JS scan on uncat/all-heads (filters, facet sorts) is capped at
+SCAN_MAX = 5,000 best-ranked rows — approximate total/prange beat a 503 — and
+the shipAgg offers fetch joins the same capped set.
 `worker/index.js:1275` (fast-path guard) → JS scan at 1298-1382
 The SQL fast path skips `sort=rating` and any facet filter, so
 `node=uncat&sort=rating` (~50k rows) or all-heads + a facet parses every meta
