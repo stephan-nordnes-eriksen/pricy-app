@@ -894,6 +894,9 @@ const chunked = async (ids, run, size = 45) => {
 
 // most rows one list query will return (see the cat= branch for why)
 const PAGE_MAX = 400;
+// JS-scan row budget for uncat/all-heads (PROBLEMS.md #9): 14k rows measured
+// ~85 ms CPU, the free-plan ceiling is ~40 ms — 5k keeps headroom.
+const SCAN_MAX = 5000;
 
 // auto-discovered products carry meta.hidden = 1 until enriched, and admin
 // PATCH {hidden: 1} demotes a bad row. hidden means NOT SERVED — to any
@@ -1261,16 +1264,23 @@ async function listIdsRaw(db, { node = null, limit = PAGE_MAX, offset = 0, sort 
   // all, since neither node serves fcounts. Sort whitelist mirrors sortRows:
   // blanks last either direction, tie = offer-count rank. Known drift, all
   // marginal: name/brand collate binary not 'nb' (æøå order), total falls
-  // back to item price (bestTotal covers 0.3% of offers), rating/facet sorts
-  // and any filter still take the JS path — those on uncat stay over budget
-  // until the paid plan or a SQL filter dialect.
+  // back to item price (bestTotal covers 0.3% of offers), facet sorts and any
+  // filter still take the JS path — capped at SCAN_MAX rows on these two nodes
+  // (below) so they answer approximately instead of 503ing (PROBLEMS.md #9).
   const BEST = 'MIN(o.price)', WAS = `json_extract(p.meta,'$.was')`;
+  // domScore in SQL, line for line: mean of y/(y+n) per claim, .5 for a claim
+  // with no decided answers, NULL (blanks last) when the row has no udom.
+  const CLAIM_SQL = (k) => {
+    const y = `COALESCE(json_extract(p.meta,'$.udom.c.${k}[0]'),0)`, n = `COALESCE(json_extract(p.meta,'$.udom.c.${k}[1]'),0)`;
+    return `CASE WHEN ${y} + ${n} > 0 THEN ${y} * 1.0 / (${y} + ${n}) ELSE 0.5 END`;
+  };
   const SQL_SORT = {
     best: BEST, total: BEST,
     drop: `CASE WHEN ${WAS} AND ${BEST} THEN ROUND((1.0 - ${BEST} / CAST(${WAS} AS REAL)) * 100.0) END`,
     save: `CASE WHEN ${WAS} IS NOT NULL AND ${BEST} IS NOT NULL THEN ${WAS} - ${BEST} END`,
     updated: 'MAX(o.updated_at)', shops: 'COUNT(o.product_id)',
     reviews: `json_extract(p.meta,'$.udom.n')`,
+    rating: `CASE WHEN json_extract(p.meta,'$.udom.c') IS NOT NULL THEN (${CLAIM_KEYS.map(CLAIM_SQL).join(' + ')}) / 3.0 END`,
     name: `json_extract(p.meta,'$.name') COLLATE NOCASE`,
     brand: `json_extract(p.meta,'$.brand') COLLATE NOCASE`,
   };
@@ -1297,11 +1307,18 @@ async function listIdsRaw(db, { node = null, limit = PAGE_MAX, offset = 0, sort 
       prange: pr && pr.lo != null ? [pr.lo, pr.hi] : undefined,
     };
   }
+  // ponytail: uncat/all-heads with a filter or a facet sort still needs the JS
+  // shape, and uncat is ~50k rows post-crawl — parsing every blob blows the
+  // free-plan ~40 ms CPU ceiling and 503s (PROBLEMS.md #9). Cap the scan at
+  // the SCAN_MAX best-ranked rows (offer count, the default order), so
+  // total/prange run over that slice, not the node — approximate beats dead.
+  // Lift on the paid plan, or when facet values get stored SQL-side.
+  const cap = (!node || node === 'uncat') ? SCAN_MAX : 0;
   const results = (await Promise.all(chunks.map(ch => db.prepare(
     `SELECT p.id, p.meta, p.rowid AS ri, MIN(o.price) AS best, COUNT(o.product_id) AS shops,
             MAX(CASE WHEN o.stock = 1 THEN 1 ELSE 0 END) AS stock, MAX(o.updated_at) AS updated
      FROM products p LEFT JOIN offers o ON o.product_id = p.id WHERE ${ch.where}
-     GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid`
+     GROUP BY p.id ORDER BY COUNT(o.product_id) DESC, p.rowid${cap ? ` LIMIT ${cap}` : ''}`
   ).bind(...ch.bind).all()))).flatMap(r => r.results);
   // >1 chunk loses the global default rank — restore it (offer count, rowid)
   if (chunks.length > 1) results.sort((a, b) => b.shops - a.shops || a.ri - b.ri);
@@ -1313,8 +1330,11 @@ async function listIdsRaw(db, { node = null, limit = PAGE_MAX, offset = 0, sort 
   // free/minEta on every row, and they ride every category response now
   let shipAgg = null;
   if (node || sort === 'total' || filters?.freeship || filters?.maxeta) {
-    const offs = (await Promise.all(chunks.map(ch => db.prepare(
-      `SELECT o.product_id, o.shop, o.price, o.ship, o.eta, o.stock FROM offers o JOIN products p ON p.id = o.product_id WHERE ${ch.where}`
+    const offs = (await Promise.all(chunks.map(ch => db.prepare(cap
+      ? `SELECT o.product_id, o.shop, o.price, o.ship, o.eta, o.stock FROM offers o JOIN (
+           SELECT p.id FROM products p LEFT JOIN offers o2 ON o2.product_id = p.id WHERE ${ch.where}
+           GROUP BY p.id ORDER BY COUNT(o2.product_id) DESC, p.rowid LIMIT ${cap}) s ON s.id = o.product_id`
+      : `SELECT o.product_id, o.shop, o.price, o.ship, o.eta, o.stock FROM offers o JOIN products p ON p.id = o.product_id WHERE ${ch.where}`
     ).bind(...ch.bind).all()))).flatMap(r => r.results);
     shipAgg = {};
     for (const o of offs) {

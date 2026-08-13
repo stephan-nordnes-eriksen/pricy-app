@@ -2245,6 +2245,24 @@ test('uncat SQL fast path: filterless sort pages in SQL with total/brands/prange
   assert.ok(!body.meta.prange || (body.meta.prange[0] <= body.meta.prange[1]), 'prange is [lo, hi]');
 });
 
+// PROBLEMS.md #9: sort=rating on uncat/all-heads used to fall through to the
+// whole-node JS scan (a free-plan CPU 503 at ~50k rows). It rides the SQL fast
+// path now — the SQL domScore expression must rank exactly like the JS one.
+test('all-heads sort=rating rides the SQL fast path and mirrors domScore', async () => {
+  const call = api({ DB: d1() });
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  // 1.0, .667, .5 (all undecided counts .5), 0 — then unreviewed rows (NULL) last
+  for (const [id, c] of [['xm5', 'yyy'], ['bose-ultra', 'yyn'], ['senn-m4', 'uuu'], ['airpods', 'nnn']]) {
+    await call('/api/reviews', { method: 'POST', body: { product_id: id, ...REV(c) }, cookie: ola });
+  }
+  const body = await (await call('/api/products?sort=rating&dir=desc')).json();
+  const ids = body.products.map(p => p.id);
+  assert.deepStrictEqual(ids.slice(0, 4), ['xm5', 'bose-ultra', 'senn-m4', 'airpods'],
+    'SQL rating sort ranks the claim score best-first, matching the JS domScore');
+  assert.ok(ids.length > 4 && body.products[4].dom === undefined, 'unreviewed rows sort after every scored one');
+  assert.strictEqual(body.meta.total, body.meta.products, 'fast path serves the histogram total');
+});
+
 test('filterless list memo invalidates on ingest: a new row reaches the page and the total at once', async () => {
   const DB = d1();
   const env = { DB, INGEST_TOKEN: 'sekrit-token' };
