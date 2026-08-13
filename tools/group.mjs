@@ -106,8 +106,8 @@ for (const members of Object.values(clusters)) {
   })) };
   const vlabel = (m) => axes.map(ax => ax === 'storage' ? gbLabel(m.storage) : cap(m.color)).join(' · ');
 
-  console.log(`# head ${head.id} gets the axes (PATCH also promotes it — fill cat/kw):`);
-  console.log(curl('PATCH', `/api/admin/products/${head.id}`, { cat: 'FILL_ME', icon: 'package', kw: '', variants, hidden: null }));
+  console.log(`# head ${head.id} gets the axes (PATCH also promotes it — fill the brick, codes in worker/gpc.json, or drop it for Ukategorisert):`);
+  console.log(curl('PATCH', `/api/admin/products/${head.id}`, { brick: 'FILL_ME_8_DIGITS', variants, hidden: null }));
   for (const m of members) {
     if (m === head) continue;
     console.log(curl('POST', '/api/admin/alias', {
