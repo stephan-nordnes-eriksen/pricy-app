@@ -419,8 +419,10 @@ Two Claude Design projects feed this repo:
   kept; a failed or unusable answer falls back to the drops mode. The
   upstream `buyNowApi` contract grew to `(p, best, added)` — boot POSTs
   one `/api/buy` per add-on (main purchase stands if an add-on fails).
-  Upstream gap: the section header always says "biggest drops at {shop}"
-  even when a partner picked the rows.
+  Partner rows ride with a `label` (`cfg.label` or "recommended by
+  {shop}") which boot returns as upstream's `{items, label}` form
+  (synced 2026-08-14); the drops mode serves none, keeping upstream's
+  default "biggest drops at {shop}" header.
 
 ## Rules
 

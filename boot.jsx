@@ -457,11 +457,14 @@ window.addonSuggestApi = (p, shop) =>
   fetchJson('/api/addons?id=' + encodeURIComponent(p.id) + '&shop=' + encodeURIComponent(shop))
     .then(d => {
       hydrateCatalog({ products: d.products });
-      return d.products.map(r => {
+      const items = d.products.map(r => {
         const c = prodById(r.id) || r;
         const o = (c.offers || []).find(o => o.shop === shop && o.stock !== false);
         return o && { p: c, offer: o };
       }).filter(Boolean);
+      // partner-picked rows carry a label ("recommended by X") — the bare
+      // array keeps upstream's default "biggest drops at {shop}"
+      return d.label ? { items, label: d.label } : items;
     })
     .catch(() => []);
 

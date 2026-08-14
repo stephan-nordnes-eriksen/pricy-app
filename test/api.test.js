@@ -1876,6 +1876,8 @@ test('GET /api/addons: biggest drops at the shop by default, partner EANs when c
   assert.ok(eans.airpods.map(norm).includes(sawBody.ean), 'partner is sent one of the product\'s EANs');
   assert.match(sawBody.customer_id, /^[0-9a-f]{64}$/, 'cid: true sends a pseudonymous hash, never the email');
   assert.deepStrictEqual(res2.products.map(p => p.id), [partner.id], 'partner EANs resolve through the eans table; unknowns drop');
+  assert.strictEqual(res2.label, `recommended by ${shop}`, 'partner rows carry a label; drops mode serves none');
+  assert.strictEqual(res.label, undefined);
 
   // a failing partner endpoint falls back to the default drops
   const res3 = await withFetch(async () => { throw new Error('down'); },

@@ -1472,7 +1472,9 @@ async function addonRows(db, env, user, id, shop) {
           // partner order is the ranking (rowsFor preserves caller order);
           // unrouted EANs fall through to the discovered ean-* id
           const rows = await usable([...new Set(eans.map(e => routed.get(e) || 'ean-' + e))]);
-          if (rows.length) return rows;
+          // label tells the modal these are the shop's own picks, not our
+          // drops ranking (upstream renders it in the section header)
+          if (rows.length) return { products: rows, label: cfg.label || `recommended by ${shop}` };
         }
       }
     } catch (e) { console.error(`addon partner ${shop} failed: ${e.message}`); }
@@ -1481,7 +1483,7 @@ async function addonRows(db, env, user, id, shop) {
   const { results } = await db.prepare(
     `SELECT p.id FROM products p JOIN offers o ON o.product_id = p.id AND o.shop = ? AND o.stock = 1 WHERE p.id != ? AND json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')} AND json_extract(p.meta, '$.was') > 0 GROUP BY p.id ORDER BY 1.0 - MIN(o.price) * 1.0 / json_extract(p.meta, '$.was') DESC LIMIT 3`
   ).bind(shop, id).all();
-  return usable(results.map(r => r.id));
+  return { products: await usable(results.map(r => r.id)) }; // no label = upstream's default
 }
 
 // Global aggregates + per-category head counts — served as meta on every
@@ -2815,7 +2817,7 @@ export default {
       const id = url.searchParams.get('id') || '';
       const shop = url.searchParams.get('shop') || '';
       if (!id || !shop) return json({ error: 'id and shop required' }, 400);
-      return json({ products: await addonRows(db, env, user, id, shop) });
+      return json(await addonRows(db, env, user, id, shop));
     }
 
     if (route === 'POST /api/buy') {
