@@ -232,12 +232,16 @@ function BuyNowModal({ p, onClose }) {
   const [busy, setBusy] = useState(false);
   const [order, setOrder] = useState(null);
   const [err, setErr] = useState('');
+  const [added, setAdded] = useState([]); // add-on items from the same shop
+  const toggleAddon = (s) => setAdded(a => a.some(x => x.p.id === s.p.id) ? a.filter(x => x.p.id !== s.p.id) : [...a, s]);
+  const total = best.price + added.reduce((t, s) => t + s.offer.price, 0);
+  const saved = (p.was - best.price) + added.reduce((t, s) => t + Math.max(0, (s.p.was || s.offer.price) - s.offer.price), 0);
   const buy = () => {
     if (busy) return;
     setBusy(true); setErr('');
-    const call = window.buyNowApi; // production overrides this with the real purchase API
-    const result = call ? call(p, best)
-      : new Promise(res => setTimeout(() => res(store.buyNow(p.id, best.shop, best.price)), 1100));
+    const call = window.buyNowApi; // production overrides this with the real purchase API (gets the add-ons too)
+    const result = call ? call(p, best, added)
+      : new Promise(res => setTimeout(() => { added.forEach(s => store.buyNow(s.p.id, s.offer.shop, s.offer.price)); res(store.buyNow(p.id, best.shop, best.price)); }, 1100));
     Promise.resolve(result)
       .then(o => { setOrder(o); setPhase('done'); })
       .catch(e => setErr((e && e.message) || 'Purchase failed — you were not charged'))
@@ -257,13 +261,14 @@ function BuyNowModal({ p, onClose }) {
             <div className="wrow__img"><ProdImg p={p} fill size={26} /></div>
             <div style={{ minWidth: 0 }}>
               <b>{p.name}</b>
-              <div className="meta">{best.shop} · Just now · ref {order.exec.ref}</div>
+              <div className="meta">{best.shop} · Just now · ref {order.exec.ref}{added.length ? ' · ' + (1 + added.length) + ' items' : ''}</div>
             </div>
           </div>
+          {added.length > 0 && <div className="addon__rows">{added.map(s => <div key={s.p.id} className="addon__row addon__row--flat"><span className="addon__img"><ProdImg p={s.p} fill size={18} /></span><span className="addon__txt"><b>{s.p.name}</b></span><span className="addon__price">kr {fmt(s.offer.price)}</span></div>)}</div>}
           <div className="buy-modal__nums">
-            <div><span>Paid</span><Price value={best.price} size={24}></Price></div>
+            <div><span>Paid</span><Price value={total} size={24}></Price></div>
             <div><span>Delivery</span><b>{best.eta}</b></div>
-            <div><span>vs. was</span><b className="pos">−kr {fmt(p.was - best.price)}</b></div>
+            <div><span>vs. was</span><b className="pos">−kr {fmt(saved)}</b></div>
           </div>
           <div className="buy-modal__rows">
             <div><Icon name="wallet" size={14} /> Charged to {store.payment === 'vipps' ? 'Vipps ••481' : 'Visa ••4521'}</div>
@@ -283,7 +288,7 @@ function BuyNowModal({ p, onClose }) {
             </div>
           </div>
           <div className="buy-modal__nums">
-            <div><span>You pay</span><Price value={best.price} size={24}></Price></div>
+            <div><span>You pay</span><Price value={total} size={24}></Price></div>
             <div><span>Was</span><b className="strike">kr {fmt(p.was)}</b></div>
             <div><span>Cap left</span><b>kr {fmt(store.cap - store.capUsed())}</b></div>
           </div>
@@ -292,10 +297,11 @@ function BuyNowModal({ p, onClose }) {
             <div><Icon name="file-check-2" size={14} /> Covered by your fullmakt · no fees, no markup</div>
             <div><Icon name="undo-2" size={14} /> 14-day angrerett from delivery</div>
           </div>
+          <AddonSuggest p={p} shop={best.shop} added={added} onToggle={toggleAddon} disabled={busy}></AddonSuggest>
           {err && <div className="formhint err"><Icon name="alert-triangle" size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />{err}</div>}
           <div style={{ display: 'flex', gap: 'var(--s-3)' }}>
             <Btn variant="ghost" onClick={onClose} style={{ flex: 1, justifyContent: 'center' }}>Cancel</Btn>
-            <Btn variant="dark" icon="zap" onClick={buy} style={{ flex: 2, justifyContent: 'center' }}>{busy ? 'Placing order…' : 'Buy for kr ' + fmt(best.price)}</Btn>
+            <Btn variant="dark" icon="zap" onClick={buy} style={{ flex: 2, justifyContent: 'center' }}>{busy ? 'Placing order…' : added.length ? 'Buy ' + (1 + added.length) + ' items for kr ' + fmt(total) : 'Buy for kr ' + fmt(total)}</Btn>
           </div>
         </div>
       )}

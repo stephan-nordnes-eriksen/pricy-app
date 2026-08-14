@@ -437,6 +437,30 @@ a.mchip:hover { background: var(--green-500); color: var(--ink-900); }
 .buy-modal__rows > div { display: flex; align-items: center; gap: 8px; }
 .buy-modal__rows .icon { color: var(--green-700); display: flex; }
 
+/* --- Buy now add-on suggestions ("what about these?") ---------- */
+.addon { display: flex; flex-direction: column; gap: var(--s-2); }
+.addon__head { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-600); }
+.addon__head .icon { color: var(--green-700); display: flex; }
+.addon__head span { color: var(--ink-400); text-transform: none; letter-spacing: 0; }
+.addon__rows { display: flex; flex-direction: column; border: var(--bw-hair) solid var(--ink-300); }
+.addon__row { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-3); width: 100%; background: none; border: 0; border-bottom: var(--bw-hair) solid var(--ink-300); cursor: pointer; text-align: left; font: inherit; }
+.addon__row:last-child { border-bottom: 0; }
+.addon__row:hover, .addon__row.is-on { background: var(--green-100, #eef7e9); }
+.addon__img { width: 34px; height: 34px; flex: none; display: flex; align-items: center; justify-content: center; border: var(--bw-hair) solid var(--ink-300); background: #fff; }
+.addon__txt { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.addon__txt b { font-family: var(--font-display); font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.addon__meta { font-family: var(--font-mono); font-size: 10px; color: var(--green-700); }
+.addon__price { font-family: var(--font-mono); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.addon__tick { width: 24px; height: 24px; flex: none; display: flex; align-items: center; justify-content: center; border: var(--bw) solid var(--ink-900); background: #fff; }
+.addon__row.is-on .addon__tick { background: var(--green-500); }
+.addon__row--flat, .addon__row--flat:hover { cursor: default; background: none; }
+.addon__row--skel { cursor: default; pointer-events: none; }
+.skl { background: var(--ink-300); animation: sklpulse 1.1s ease-in-out infinite; }
+.skl--img { width: 34px; height: 34px; flex: none; }
+.skl--txt { height: 12px; flex: 1; }
+.skl--num { width: 56px; height: 12px; }
+@keyframes sklpulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.7; } }
+
 /* --- Onboarding auto-buy step ---------------------------------- */
 .ob-ab-how { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); margin-bottom: var(--s-5); }
 .ob-ab-how > div { border: var(--bw) solid var(--ink-900); background: var(--paper); padding: var(--s-4); }
