@@ -403,6 +403,24 @@ Two Claude Design projects feed this repo:
   instructions), `POST /api/buy` + `PUT /api/autobuy` 404, and `/api/me`
   omits autobuy/purchases (the GDPR export stays complete). Flip = change
   the tweak default upstream, re-sync, flip the wrangler var, deploy.
+  **Buy-now cross-sell ("What about these?", 2026-08-14)**: upstream
+  `Addons.jsx` renders add-on suggestions inside BuyNowModal via
+  `window.addonSuggestApi(p, shop)`; boot points it at `GET /api/addons
+  ?id=&shop=` (session required, 404 under HIDE_AUTOBUY like the rest of
+  the buy surface). Default mode: top-3 biggest-drop% rows with an
+  in-stock offer at that shop (drop by the shop's own price vs `was`).
+  Partner mode: the `ADDON_SOURCES` var (`{shop: {url, cid?}}`, absent =
+  none, same pattern as SOURCES) — the shop's endpoint is POSTed
+  `{ean, customer_id?}` (customer_id only with `cid: true` = a per-shop
+  SHA-256 of the user id, never the email; 4 s timeout) and answers
+  ≤10 EANs (`{eans: […]}` or a bare array, eanKey-normalized on our
+  side), resolved through the D1 `eans` table (unrouted EANs try the
+  discovered `ean-*` id), served same-shop in-stock only, partner order
+  kept; a failed or unusable answer falls back to the drops mode. The
+  upstream `buyNowApi` contract grew to `(p, best, added)` — boot POSTs
+  one `/api/buy` per add-on (main purchase stands if an add-on fails).
+  Upstream gap: the section header always says "biggest drops at {shop}"
+  even when a partner picked the rows.
 
 ## Rules
 

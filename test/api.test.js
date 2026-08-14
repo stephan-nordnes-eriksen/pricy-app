@@ -314,6 +314,7 @@ test('HIDE_AUTOBUY hides every buy surface: MCP tools, /api/buy, /api/autobuy, t
   assert.ok(!('autobuy' in me) && !('purchases' in me), 'me blob must not carry autobuy/purchases');
   assert.strictEqual((await call('/api/autobuy', { method: 'PUT', body: { signed: true, orders: [] }, cookie: ola })).status, 404, 'PUT /api/autobuy must 404');
   assert.strictEqual((await call('/api/buy', { method: 'POST', body: { id: 'airpods' }, cookie: ola })).status, 404, 'POST /api/buy must 404');
+  assert.strictEqual((await call('/api/addons?id=airpods&shop=Elkjøp', { cookie: ola })).status, 404, 'GET /api/addons must 404');
 
   // GDPR export stays complete — the user's own data is not feature-flagged
   const exported = await (await call('/api/account/export', { cookie: ola })).json();
@@ -1836,6 +1837,50 @@ test('POST /api/buy records a real purchase for the web session, same table as M
   assert.deepStrictEqual(me.purchases[0], orders[0]);
 
   assert.strictEqual((await call('/api/buy', { method: 'POST', body: { id: 'nope' }, cookie })).status, 400, 'unknown product must not create an order');
+});
+
+test('GET /api/addons: biggest drops at the shop by default, partner EANs when configured', async () => {
+  const call = api({ DB: d1() });
+  assert.strictEqual((await call('/api/addons?id=airpods&shop=Elkjøp')).status, 401, 'session required');
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@nordmann.no', password: 'correcthorse1' } }));
+  const cat = await catBody(call);
+  const shopOf = (id) => cat.find(p => p.id === id).offers.find(o => o.stock !== false).shop;
+  const shop = shopOf('airpods');
+
+  // default mode: ≤3 other products with an in-stock offer at that shop,
+  // ranked by drop% off `was` using the shop's own price
+  const res = await (await call(`/api/addons?id=airpods&shop=${encodeURIComponent(shop)}`, { cookie })).json();
+  assert.ok(res.products.length > 0 && res.products.length <= 3);
+  const drops = res.products.map(p => {
+    assert.notStrictEqual(p.id, 'airpods', 'never suggests the product being bought');
+    const o = p.offers.find(o => o.shop === shop && o.stock !== false);
+    assert.ok(o, `${p.id} has no usable ${shop} offer`);
+    return 1 - o.price / p.was;
+  });
+  assert.deepStrictEqual(drops, [...drops].sort((a, b) => b - a), 'ranked by drop% descending');
+
+  // partner mode: the shop's endpoint gets {ean, customer_id} and answers
+  // with EANs; unknown EANs and the miss are dropped, partner order kept
+  const partner = cat.find(p => p.id !== 'airpods' && p.offers.some(o => o.shop === shop && o.stock !== false) && eans[p.id]);
+  const env2 = { DB: d1(), ADDON_SOURCES: { [shop]: { url: 'https://shop.example/reco', cid: true } } };
+  const call2 = api(env2);
+  const cookie2 = cookieOf(await call2('/api/auth/signup', { method: 'POST', body: { email: 'kari@nordmann.no', password: 'correcthorse1' } }));
+  await call2('/api/products?limit=1', {}); // seed before stubbing fetch
+  let sawBody;
+  const res2 = await withFetch(async (u, init) => {
+    assert.strictEqual(String(u), 'https://shop.example/reco');
+    sawBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ eans: [eans[partner.id][0], '9999999999999'] }));
+  }, async () => (await call2(`/api/addons?id=airpods&shop=${encodeURIComponent(shop)}`, { cookie: cookie2 })).json());
+  const norm = (e) => String(e).replace(/^0+/, ''); // eans table stores eanKey-normalized
+  assert.ok(eans.airpods.map(norm).includes(sawBody.ean), 'partner is sent one of the product\'s EANs');
+  assert.match(sawBody.customer_id, /^[0-9a-f]{64}$/, 'cid: true sends a pseudonymous hash, never the email');
+  assert.deepStrictEqual(res2.products.map(p => p.id), [partner.id], 'partner EANs resolve through the eans table; unknowns drop');
+
+  // a failing partner endpoint falls back to the default drops
+  const res3 = await withFetch(async () => { throw new Error('down'); },
+    async () => (await call2(`/api/addons?id=airpods&shop=${encodeURIComponent(shop)}`, { cookie: cookie2 })).json());
+  assert.deepStrictEqual(res3.products.map(p => p.id), res.products.map(p => p.id), 'fallback = default mode');
 });
 
 test('mcp: tools require login; signup → search → buy → history round-trips', async () => {

@@ -1438,6 +1438,52 @@ async function topDropIds(db, { limit = 4, perCat = false } = {}) {
   return [...new Set(ids)];
 }
 
+// "What about these?" add-on suggestions for the Buy now modal
+// (GET /api/addons?id=&shop=). Two modes: a partner shop configured in
+// env.ADDON_SOURCES ({shop: {url, cid?}}) is POSTed {ean, customer_id?}
+// (customer_id = a per-shop SHA-256 of the user id, only when cid is set —
+// stable for the shop, never the email or raw id) and answers with up to 10
+// EANs to cross-sell; every other shop — or a failed/unusable partner
+// answer — gets our default: biggest price drops sold by that same shop.
+async function addonRows(db, env, user, id, shop) {
+  const cfgs = typeof env.ADDON_SOURCES === 'string' ? JSON.parse(env.ADDON_SOURCES) : (env.ADDON_SOURCES || {});
+  const cfg = cfgs[shop];
+  // only rows the modal can actually add: an in-stock offer from this shop
+  const usable = async (ids) => (await rowsFor(db, ids, { expand: false }))
+    .filter(r => r.id !== id && (r.offers || []).some(o => o.shop === shop && o.stock !== false));
+  if (cfg?.url) {
+    try {
+      const ean = (await db.prepare('SELECT ean FROM eans WHERE product_id = ? LIMIT 1').bind(id).first())?.ean
+        || (id.startsWith('ean-') ? id.slice(4) : null);
+      if (ean) {
+        const body = { ean };
+        if (cfg.cid) body.customer_id = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${user.id}:${shop}`)))].map(b => b.toString(16).padStart(2, '0')).join('');
+        const res = await fetch(cfg.url, {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body), signal: AbortSignal.timeout(4000),
+        });
+        const ans = res.ok ? await res.json() : null;
+        const eans = (Array.isArray(ans) ? ans : ans?.eans || [])
+          .map(eanKey).filter(Boolean).slice(0, 10); // stored eanKey-normalized
+        if (eans.length) {
+          const routed = new Map((await db.prepare(
+            `SELECT ean, product_id FROM eans WHERE ean IN (${eans.map(() => '?').join(',')})`
+          ).bind(...eans).all()).results.map(r => [r.ean, r.product_id]));
+          // partner order is the ranking (rowsFor preserves caller order);
+          // unrouted EANs fall through to the discovered ean-* id
+          const rows = await usable([...new Set(eans.map(e => routed.get(e) || 'ean-' + e))]);
+          if (rows.length) return rows;
+        }
+      }
+    } catch (e) { console.error(`addon partner ${shop} failed: ${e.message}`); }
+  }
+  // default: biggest drop % at this shop, by the shop's own in-stock price
+  const { results } = await db.prepare(
+    `SELECT p.id FROM products p JOIN offers o ON o.product_id = p.id AND o.shop = ? AND o.stock = 1 WHERE p.id != ? AND json_extract(p.meta, '$.family') IS NULL AND ${visible('p.meta')} AND json_extract(p.meta, '$.was') > 0 GROUP BY p.id ORDER BY 1.0 - MIN(o.price) * 1.0 / json_extract(p.meta, '$.was') DESC LIMIT 3`
+  ).bind(shop, id).all();
+  return usable(results.map(r => r.id));
+}
+
 // Global aggregates + per-category head counts — served as meta on every
 // /api/products response so the UI can show real totals off a partial cache.
 //
@@ -2761,6 +2807,17 @@ export default {
     // Web Buy now — the exact MCP buy_now path (the session cookie token
     // lives in the same sessions table as Mcp-Session-Id, so mcpTool's
     // own auth lookup just works)
+    // Buy now's "What about these?" cross-sell rows — same kill switch as
+    // the modal that renders them
+    if (route === 'GET /api/addons') {
+      if (env.HIDE_AUTOBUY) return json({ error: 'not found' }, 404);
+      if (!user) return json({ error: 'unauthenticated' }, 401);
+      const id = url.searchParams.get('id') || '';
+      const shop = url.searchParams.get('shop') || '';
+      if (!id || !shop) return json({ error: 'id and shop required' }, 400);
+      return json({ products: await addonRows(db, env, user, id, shop) });
+    }
+
     if (route === 'POST /api/buy') {
       if (env.HIDE_AUTOBUY) return json({ error: 'not found' }, 404);
       if (!user) return json({ error: 'unauthenticated' }, 401);

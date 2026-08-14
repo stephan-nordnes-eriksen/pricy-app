@@ -421,24 +421,49 @@ AutobuyStore.emit = function () {
 // the MCP buy_now tool, and the server-charged price/order ref win over the
 // UI's snapshot. The synced BuyNowModal awaits window.buyNowApi when present;
 // until that upstream contract lands, the modal ignores this and stays local.
-window.buyNowApi = (p, best) => fetch('/api/buy', {
-  method: 'POST',
-  headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ id: p.id, shop: best.shop }),
-}).then(async r => {
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || 'purchase failed — you were not charged');
-  const order = {
-    id: p.id, max: data.price_nok, expires: '—', shops: data.shop, status: 'executed',
+window.buyNowApi = async (p, best, added = []) => {
+  const post = (id, shop) => fetch('/api/buy', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ id, shop }),
+  }).then(async r => {
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'purchase failed — you were not charged');
+    return data;
+  });
+  const orderOf = (id, data) => ({
+    id, max: data.price_nok, expires: '—', shops: data.shop, status: 'executed',
     exec: {
       shop: data.shop, price: data.price_nok, at: 'Just now', ref: 'PY-' + data.order_id,
       angrerett: shortDate(Date.now() + 14 * 864e5),
     },
-  };
-  AutobuyStore.orders = [...AutobuyStore.orders, order];
+  });
+  const order = orderOf(p.id, await post(p.id, best.shop));
+  // "What about these?" add-ons ride the same endpoint, one order each; the
+  // main purchase stands even if an add-on fails.
+  // ponytail: one POST per item — a multi-item order endpoint when payment is real
+  const extras = (await Promise.all(added.map(s =>
+    post(s.p.id, s.offer.shop).then(d => orderOf(s.p.id, d)).catch(() => null)))).filter(Boolean);
+  AutobuyStore.orders = [...AutobuyStore.orders, order, ...extras];
   AutobuyStore.emit();
   return order;
-});
+};
+
+// "What about these?" rows in BuyNowModal (AddonSuggest awaits this): the
+// server picks the mode — partner-shop endpoint or biggest drops at that
+// shop — and its rows ride the normal hydrate merge before pairing with
+// that shop's offer.
+window.addonSuggestApi = (p, shop) =>
+  fetchJson('/api/addons?id=' + encodeURIComponent(p.id) + '&shop=' + encodeURIComponent(shop))
+    .then(d => {
+      hydrateCatalog({ products: d.products });
+      return d.products.map(r => {
+        const c = prodById(r.id) || r;
+        const o = (c.offers || []).find(o => o.shop === shop && o.stock !== false);
+        return o && { p: c, offer: o };
+      }).filter(Boolean);
+    })
+    .catch(() => []);
 
 // Recently viewed: per-browser localStorage ids, hydrated into the prototype's
 // RECENT array in place (same splice seam as CATALOG/WATCHED/FEED) so the home
