@@ -413,7 +413,76 @@ function shippingInfo(html) {
   return null;
 }
 
-const SOURCES = { adtraction: adtractionSource, scrape: scrapeSource, discover: discoverSource };
+// g:-namespaced RSS/Atom fields → lowercased local-name→text map. First
+// write wins — unlike xmlFields' overwrite — because g:shipping is a NESTED
+// block carrying its own g:price (39 NOK shipping must never become the
+// product price) and g:product_type may repeat.
+function gFields(el) {
+  const out = {};
+  for (const [, tag, body] of el.matchAll(/<(?:g:)?(\w+)(?:\s[^>]*)?>([\s\S]*?)<\/(?:g:)?\1>/g)) {
+    const k = tag.toLowerCase();
+    if (!(k in out)) out[k] = decodeXml(body).trim();
+  }
+  return out;
+}
+
+// Zero-integration onboarding (plans/shop-partnership-ideas.md idea 3b): the
+// shop hands us the URL of the Google Shopping feed its platform already
+// generates (Shopify/WooCommerce/Mystore/24Nettbutikk all export one out of
+// the box) — joining pricy is one SOURCES entry, no work on their side.
+// RSS <item> or Atom <entry>, g:-namespaced fields; gtin-keyed with the same
+// slugId fallback discovery uses. cfg: { url, ua? }. Stream-parsed like
+// adtractionSource — platform feeds run to tens of MB.
+export async function feedSource(shop, cfg) {
+  if (!cfg.url) throw new Error(`no feed url for ${shop}`);
+  const res = await fetch(cfg.url, { headers: { 'user-agent': cfg.ua === 'browser' ? BROWSER_UA : UA } });
+  if (!res.ok) throw new Error(`feed fetch ${res.status}`);
+
+  // money path: g:price is "<number> <currency>" and the currency is
+  // mandatory in the format — same refusal rule as scrapeRow (PROBLEMS.md
+  // #16), a SEK or currency-less value must never ingest as NOK
+  const nokPrice = (v) => v && /(^|\s)NOK(\s|$)/i.test(v) ? parsePrice(v) : null;
+  // g:sale_price only counts inside its effective window ("start/end" ISO
+  // range); no window = always on. Invalid dates compare NaN → inactive.
+  const now = Date.now();
+  const saleActive = (r) => { if (!r) return true; const [a, b] = String(r).split('/'); return new Date(a) <= now && now <= new Date(b); };
+
+  const rows = [];
+  let buf = '';
+  const scan = () => {
+    let m;
+    while ((m = buf.match(/<(item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/\1>/i))) {
+      buf = buf.slice(m.index + m[0].length);
+      const f = gFields(m[2]);
+      const name = pick(f, 'title');
+      const key = eanKey(pick(f, 'gtin', 'gtin13', 'ean'));
+      const price = (saleActive(f.sale_price_effective_date) && nokPrice(f.sale_price)) || nokPrice(f.price);
+      const product_id = key ? `ean-${key}` : (name ? slugId(pick(f, 'brand'), name) : null);
+      if (!product_id || !name || !price) continue;
+      // Atom's <link href="…"/> is self-closing — an attribute, not a body
+      const url = pick(f, 'link') ?? (decodeXml(m[2].match(/<link[^>]*\shref=["']([^"']+)["']/i)?.[1] ?? '') || null);
+      rows.push({
+        product_id, shop, price, ean: key || null,
+        name,
+        brand: pick(f, 'brand') ?? null,
+        srcCat: pick(f, 'product_type', 'google_product_category') ?? null,
+        ship: null, // ponytail: g:shipping is a nested per-country block; parse it when a feed shop asks
+        stock: stockOf(pick(f, 'availability')),
+        eta: null,
+        url,
+        image: pick(f, 'image_link', 'image') ?? null,
+      });
+    }
+    if (buf.length > 1 << 20) buf = buf.slice(-(1 << 19));
+  };
+  for await (const chunk of res.body.pipeThrough(new TextDecoderStream())) {
+    buf += chunk;
+    scan();
+  }
+  return rows;
+}
+
+const SOURCES = { adtraction: adtractionSource, scrape: scrapeSource, discover: discoverSource, feed: feedSource };
 
 // One failed source = that shop's offers freeze at their last stored price
 // (ingest only upserts rows it receives); it never aborts the other shops.

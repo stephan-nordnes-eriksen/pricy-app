@@ -290,8 +290,14 @@ Two Claude Design projects feed this repo:
 - real price sources (4d) live in `worker/sources.js`: per-shop config in
   the `SOURCES` JSON var (wrangler.jsonc) — `adtraction` (per-brand XML
   feeds, URLs in the `ADTRACTION_FEEDS` secret, rows emitted as `ean-*`
-  ids that ingest routes through the D1 `eans` table) and `scrape` (first-party
-  JSON-LD off the shop's own product pages). **Never scrape competing
+  ids that ingest routes through the D1 `eans` table), `scrape` (first-party
+  JSON-LD off the shop's own product pages) and `feed` (2026-08-15,
+  zero-integration onboarding — plans/shop-partnership-ideas.md #3b,
+  runbook ONBOARDING.md: the Google Shopping RSS/Atom feed every Norwegian
+  platform exports, `{type: "feed", url}`; gtin-keyed with the discovery
+  slugId fallback, g:sale_price honored inside its effective window, NOK
+  required on every price — g:shipping's nested g:price never wins because
+  gFields is first-write, unlike xmlFields). **Never scrape competing
   comparison services (Prisjakt etc.).** A shop with no/failing source
   freezes at its last stored price; empty `SOURCES` (current prod state)
   makes the cron a no-op. The interim price writer is manual:

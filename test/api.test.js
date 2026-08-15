@@ -1576,6 +1576,39 @@ test('adtraction source: EAN-matched feed rows update offers with deep link; unk
   }
 });
 
+test('feed source: Google Shopping feed — gtin routing, sale window, currency guard, slug fallback', async () => {
+  const [pid, [ean]] = Object.entries(eans)[0];
+  const DB = d1();
+  const call = api({ DB });
+  await catBody(call); // seeds
+
+  const rss = `<?xml version="1.0"?><rss xmlns:g="http://base.google.com/ns/1.0"><channel><title>ShopX</title>
+    <item><g:id>x1</g:id><title>Matched vare</title><g:gtin>${ean}</g:gtin><g:price>2 599.00 NOK</g:price><g:sale_price>2199.00 NOK</g:sale_price><g:sale_price_effective_date>2000-01-01T00:00+01:00/2099-01-01T00:00+01:00</g:sale_price_effective_date><g:availability>in_stock</g:availability><g:brand>Apple</g:brand><g:product_type>Elektronikk &gt; Hodetelefoner</g:product_type><link>https://shopx.no/p/x1</link><g:image_link>https://shopx.no/i/x1.jpg</g:image_link><g:shipping><g:country>NO</g:country><g:price>39.00 NOK</g:price></g:shipping></item>
+    <item><g:id>x2</g:id><title>Ny dings</title><g:gtin>7091234567891</g:gtin><g:price>499.00 NOK</g:price><g:sale_price>1.00 NOK</g:sale_price><g:sale_price_effective_date>2000-01-01T00:00+01:00/2001-01-01T00:00+01:00</g:sale_price_effective_date><g:availability>out_of_stock</g:availability><link>https://shopx.no/p/x2</link></item>
+    <item><g:id>x3</g:id><title>Svensk vare</title><g:price>499.00 SEK</g:price><link>https://shopx.no/p/x3</link></item>
+    <item><g:id>x4</g:id><title>Uten strekkode</title><g:brand>Lokal</g:brand><g:price>99.00 NOK</g:price><link>https://shopx.no/p/x4</link></item>
+  </channel></rss>`;
+  const env = { DB, SOURCES: { ShopX: { type: 'feed', url: 'https://shopx.no/feed.xml' } } };
+  await withFetch(async (url) => {
+    assert.strictEqual(String(url), 'https://shopx.no/feed.xml');
+    return new Response(rss, { status: 200 });
+  }, () => worker.scheduled({ cron: '0 * * * *' }, env, ctl));
+
+  const after = await catBody(call);
+  const offer = after.find(p => p.id === pid).offers.find(o => o.shop === 'ShopX');
+  assert.strictEqual(offer.price, 2199, 'active g:sale_price wins over g:price (and shipping’s nested 39 NOK never leaks in)');
+  assert.strictEqual(offer.stock, true);
+  assert.strictEqual(offer.url, 'https://shopx.no/p/x1');
+
+  const noob = after.find(p => p.id === 'ean-7091234567891');
+  assert.ok(noob, 'unknown feed gtin creates a live product');
+  assert.strictEqual(noob.offers[0].price, 499, 'an expired sale window falls back to g:price');
+  assert.strictEqual(noob.offers[0].stock, false);
+
+  assert.ok(!after.some(p => p.name === 'Svensk vare'), 'a non-NOK price never ingests');
+  assert.ok(after.find(p => p.id === 'p-lokal-uten-strekkode'), 'gtin-less rows key on slugId like discovery');
+});
+
 test('scrape source: first-party JSON-LD product page updates the offer', async () => {
   const DB = d1();
   const call = api({ DB });
