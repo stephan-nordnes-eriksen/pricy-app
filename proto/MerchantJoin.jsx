@@ -16,6 +16,16 @@ function MerchantJoin({ go, domain: d0 }) {
   const [feed, setFeed] = useState('');
   const [email, setEmail] = useState('post@' + initial);
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  const submit = async () => {
+    if (!ready || busy) return;
+    setBusy(true); setErr(null);
+    const payload = { domain, method, feed: method === 'feed' ? feed.trim() : undefined, email };
+    const v = window.onMerchantJoin ? await window.onMerchantJoin(payload) : true;
+    setBusy(false);
+    if (v === true) setSent(true); else setErr(v);
+  };
   const ready = method && email.includes('@') && (method !== 'feed' || feed.trim().length > 8);
 
   if (sent) return (
@@ -84,7 +94,8 @@ function MerchantJoin({ go, domain: d0 }) {
           </div>
         </div>
         <div className="mj__cta">
-          <Btn variant="primary" size="lg" icon="arrow-right" disabled={!ready} onClick={() => ready && setSent(true)}>Sett i gang</Btn>
+          <Btn variant="primary" size="lg" icon="arrow-right" disabled={!ready || busy} onClick={submit}>{busy ? 'Sender…' : 'Sett i gang'}</Btn>
+          {err && <span className="mj__cta-error" role="alert" style={{color:'var(--red, #C4320A)',fontSize:13,fontWeight:600}}>{err}</span>}
           <span className="mj__cta-note">Gratis. Ingen binding — si fra, så fjerner vi dere.</span>
         </div>
       </div>
