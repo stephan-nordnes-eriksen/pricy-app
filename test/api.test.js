@@ -1609,6 +1609,53 @@ test('feed source: Google Shopping feed — gtin routing, sale window, currency 
   assert.ok(after.find(p => p.id === 'p-lokal-uten-strekkode'), 'gtin-less rows key on slugId like discovery');
 });
 
+test('outreach numbers and /butikk redirect back the merchant emails', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/products?limit=1'); // seeds
+  const { shop, product_id } = await DB.prepare('SELECT shop, product_id FROM offers LIMIT 1').first();
+  await DB.prepare('INSERT INTO watches (user_id, product_id, paused) VALUES (1, ?, 0), (2, ?, 1)')
+    .bind(product_id, product_id).run();
+
+  assert.strictEqual((await call('/api/admin/outreach')).status, 401, 'watcher counts are ops-only');
+  const one = await (await call(`/api/admin/outreach?shop=${encodeURIComponent(shop)}`, { token: OPS })).json();
+  assert.ok(one.products > 0, 'served products carrying the shop offer');
+  assert.strictEqual(one.watchers, 1, 'paused watches never count');
+  assert.ok(one.slug, 'slug for the /butikk CTA');
+  assert.strictEqual((await call('/api/admin/outreach?shop=NoSuchShop', { token: OPS })).status, 404);
+  const all = await (await call('/api/admin/outreach', { token: OPS })).json();
+  assert.ok(all.length > 1 && all.some(r => r.shop === shop), 'shop=-less form lists every shop');
+
+  const res = await call('/butikk/' + one.slug);
+  assert.strictEqual(res.status, 302);
+  assert.strictEqual(new URL(res.headers.get('location')).pathname + new URL(res.headers.get('location')).search,
+    `/shop?shop=${encodeURIComponent(shop)}`, 'known slug lands on the SPA shop route');
+  assert.strictEqual(new URL((await call('/butikk/finnes-ikke')).headers.get('location')).pathname, '/', 'unknown slug falls back to the front page');
+});
+
+test('merchant join: /bli-med form lands a lead, admin lists it', async () => {
+  const DB = d1();
+  const call = api({ DB });
+
+  const ok = await call('/api/merchant/join', { method: 'POST', body: { domain: 'butikk.no', method: 'feed', feed: 'https://butikk.no/feed.xml', email: 'post@butikk.no' } });
+  assert.strictEqual(ok.status, 200);
+
+  assert.strictEqual((await call('/api/merchant/join', { method: 'POST', body: { domain: 'x.no', method: 'fax', email: 'a@b.no' } })).status, 400, 'unknown method rejected');
+  assert.strictEqual((await call('/api/merchant/join', { method: 'POST', body: { domain: 'x.no', method: 'feed', feed: 'not-a-url', email: 'a@b.no' } })).status, 400, 'feed method requires a feed URL');
+  assert.strictEqual((await call('/api/merchant/join', { method: 'POST', body: { domain: 'x.no', method: 'crawl', email: 'nope' } })).status, 400, 'email must look like one');
+
+  assert.strictEqual((await call('/api/admin/joins')).status, 401, 'lead list is ops-only');
+  const rows = await (await call('/api/admin/joins', { token: OPS })).json();
+  assert.strictEqual(rows.length, 1, 'only the valid submission stored');
+  assert.strictEqual(rows[0].domain, 'butikk.no');
+  assert.strictEqual(rows[0].feed, 'https://butikk.no/feed.xml');
+
+  // crawl method carries no feed even if the client sends one
+  await call('/api/merchant/join', { method: 'POST', body: { domain: 'y.no', method: 'crawl', feed: 'https://ignore.me', email: 'a@y.no' } });
+  const again = await (await call('/api/admin/joins', { token: OPS })).json();
+  assert.strictEqual(again[0].feed, null, 'feed only stored for the feed method');
+});
+
 test('scrape source: first-party JSON-LD product page updates the offer', async () => {
   const DB = d1();
   const call = api({ DB });

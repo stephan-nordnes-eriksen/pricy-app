@@ -264,5 +264,9 @@ fs.cpSync(path.join(REPO, 'assets'), path.join(DIST, 'assets'), { recursive: tru
 // pwa/ lands at the dist ROOT: sw.js must be served from / to claim / as its
 // scope, and manifest.json's start_url/icon paths are written against it
 fs.cpSync(path.join(REPO, 'pwa'), DIST, { recursive: true });
+// the merchant email templates hard-reference this hosted URL in their
+// data-hosted-src (emails/assets-email/README-server.md)
+fs.mkdirSync(path.join(DIST, 'static', 'email'), { recursive: true });
+fs.copyFileSync(path.join(REPO, 'emails', 'assets-email', 'logo-wordmark.png'), path.join(DIST, 'static', 'email', 'logo-wordmark.png'));
 for (const f of localCss) fs.copyFileSync(path.join(REPO, 'proto', f), path.join(DIST, f));
 console.log(`built dist/: app.js ${Math.round(compiled.length / 1024)}KB from ${blocks.length} prototype blocks + boot.jsx`);

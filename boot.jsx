@@ -11,7 +11,7 @@
 //     (window.TWEAK_DEFAULTS, extracted by build.js)
 // ===========================================================
 const T = window.TWEAK_DEFAULTS;
-const PUBLIC_SCREENS = ['landing', 'login', 'about'];
+const PUBLIC_SCREENS = ['landing', 'login', 'about', 'merchant'];
 
 // Global auto-buy visibility: the designer's hideAutobuy tweak default is the
 // operator setting (flip it upstream, re-sync, deploy — build.js enforces
@@ -468,6 +468,17 @@ window.addonSuggestApi = (p, shop) =>
     })
     .catch(() => []);
 
+// Merchant self-service signup (/bli-med, MerchantJoin): upstream's
+// "Sett i gang" awaits this — resolves true on success, or an error string
+// to show in the form (same verdict contract as AuthCard's onAuthed).
+window.onMerchantJoin = ({ domain, method, feed, email }) =>
+  fetch('/api/merchant/join', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ domain, method, feed, email }),
+  }).then(async r => r.ok ? true : ((await r.json().catch(() => ({}))).error || 'Noe gikk galt — prøv igjen, eller send e-post til kontakt@pricy.no.'))
+    .catch(() => 'Noe gikk galt — prøv igjen, eller send e-post til kontakt@pricy.no.');
+
 // Recently viewed: per-browser localStorage ids, hydrated into the prototype's
 // RECENT array in place (same splice seam as CATALOG/WATCHED/FEED) so the home
 // rail shows what this browser actually viewed. recordRecent fires on every
@@ -509,6 +520,8 @@ function parseUrl(session) {
   else if (p === '/optimizer') s = { name: 'optimizer', params: { list: q.get('list') || undefined } };
   else if (p === '/account') s = { name: 'account', params: { tab: q.get('tab') || undefined } };
   else if (p === '/about') s = { name: 'about', params: { section: q.get('section') || undefined } };
+  // merchant outreach CTA (emails/email_onboarding.html): /bli-med?domene=X
+  else if (p === '/bli-med') s = { name: 'merchant', params: { domain: q.get('domene') || undefined } };
   else if (['/login', '/browse', '/autobuy', '/onboarding', '/compare'].includes(p)) s = { name: p.slice(1), params: {} };
   else s = { name: session ? 'home' : 'landing', params: {} };
   if (!session && !PUBLIC_SCREENS.includes(s.name)) s = { name: 'login', params: {} };
@@ -752,6 +765,7 @@ function toUrl(name, params = {}) {
   if (name === 'optimizer') { const l = params.list || params.id; return '/optimizer' + (l ? '?list=' + encodeURIComponent(l) : ''); }
   if (name === 'account') return '/account' + (params.tab ? '?tab=' + encodeURIComponent(params.tab) : '');
   if (name === 'about') return '/about' + (params.section ? '?section=' + encodeURIComponent(params.section) : '');
+  if (name === 'merchant') return '/bli-med' + (params.domain ? '?domene=' + encodeURIComponent(params.domain) : '');
   if (name === 'home' || name === 'landing') return '/';
   return '/' + name;
 }
@@ -907,6 +921,7 @@ function App() {
   else if (name === 'autobuy' && !window.HIDE_AUTOBUY) view = <AutobuyPage go={go} />;
   else if (name === 'onboarding') view = <Onboarding go={go} onFinish={({ notif }) => saveSettings(notif).catch(() => {})} />;
   else if (name === 'about') view = <AboutPage go={go} section={params.section} />;
+  else if (name === 'merchant') view = <MerchantJoin go={go} domain={params.domain} />;
   else view = <SignedHome go={go} onLogout={() => go('landing')} layout={T.homeLayout} />;
 
   // Mirrors the prototype's App router (AppRouter.jsx), which renders the
@@ -917,7 +932,7 @@ function App() {
   // needed: without one, every non-public screen is already gated to login.
   // CompareTray mirrors the harness too: hidden on the same public screens
   // plus the compare page itself.
-  return <div className="app-shell" key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1 })[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({ login: 1, landing: 1, about: 1, onboarding: 1, compare: 1 })[name]} /></div>;
+  return <div className="app-shell" key={name + JSON.stringify(params)}>{view}{!({ login: 1, landing: 1, about: 1, onboarding: 1, merchant: 1 })[name] && <Footer go={go} />}<CompareTray go={go} hidden={!!({ login: 1, landing: 1, about: 1, onboarding: 1, merchant: 1, compare: 1 })[name]} /></div>;
 }
 
 // Catalog is served, not baked — and lazy: hydrateCatalog MERGES a

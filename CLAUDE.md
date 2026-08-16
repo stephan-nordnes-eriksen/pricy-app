@@ -297,7 +297,23 @@ Two Claude Design projects feed this repo:
   platform exports, `{type: "feed", url}`; gtin-keyed with the discovery
   slugId fallback, g:sale_price honored inside its effective window, NOK
   required on every price — g:shipping's nested g:price never wins because
-  gFields is first-write, unlike xmlFields). **Never scrape competing
+  gFields is first-write, unlike xmlFields). Merchant outreach rides
+  `emails/` (HTML mail-merge templates, hand-synced from the prototype
+  project ROOT — outside `pricy/`, so the sync hook doesn't cover them;
+  logo PNG copied by build.js to `/static/email/`): `GET
+  /api/admin/outreach[?shop=]` (bearer) serves `{shop, products, watchers,
+  slug}` per shop for the placeholders, and `GET /butikk/<slug>`
+  (run_worker_first) 302s onto `/shop?shop=` so the emailed CTA works as
+  soon as upstream's ShopPage renders. The onboarding CTA lands on
+  `/bli-med?domene=` — upstream's MerchantJoin screen (2026-08-16, boot
+  routes it public, no footer/tray like the harness): submissions POST
+  `/api/merchant/join` ({domain, method: crawl|feed|adtraction, feed?,
+  email}, validated + 200/day cap) into the D1 `merchant_joins` table,
+  read back via bearer `GET /api/admin/joins`, acted on by hand
+  (ONBOARDING.md). Boot's `window.onMerchantJoin` resolves true or an
+  error string (AuthCard's onAuthed contract) — **upstream's "Sett i
+  gang" doesn't await it yet**; until that syncs, the form's success
+  screen is client-only and nothing is stored. **Never scrape competing
   comparison services (Prisjakt etc.).** A shop with no/failing source
   freezes at its last stored price; empty `SOURCES` (current prod state)
   makes the cron a no-op. The interim price writer is manual:

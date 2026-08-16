@@ -34,6 +34,37 @@ If they run an Adtraction program: approve our channel in their program,
 add the feed URL to the `ADTRACTION_FEEDS` secret and
 `"<Shop>": { "type": "adtraction" }` to `SOURCES`. CPA, no work for them.
 
+## Mail-merge (HTML templates in `emails/`)
+
+`GET /api/admin/outreach[?shop=X]` (bearer = INGEST_TOKEN) serves the
+numbers the templates need: `{shop, products, watchers, slug}` per shop —
+`{antall produkter}`, `{n}` and `{shop_slug}` in `email_live.html`. The
+CTA `https://pricy.no/butikk/<slug>` 302s onto the SPA's `/shop` route.
+Swap the logo `src` for `data-hosted-src` when sending
+(`emails/assets-email/README-server.md`).
+
+```
+curl -s -H "Authorization: Bearer $(cat tools/.ingest-token)" \
+  'https://pricy.no/api/admin/outreach?shop=Komplett'
+```
+
+## Self-service signups (`/bli-med`)
+
+The emailed CTA lands on `https://pricy.no/bli-med?domene=<domain>` — the
+MerchantJoin screen (public, no login). A submission stores
+`{domain, method: crawl|feed|adtraction, feed?, email}`; check the backlog:
+
+```
+curl -s -H "Authorization: Bearer $(cat tools/.ingest-token)" \
+  'https://pricy.no/api/admin/joins'
+```
+
+Acting on a lead is manual: `feed` → add `{type: "feed", url}` to `SOURCES`;
+`crawl` → wire the shop in `tools/crawl-urls.json` (approval before a full
+crawl, see CLAUDE.md); `adtraction` → approve/attach the feed per the
+Adtraction section above. Then send `email_live.html` with the outreach
+numbers.
+
 ## Email template (Norwegian)
 
 > Hei!

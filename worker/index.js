@@ -8,7 +8,7 @@ import eansFile from './eans.json' with { type: 'json' };
 import FACETS from './facets.json' with { type: 'json' }; // facet registry: { rulesetId: [facet defs] } — served via catMeta, drives the Results filter UI; keys are facet RULESET ids since gpc-strict (gpcno.json facetKeys maps GPC codes onto them)
 import SHIPPING from './shipping.json' with { type: 'json' }; // per-shop shipping fallback: { shop: { flat, freeOver? } } — curated from shop terms pages, never guessed (plans/shipping-totals.md). Offer-level ship strings win; measured 2026-08-03 they cover 0.3% of offers, so this registry is the real source.
 import { deriveFacets } from './facetrules.js'; // facet VALUES read off the product name — most rows have no other data (shapeRows)
-import { collectRows, BROWSER_UA, eanKey } from './sources.js';
+import { collectRows, BROWSER_UA, eanKey, slugId } from './sources.js';
 import { sendPush, unb64u } from './push.js';
 import GPC from './gpc.json' with { type: 'json' }; // condensed GS1 GPC taxonomy (tools/gpc-build.mjs) — segs/fams/classes/bricks, the ONLY category vocabulary (gpc-strict)
 import NO from './gpcno.json' with { type: 'json' }; // curated Norwegian overlay: names/icons/syn per GPC code, browse dept tiles, facetKeys (GPC code → facet ruleset id)
@@ -30,6 +30,10 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS oauth_codes (code_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, redirect_uri TEXT NOT NULL, code_challenge TEXT NOT NULL, expires_at INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT NOT NULL, price INTEGER NOT NULL, prev_price INTEGER, target INTEGER NOT NULL, created_at INTEGER NOT NULL, delivered_at INTEGER)',
   'CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, shop TEXT, reason TEXT NOT NULL, text TEXT, created_at INTEGER NOT NULL)',
+  // Merchant self-service signups from /bli-med (MerchantJoin screen, landed
+  // from the outreach emails). Read via bearer GET /api/admin/joins; acting on
+  // one is manual (ONBOARDING.md) — wiring a SOURCES entry, approving a crawl.
+  'CREATE TABLE IF NOT EXISTS merchant_joins (id INTEGER PRIMARY KEY, domain TEXT NOT NULL, method TEXT NOT NULL, feed TEXT, email TEXT NOT NULL, created_at INTEGER NOT NULL)',
   // List sharing (plans/list-sharing-backend.md): one active share token per
   // (owner, list) — reissue replaces. Members and bought-marks live here, NOT
   // in the owner's users.lists blob, so the owner's payload physically cannot
@@ -2075,6 +2079,17 @@ export default {
       if (!obj.body) return new Response(null, { status: 304, headers });
       return new Response(obj.body, { headers: { ...headers, 'content-type': obj.httpMetadata?.contentType || 'image/jpeg' } });
     }
+    // Merchant-email CTA target (emails/email_live.html): /butikk/<slug>
+    // 302s onto the SPA's /shop route with the shop's real name, so the
+    // emailed link starts working the moment upstream's ShopPage does.
+    // Slugs come from offer shop names via the same fold slugId uses.
+    if (url.pathname.startsWith('/butikk/') && request.method === 'GET') {
+      await ensureSchema(env.DB);
+      const want = decodeURIComponent(url.pathname.slice('/butikk/'.length)).toLowerCase();
+      const { results } = await env.DB.prepare('SELECT DISTINCT shop FROM offers').all();
+      const hit = results.find(r => slugId(null, r.shop) === 'p-' + want);
+      return Response.redirect(new URL(hit ? `/shop?shop=${encodeURIComponent(hit.shop)}` : '/', url).href, 302);
+    }
     if (!url.pathname.startsWith('/api/')) {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('not found', { status: 404 });
     }
@@ -2207,6 +2222,67 @@ export default {
       const res = await drainImages(db, env, n);
       if (res.done) await bumpVer(db).run(); // stored bytes = new img: links in the catalog
       return json(res);
+    }
+
+    // Mail-merge numbers for the merchant emails (emails/, ONBOARDING.md):
+    // per shop, how many served products carry its offer and how many
+    // distinct users watch any of them ({antall produkter} / {n} in
+    // email_live.html); slug feeds the /butikk/<slug> CTA. ?shop= narrows
+    // to one shop. Bearer-gated: watcher counts are ops-only, never public.
+    if (route === 'GET /api/admin/outreach') {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      const shop = url.searchParams.get('shop');
+      const { results } = await db.prepare(
+        `SELECT o.shop AS shop, COUNT(DISTINCT o.product_id) AS products, COUNT(DISTINCT w.user_id) AS watchers
+         FROM offers o JOIN products p ON p.id = o.product_id AND ${visible('p.meta')}
+         LEFT JOIN watches w ON w.product_id = o.product_id AND w.paused = 0
+         ${shop ? 'WHERE o.shop = ?1' : ''} GROUP BY o.shop ORDER BY products DESC`
+      ).bind(...(shop ? [shop] : [])).all();
+      const shaped = results.map(r => ({ ...r, slug: (slugId(null, r.shop) || '').slice(2) || null }));
+      return shop ? (shaped.length ? json(shaped[0]) : json({ error: 'unknown shop' }, 404)) : json(shaped);
+    }
+
+    // Merchant self-service signup (/bli-med → MerchantJoin, boot's
+    // onMerchantJoin). Unauthenticated trust boundary: validate everything,
+    // store the lead, act on it manually (GET /api/admin/joins).
+    if (route === 'POST /api/merchant/join') {
+      const b = await request.json().catch(() => ({}));
+      const domain = typeof b.domain === 'string' ? b.domain.trim() : '';
+      const email = typeof b.email === 'string' ? b.email.trim() : '';
+      const feed = b.method === 'feed' && typeof b.feed === 'string' ? b.feed.trim() : null;
+      if (!['crawl', 'feed', 'adtraction'].includes(b.method) || !domain || domain.length > 200
+        || !email.includes('@') || email.length > 200
+        || (b.method === 'feed' && !(feed && /^https?:\/\//.test(feed) && feed.length <= 500))) {
+        return json({ error: 'ugyldig skjema — sjekk feltene' }, 400);
+      }
+      // ponytail: one global daily cap is the whole abuse story — real leads
+      // arrive at outreach pace; revisit if the form ever gets spammed
+      const { n } = await db.prepare('SELECT COUNT(*) AS n FROM merchant_joins WHERE created_at > ?')
+        .bind(Date.now() - 864e5).first();
+      if (n >= 200) return json({ error: 'for mange forespørsler — prøv igjen senere' }, 429);
+      await db.prepare('INSERT INTO merchant_joins (domain, method, feed, email, created_at) VALUES (?, ?, ?, ?, ?)')
+        .bind(domain, b.method, feed, email, Date.now()).run();
+      // notify ops when the email binding is live; the stored row is the record
+      if (env.SEND_EMAIL) {
+        try {
+          await env.SEND_EMAIL.send({
+            to: 'kontakt@pricy.no',
+            from: { email: 'login@pricy.no', name: 'pricy.no' },
+            subject: `Bli med: ${domain} (${b.method})`,
+            text: `${domain} vil bli med via ${b.method}${feed ? `\nfeed: ${feed}` : ''}\nkontakt: ${email}`,
+          });
+        } catch (e) { console.error(`merchant join notify failed: ${e.message}`); }
+      }
+      return json({ ok: true });
+    }
+
+    // The signup backlog, newest first (ops: ONBOARDING.md).
+    if (route === 'GET /api/admin/joins') {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      const { results } = await db.prepare('SELECT * FROM merchant_joins ORDER BY id DESC LIMIT 500').all();
+      return json(results);
     }
 
     // Drain the gtin→brick queue (gpc-strict). The cron drains on its own;
