@@ -311,9 +311,8 @@ Two Claude Design projects feed this repo:
   email}, validated + 200/day cap) into the D1 `merchant_joins` table,
   read back via bearer `GET /api/admin/joins`, acted on by hand
   (ONBOARDING.md). Boot's `window.onMerchantJoin` resolves true or an
-  error string (AuthCard's onAuthed contract) — **upstream's "Sett i
-  gang" doesn't await it yet**; until that syncs, the form's success
-  screen is client-only and nothing is stored. **Never scrape competing
+  error string (AuthCard's onAuthed contract); upstream's "Sett i gang"
+  awaits it (synced 2026-08-16) — wired end to end. **Never scrape competing
   comparison services (Prisjakt etc.).** A shop with no/failing source
   freezes at its last stored price; empty `SOURCES` (current prod state)
   makes the cron a no-op. The interim price writer is manual:
