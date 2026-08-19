@@ -343,7 +343,7 @@ const numOr = (v, d) => (v !== '' && v != null && isFinite(+v) ? +v : d);
 // fallback); bricks outside every dept fall back to their GPC class.
 // Legacy p.cat scopes resolve through the brickToCat bridge.
 const ruleNav = (r) => ({ brick: r.b, ...(r.label ? { label: r.label } : {}), ...(r.n != null ? { count: r.n } : {}) }); // = navOfRule (PagesBrowse), inlined for load order
-function catNavModel({ cat, brick, dept, label }) {
+function catNavModel({ cat, brick, dept, label }, catCounts) {
   const DS = window.DEPTS || [], bb = window.brickBy || {};
   const ruleOn = (r) => !!brick && r.b === brick && (label ? r.label === label : !r.label);
   const d = dept ? DS.find(x => x.id === dept)
@@ -357,7 +357,7 @@ function catNavModel({ cat, brick, dept, label }) {
       subs: bk.cls.bricks.map(b => ({ key: b.code, label: b.name, icon: b.icon, n: b.n, on: b.code === brick, nav: { brick: b.code } })),
     };
   }
-  if (!d) return { depts: DS.map(x => ({ key: x.id, label: x.name, icon: x.icon, n: x.n, on: false, nav: { dept: x.id } })) };
+  if (!d) return { depts: DS.map(x => ({ key: x.id, label: x.name, icon: x.icon, n: catCounts ? (catCounts[x.id] || 0) : x.n, on: false, nav: { dept: x.id } })).filter(x => !catCounts || x.n > 0) };
   // a legacy cat that maps to exactly one sub-category highlights it (e.g. E-readers)
   const catSubs = cat ? d.rules.filter(r => !r.where && brickToCat(r.b) === cat) : [];
   const subs = d.rules.map(r => {
@@ -379,7 +379,7 @@ function GpcInfo({ bk, r }) {
   );
 }
 
-function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet, setBoolFacet, availCounts, setAvail }) {
+function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet, setBoolFacet, availCounts, setAvail, catCounts }) {
   const brands = base.brands; // brands present in the active result set
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
   // filter search: every token must hit the group title or an entry label;
@@ -394,7 +394,7 @@ function FiltersBody({ f, set, base, baseSel, go, facetDefs, facetBase, setFacet
     const pred = (l) => { const s = String(l).toLowerCase(); return rest.every(tok => s.includes(tok)); };
     return labels.some(pred) ? pred : null;
   };
-  const cnav = catNavModel(baseSel || {});
+  const cnav = catNavModel(baseSel || {}, catCounts);
   const crows = cnav.depts || cnav.subs;
   const optionDefs = facetDefs.filter(d => d.type === 'options' && ((facetBase[d.key] || {}).vals || []).length >= 2);
   const boolDefs = facetDefs.filter(d => d.type === 'bool');
@@ -493,10 +493,10 @@ function Dropdown({ label, active, children }) {
   );
 }
 
-function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, setBoolFacet, availCounts, setAvail }) {
+function FilterBar({ f, set, base, go, baseSel, facetDefs, facetBase, setFacet, setBoolFacet, availCounts, setAvail, catCounts }) {
   const brands = base.brands;
   const setBrand = (b) => set('brands', f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]);
-  const cnav = catNavModel(baseSel);
+  const cnav = catNavModel(baseSel, catCounts);
   const crows = cnav.depts || cnav.subs;
   const cscope = cnav.head ? ((crows.find(s => s.on) || {}).label || cnav.head.name) : null;
   return (
@@ -721,6 +721,16 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   const setBoolFacet = (key) => setF(prev => { const fac = { ...prev.facets }; if (fac[key]) delete fac[key]; else fac[key] = true; return { ...prev, facets: fac }; });
   const setAvail = (key) => setF(prev => ({ ...prev, avail: prev.avail.includes(key) ? prev.avail.filter(x => x !== key) : [...prev.avail, key] }));
   const availCounts = useMemo(() => { if (!rToks.length && served.acounts) return { ...served.acounts }; const m = {}; AVAIL.forEach(d => { m[d.key] = countPool.filter(d.test).length; }); return m; }, [countPool, served, f.q]);
+  // pure search: per-department counts of the current rows (same refine convention as brand counts)
+  const catCounts = useMemo(() => {
+    if (!query) return null;
+    const m = {};
+    (window.DEPTS || []).forEach(d => {
+      const ids = new Set((window.deptProducts ? deptProducts(d.id) : []).map(p => p.id));
+      m[d.id] = countPool.reduce((s, p) => s + (ids.has(p.id) ? 1 : 0), 0);
+    });
+    return m;
+  }, [query, countPool]);
 
   // the host serves the query: it merges the matching page into CATALOG and answers
   // with the category-wide total + facet counts. Debounced, page 0, mount included.
@@ -857,12 +867,12 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
               <Icon name="arrow-down-to-line" size={19} />
             </button>
             <div className="filters">
-              <FiltersBody f={f} set={set} base={base} baseSel={baseSel} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} availCounts={availCounts} setAvail={setAvail} />
+              <FiltersBody f={f} set={set} base={base} baseSel={baseSel} go={go} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} availCounts={availCounts} setAvail={setAvail} catCounts={catCounts} />
             </div>
           </aside>
         )}
         <main className="results__main">
-          {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} availCounts={availCounts} setAvail={setAvail} />}
+          {filterLayout === 'topbar' && <FilterBar f={f} set={set} base={base} go={go} baseSel={baseSel} facetDefs={facetDefs} facetBase={facetBase} setFacet={setFacet} setBoolFacet={setBoolFacet} availCounts={availCounts} setAvail={setAvail} catCounts={catCounts} />}
           <div className="results__title">
             <div className="results__ttl"><h1>{title}</h1>{gb && <GpcInfo bk={gb} />}</div>
             <RefineField value={f.q} onChange={v => { set('q', v); setShown(60); }} scope={scope} n={list.length} />
