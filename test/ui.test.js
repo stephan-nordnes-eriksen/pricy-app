@@ -839,6 +839,20 @@ test('lazy catalog: a search boot fetches only its q slice — the eager full lo
     `cache must hold only the slice (got ${win.CATALOG.length} of ${allHeads})`);
 });
 
+// upstream fix 2026-08-20: on a search the Category rail counted DEPTS[].n
+// (catalog-wide totals) instead of the search hits, and listed zero-hit depts
+test('search rail: category counts come from the search hits, not catalog totals', async () => {
+  const win = boot('http://pricy.test/search?q=sony', { session: true });
+  assert.ok(await until(() => qa(win, '.rrow, .rcard').length > 0), 'results did not render');
+  assert.ok(await until(() => qa(win, '.filters .catlink').length > 0), 'category rail missing');
+  const hits = qa(win, '.rrow, .rcard').length;
+  const counts = qa(win, '.filters .catlink .ct').map(el => Number(el.textContent.replace(/\D/g, '')));
+  for (const n of counts) {
+    assert.ok(n > 0, 'zero-hit departments must be hidden from a search rail');
+    assert.ok(n <= hits, `a department count (${n}) exceeds the ${hits} search hits — catalog total leaked into the search rail`);
+  }
+});
+
 test('lazy catalog: session ids (watches + recents + purchases) land in ONE ids= batch', async () => {
   const me = {
     user: mari,
