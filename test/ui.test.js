@@ -900,11 +900,12 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
 
   const res = await win.onQuery({
     brick: '10001181', sort: 'best', dir: 'desc', page: 2,
-    filters: { q: 'buds', brands: ['Sony', 'Bose'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { nc: true, size: [55, 65] } },
+    filters: { q: 'buds', brands: ['Sony', 'Bose'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { nc: true, size: [55, 65] }, traits: ['God lyd'] },
   });
   const call = win.api[win.api.length - 1].call;
   for (const part of ['node=10001181', 'sort=best', 'dir=desc', 'offset=800', 'limit=400', 'brand=Bose%2CSony', 'name=buds',
-    'min=100', 'max=900', 'dom=2', 'sale=1', 'instock=1', 'facets=' + encodeURIComponent('{"nc":true,"size":[55,65]}')]) {
+    'min=100', 'max=900', 'dom=2', 'sale=1', 'instock=1', 'facets=' + encodeURIComponent('{"nc":true,"size":[55,65]}'),
+    'traits=%5B%22God+lyd%22%5D']) {
     assert.ok(call.includes(part), `onQuery must send ${part}, got: ${call}`);
   }
   assert.strictEqual(typeof res.total, 'number', 'the served total must come back to the screen');
@@ -921,7 +922,7 @@ test('lazy catalog: onQuery puts Results’ sort and filters on the query string
   // URL, not by log length: Results runs its own debounced onQuery on mount
   const hits = () => win.api.filter(c => c.call.includes('brand=Bose%2CSony')).length;
   const before = hits();
-  await win.onQuery({ brick: '10001181', sort: 'best', dir: 'desc', page: 2, filters: { q: 'buds', brands: ['Bose', 'Sony'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { size: [55, 65], nc: true } } });
+  await win.onQuery({ brick: '10001181', sort: 'best', dir: 'desc', page: 2, filters: { q: 'buds', brands: ['Bose', 'Sony'], min: 100, max: 900, dom: 2, sale: true, instock: true, facets: { size: [55, 65], nc: true }, traits: ['God lyd'] } });
   assert.strictEqual(hits(), before, 'a re-ordered but identical selection must not refetch');
 });
 

@@ -736,6 +736,24 @@ test('reviews: the dom filter and the Folkedommen sort mirror upstream\'s tiers 
     ['airpods', 'bose-ultra', 'senn-m4', 'xm5'], 'the reviews sort ranks the four that have one');
 });
 
+// Same drift rule again: the traits filter is upstream's
+// `rs.traits.some(x => x.pos && x.t === t)` over the served udom.t rows.
+test('reviews: the traits filter serves only rows whose aggregate carries the trait as a plus', async () => {
+  const call = api({ DB: d1() });
+  const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'xm5', ...REV('yyy'), plus: ['God lyd', 'Lang batteritid'] }, cookie: ola });
+  await call('/api/reviews', { method: 'POST', body: { product_id: 'bose-ultra', ...REV('yyy'), minus: ['God lyd'] }, cookie: ola });
+  const t = (traits) => 'traits=' + encodeURIComponent(JSON.stringify(traits));
+  const get = async (qs) => await (await call('/api/products?cat=Audio&' + qs)).json();
+
+  const one = await get(t(['God lyd']));
+  assert.deepStrictEqual(one.products.map(p => p.id), ['xm5'], 'a MINUS trait must not match — pos only');
+  assert.strictEqual(one.meta.total, 1, 'the served total counts the same rows');
+  assert.deepStrictEqual((await get(t(['God lyd', 'Lang batteritid']))).products.map(p => p.id), ['xm5'], 'every picked trait must be present');
+  assert.deepStrictEqual((await get(t(['God lyd', 'Vanntett']))).products, [], 'an unknown trait matches nothing');
+  assert.ok((await get('traits=broken')).products.length > 2, 'a broken traits param must not 500 or filter');
+});
+
 test('reviews: moderation hide drops the review from GET and the aggregate; editing cannot republish', async () => {
   const call = api({ DB: d1() });
   const ola = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ola@nordmann.no', password: 'correcthorse1' } }));

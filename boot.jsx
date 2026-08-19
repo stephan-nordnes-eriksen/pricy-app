@@ -703,6 +703,9 @@ const listQuery = ({ node, sort, dir, filters: f = {}, page = 0 }) => ({
   ...((f.avail || []).includes('fast') ? { maxeta: 2 } : {}),
   // sorted keys so the same selection is the same FETCHED cache entry
   ...(f.facets && Object.keys(f.facets).length ? { facets: JSON.stringify(Object.fromEntries(Object.entries(f.facets).sort())) } : {}),
+  // "Folk trekker frem" trait filter (PDP trait chips) — JSON, not a comma
+  // join: traits are review free text (≤40 chars) and may hold commas
+  ...(f.traits && f.traits.length ? { traits: JSON.stringify(f.traits.slice().sort()) } : {}),
   limit: PAGE, offset: page * PAGE,
 });
 // A 1–2 letter refine matches nearly the whole catalog — "e" on Toys is 1,309

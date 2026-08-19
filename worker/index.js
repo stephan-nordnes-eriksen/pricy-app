@@ -1130,6 +1130,10 @@ function failGroups(r, f) {
     // Folkedommen tier: a row with no reviews has no tier and is EXCLUDED,
     // like upstream's `domTier(p) == null || domTier(p) < f.dom`
     || (f.dom && !(domTier(r.m) >= f.dom))
+    // "Folk trekker frem": every picked trait must be a POSITIVE trait in the
+    // served aggregate — upstream's `rs.traits.some(x => x.pos && x.t === t)`
+    // over udom.t's [trait, count, pos] rows
+    || (f.traits.length && !f.traits.every(t => ((r.m.udom || {}).t || []).some(x => x[2] && x[0] === t)))
     || (f.sale && r.drop < 12)
     || (f.instock && !r.stock)
     // availability group (upstream's universal defs, not FACETS): freeship =
@@ -1154,6 +1158,9 @@ function listFilters(p) {
   const num = (k) => { const n = Number(p.get(k)); return p.get(k) && isFinite(n) ? n : 0; };
   let facets = {};
   try { facets = JSON.parse(p.get('facets') || '{}') || {}; } catch (e) {} // a broken filter param must not 500 a listing
+  let traits = [];
+  try { traits = JSON.parse(p.get('traits') || '[]'); } catch (e) {}
+  traits = (Array.isArray(traits) ? traits : []).filter(t => typeof t === 'string').slice(0, 6);
   const f = {
     // `name=` is Results' refine-within-results box: every token must appear in
     // the NAME (its refineToks/refineMatch), diacritic-folded on both sides like
@@ -1170,8 +1177,9 @@ function listFilters(p) {
     sale: p.get('sale') === '1', instock: p.get('instock') === '1',
     freeship: p.get('freeship') === '1', maxeta: num('maxeta'),
     facets: typeof facets === 'object' && facets ? facets : {},
+    traits,
   };
-  const on = f.name.length || f.brands.length || f.min || f.max || f.dom || f.sale || f.instock || f.freeship || f.maxeta || Object.keys(f.facets).length;
+  const on = f.name.length || f.brands.length || f.min || f.max || f.dom || f.sale || f.instock || f.freeship || f.maxeta || f.traits.length || Object.keys(f.facets).length;
   return on ? f : null;
 }
 
