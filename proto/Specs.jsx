@@ -156,7 +156,7 @@ function specsFor(p, sel) {
 }
 
 // ---- spec sheet (PDP section) -----------------------------
-function SpecRow({ r, onSel, p, sel }) {
+function SpecRow({ r, onSel, p, sel, link }) {
   const naOf = (oid) => !!(p && sel && r.ax && window.comboAvail && !comboAvail(p, { ...sel, [r.ax.id]: oid }));
   let val;
   if (r.selectable && r.ax.type === 'swatch') {
@@ -165,7 +165,9 @@ function SpecRow({ r, onSel, p, sel }) {
     val = <span className="srow__opts">{r.ax.options.map(o => <button key={o.id} type="button" className={'vopt vopt--sm' + (r.value === o.id ? ' is-on' : '') + (naOf(o.id) ? ' is-na' : '')} title={naOf(o.id) ? 'No shop sells this combination' : undefined} onClick={() => onSel(r.ax.id, o.id)}>{o.label}{o.delta > 0 && <span className="vopt__d">+{fmt(o.delta)}</span>}</button>)}</span>;
   } else {
     const na = r.display === '—';
-    val = <span className={'srow__val' + (na ? ' is-na' : '') + (r.type === 'bool' && r.value === true ? ' is-yes' : '')}>{r.display}</span>;
+    val = (link && !na)
+      ? <button type="button" className={'srow__val srow__val--link' + (r.type === 'bool' && r.value === true ? ' is-yes' : '')} title={link.title} onClick={link.go}>{r.display}</button>
+      : <span className={'srow__val' + (na ? ' is-na' : '') + (r.type === 'bool' && r.value === true ? ' is-yes' : '')}>{r.display}</span>;
   }
   return (
     <div className={'srow' + (r.selectable ? ' srow--sel' : '')}>
@@ -180,8 +182,20 @@ const SPECS_LS = 'pricy.specs.open';
 const specsOpenGet = () => { try { const v = localStorage.getItem(SPECS_LS); return v == null ? true : v === '1'; } catch (e) { return true; } };
 const specsOpenSave = (open) => { try { localStorage.setItem(SPECS_LS, open ? '1' : '0'); } catch (e) {} };
 
-function SpecsSection({ p, sel, onSel }) {
+function SpecsSection({ p, sel, onSel, go }) {
   const s = specsFor(p, sel);
+  // rows whose id is a facet key in this category link to a pre-filtered search
+  const _go = go || window.go;
+  const fdefs = (window.FACETS || {})[p.cat] || [];
+  const linkFor = (r) => {
+    if (r.selectable || !_go || !window.fval) return null;
+    const def = fdefs.find(d => d.key === r.id);
+    if (!def) return null;
+    const v = fval(p, r.id);
+    if (v === undefined || (def.type === 'bool' && v !== true)) return null;
+    const facets = { [r.id]: def.type === 'bool' ? true : (Array.isArray(v) ? v : [v]) };
+    return { title: 'Vis alle i ' + p.cat + ' med ' + def.label.toLowerCase() + (def.type === 'bool' ? '' : ' ' + r.display), go: () => _go('results', { cat: p.cat, facets }) };
+  };
   const [open, setOpen] = useState(specsOpenGet);
   useEffect(() => {
     const onForce = () => setOpen(true);
@@ -200,7 +214,7 @@ function SpecsSection({ p, sel, onSel }) {
         {s.groups.map(g => (
           <div key={g.id} className="sgrp">
             <div className="sgrp__h">{g.label}</div>
-            {g.rows.map(r => <SpecRow key={r.id} r={r} onSel={onSel} p={p} sel={sel} />)}
+            {g.rows.map(r => <SpecRow key={r.id} r={r} onSel={onSel} p={p} sel={sel} link={linkFor(r)} />)}
           </div>
         ))}
       </div>}

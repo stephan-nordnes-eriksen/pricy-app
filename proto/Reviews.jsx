@@ -12,9 +12,12 @@ function useReviewStore() { const [, tick] = useState(0); useEffect(() => Review
 function VerdictChip({ v, n }) {
   return <span className={'vchip vchip--' + v.tone}>{v.short}{n != null && <span className="vchip__n">· {fmt(n)}</span>}</span>;
 }
-function TraitChip({ t, pos, share, top, lg }) {
+function TraitChip({ t, pos, share, top, lg, onClick, title }) {
   const bars = share != null ? Math.max(1, Math.min(5, Math.round(share * 5))) : 0;
-  return <span className={'tchip ' + (pos ? 'tchip--pos' : 'tchip--neg') + (top ? ' is-top' : '') + (lg ? ' tchip--lg' : '')}><b>{pos ? '+' : '−'}</b> {t}{bars > 0 && <span className="dfreq">{Array.from({ length: bars }).map((_, i) => <i key={i}></i>)}</span>}</span>;
+  const cls = 'tchip ' + (pos ? 'tchip--pos' : 'tchip--neg') + (top ? ' is-top' : '') + (lg ? ' tchip--lg' : '');
+  const body = <React.Fragment><b>{pos ? '+' : '−'}</b> {t}{bars > 0 && <span className="dfreq">{Array.from({ length: bars }).map((_, i) => <i key={i}></i>)}</span>}</React.Fragment>;
+  if (onClick) return <button type="button" className={cls + ' tchip--link'} title={title} onClick={onClick}>{body}</button>;
+  return <span className={cls}>{body}</span>;
 }
 // compact verdict for rows/cards/headers: chip + top pluss/minus
 function Verdict({ p, traits = 0, count = false }) {
@@ -238,7 +241,7 @@ function ReviewCard({ r, best, onEdit, onDelete }) {
   );
 }
 
-function ReviewSection({ p }) {
+function ReviewSection({ p, go }) {
   useReviewStore();
   const s = reviewStats(p);
   const [write, setWrite] = useState(false);
@@ -250,6 +253,10 @@ function ReviewSection({ p }) {
   const onDelete = (r) => { ReviewStore.remove(r.id); flash('Omtalen er slettet.'); };
   const topP = s ? s.traits.filter(t => t.pos).slice(0, 3) : [];
   const topM = s ? s.traits.filter(t => !t.pos).slice(0, 2) : [];
+  // trait → category search seeded with that trait (same GPC scope as the breadcrumb)
+  const _nav = () => { const paths = window.productPaths ? productPaths(p) : []; return paths[0] ? paths[0].nav : { cat: p.cat }; };
+  const _go = go || window.go;
+  const goTraits = (traits) => { if (_go && traits.length) _go('results', { ..._nav(), traits }); };
   return (
     <div className="sec revsec" id="pdp-reviews" style={{ marginTop: 'var(--s-7)' }}>
       <div className="sec__head"><h2>Folkedommen{s && <span className="revsec__n"> · {fmt(s.n)} har tatt stilling</span>}</h2><Btn variant="ghost" size="sm" icon="pencil-line" onClick={() => mine ? setEdit(mine) : setWrite(true)}>{mine ? 'Rediger din omtale' : 'Skriv omtale'}</Btn></div>
@@ -263,17 +270,17 @@ function ReviewSection({ p }) {
               {s.claims.map(c => <ClaimRow key={c.key} c={c} />)}
             </div>
             <div className="revsum__col">
-              <div className="t-label" style={{ marginBottom: 10 }}>Det folk trekker frem</div>
+              {topP.length ? <a className="t-label revsum__lbl-link" style={{ marginBottom: 10 }} title="Søk i kategorien etter produkter med disse egenskapene" onClick={() => goTraits(topP.map(t => t.t))}>Det folk trekker frem</a> : <div className="t-label" style={{ marginBottom: 10 }}>Det folk trekker frem</div>}
               {(topP.length || topM.length) ? (
                 <div className="revsum__traits">
-                  {topP.map((t, i) => <TraitChip key={'+' + t.t} t={t.t} pos share={t.share} top={i === 0} lg />)}
+                  {topP.map((t, i) => <TraitChip key={'+' + t.t} t={t.t} pos share={t.share} top={i === 0} lg onClick={() => goTraits([t.t])} title={'Vis alt i kategorien der folk trekker frem «' + t.t + '»'} />)}
                   {topM.map((t, i) => <TraitChip key={'-' + t.t} t={t.t} pos={false} share={t.share} top={i === 0} lg />)}
                 </div>
               ) : <p className="revhint" style={{ margin: 0 }}>Ingen har satt farge på dommen ennå.</p>}
               {s.paid && (
                 <div style={{ marginTop: 'var(--s-4)' }}>
                   <span className="buychip">Typisk betalt {s.paid.lo === s.paid.hi ? fmtNok(s.paid.lo) : fmtNok(s.paid.lo) + ' – ' + fmtNok(s.paid.hi)}</span>
-                  <p className="revhint" style={{ margin: '6px 0 0' }}>Fra det kjøpere oppgir at de betalte. Alltid spennet, aldri enkeltkjøp.</p>
+                  <p className="revhint" style={{ margin: '6px 0 0' }}>Fra det kjøpere oppgir at de betalte. Vises som spenn, ikke enkeltkjøp.</p>
                 </div>
               )}
             </div>

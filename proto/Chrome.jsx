@@ -91,7 +91,7 @@ function Footer({ go, authed = true }) {
           <div className="ftr__col" style={{ maxWidth: 260 }}>
             <img src="assets/logo-wordmark-reversed.svg" alt="pricy.no" />
             <p style={{ color: 'var(--ink-400)', fontSize: 14, lineHeight: 1.5, marginTop: 16 }}>
-              Norway's price comparison. No shop pays for placement — ever.
+              Shop smarter. No shop pays for placement.
             </p>
           </div>
           {col('Shop', [

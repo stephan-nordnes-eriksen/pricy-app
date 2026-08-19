@@ -148,7 +148,7 @@ function FullmaktCeremony({ onSigned, signedAt }) {
         Sign with
       </BankIDButton>
       <div className="fm-foot">
-        <span><Icon name="shield-check" size={13} /> Revoke anytime, instantly</span>
+        <span><Icon name="shield-check" size={13} /> Revoke anytime</span>
         <span><Icon name="undo-2" size={13} /> 14-day angrerett on every purchase</span>
         <span><Icon name="receipt" size={13} /> No fees, no markup</span>
       </div>
@@ -336,14 +336,14 @@ function AutobuyBox({ p }) {
       {order ? (
         <div className="abox__armed">
           <div>
-            <b><Icon name="check" size={14} /><span>Armed — we buy the moment any shop goes below kr {fmt(order.max)}</span></b>
+            <b><Icon name="check" size={14} /><span>Armed — we buy when a shop we track goes below kr {fmt(order.max)}</span></b>
             <div className="meta">Best now kr {fmt(p.best)} · kr {fmt(p.best - order.max)} above trigger · expires {order.expires} · {order.shops}</div>
           </div>
           <Btn size="sm" variant="ghost" icon="x" onClick={() => store.cancel(p.id)}>Cancel</Btn>
         </div>
       ) : !store.signed ? (
         <div className="abox__row">
-          <p className="abox__pitch">Set a max price and pricy buys it in your name the second a shop drops below — even at 3 am.</p>
+          <p className="abox__pitch">Set a max price and pricy buys it in your name when a shop drops below — even at 3 am.</p>
           <Btn variant="dark" icon="fingerprint" onClick={() => setActivate(true)}>Activate with BankID</Btn>
         </div>
       ) : (
@@ -454,7 +454,7 @@ function AutobuyPage({ go }) {
         <div className="al__head">
           <div>
             <h1><Icon name="zap" size={26} style={{ verticalAlign: '-3px' }} /> Auto-buy</h1>
-            <div className="sub">{active.length} armed · {execd.length} purchased · pricy buys in your name the moment a price crosses your max</div>
+            <div className="sub">{active.length} armed · {execd.length} purchased · pricy buys in your name when a price crosses your max</div>
           </div>
           <div style={{ display: 'flex', gap: 'var(--s-3)' }}>
             {active.length > 0 && <Btn variant="ghost" icon="flask-conical" onClick={simulate}>Demo: trigger a drop</Btn>}

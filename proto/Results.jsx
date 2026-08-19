@@ -659,7 +659,7 @@ function SortMenu({ fields, field, dir, onPick }) {
 // ===========================================================
 // RESULTS SCREEN
 // ===========================================================
-const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', dom: 0, sale: false, instock: false, avail: [], facets: {} });
+const emptyFilters = () => ({ q: '', brands: [], min: '', max: '', dom: 0, sale: false, instock: false, avail: [], facets: {}, traits: [] });
 function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'rail', density = 'comfy', sparklines = true }) {
   const [view, _setView] = useState(() => { try { const v = localStorage.getItem('pricy.view'); return v && v !== 'list' ? v : 'details'; } catch (e) { return 'details'; } });
   const setView = (v) => { _setView(v); try { localStorage.setItem('pricy.view', v); } catch (e) {} };
@@ -681,8 +681,13 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
   const [f, setF] = useState(() => {
     const st = window.history.state || {};
     if (st.rfilters) return { ...emptyFilters(), ...st.rfilters };
-    const navFacets = (st.params || {}).facets;
-    return navFacets ? { ...emptyFilters(), facets: navFacets } : emptyFilters();
+    // navigation can pre-seed filters: facets (spec links), brands, traits (folk trekker frem)
+    const np = st.params || {};
+    const pre = {};
+    if (np.facets) pre.facets = np.facets;
+    if (np.brands) pre.brands = np.brands;
+    if (np.traits) pre.traits = np.traits;
+    return Object.keys(pre).length ? { ...emptyFilters(), ...pre } : emptyFilters();
   });
   useWatchStore();
   // filters live in the history entry so browser Back restores them
@@ -796,6 +801,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     if (f.min && p.best < +f.min) return false;
     if (f.max && p.best > +f.max) return false;
     if (f.dom && (domTier(p) == null || domTier(p) < f.dom)) return false;
+    if (f.traits && f.traits.length) { const rs = window.reviewStats ? reviewStats(p) : null; if (!rs || !f.traits.every(t => rs.traits.some(x => x.pos && x.t === t))) return false; }
     if (f.sale && p.drop < 12) return false;
     if (f.instock && !p.stock) return false;
     for (const a of AVAIL) { if (f.avail.includes(a.key) && !a.test(p)) return false; }
@@ -839,6 +845,7 @@ function Results({ go, query, cat, brick, dept, label, count, filterLayout = 'ra
     ...(f.min ? [{ k: 'min', label: 'min kr ' + fmt(+f.min), clear: () => set('min', '') }] : []),
     ...(f.max ? [{ k: 'max', label: 'max kr ' + fmt(+f.max), clear: () => set('max', '') }] : []),
     ...(f.dom ? [{ k: 'dom', label: (DOM_TIERS.find(t => t.v === f.dom) || {}).label, clear: () => set('dom', 0) }] : []),
+    ...(f.traits || []).map(t => ({ k: 'trait:' + t, label: 'Folk trekker frem: ' + t, clear: () => set('traits', f.traits.filter(x => x !== t)) })),
     ...(f.sale ? [{ k: 'sale', label: 'On sale', clear: () => set('sale', false) }] : []),
     ...(f.instock ? [{ k: 'instock', label: 'In stock', clear: () => set('instock', false) }] : []),
     ...f.avail.map(k => { const d = AVAIL.find(a => a.key === k); return { k: 'avail:' + k, label: d ? d.label : k, clear: () => setAvail(k) }; }),
@@ -1084,11 +1091,11 @@ function ProductPage({ go, id }) {
         <div className="pdp__top">
           <ProductGallery p={p} vlabel={v.vlabel} />
           <div className="pdp__info">
-            <div className="pdp__brand">{p.brand}</div>
+            <a className="pdp__brand pdp__brand--link" title={'Søk etter alt fra ' + p.brand} onClick={() => go('results', { query: p.brand })}>{p.brand}</a>
             <h1>{p.name}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)', margin: '0 0 var(--s-4)', flexWrap: 'wrap' }}>
               <a className="pdp__revlink" title="Les omtaler" onClick={scrollToReviews}><Verdict p={p} traits={2} count /></a>
-              {p.nc && <span className="rrow__feat">Noise cancelling</span>}
+              {p.nc && <a className="rrow__feat rrow__feat--link" title={'Vis alle i ' + p.cat + ' med noise cancelling'} onClick={() => go('results', { cat: p.cat, facets: { anc: true } })}>Noise cancelling</a>}
               <StockBadge state={v.unavailable ? 'out' : (p.stock ? 'in' : 'back')} />
               {specsFor(p) && <a className="pdp__speclink" onClick={scrollToSpecs}>Specifications ↓</a>}
               <CompareBtn p={p} variant="pill" />
@@ -1213,9 +1220,9 @@ function ProductPage({ go, id }) {
 
         {window.SimilarSection && <SimilarSection p={p} sim={sim} go={go}></SimilarSection>}
 
-        <SpecsSection p={p} sel={sel} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))}></SpecsSection>
+        <SpecsSection p={p} sel={sel} go={go} onSel={(axis, opt) => setSel(s => ({ ...s, [axis]: opt }))}></SpecsSection>
 
-        <ReviewSection p={p}></ReviewSection>
+        <ReviewSection p={p} go={go}></ReviewSection>
 
         <div className="sec" style={{ marginTop: 'var(--s-7)' }}>
           <div className="sec__head"><h2>More in {main ? main.sub : p.cat}</h2><span className="more" onClick={() => go('results', main ? main.nav : { cat: p.cat })}>See all <Icon name="arrow-right" size={14} /></span></div>

@@ -22,7 +22,7 @@ function LandingHeader({ go }) {
   );
 }
 
-// Live "best price found" demo card — animates a chart + alert
+// Live price-drop demo card — animates a chart + alert
 function HeroDemo() {
   const p = byId.tv;
   const saved = useCountTo(6000, true, 1100);
@@ -61,7 +61,7 @@ function HeroDemo() {
       </div>
       <div style={{ padding: 'var(--s-3) var(--s-4)', borderTop: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: stage ? 'var(--green-500)' : 'var(--paper)', transition: 'background 200ms var(--ease)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 13 }}>
-          <Icon name={stage ? 'badge-check' : 'loader'} size={16} /> {stage ? 'Best price found' : 'Scanning shops…'}
+          <Icon name={stage ? 'badge-check' : 'loader'} size={16} /> {stage ? 'Price drop spotted' : 'Scanning shops…'}
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
           <span className="strike" style={{ fontFamily: 'var(--font-mono)', fontSize: 14 }}>kr {fmt(p.was)}</span>
@@ -112,7 +112,7 @@ function Landing({ go }) {
         <div className="page lhero__grid">
           <div className="lhero__copy">
             <div className="lhero__eyebrow"><span className="dot" /> Live across {fmt(m.shops || 0)} Norwegian shops</div>
-            <h1>Never<br />overpay.<br /><span className="hl">Ever.</span></h1>
+            <h1>Shop<br /><span className="hl">smarter.</span></h1>
             <p className="lhero__sub">Track any product. We keep an eye on prices across the shops we track and ping you when we spot a drop.</p>
             <div className="lhero__cta">
               <Btn variant="primary" size="lg" icon="arrow-right" onClick={() => go('login')}>Start watching — free</Btn>
@@ -132,7 +132,7 @@ function Landing({ go }) {
         <div className="steps">
           <StepCard n="1" icon="search" title="Find it">Search all {fmt(m.products || 0)} products we track, or browse by category and spec.</StepCard>
           <StepCard n="2" icon="bookmark" title="Watch it">Set your target price. One tap, no spreadsheet.</StepCard>
-          <StepCard n="3" icon="bell-ring" title="Get pinged">We alert you the second any shop drops below it.</StepCard>
+          <StepCard n="3" icon="bell-ring" title="Get pinged">We ping you when we spot a shop below it.</StepCard>
         </div>
       </section>
 

@@ -3,11 +3,11 @@
 // ===========================================================
 
 const ABOUT_FAQ = [
-  { q: 'How does pricy make money?', a: 'When you click through to a shop and buy, some shops can pay us a small referral fee. That fee never affects ranking — the cheapest price is always on top, whether the shop pays us or not.' },
-  { q: 'Do I need an account?', a: 'Yes. Searching, comparing and price alerts all require a free account. It takes 30 seconds, and the free plan stays free forever.' },
+  { q: 'How does pricy make money?', a: 'When you click through to a shop and buy, some shops can pay us a small referral fee. The fee doesn\'t affect ranking — we sort by price, whether the shop pays us or not.' },
+  { q: 'Do I need an account?', a: 'Yes. Searching, comparing and price alerts all require a free account. It takes 30 seconds, and the free plan is free.' },
   { q: 'How fresh are the prices?', a: 'We re-check shops regularly, and every price shows when it was last checked.' },
   { q: 'What is Pricy Plus?', a: 'Our upcoming subscription — coming soon, planned at kr 49/month (pricing subject to change). It adds AI features: a daily deal digest, price forecasts per product, and plain-language search («best robotstøvsuger under 4 000»). Everything else is free.' },
-  { q: 'How do price alerts work?', a: 'Watch any product and set a target price. The moment any of the shops we track goes below your target, you get an email or push notification — usually within minutes.' },
+  { q: 'How do price alerts work?', a: 'Watch any product and set a target price. When a shop we track goes below your target, you get an email or push notification.' },
 ];
 
 function AboutFaq() {
@@ -36,8 +36,8 @@ function AboutPage({ go, section }) {
 
       <section className="page about-hero">
         <div className="kicker">About pricy.no</div>
-        <h1>Every price.<br />Every shop.<br /><span className="hl">No favorites.</span></h1>
-        <p>pricy tracks {fmt(m.products || 0)} products across {fmt(m.shops || 0)} Norwegian shops — and no shop can pay to rank higher. The cheapest price wins. Always.</p>
+        <h1>Shop<br />smarter.<br /><span className="hl">No favorites.</span></h1>
+        <p>pricy tracks {fmt(m.products || 0)} products across {fmt(m.shops || 0)} Norwegian shops — and shops can't pay to rank higher. We sort by price.</p>
       </section>
 
       <section className="page" id="how" ref={stepsRef} style={{ paddingBottom: 'var(--s-7)' }}>
@@ -58,16 +58,16 @@ function AboutPage({ go, section }) {
             <span className="step__n">03</span>
             <div style={{ color: 'var(--green-700)', marginBottom: 12, display: 'flex' }}><Icon name="bell-ring" size={26} /></div>
             <h3 style={{ margin: '0 0 8px', fontSize: 19 }}>Get the drop</h3>
-            <p style={{ margin: 0, color: 'var(--ink-600)', fontSize: 14, lineHeight: 1.55 }}>Set a target price. We watch around the clock and ping you within minutes.</p>
+            <p style={{ margin: 0, color: 'var(--ink-600)', fontSize: 14, lineHeight: 1.55 }}>Set a target price. We keep watch and ping you when we spot a drop.</p>
           </div>
         </div>
       </section>
 
       <section className="manifesto">
         <div className="page">
-          <h2>No shop pays for placement. <span className="hl">Ever.</span></h2>
-          <p>Most comparison sites sell their top spots. We don't. Our ranking is a sort function: <b>price, ascending</b>. That's the whole algorithm.</p>
-          <p>We earn a small referral fee from some shops when you buy — the fee never changes what you see, and shops that pay nothing rank exactly the same.</p>
+          <h2>No shop pays <span className="hl">for placement.</span></h2>
+          <p>Most comparison sites sell their top spots. We don't. Our ranking is simple: <b>price, ascending</b>.</p>
+          <p>We earn a small referral fee from some shops when you buy — the fee doesn't change what you see, and shops that pay nothing rank the same.</p>
         </div>
       </section>
 
@@ -86,7 +86,7 @@ function AboutPage({ go, section }) {
 
       <section className="lcta">
         <div className="page lcta__inner">
-          <h2>Stop overpaying.<br />Start watching.</h2>
+          <h2>Shop smarter.<br />Start watching.</h2>
           <Btn variant="primary" size="lg" icon="arrow-right" onClick={() => go('login')}>Create free account</Btn>
         </div>
       </section>

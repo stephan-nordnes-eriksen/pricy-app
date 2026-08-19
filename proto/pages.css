@@ -523,6 +523,9 @@ a.mchip:hover { background: var(--green-500); color: var(--ink-900); }
 .srow__val { font-size: 14px; font-weight: 600; color: var(--ink-900); overflow-wrap: anywhere; }
 .srow__val.is-na { color: var(--ink-300); font-weight: 500; }
 .srow__val.is-yes { color: var(--green-700); }
+button.srow__val--link { appearance: none; background: none; border: 0; padding: 0; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-900); cursor: pointer; text-align: left; text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--ink-300); text-underline-offset: 3px; overflow-wrap: anywhere; }
+button.srow__val--link:hover { text-decoration-style: solid; text-decoration-color: var(--green-500); color: var(--green-700); }
+button.srow__val--link.is-yes { color: var(--green-700); }
 .srow__opts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .srow__cur { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--ink-900); margin-left: 4px; }
 .vopt--sm { padding: 4px 9px; font-size: 11px; }
@@ -727,6 +730,10 @@ a.mchip:hover { background: var(--green-500); color: var(--ink-900); }
 .vtx--neg{color:var(--up-600)}
 .tchip{display:inline-flex;align-items:center;gap:6px;border:var(--bw-hair) solid var(--ink-900);padding:2px 8px;font-family:var(--font-display);font-weight:600;font-size:12px;background:var(--paper);white-space:nowrap;color:var(--ink-900)}
 .tchip b{font-family:var(--font-mono);font-weight:800;font-size:11px}
+button.tchip--link{appearance:none;cursor:pointer}
+button.tchip--link:hover{box-shadow:var(--shadow-sm);border-color:var(--ink-900)}
+.revsum__lbl-link{display:inline-block;cursor:pointer;color:inherit}
+.revsum__lbl-link:hover{text-decoration:underline;text-underline-offset:3px;color:var(--ink-900)}
 .tchip--pos b{color:var(--green-700)}
 .tchip--neg b{color:var(--up-600)}
 .tchip.is-top.tchip--pos{background:var(--green-100)}

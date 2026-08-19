@@ -155,7 +155,7 @@ function AuthCard({ onAuthed, go }) {
       </button>
       {window.HIDE_AUTOBUY
         ? <div className="bankid-hint"><Icon name="shield-check" size={13} /><span>Verified instantly with BankID — no password to remember.</span></div>
-        : <div className="bankid-hint"><Icon name="zap" size={13} /><span>BankID will unlock auto-buy — pricy will be able to purchase for you the moment a price drops below your max. <span className="tag tag--soon">Coming soon</span></span></div>}
+        : <div className="bankid-hint"><Icon name="zap" size={13} /><span>BankID will unlock auto-buy — pricy will be able to purchase for you when a price drops below your max. <span className="tag tag--soon">Coming soon</span></span></div>}
 
       <div className="or-div"><span>or use email</span></div>
 
@@ -223,7 +223,7 @@ function Login({ onAuthed, go, layout = 'centered' }) {
           </div>
           <div className="auth__pitch">
             <div className="auth__brand-line" style={{ marginBottom: 16 }}>{trustLine()}</div>
-            <h2>Never overpay.<br />Watch the <span className="hl">price</span>, not the clock.</h2>
+            <h2>Shop smarter.<br />Watch the <span className="hl">price</span>, not the clock.</h2>
             <BrandDemo />
           </div>
         </div>

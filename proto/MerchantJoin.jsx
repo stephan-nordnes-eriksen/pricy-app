@@ -55,7 +55,7 @@ function MerchantJoin({ go, domain: d0 }) {
       <div className="mj__body">
         <div className="t-label">For nettbutikker · gratis</div>
         <h1>Bli med på <span className="hl">pricy.no</span></h1>
-        <p className="mj__sub">Uavhengig norsk prissammenligning. Nøytral rangering — laveste pris først, alltid. Vi tar aldri betalt per klikk.</p>
+        <p className="mj__sub">Uavhengig norsk prissammenligning. Nøytral rangering — laveste pris først. Vi tar ikke betalt per klikk.</p>
         <div className="mj-field">
           <label className="t-label" htmlFor="mj-domain">Butikken deres</label>
           <div className="mj-input mj-input--domain">

@@ -67,7 +67,7 @@ function Onboarding({ go, onFinish }) {
           <div className="pop-in">
             <div className="ob__step-n">Step {step + 1} of {steps.length}</div>
             <h1>Watch your <span className="hl">first products</span></h1>
-            <p className="ob__sub">We suggest a target 5% under today's best price. We'll alert you the moment any shop goes below it.</p>
+            <p className="ob__sub">We suggest a target 5% under today's best price. We'll ping you when a shop we track goes below it.</p>
             <div className="ob-prods">
               {suggested.map(p => {
                 const on = picks[p.id] != null;
