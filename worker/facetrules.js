@@ -660,7 +660,9 @@ const RULES = {
   },
   Photo: {
     type: opt(
-      [/objektiv|\blens\b|nikkor|fujinon|\bmm f\/|zoomobjektiv/, 'Lenses'],
+      // "24mm f/2.8": \b never lands inside "24mm", so no anchor — but a
+      // "+" earlier in the name is a camera KIT, the lens is bundled, not IS
+      [/objektiv|\blens\b|nikkor|fujinon|(?<!\+[\s\S]{0,80})mm f\/|zoomobjektiv/, 'Lenses'],
       [/\bkamera\b|\bcamera\b|\beos\b|\bdslr\b|systemkamera|\bpolaroid\b|\bgopro\b/, 'Cameras'],
       [/stativ|tripod|monopod|\bgimbal\b/, 'Tripods'],
       [/\bfilter\b|\bcpl\b|\bnd\b|step-?up|adapterring|filterholder/, 'Filters'],
@@ -670,6 +672,26 @@ const RULES = {
       [/bilderamme|\balbum\b|fototapet|\blerret\b|\bramme\b|\bprint\b/, 'Frames & prints'],
       [/\bfilm\b|\bilford\b|\bkodak\b|fremkalling/, 'Film'],
       [/\bveske\b|\bbag\b|\brem\b|\bstrap\b|\bcage\b|\brig\b|\bgrip\b|\bclip\b|\bholder\b|\bdeksel\b|\bhus\b/, 'Bags & rigs'],
+    ),
+    // Lens mount — a COMPAT facet (facets.json flags it "compat": true):
+    // pickSimilar refuses to suggest across different values, so a Sony E
+    // lens never gets an MFT "step up". Explicit mount tokens only — no
+    // value means no constraint, a wrong value hides real alternatives.
+    // ponytail: vocabulary covers the current mirrorless/DSLR systems;
+    // extend against a measured live-catalog miss, never a guess.
+    mount: opt(
+      [/\be[- ]mount\b|\bsony (?:fe|e)\b|\b(?:for|til) sony\b/, 'Sony E'],
+      [/\bcanon rf\b|\brf[- ]mount\b|\brf-s\b|\brf ?\d+(?:-\d+)? ?mm\b/, 'Canon RF'],
+      [/\bef-m\b/, 'Canon EF-M'],
+      [/\bcanon ef\b|\bef[- ]mount\b|\bef-s\b|\bef ?\d+(?:-\d+)? ?mm\b/, 'Canon EF'],
+      [/\bnik(?:on|kor) z\b|\bz[- ]mount\b/, 'Nikon Z'],
+      [/\bnik(?:on|kor) f\b|\bf[- ]mount\b|\baf-[sp] nikkor\b/, 'Nikon F'],
+      [/\bfujinon gf\b|\bgf ?\d+ ?mm\b|\bgfx\b|\bg[- ]mount\b/, 'Fujifilm G'],
+      [/\bfujinon x[fc]\b|\bx[fc] ?\d|\bx[- ]mount\b|\bfuji(?:film)? x\b|\b(?:for|til) fuji\b/, 'Fujifilm X'],
+      [/micro four ?thirds|\bmft\b|\bm4\/3\b|m\.?zuiko|\blumix g\b|\bleica dg\b/, 'Micro Four Thirds'],
+      [/\bl[- ]mount\b|\bleica l\b/, 'L-mount'],
+      // trailing "… f/1.8 FE": the FE token sits after the focal length
+      [/^(?=[\s\S]*\bfe\b)(?=[\s\S]*\d ?mm\b)/, 'Sony E'],
     ),
     color: COLOR,
   },

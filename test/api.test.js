@@ -1009,6 +1009,15 @@ test('facet values derive from the product name, per category', async () => {
     [{ cat: 'Pets', name: 'Strø til kanin 10 l' }, { type: 'Litter & hygiene', animal: 'Small pets' }],
     [{ cat: 'Pets', name: 'Hundestrømpe 4-pk' }, { animal: 'Dog' }], // strømpe is NOT strø
     [{ cat: 'Toys', name: 'NEGLESETT M/ARMBÅND OG STICKE.' }, undefined],
+    // Photo mount — the compat facet: a Sony E lens and an MFT lens share a
+    // brick but must never suggest each other (pickSimilar reads the flag)
+    [{ cat: 'Photo', name: 'Sony FE 12-24mm f/2.8 GM' }, { type: 'Lenses', mount: 'Sony E' }],
+    [{ cat: 'Photo', name: 'Olympus M.Zuiko Digital ED 40-150mm f/2.8 PRO' }, { type: 'Lenses', mount: 'Micro Four Thirds' }],
+    [{ cat: 'Photo', name: 'Sigma 85mm f/1.4 DG DN Art for Sony FE' }, { type: 'Lenses', mount: 'Sony E' }], // third-party trailing FE
+    [{ cat: 'Photo', name: 'Sigma 100-400mm f/5-6.3 DG DN OS Contemporary for Fuji' }, { type: 'Lenses', mount: 'Fujifilm X' }],
+    [{ cat: 'Photo', name: 'Fujifilm GFX 100S II' }, { mount: 'Fujifilm G' }], // GFX is G, not X
+    [{ cat: 'Photo', name: 'Canon EOS R6 Mark III + RF 24-105mm f/4-7.1 IS STM' }, { type: 'Cameras', mount: 'Canon RF' }], // a kit is a camera, not a lens
+    [{ cat: 'Photo', name: 'Peak Design Slide kamerarem' }, undefined], // no mount token = no constraint
   ];
   for (const [row, want] of cases) assert.deepStrictEqual(deriveFacets(row), want, row.name);
   assert.strictEqual(deriveFacets({ cat: 'Books', name: 'Around the Moon' }), undefined, 'no match = no facets, never an empty object');

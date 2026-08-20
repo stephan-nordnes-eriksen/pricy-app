@@ -146,5 +146,6 @@
                   { "key": "color", "label": "Colour", "type": "options" } ],
 
   "Photo":      [ { "key": "type",  "label": "Type",   "type": "options" },
+                  { "key": "mount", "label": "Mount",  "type": "options", "compat": true },
                   { "key": "color", "label": "Colour", "type": "options" } ]
 }
