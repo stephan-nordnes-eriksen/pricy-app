@@ -337,6 +337,12 @@ Two Claude Design projects feed this repo:
   Every run POSTs 500 rows at a time WITH images and
   then drains the image queue to empty; `--no-images` skips both (price-only
   refresh). 50 shops wired as of 2026-07-25, 47 of them sitemap-discovered.
+  **Preview shops** (2026-08-20): a batch of new shops carries
+  `preview: "<date>"` in its `$discover` — a marker only (the crawler
+  ignores it), there so the batch is grep-able and removable in one pass
+  (`jq 'with_entries(select(.value."$discover".preview | not))'`). Promote
+  one by deleting the field; `ua: "browser"` now applies to the sitemap
+  fetch too, not just page fetches.
   (`npm run test:crawlers` live-checks one page per shop,
   on demand only) (bearer =
   `INGEST_TOKEN` secret; token also in untracked `tools/.ingest-token`).

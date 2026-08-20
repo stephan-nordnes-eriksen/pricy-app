@@ -989,5 +989,166 @@
       "limit": 400,
       "delayMs": 400
     }
+  },
+  "Multicom": {
+    "$discover": {
+      "sitemap": "https://www.multicom.no/sitemap-1-index.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "."
+    }
+  },
+  "Skittfiske": {
+    "$discover": {
+      "sitemap": "https://www.skittfiske.no/api/sitemap/nb-no/sitemapindex.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "."
+    }
+  },
+  "XXL": {
+    "$discover": {
+      "sitemap": "https://www.xxl.no/sitemaps/auto/live-product/sitemapindex.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Get Inspired": {
+    "$discover": {
+      "sitemap": "https://www.getinspired.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "batch"
+    }
+  },
+  "Bygghjemme": {
+    "$discover": {
+      "sitemap": "https://www.bygghjemme.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "."
+    }
+  },
+  "Norrøna": {
+    "$discover": {
+      "sitemap": "https://www.norrona.com/nb-no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Boots Apotek": {
+    "$discover": {
+      "sitemap": "https://www.boots.no/media/sitemap/sitemap_index.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Vita": {
+    "$discover": {
+      "sitemap": "https://www.vita.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "batch"
+    }
+  },
+  "Eurosko": {
+    "$discover": {
+      "sitemap": "https://www.eurosko.com/api/sitemap/sitemapindex.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "nb-NO"
+    }
+  },
+  "Ellos": {
+    "$discover": {
+      "sitemap": "https://www.ellos.no/sitemap/sitemap_no.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "article"
+    }
+  },
+  "Coolstuff": {
+    "$discover": {
+      "sitemap": "https://www.coolstuff.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Kremmerhuset": {
+    "$discover": {
+      "sitemap": "https://kremmerhuset.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "page="
+    }
+  },
+  "Famme": {
+    "$discover": {
+      "sitemap": "https://famme.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Lekekassen": {
+    "$discover": {
+      "sitemap": "https://lekekassen.no/media/sitemap/lekekassen.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Coolshop": {
+    "$discover": {
+      "sitemap": "https://www.coolshop.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20",
+      "sitemapFilter": "."
+    }
+  },
+  "Eplehuset": {
+    "$discover": {
+      "sitemap": "https://www.eplehuset.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Kitch'n": {
+    "$discover": {
+      "sitemap": "https://www.kitchn.no/sitemap.xml/",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Tilbords": {
+    "$discover": {
+      "sitemap": "https://www.tilbords.no/sitemap.xml/",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
+  },
+  "Lampehuset": {
+    "$discover": {
+      "sitemap": "https://www.lampehuset.no/sitemap.xml",
+      "limit": 400,
+      "delayMs": 400,
+      "preview": "2026-08-20"
+    }
   }
 }
