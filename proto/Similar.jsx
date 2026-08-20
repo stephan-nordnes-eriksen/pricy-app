@@ -15,8 +15,12 @@ function pickSimilar(p, v, main) {
   // same GPC brick = same product type; legacy cat only as fallback (cat 'Audio'
   // spans headphones/speakers/turntables). Never cross spec kinds.
   const sameKind = x => !window.specKindOf || specKindOf(x) === specKindOf(p);
-  let pool = dedup((main && window.brickProducts) ? brickProducts(main.nav.brick) : []).filter(sameKind);
-  if (!pool.length) pool = dedup((window.CAT_OF && CAT_OF[p.cat]) || []).filter(sameKind);
+  // compat facets must MATCH: same brick ≠ same system (lens mounts etc.)
+  const defs = (main && window.brickToCat && window.FACETS && FACETS[brickToCat(main.nav.brick)]) || [];
+  const need = defs.filter(d => d.compat && p.facets && p.facets[d.key] != null);
+  const compatOk = x => need.every(d => x.facets && x.facets[d.key] === p.facets[d.key]);
+  let pool = dedup((main && window.brickProducts) ? brickProducts(main.nav.brick) : []).filter(sameKind).filter(compatOk);
+  if (!pool.length) pool = dedup((window.CAT_OF && CAT_OF[p.cat]) || []).filter(sameKind).filter(compatOk);
   const stock = x => (x.stock !== false ? 1 : 0);
   // cheaper: best-liked option below the current price (in stock first)
   const cheaper = pool.filter(x => x.best < ref)
