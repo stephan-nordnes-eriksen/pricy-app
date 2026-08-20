@@ -28,7 +28,12 @@ function pickSimilar(p, v, main) {
   // step up: at least as well liked, priced above — smallest jump among the best liked
   const up = pool.filter(x => x.best > ref && simScore(x) >= simScore(p))
     .sort((a, b) => (stock(b) - stock(a)) || (simScore(b) - simScore(a)) || (a.best - b.best))[0] || null;
-  return (cheaper || up) ? { cheaper, up, ref } : null;
+  // nav = the full compatible-alternatives search this section is a preview of
+  const nav = main ? {
+    ...main.nav,
+    ...(need.length ? { facets: Object.fromEntries(need.map(d => [d.key, [p.facets[d.key]]])) } : {}),
+  } : null;
+  return (cheaper || up) ? { cheaper, up, ref, nav } : null;
 }
 
 // Trust score on the Folkedommen 0–1 scale: live products carry p.dom
@@ -90,7 +95,11 @@ function SimilarSection({ p, sim, go }) {
   if (!sim || (!sim.cheaper && !sim.up)) return null;
   return (
     <div className="sec simsec">
-      <div className="sec__head"><h2>Similar products</h2><span className="simsec__note">Same category · picked on price and folkedom</span></div>
+      <div className="sec__head"><h2>Similar products</h2>
+        {sim.nav
+          ? <a className="simsec__note simsec__note--link" onClick={() => go('results', sim.nav)}>Same category · picked on price and folkedom · Se alle <Icon name="chevron-right" size={12} /></a>
+          : <span className="simsec__note">Same category · picked on price and folkedom</span>}
+      </div>
       <div className="simsec__grid">
         {sim.cheaper && <SimilarCard x={sim.cheaper} p={p} role="cheap" refPrice={sim.ref} go={go} />}
         {sim.up && <SimilarCard x={sim.up} p={p} role="up" refPrice={sim.ref} go={go} />}
