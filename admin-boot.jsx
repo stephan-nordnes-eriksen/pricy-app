@@ -58,9 +58,12 @@
   // ---- server-driven Products table ------------------------------
   // Honest queries only. q rides searchIds (the blob search, ≤100 rows, no
   // true total — total = what matched). Lists ride the filterless fast path:
-  // draft = node=uncat, live = node=<every stocked segment>, a category =
-  // node=<its segment>. flagged/dupe have no server-side machinery — truly
-  // empty. hidden = the 200-row backlog listing, filtered client-side.
+  // draft = node=uncat, a category = node=<its segment>. live = the default
+  // list with drafts dropped client-side and the REAL total from overview —
+  // node=<every stocked segment> was measured at 8.5 s live (thousands of
+  // bricks → dozens of chunked D1 queries), so pages just under-fill a bit.
+  // flagged/dupe have no server-side machinery — truly empty. hidden = the
+  // 200-row backlog listing, filtered client-side.
   // upstream ignores a null resolution (superseded-call semantics) and never
   // catches a rejection — so a failed fetch resolves null with a toast
   window.onAdminProducts = (qry) => adminProducts(qry).catch(e => { AdminStore.say(String(e.message || e)); return null; });
@@ -83,7 +86,6 @@
     if (cat === 'Ukategorisert' || (status === 'draft' && cat === 'all')) node = 'uncat';
     else if (status === 'draft') return { rows: [], total: 0, counts: COUNTS }; // uncategorized rows have no category
     else if (cat !== 'all') node = (SEG && SEG[cat]) || '';
-    else if (status === 'live' && SEG) node = Object.values(SEG).join(',');
     const d = await j(base + (node ? '&node=' + node : '') + (page ? '&offset=' + page * 400 : ''));
     let rows = d.products.map(p => mapRow(p, false));
     let total = d.meta.total ?? rows.length;
