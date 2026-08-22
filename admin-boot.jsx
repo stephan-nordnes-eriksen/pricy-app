@@ -141,12 +141,13 @@
 
   async function hydrate(email) {
     if (email) { ADMIN.me = email; }
-    const [ov, page, joins, reviews, users] = await Promise.all([
+    const [ov, page, joins, reviews, users, audit] = await Promise.all([
       j('/api/admin/overview'),
       j('/api/products?admin=1'), // one PAGE_MAX page — cats select, prodOf, tree
       j('/api/admin/joins'),
       j('/api/admin/reviews'),
       j('/api/admin/users'),
+      j('/api/admin/audit'),
     ]);
     // segment display-name → code, from the served taxonomy tree roots
     SEG = {};
@@ -197,6 +198,7 @@
       last: u.session_until ? rel(u.session_until - 30 * 864e5) : '—', // session mint time
       status: u.blocked ? 'blocked' : 'active',
     })));
+    ADMIN.audit.push(...audit.map(a => ({ t: rel(a.at), actor: a.actor, action: a.action, target: a.target })));
     AdminStore.emit();
   }
 

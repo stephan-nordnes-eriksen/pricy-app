@@ -57,6 +57,10 @@ const SCHEMA = [
   // Web Push subscriptions (one row per browser/device; endpoint is the
   // push service's unique URL). Pruned when the service says 404/410.
   'CREATE TABLE IF NOT EXISTS push_subs (endpoint TEXT PRIMARY KEY, user_id INTEGER NOT NULL, p256dh TEXT NOT NULL, auth TEXT NOT NULL, created_at INTEGER NOT NULL)',
+  // /admin console phase 2 (plans/admin-console.md): who did what, written by
+  // every mutating admin call (never the cron drains — noise). 90-day cap
+  // enforced on insert, no cron.
+  'CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, actor TEXT NOT NULL, action TEXT NOT NULL, target TEXT)',
   'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS images (product_id TEXT PRIMARY KEY, src TEXT NOT NULL, fetched_at INTEGER NOT NULL)',
   // EAN → product routing (OPEN-CATALOG-PLAN A1): bootstrapped from
@@ -178,11 +182,19 @@ function ingestAuth(request, env) {
 // cookie of a users.admin row (the /admin console). Same trust either way —
 // returns the error Response, or null when authorized.
 async function adminAuth(request, env, db) {
-  if (env.INGEST_TOKEN && !ingestAuth(request, env)) return null;
+  if (env.INGEST_TOKEN && !ingestAuth(request, env)) { request.adminActor = 'ops-bearer'; return null; }
   const token = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`))?.[1];
   const user = await sessionUser(db, token);
-  return user?.admin ? null : json({ error: 'unauthorized' }, 401);
+  if (user?.admin) { request.adminActor = user.email; return null; }
+  return json({ error: 'unauthorized' }, 401);
 }
+// Audit trail for the console's System tab: one row per mutating admin call,
+// actor = whatever adminAuth resolved (admin email or 'ops-bearer').
+const auditLog = (db, request, action, target) => db.batch([
+  db.prepare('INSERT INTO audit (at, actor, action, target) VALUES (?, ?, ?, ?)')
+    .bind(Date.now(), request.adminActor || 'ops-bearer', action, String(target ?? '')),
+  db.prepare('DELETE FROM audit WHERE at < ?').bind(Date.now() - 90 * 864e5),
+]);
 async function bodyEmail(request) {
   const email = String(((await request.json().catch(() => ({}))).email || '')).trim().toLowerCase();
   return EMAIL_RE.test(email) ? email : null;
@@ -2354,6 +2366,14 @@ export default {
       return json(results); // claims stays upstream's own 'ynu' string, CLAIM_KEYS order
     }
 
+    // The audit trail, newest first (console System tab).
+    if (route === 'GET /api/admin/audit') {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      const { results } = await db.prepare('SELECT at, actor, action, target FROM audit ORDER BY id DESC LIMIT 200').all();
+      return json(results);
+    }
+
     // Users listing for the console. `last login` derives from the freshest
     // session (mint time = expiry − SESSION_DAYS); no tracking table exists.
     if (route === 'GET /api/admin/users') {
@@ -2381,10 +2401,11 @@ export default {
       const b = await request.json().catch(() => null);
       if (!b || (b.blocked !== 0 && b.blocked !== 1)) return json({ error: 'bad patch (blocked: 0|1)' }, 400);
       const id = Number(url.pathname.slice('/api/admin/users/'.length));
-      const target = await db.prepare('SELECT admin FROM users WHERE id = ?').bind(id).first();
+      const target = await db.prepare('SELECT admin, email FROM users WHERE id = ?').bind(id).first();
       if (!target) return json({ error: 'unknown user' }, 404);
       if (target.admin && b.blocked) return json({ error: 'admins cannot be blocked' }, 400);
       await db.prepare('UPDATE users SET blocked = ? WHERE id = ?').bind(b.blocked, id).run();
+      await auditLog(db, request, b.blocked ? 'User blocked' : 'User unblocked', target.email);
       return json({ ok: true });
     }
 
@@ -2393,8 +2414,9 @@ export default {
     if (request.method === 'DELETE' && url.pathname.startsWith('/api/admin/joins/')) {
       const denied = await adminAuth(request, env, db);
       if (denied) return denied;
-      await db.prepare('DELETE FROM merchant_joins WHERE id = ?')
-        .bind(Number(url.pathname.slice('/api/admin/joins/'.length))).run();
+      const gone = await db.prepare('DELETE FROM merchant_joins WHERE id = ? RETURNING domain')
+        .bind(Number(url.pathname.slice('/api/admin/joins/'.length))).first();
+      if (gone) await auditLog(db, request, 'Merchant application rejected', gone.domain);
       return json({ ok: true });
     }
 
@@ -2445,6 +2467,7 @@ export default {
         if (meta.ean) await db.prepare("UPDATE gpc SET status = 'queued' WHERE gtin = ?").bind(meta.ean).run();
       }
       await db.batch([db.prepare('UPDATE products SET meta = ? WHERE id = ?').bind(JSON.stringify(meta), id), bumpVer(db)]);
+      await auditLog(db, request, 'Product patched: ' + Object.keys(patch).join(', '), id);
       return json({ ok: true, id, meta });
     }
 
@@ -2460,6 +2483,7 @@ export default {
         .bind(b.hidden, Number(url.pathname.slice('/api/admin/reviews/'.length))).first();
       if (!row) return json({ error: 'unknown review' }, 404);
       if (row.product_id) await refreshReviewMeta(db, row.product_id);
+      await auditLog(db, request, b.hidden ? 'Review hidden' : 'Review restored', row.product_id || '');
       return json({ ok: true });
     }
 
@@ -2506,6 +2530,7 @@ export default {
         try { await env.IMAGES?.delete(`products/${orphan}`); } catch {}
       }
       await bumpVer(db).run(); // covers both the create above and the migration
+      await auditLog(db, request, 'EAN aliased' + (migrated ? ' (orphan merged)' : ''), `${key} → ${target}`);
       return json({ ok: true, ean: key, product_id: target, migrated });
     }
 

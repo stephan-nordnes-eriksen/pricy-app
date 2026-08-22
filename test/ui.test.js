@@ -1814,7 +1814,8 @@ function bootAdmin({ admin = true } = {}) {
     if (u.startsWith('/api/products?admin=1')) return ok({ meta, products: [{ id: 'xm5', name: 'Sony WH-1000XM5', brand: 'Sony', cat: 'Audio', icon: 'headphones', ean: '4548736132565', brick: '10001071', shops: 5, best: 3290, offers: [{ shop: 'Power', price: 3290, updated_at: Date.now() - 3600e3 }] }] });
     if (u === '/api/admin/joins') return ok([{ id: 41, domain: 'fjellsport.no', method: 'feed', feed: 'https://fjellsport.no/f.xml', email: 'nora@fjellsport.no', created_at: Date.now() - 864e5 }]);
     if (u === '/api/admin/reviews') return ok([{ id: 9, product_id: 'xm5', product: 'Sony WH-1000XM5', user: 'Kari', email: 'k@n.no', title: 'Bra', body: 'Solid lyd', claims: 'yuy', verified: 1, hidden: 0, created_at: Date.now() - 3600e3 }]);
-    if (u === '/api/admin/users') return ok({ total: 3, users: [{ id: 7, email: 'kari@n.no', name: 'Kari', admin: 0, blocked: null, lists: 0, watches: 2, devices: 1, created_at: Date.now() - 30 * 864e5, session_until: Date.now() + 29 * 864e5 }] });
+    if (u === '/api/admin/users') return ok({ total: 3, users: [{ id: 7, email: 'kari@n.no', name: 'Kari', admin: 0, blocked: null, lists: 0, watches: 2, devices: 1, created_at: Date.now() - 30 * 864e5, session_until: Date.now() + 29 * 864e5 }, { id: 1, email: 'ops@pricy.no', name: 'Ops', admin: 1, blocked: null, lists: 0, watches: 0, devices: 0, created_at: Date.now() - 60 * 864e5, session_until: Date.now() + 29 * 864e5 }] });
+    if (u === '/api/admin/audit') return ok([{ at: Date.now() - 300e3, actor: 'ops-bearer', action: 'Review hidden', target: 'xm5' }]);
     return Promise.reject(new Error('unexpected fetch ' + u));
   };
   const ctx = dom.getInternalVMContext();
@@ -1845,6 +1846,10 @@ test('admin console: hydrates from real endpoints, server-driven Products, no mo
 
   admTab(win, 'Webstores');
   assert.ok(await until(() => win.document.body.textContent.includes('fjellsport.no')), 'joins land in the pipeline');
+
+  admTab(win, 'System');
+  assert.ok(await until(() => win.document.body.textContent.includes('Review hidden')), 'audit trail hydrates from the server');
+  assert.ok(win.document.body.textContent.includes('ops-bearer'), 'audit actor renders');
 });
 
 test('admin console: actions persist through onAdminAction to the real endpoints', async () => {

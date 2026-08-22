@@ -3424,3 +3424,26 @@ test('admin console: blocking a user kills their sessions and refuses login; joi
   assert.strictEqual((await call(`/api/admin/joins/${row.id}`, { method: 'DELETE', cookie: ops })).status, 200);
   assert.deepStrictEqual(await (await call('/api/admin/joins', { cookie: ops })).json(), [], 'the row is gone');
 });
+
+test('admin console: every mutating admin call lands an audit row with the right actor', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  await call('/api/products'); // seeds
+  const ops = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ops@pricy.no', password: 'correcthorse1' } }));
+  await DB.prepare("UPDATE users SET admin = 1 WHERE email = 'ops@pricy.no'").bind().run();
+
+  assert.strictEqual((await call('/api/admin/audit')).status, 401, 'audit trail is gated');
+
+  // a stale row proves the 90-day prune runs on insert
+  await DB.prepare('INSERT INTO audit (at, actor, action, target) VALUES (?, ?, ?, ?)')
+    .bind(Date.now() - 91 * 864e5, 'ops-bearer', 'Ancient action', 'x').run();
+
+  await call('/api/admin/products/xm5', { method: 'PATCH', cookie: ops, body: { kw: 'audited edit' } });
+  await call('/api/admin/products/xm5', { method: 'PATCH', token: OPS, body: { kw: 'bearer edit' } });
+
+  const rows = await (await call('/api/admin/audit', { cookie: ops })).json();
+  assert.strictEqual(rows.length, 2, 'two audited calls, ancient row pruned');
+  assert.strictEqual(rows[0].actor, 'ops-bearer', 'bearer calls audit as ops-bearer (newest first)');
+  assert.strictEqual(rows[1].actor, 'ops@pricy.no', 'session calls audit as the admin email');
+  assert.ok(rows[1].action.includes('kw') && rows[1].target === 'xm5', 'action names the patch, target the row');
+});
