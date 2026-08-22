@@ -41,6 +41,24 @@ panels ("No analytics yet" until an events table exists). Save caveat:
 a renamed SEED row reverts on the next deploy (seed keys win in the
 json_patch merge) — discovered `ean-*`/`p-*` rows keep edits.
 
+**Status 2026-08-22 later still: phase 2 (a–d) SHIPPED.** `audit` table
+(90-day prune on insert; actor = admin email or 'ops-bearer' stamped by
+adminAuth; products/reviews/users PATCH, alias, joins DELETE/PATCH
+audited) + `GET /api/admin/audit`; `crawl_runs` + bearer
+`POST /api/admin/crawl-report` (tools/crawl.mjs posts one row per shop
+per run, also on failure, even on --dry) + `GET /api/admin/crawlers`
+(shopStats ⋈ last 14 runs); `merchant_joins.stage` + audited
+`PATCH /api/admin/joins/:id {stage}` with merchant.advance wired (boot
+attaches `issues: []` on advance-to-feed — upstream's feed card reads
+`issues.length` and apply() never sets it; a crawl-stage card takes its
+crawl box from a crawl_runs match on the domain's shop name, else honest
+zeros so "Go live" stays blocked); admins panel = boot filtering the
+users roster. No upstream change was needed. Still deliberately unwired
+(error toasts): crawler.run/toggle/schedule, merchant.revalidate,
+flag.toggle, banner.set, user.export/erase, product.merge/publish/
+resolve, offer.unlink. Overview clicks/searches stay "No analytics yet"
+(phase 3, events table).
+
 ## Current state
 
 The prototype is its own page (`admin.html`), not a route in the SPA —

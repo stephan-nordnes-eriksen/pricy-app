@@ -426,11 +426,20 @@ Two Claude Design projects feed this repo:
   `window.onAdminAction` persists product.save (meta PATCH + alias on a
   GTIN change + hidden⇄live), mod.act (review hidden PATCH), user.block
   (`users.blocked`, enforced at the sessionUser choke point — all session
-  kinds die, login 403s, admins unblockable) and merchant.reject
-  (`DELETE /api/admin/joins/:id`); unwired kinds return an honest error
-  toast, never a fake success. Crawlers/System data and Overview
-  analytics are phase 2 (crawl_runs, audit table, merchant stages,
-  events). Ingest/gpc/images/push/outreach/catalog.json stay
+  kinds die, login 403s, admins unblockable), merchant.reject
+  (`DELETE /api/admin/joins/:id`) and merchant.advance (audited
+  `PATCH /api/admin/joins/:id {stage: feed|crawl|live}`, NULL = applied);
+  unwired kinds return an honest error toast, never a fake success.
+  **Phase 2 ops truth shipped** (2026-08-22): `audit` table (every
+  mutating admin call, actor = admin email or 'ops-bearer', 90-day prune
+  on insert, cron drains excluded) served at `GET /api/admin/audit`;
+  `crawl_runs` written by bearer `POST /api/admin/crawl-report` —
+  tools/crawl.mjs posts one summary row per shop per run (also on
+  failure, even on --dry) — and `GET /api/admin/crawlers` serves the
+  shopStats ⋈ last-14-runs join that fills the Crawlers tab (sched '—',
+  crawls are manual); System's admins panel is boot filtering the users
+  roster. Overview clicks/searches analytics stay phase 3 (events
+  table). Ingest/gpc/images/push/outreach/catalog.json stay
   bearer-only.
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
   `Mcp-Session-Id` header to the shared `sessions` table), search_products,
