@@ -227,6 +227,10 @@
       last: u.session_until ? rel(u.session_until - 30 * 864e5) : '—', // session mint time
       status: u.blocked ? 'blocked' : 'active',
     })));
+    // ponytail: admins come off the 200-row users listing (newest first) —
+    // fine while admins are a handful of recent manual grants; give the
+    // listing an admin-first ORDER BY if the roster ever outgrows a page
+    ADMIN.admins.push(...users.users.filter(u => u.admin === 1).map(u => ({ who: u.email, role: 'Admin' })));
     ADMIN.audit.push(...audit.map(a => ({ t: rel(a.at), actor: a.actor, action: a.action, target: a.target })));
     // Crawlers: shopStats (offers, freshness) + the shop's crawl_runs history.
     // Everything served — sched is '—' (crawls are manual tools/crawl.mjs

@@ -1859,6 +1859,8 @@ test('admin console: hydrates from real endpoints, server-driven Products, no mo
   admTab(win, 'System');
   assert.ok(await until(() => win.document.body.textContent.includes('Review hidden')), 'audit trail hydrates from the server');
   assert.ok(win.document.body.textContent.includes('ops-bearer'), 'audit actor renders');
+  assert.ok(win.document.body.textContent.includes('full audit trail retained'), 'admins panel lists the users.admin rows');
+  assert.ok(!win.document.body.textContent.includes('kari@n.no'), 'non-admins stay out of the admins panel');
 });
 
 test('admin console: actions persist through onAdminAction to the real endpoints', async () => {
