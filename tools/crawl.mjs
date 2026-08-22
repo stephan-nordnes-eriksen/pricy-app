@@ -39,26 +39,62 @@ const out = arg('--out');
 const base = process.env.PRICY_URL || 'https://pricy.no';
 const urlsByShop = JSON.parse(readFileSync(new URL('./crawl-urls.json', import.meta.url), 'utf8'));
 
+const token = process.env.INGEST_TOKEN
+  || (() => { try { return readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim(); } catch { return null; } })();
+
+// One summary row per shop per run lands in the Worker's crawl_runs table
+// (admin console Crawlers tab). Posted even on --dry — the crawl itself
+// happened; only ingest is skipped. Best-effort: a failed report never
+// fails the crawl.
+async function report(shop, body) {
+  if (!token) return;
+  const res = await fetch(`${base}/api/admin/crawl-report`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ shop, kind: 'crawler', ...body }),
+  }).catch(e => ({ ok: false, status: e.message }));
+  if (!res.ok) console.error(`  ${shop}: crawl-report → ${res.status}`);
+}
+
 // Shops run concurrently, pages within a shop stay sequential-with-a-pause:
 // the politeness that matters is per-host request rate, and crawling 47 shops
 // one after another turns a 5-minute run into a 4-hour one.
 async function crawlShop(shop, cfg) {
   const rows = [];
+  let pages = 0, errs = 0;
   const { $discover, $ua, ...urls } = cfg;
-  if ($discover) rows.push(...await discoverSource(shop, { ...$discover, ...(limit < Infinity ? { limit } : {}) }));
+  if ($discover) {
+    const d = await discoverSource(shop, { ...$discover, ...(limit < Infinity ? { limit } : {}) });
+    // ponytail: discoverSource doesn't expose its attempted-page count, so
+    // failed discover pages aren't counted — pages = pages that yielded a row
+    rows.push(...d);
+    pages += d.length;
+  }
   for (const [pid, url] of Object.entries(urls).slice(0, limit)) {
-    rows.push(...await scrapeSource(shop, { ua: $ua, urls: { [pid]: url } }));
+    const got = await scrapeSource(shop, { ua: $ua, urls: { [pid]: url } });
+    pages++;
+    if (!got.length) errs++;
+    rows.push(...got);
     await new Promise(r => setTimeout(r, 500));
   }
   console.error(`  ${shop}: ${rows.length} row(s)`);
-  return rows;
+  return { rows, pages, errs };
 }
 
 const queue = Object.entries(urlsByShop).filter(([shop]) => !shopFilter || shop === shopFilter);
 const rows = [];
 await Promise.all(Array.from({ length: Number(process.env.CRAWL_CONC || 8) }, async () => {
   for (let e; (e = queue.shift());) {
-    rows.push(...await crawlShop(...e).catch(err => (console.error(`  ${e[0]}: FAILED ${err.message}`), [])));
+    const [shop, cfg] = e;
+    const t0 = Date.now();
+    try {
+      const r = await crawlShop(shop, cfg);
+      rows.push(...r.rows);
+      await report(shop, { started_at: t0, dur_ms: Date.now() - t0, pages: r.pages, rows: r.rows.length, errs: r.errs });
+    } catch (err) {
+      console.error(`  ${shop}: FAILED ${err.message}`);
+      await report(shop, { started_at: t0, dur_ms: Date.now() - t0, pages: 0, rows: 0, errs: 1, note: err.message.slice(0, 500) });
+    }
   }
 }));
 
@@ -68,8 +104,7 @@ if (out) writeFileSync(out, JSON.stringify(rows, null, 2) + '\n');
 if (!rows.length) process.exit(1);
 if (dry) process.exit(0);
 
-const token = process.env.INGEST_TOKEN
-  || readFileSync(new URL('./.ingest-token', import.meta.url), 'utf8').trim();
+if (!token) { console.error('no INGEST_TOKEN (env or tools/.ingest-token)'); process.exit(1); }
 // Ingest only queues image URLs (no downloads inside the POST), so a full
 // catalog run POSTs at the route's own 500-row limit AND keeps its images.
 const payload = noImages ? rows.map(({ image, ...r }) => r) : rows;

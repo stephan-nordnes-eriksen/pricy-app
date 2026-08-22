@@ -1816,6 +1816,10 @@ function bootAdmin({ admin = true } = {}) {
     if (u === '/api/admin/reviews') return ok([{ id: 9, product_id: 'xm5', product: 'Sony WH-1000XM5', user: 'Kari', email: 'k@n.no', title: 'Bra', body: 'Solid lyd', claims: 'yuy', verified: 1, hidden: 0, created_at: Date.now() - 3600e3 }]);
     if (u === '/api/admin/users') return ok({ total: 3, users: [{ id: 7, email: 'kari@n.no', name: 'Kari', admin: 0, blocked: null, lists: 0, watches: 2, devices: 1, created_at: Date.now() - 30 * 864e5, session_until: Date.now() + 29 * 864e5 }, { id: 1, email: 'ops@pricy.no', name: 'Ops', admin: 1, blocked: null, lists: 0, watches: 0, devices: 0, created_at: Date.now() - 60 * 864e5, session_until: Date.now() + 29 * 864e5 }] });
     if (u === '/api/admin/audit') return ok([{ at: Date.now() - 300e3, actor: 'ops-bearer', action: 'Review hidden', target: 'xm5' }]);
+    if (u === '/api/admin/crawlers') return ok([{ shop: 'Power', offers: 5200, updated: Date.now() - 600e3, runs: [
+      { id: 2, shop: 'Power', kind: 'crawler', started_at: Date.now() - 3600e3, dur_ms: 161000, pages: 400, rows: 398, errs: 2, note: null },
+      { id: 1, shop: 'Power', kind: 'crawler', started_at: Date.now() - 90000e3, dur_ms: 150000, pages: 400, rows: 400, errs: 0, note: null },
+    ] }]);
     return Promise.reject(new Error('unexpected fetch ' + u));
   };
   const ctx = dom.getInternalVMContext();
@@ -1846,6 +1850,11 @@ test('admin console: hydrates from real endpoints, server-driven Products, no mo
 
   admTab(win, 'Webstores');
   assert.ok(await until(() => win.document.body.textContent.includes('fjellsport.no')), 'joins land in the pipeline');
+
+  admTab(win, 'Crawlers');
+  assert.ok(await until(() => win.document.body.textContent.includes('Power')), 'crawlers row renders from the served join');
+  assert.ok(win.document.body.textContent.includes('5 200'), 'items = the live offer count');
+  assert.ok(win.document.body.textContent.includes('warn'), 'status derives from the last run (2 errs, rows landed)');
 
   admTab(win, 'System');
   assert.ok(await until(() => win.document.body.textContent.includes('Review hidden')), 'audit trail hydrates from the server');

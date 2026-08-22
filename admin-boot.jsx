@@ -141,13 +141,14 @@
 
   async function hydrate(email) {
     if (email) { ADMIN.me = email; }
-    const [ov, page, joins, reviews, users, audit] = await Promise.all([
+    const [ov, page, joins, reviews, users, audit, crawlers] = await Promise.all([
       j('/api/admin/overview'),
       j('/api/products?admin=1'), // one PAGE_MAX page — cats select, prodOf, tree
       j('/api/admin/joins'),
       j('/api/admin/reviews'),
       j('/api/admin/users'),
       j('/api/admin/audit'),
+      j('/api/admin/crawlers'),
     ]);
     // segment display-name → code, from the served taxonomy tree roots
     SEG = {};
@@ -199,6 +200,26 @@
       status: u.blocked ? 'blocked' : 'active',
     })));
     ADMIN.audit.push(...audit.map(a => ({ t: rel(a.at), actor: a.actor, action: a.action, target: a.target })));
+    // Crawlers: shopStats (offers, freshness) + the shop's crawl_runs history.
+    // Everything served — sched is '—' (crawls are manual tools/crawl.mjs
+    // runs, there is no schedule), and a shop with no run history counts in
+    // no status bucket rather than pretending to be healthy.
+    const fmtDur = (ms) => ms == null ? '—' : ms >= 60000 ? Math.floor(ms / 60000) + ' m ' + Math.round(ms % 60000 / 1000) + ' s' : Math.round(ms / 1000) + ' s';
+    const logT = (t) => new Date(t).toISOString().slice(5, 16).replace('T', ' ');
+    ADMIN.crawlers.push(...crawlers.map((c, i) => {
+      const last = c.runs[0];
+      return {
+        id: 'cr' + i, shop: c.shop, kind: (last && last.kind) || 'crawler', sched: '—',
+        last: minsAgo(c.updated), dur: fmtDur(last && last.dur_ms), items: c.offers,
+        changed: null, errs: last ? last.errs : null,
+        status: !last ? '—' : last.errs && !last.rows ? 'fail' : last.errs ? 'warn' : 'ok',
+        url: '', ok: c.runs.slice().reverse().map(r => r.errs ? 0 : 1),
+        note: (last && last.note) || undefined,
+        log: c.runs.map(r => [logT(r.started_at),
+          (r.pages == null ? '' : r.pages + ' pages → ') + (r.rows ?? '?') + ' rows, ' + (r.errs ?? '?') + ' errors (' + fmtDur(r.dur_ms) + ')' + (r.note ? ' — ' + r.note : ''),
+          r.errs ? 'e' : undefined]),
+      };
+    }));
     AdminStore.emit();
   }
 

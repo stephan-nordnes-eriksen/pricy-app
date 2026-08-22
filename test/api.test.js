@@ -3447,3 +3447,24 @@ test('admin console: every mutating admin call lands an audit row with the right
   assert.strictEqual(rows[1].actor, 'ops@pricy.no', 'session calls audit as the admin email');
   assert.ok(rows[1].action.includes('kw') && rows[1].target === 'xm5', 'action names the patch, target the row');
 });
+
+test('admin console: crawl reports land and the crawlers join serves shopStats + runs', async () => {
+  const call = api({ DB: d1() });
+  await call('/api/products'); // seeds → demo offers give shopStats
+  assert.strictEqual((await call('/api/admin/crawl-report', { method: 'POST', body: { shop: 'Power' } })).status, 401, 'report is bearer-gated');
+  assert.strictEqual((await call('/api/admin/crawl-report', { method: 'POST', token: OPS, body: {} })).status, 400, 'shop required');
+  for (const [errs, note] of [[0, null], [2, 'two pages 404']]) {
+    assert.strictEqual((await call('/api/admin/crawl-report', {
+      method: 'POST', token: OPS,
+      body: { shop: 'Power', kind: 'crawler', started_at: Date.now() - 60e3, dur_ms: 55e3, pages: 400, rows: 398, errs, note },
+    })).status, 200);
+  }
+  assert.strictEqual((await call('/api/admin/crawlers')).status, 401, 'crawlers join is gated');
+  const shops = await (await call('/api/admin/crawlers', { token: OPS })).json();
+  const power = shops.find(s => s.shop === 'Power');
+  assert.ok(power, 'the reported shop is in the join');
+  assert.strictEqual(power.runs.length, 2, 'both runs served');
+  assert.strictEqual(power.runs[0].errs, 2, 'newest first');
+  assert.strictEqual(power.runs[0].note, 'two pages 404');
+  assert.ok(shops.some(s => s.shop !== 'Power' && s.runs.length === 0 && s.offers > 0), 'shops with offers but no run history ride along');
+});

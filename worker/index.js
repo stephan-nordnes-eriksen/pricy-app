@@ -61,6 +61,10 @@ const SCHEMA = [
   // every mutating admin call (never the cron drains — noise). 90-day cap
   // enforced on insert, no cron.
   'CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, actor TEXT NOT NULL, action TEXT NOT NULL, target TEXT)',
+  // Crawl run history for the console's Crawlers tab: one row per shop per
+  // run, POSTed by tools/crawl.mjs (crawls are local, nothing server-side can
+  // observe them). Served joined with shopStats by GET /api/admin/crawlers.
+  'CREATE TABLE IF NOT EXISTS crawl_runs (id INTEGER PRIMARY KEY, shop TEXT NOT NULL, kind TEXT, started_at INTEGER NOT NULL, dur_ms INTEGER, pages INTEGER, rows INTEGER, errs INTEGER, note TEXT)',
   'CREATE TABLE IF NOT EXISTS seed_meta (id INTEGER PRIMARY KEY, hash TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS images (product_id TEXT PRIMARY KEY, src TEXT NOT NULL, fetched_at INTEGER NOT NULL)',
   // EAN → product routing (OPEN-CATALOG-PLAN A1): bootstrapped from
@@ -2364,6 +2368,38 @@ export default {
          FROM reviews r JOIN users u ON u.id = r.user_id LEFT JOIN products p ON p.id = r.product_id
          ORDER BY r.id DESC LIMIT 200`).all();
       return json(results); // claims stays upstream's own 'ynu' string, CLAIM_KEYS order
+    }
+
+    // Crawl summary from tools/crawl.mjs, one row per shop per run — bearer
+    // like ingest (the crawler is a machine writer, not a console user).
+    if (route === 'POST /api/admin/crawl-report') {
+      const denied = ingestAuth(request, env);
+      if (denied) return denied;
+      const b = await request.json().catch(() => null);
+      const shop = typeof b?.shop === 'string' ? b.shop.trim() : '';
+      if (!shop) return json({ error: 'need shop' }, 400);
+      const num = (v) => Number.isFinite(v) ? Math.round(v) : null;
+      await db.prepare('INSERT INTO crawl_runs (shop, kind, started_at, dur_ms, pages, rows, errs, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(shop, typeof b.kind === 'string' ? b.kind : null, num(b.started_at) ?? Date.now(), num(b.dur_ms),
+          num(b.pages), num(b.rows), num(b.errs), typeof b.note === 'string' ? b.note.slice(0, 500) : null).run();
+      return json({ ok: true });
+    }
+
+    // Crawlers tab: per shop, the live offer stats joined with the last 14
+    // crawl_runs rows — the join is served, never the raw tables.
+    if (route === 'GET /api/admin/crawlers') {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      const ver = await seedCatalog(db);
+      const meta = await catMeta(db, ver);
+      const { results } = await db.prepare('SELECT * FROM crawl_runs ORDER BY id DESC LIMIT 1000').all();
+      const runs = {};
+      for (const r of results) {
+        const a = runs[r.shop] ??= [];
+        if (a.length < 14) a.push(r);
+      }
+      const shops = [...new Set([...Object.keys(meta.shopStats), ...Object.keys(runs)])].sort();
+      return json(shops.map(s => ({ shop: s, ...(meta.shopStats[s] || { offers: 0, updated: null }), runs: runs[s] || [] })));
     }
 
     // The audit trail, newest first (console System tab).
