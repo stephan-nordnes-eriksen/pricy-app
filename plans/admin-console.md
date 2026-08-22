@@ -117,11 +117,48 @@ without data are dropped by boot, never left showing mock values.
    - Overview with real counts only
    - tests: bundle builds, token gate 401 path, reviews queue
      endpoint, one jsdom mount of the admin app with hydrated data
-2. **Ops truth**
-   - `merchant_joins.stage` + PATCH; `GET /api/admin/users` + block
-     column; `crawl_runs` + crawl.mjs reporting; `audit` table wired
-     into existing admin endpoints; Crawlers tab off shopStats +
-     crawl_runs
+2. **Ops truth** — spec as of 2026-08-22 (users listing + block column
+   already shipped in phase 1; what follows is the REMAINDER, in
+   priority order). Ground rules unchanged: byte-faithful upstream (any
+   upstream need = a prompt in this file, user pastes it), mocks never
+   render, no invented numbers, unwired actions error honestly, new
+   admin reads/writes gate on `adminAuth`, D1 migrations are guarded
+   ALTERs in `ensureSchema`, tests in api.test.js + the bootAdmin jsdom
+   harness in ui.test.js, deploy unsandboxed + cmp live bytes.
+
+   a. **Audit table** (smallest, do first): `audit` (id, at, actor,
+      action, target) written by every mutating admin call — products
+      PATCH, reviews PATCH, users PATCH, alias, joins DELETE/PATCH,
+      gpc/images drains NOT audited (cron noise). Actor = the admin
+      session's email, or 'ops-bearer' for token calls. Serve
+      `GET /api/admin/audit` (LIMIT 200 desc); boot hydrates
+      ADMIN.audit ({t: rel(at), actor, action, target}) and System's
+      audit panel goes live. Cap growth: on insert, delete rows older
+      than 90 d (one DELETE, no cron).
+   b. **Crawl runs**: `crawl_runs` (id, shop, kind, started_at, dur_ms,
+      pages, rows, errs, note) + bearer `POST /api/admin/crawl-report`
+      (one row per shop per run; crawl.mjs posts it after each shop
+      finishes, also on failure with note). Boot fills the Crawlers tab:
+      one row per shop from `meta.shopStats` (offers, updated) joined
+      with its last crawl_runs rows — items = offers, last = minutes
+      since updated, ok-sparkline = last 14 runs' error-free flag, log =
+      last runs as lines. sched renders '—' (crawls are manual;
+      schedule select stays an error toast), run/pause/toggle stay
+      unwired errors. Serve the join as `GET /api/admin/crawlers` (per
+      shop: shopStats + last 14 runs) rather than shipping raw tables.
+   c. **Merchant stages**: `merchant_joins.stage` TEXT (NULL = applied)
+      + `PATCH /api/admin/joins/:id {stage: feed|crawl|live}` (audited).
+      Wire `merchant.advance` in boot; `merchant.revalidate` stays an
+      error toast (feed validation is ONBOARDING.md manual). Boot maps
+      the stage onto the pipeline columns; a `crawl`-stage card renders
+      the drawer's crawl section only if a crawl_runs row exists for
+      the domain's shop name (else plain).
+   d. **Admins panel**: no new endpoint — boot filters the users roster
+      (admin === 1) into ADMIN.admins ({who: email, role: 'Admin'}).
+   e. **Scope guards**: flags stay deploy-time (error toast), banner
+      and clicks/searches analytics stay phase 3, no upstream changes
+      expected — if one turns out needed, write the prompt into this
+      file and stop.
 3. **Deferred, each its own decision**
    - announcement banner (needs main-app upstream render)
    - runtime feature flags (today deploy-time by design)
