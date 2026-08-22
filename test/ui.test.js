@@ -1881,6 +1881,14 @@ test('admin console: actions persist through onAdminAction to the real endpoints
   assert.ok(await until(() => win.api.includes('PATCH /api/admin/users/7')), 'block PATCHes the real user id');
   assert.ok(await until(() => win.document.body.textContent.includes('blocked')), 'row flips to blocked');
 
+  admTab(win, 'Webstores');
+  assert.ok(await until(() => qa(win, '.mcard').length > 0), 'pipeline card renders');
+  qa(win, '.mcard')[0].click();
+  const adv = await until(() => qa(win, 'button').find(b => b.textContent.includes('Approve')));
+  qa(win, 'button').find(b => b.textContent.includes('Approve')).click();
+  assert.ok(adv, 'the applied card offers the advance button');
+  assert.ok(await until(() => win.api.includes('PATCH /api/admin/joins/41')), 'advance PATCHes the real join id');
+
   admTab(win, 'System');
   assert.ok(await until(() => qa(win, '.sw').length > 0), 'banner switch renders');
   qa(win, '.sw')[0].click(); // banner — not built: must NOT toast success or flip

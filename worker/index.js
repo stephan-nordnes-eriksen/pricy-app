@@ -112,6 +112,8 @@ async function ensureSchema(db) {
     await db.prepare('ALTER TABLE users ADD COLUMN admin INTEGER').run().catch(() => {});
     // console Users tab: blocked = locked out (sessions dead, login refused)
     await db.prepare('ALTER TABLE users ADD COLUMN blocked INTEGER').run().catch(() => {});
+    // console Webstores pipeline: NULL = applied, else feed|crawl|live
+    await db.prepare('ALTER TABLE merchant_joins ADD COLUMN stage TEXT').run().catch(() => {});
     // 4d: real-source offers carry a deep link and a freshness stamp
     await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
@@ -2442,6 +2444,21 @@ export default {
       if (target.admin && b.blocked) return json({ error: 'admins cannot be blocked' }, 400);
       await db.prepare('UPDATE users SET blocked = ? WHERE id = ?').bind(b.blocked, id).run();
       await auditLog(db, request, b.blocked ? 'User blocked' : 'User unblocked', target.email);
+      return json({ ok: true });
+    }
+
+    // Advance a merchant through the onboarding pipeline (console
+    // merchant.advance). The stage is bookkeeping only — feed validation and
+    // test crawls stay ONBOARDING.md manual steps.
+    if (request.method === 'PATCH' && url.pathname.startsWith('/api/admin/joins/')) {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      const b = await request.json().catch(() => null);
+      if (!['feed', 'crawl', 'live'].includes(b?.stage)) return json({ error: 'bad patch (stage: feed|crawl|live)' }, 400);
+      const row = await db.prepare('UPDATE merchant_joins SET stage = ? WHERE id = ? RETURNING domain')
+        .bind(b.stage, Number(url.pathname.slice('/api/admin/joins/'.length))).first();
+      if (!row) return json({ error: 'unknown join' }, 404);
+      await auditLog(db, request, 'Merchant advanced to ' + b.stage, row.domain);
       return json({ ok: true });
     }
 

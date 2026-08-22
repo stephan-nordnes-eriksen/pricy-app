@@ -3468,3 +3468,23 @@ test('admin console: crawl reports land and the crawlers join serves shopStats +
   assert.strictEqual(power.runs[0].note, 'two pages 404');
   assert.ok(shops.some(s => s.shop !== 'Power' && s.runs.length === 0 && s.offers > 0), 'shops with offers but no run history ride along');
 });
+
+test('admin console: merchant stages advance through the pipeline and are audited', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  const ops = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ops@pricy.no', password: 'correcthorse1' } }));
+  await DB.prepare("UPDATE users SET admin = 1 WHERE email = 'ops@pricy.no'").bind().run();
+  await call('/api/merchant/join', { method: 'POST', body: { domain: 'fjellsport.no', method: 'crawl', email: 'nora@fjellsport.no' } });
+
+  const [row] = await (await call('/api/admin/joins', { cookie: ops })).json();
+  assert.strictEqual(row.stage, null, 'a fresh application has no stage (= applied)');
+  assert.strictEqual((await call(`/api/admin/joins/${row.id}`, { method: 'PATCH', body: { stage: 'feed' } })).status, 401, 'stage PATCH is gated');
+  assert.strictEqual((await call(`/api/admin/joins/${row.id}`, { method: 'PATCH', cookie: ops, body: { stage: 'nope' } })).status, 400);
+  assert.strictEqual((await call('/api/admin/joins/999999', { method: 'PATCH', cookie: ops, body: { stage: 'feed' } })).status, 404);
+  assert.strictEqual((await call(`/api/admin/joins/${row.id}`, { method: 'PATCH', cookie: ops, body: { stage: 'feed' } })).status, 200);
+
+  const [after] = await (await call('/api/admin/joins', { cookie: ops })).json();
+  assert.strictEqual(after.stage, 'feed', 'the stage persisted');
+  const audit = await (await call('/api/admin/audit', { cookie: ops })).json();
+  assert.ok(audit.some(a => a.action === 'Merchant advanced to feed' && a.target === 'fjellsport.no'), 'the advance is audited');
+});

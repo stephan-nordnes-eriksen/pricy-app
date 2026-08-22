@@ -26,6 +26,7 @@
   const minsAgo = (t) => t ? Math.max(0, Math.round((Date.now() - t) / 60000)) : null;
   const rel = (t) => agoM(minsAgo(t));
   const digits = (s) => String(s || '').replace(/\D/g, '');
+  const fmtDur = (ms) => ms == null ? '—' : ms >= 60000 ? Math.floor(ms / 60000) + ' m ' + Math.round(ms % 60000 / 1000) + ' s' : Math.round(ms / 1000) + ' s';
   const j = async (path) => {
     const r = await fetch(path, { headers: { accept: 'application/json' } });
     if (r.status === 401 || r.status === 403) throw Object.assign(new Error('unauthorized'), { auth: true });
@@ -128,8 +129,15 @@
         return w('/api/admin/joins/' + row.jid, 'DELETE');
       case 'user.export':
         return 'not wired — the user can self-export under Account';
-      case 'merchant.advance': case 'merchant.revalidate':
-        return 'onboarding stages are manual for now (ONBOARDING.md)';
+      case 'merchant.advance': {
+        const r = await w('/api/admin/joins/' + row.jid, 'PATCH', { stage: payload.to });
+        // upstream's apply() only sets stage/crawl/liveSince — a feed-stage
+        // card renders issues.length, so attach it before the re-render
+        if (r === true && payload.to === 'feed') row.issues = row.issues || [];
+        return r;
+      }
+      case 'merchant.revalidate':
+        return 'feed validation is a manual step (ONBOARDING.md)';
       case 'flag.toggle':
         return 'flags are deploy-time (wrangler.jsonc + TWEAK_DEFAULTS)';
       case 'banner.set':
@@ -178,11 +186,31 @@
     if (ov.gpcQueued) ADMIN.stats.issues.push({ ic: 'package-search', k: 'warn', t: ov.gpcQueued + ' GTINs awaiting GPC resolution', d: 'cron drains hourly; POST /api/admin/gpc for a backfill', tab: 'products' });
     if (ov.hidden) ADMIN.stats.issues.push({ ic: 'eye-off', t: ov.hidden + ' rows in the hidden backlog', d: 'demoted + junk — triage under Products › Hidden', tab: 'products' });
     ADMIN.catalog.push(...page.products.map(p => mapRow(p, false)));
-    ADMIN.merchants.push(...joins.map(m => ({
-      id: 'm' + m.id, jid: m.id, stage: 'applied', name: m.domain, domain: m.domain,
-      org: '—', contact: '—', email: m.email, applied: rel(m.created_at),
-      products: null, feed: m.method, feedUrl: m.feed || '—',
-    })));
+    // stage is a real column now (NULL = applied). The card shapes upstream
+    // requires per stage: feed reads issues[] (none tracked — the manual
+    // ONBOARDING.md check gates the advance), crawl reads a crawl object —
+    // filled from a crawl_runs match on the domain's shop name, else honest
+    // zeros (done: false blocks "Go live" until a real run lands).
+    const fold = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    ADMIN.merchants.push(...joins.map(m => {
+      const stage = m.stage || 'applied';
+      const row = {
+        id: 'm' + m.id, jid: m.id, stage, name: m.domain, domain: m.domain,
+        org: '—', contact: '—', email: m.email, applied: rel(m.created_at),
+        products: null, feed: m.method, feedUrl: m.feed || '—',
+      };
+      if (stage === 'feed') row.issues = [];
+      if (stage === 'crawl') {
+        const key = fold(m.domain.split('.')[0]);
+        const cr = crawlers.find(c => { const k = fold(c.shop); return k && key && (k === key || k.includes(key) || key.includes(k)); });
+        const run = cr && cr.runs[0];
+        row.crawl = run
+          ? { done: true, items: run.rows, errs: run.errs, dur: fmtDur(run.dur_ms) }
+          : { done: false, pct: 0, items: 0, errs: 0 };
+      }
+      if (stage === 'live') row.liveSince = '';
+      return row;
+    }));
     ADMIN.mods.push(...reviews.map(r => ({
       id: 'q' + r.id, rid: r.id, kind: 'review', user: r.user, time: rel(r.created_at),
       // prodId doubles as the display fallback in prodOf() — the name reads
@@ -204,7 +232,6 @@
     // Everything served — sched is '—' (crawls are manual tools/crawl.mjs
     // runs, there is no schedule), and a shop with no run history counts in
     // no status bucket rather than pretending to be healthy.
-    const fmtDur = (ms) => ms == null ? '—' : ms >= 60000 ? Math.floor(ms / 60000) + ' m ' + Math.round(ms % 60000 / 1000) + ' s' : Math.round(ms / 1000) + ' s';
     const logT = (t) => new Date(t).toISOString().slice(5, 16).replace('T', ' ');
     ADMIN.crawlers.push(...crawlers.map((c, i) => {
       const last = c.runs[0];
