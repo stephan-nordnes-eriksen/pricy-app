@@ -2,7 +2,19 @@
 // Pricy.no ADMIN — mock data + tiny store
 // Depends on Primitives.jsx (PRODUCTS, SHOPS, fmt)
 // ===========================================================
-const ADMIN_ME = 'you@pricy.no';
+const ADMIN_ME = window.ADMIN_ME || 'you@pricy.no';
+
+// host seam: when window.onAdminAction exists, every mutating
+// control awaits it; true = proceed, a string = error toast, and
+// the local mutation + success toast happen only inside apply()
+async function admAct(kind, payload, apply) {
+  const h = window.onAdminAction;
+  if (h) {
+    let r; try { r = await h(kind, payload); } catch (e) { r = String(e && e.message || e); }
+    if (r !== true) { AdminStore.say(typeof r === 'string' ? r : 'Action failed'); return false; }
+  }
+  apply(); return true;
+}
 
 const A_STATS = {
   kpi: [
@@ -25,6 +37,16 @@ const A_STATS = {
     { l: 'Unknown stock status', v: 4.1, k: 'warn' },
     { l: 'Offers stale > 24 h', v: 1.8, k: 'bad' },
   ],
+  totals: { products: 84312, users: 41208, webstoresLive: 96, spamCaught7d: 61 },
+  issues: [
+    { ic: 'bot', k: 'fail', t: 'CDON crawler failing — HTTP 403', d: 'robots.txt changed at 09:12 · 3 consecutive failures', tab: 'crawlers' },
+    { ic: 'shield-alert', k: 'warn', t: '8 items in moderation queue', d: '2 price reports, 6 reviews & corrections', tab: 'moderation' },
+    { ic: 'store', t: '6 webstores in onboarding', d: '2 applications awaiting first review', tab: 'webstores' },
+    { ic: 'search-x', k: 'warn', t: 'Zero-result spike: \u201cgarmin fenix 8\u201d', d: '412 searches this week — a draft product exists in catalog', tab: 'products' },
+  ],
+  clicksHint: '× 1 000 · total 187 k',
+  searchesHint: 'red = returned no results',
+  healthHint: 'share of 1.24 M offers',
 };
 
 const A_SPECS = {
@@ -119,6 +141,7 @@ const A_AUDIT = [
 ];
 
 const ADMIN = {
+  me: ADMIN_ME,
   stats: A_STATS, catalog: A_CATALOG, users: A_USERS, mods: A_MODS,
   merchants: A_MERCH, crawlers: A_CRAWL, flags: A_FLAGS, audit: A_AUDIT,
   banner: { on: false, text: 'Planned maintenance Sunday 02:00–04:00 — price data may lag.' },
@@ -130,7 +153,7 @@ const AdminStore = {
   emit() { this.subs.forEach(f => f()); },
   // say(msg) → toast only; say(msg, action, target) → toast + audit entry
   say(msg, action, target) {
-    if (action) ADMIN.audit.unshift({ t: 'just now', actor: ADMIN_ME, action, target });
+    if (action) ADMIN.audit.unshift({ t: 'just now', actor: ADMIN.me, action, target });
     this.toast = msg; this.tn++; this.emit();
   },
 };
@@ -142,4 +165,4 @@ function useAdmin() {
 const MERCH_STAGES = [['applied', 'Applied'], ['feed', 'Feed check'], ['crawl', 'Test crawl'], ['live', 'Live']];
 const A_PROD = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
 
-Object.assign(window, { ADMIN, AdminStore, useAdmin, ADMIN_ME, MERCH_STAGES, A_PROD });
+Object.assign(window, { ADMIN, AdminStore, useAdmin, ADMIN_ME, MERCH_STAGES, A_PROD, admAct });

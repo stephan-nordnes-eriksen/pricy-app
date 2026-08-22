@@ -10,15 +10,17 @@ function AdminMods() {
   const pn = k => A.mods.filter(m => m.status === 'pending' && (k === 'all' || m.kind === k)).length;
   const prodOf = m => (A.catalog.find(r => r.id === m.prodId) || {}).name || m.prodId;
   const act = (m, ok) => {
-    m.status = ok ? 'approved' : 'rejected';
-    if (ok && m.kind === 'correction' && m.field === 'GTIN') { const r = A.catalog.find(r => r.id === m.prodId); if (r) r.gtin = m.neu; }
     const verb = { review: ok ? 'Review published' : 'Review rejected', report: ok ? 'Price report confirmed — offer flagged' : 'Price report dismissed', correction: ok ? 'Correction applied' : 'Correction dismissed', photo: ok ? 'Photo approved' : 'Photo rejected' }[m.kind];
-    AdminStore.say(verb, verb, prodOf(m) + (m.shop ? ' @ ' + m.shop : ''));
+    admAct('mod.act', { row: m, ok }, () => {
+      m.status = ok ? 'approved' : 'rejected';
+      if (ok && m.kind === 'correction' && m.field === 'GTIN') { const r = A.catalog.find(r => r.id === m.prodId); if (r) r.gtin = m.neu; }
+      AdminStore.say(verb, verb, prodOf(m) + (m.shop ? ' @ ' + m.shop : ''));
+    });
   };
   return (<div className="adm-main" data-screen-label="Admin — Moderation">
     <div className="adm-bar">
       <Seg value={kind} options={[{ v: 'all', l: 'All', n: pn('all') }, { v: 'review', l: 'Reviews', n: pn('review') }, { v: 'report', l: 'Price reports', n: pn('report') }, { v: 'correction', l: 'Corrections', n: pn('correction') }, { v: 'photo', l: 'Photos', n: pn('photo') }]} onChange={setKind} />
-      <span className="adm-bar__count">Auto-filters caught 61 spam items this week — nothing for you to do there</span>
+      {A.stats.totals.spamCaught7d != null && <span className="adm-bar__count">Auto-filters caught {fmt(A.stats.totals.spamCaught7d)} spam items this week — nothing for you to do there</span>}
     </div>
     <Panel flush>
       {items.map(m => (<div key={m.id} className={'qrow' + (m.status !== 'pending' ? ' is-done' : '')}>
@@ -50,12 +52,12 @@ function AdminMods() {
 function AdminUsers() {
   const A = useAdmin(); const [q, setQ] = useState(''); const [arm, setArm] = useArm();
   const rows = A.users.filter(u => !q || (u.name + ' ' + u.email).toLowerCase().includes(q.toLowerCase()));
-  const block = u => { const on = u.status !== 'blocked'; u.status = on ? 'blocked' : 'active'; if (on) u.note = 'Blocked manually — ' + ADMIN_ME; else u.note = null; setArm(null); AdminStore.say(u.name + (on ? ' blocked' : ' unblocked'), 'User ' + (on ? 'blocked' : 'unblocked'), u.email); };
-  const erase = u => { ADMIN.users.splice(ADMIN.users.indexOf(u), 1); setArm(null); AdminStore.say('User data erased', 'GDPR erasure completed', u.email); };
+  const block = u => { const on = u.status !== 'blocked'; setArm(null); admAct('user.block', { row: u, on }, () => { u.status = on ? 'blocked' : 'active'; u.note = on ? 'Blocked manually — ' + ADMIN.me : null; AdminStore.say(u.name + (on ? ' blocked' : ' unblocked'), 'User ' + (on ? 'blocked' : 'unblocked'), u.email); }); };
+  const erase = u => { setArm(null); admAct('user.erase', { row: u }, () => { const i = ADMIN.users.indexOf(u); if (i > -1) ADMIN.users.splice(i, 1); AdminStore.say('User data erased', 'GDPR erasure completed', u.email); }); };
   return (<div className="adm-main" data-screen-label="Admin — Users">
     <div className="adm-bar">
       <div className="field"><Icon name="search" size={16} style={{ color: 'var(--ink-400)', marginLeft: 12 }} /><input placeholder="Search name or e-mail…" value={q} onChange={e => setQ(e.target.value)} /></div>
-      <span className="adm-bar__count">41 208 registered — showing {rows.length}</span>
+      {A.stats.totals.users != null && <span className="adm-bar__count">{fmt(A.stats.totals.users)} registered — showing {rows.length}</span>}
     </div>
     <Panel flush>
       <table className="atbl">
@@ -68,7 +70,7 @@ function AdminUsers() {
           <td className="mono dim">{u.last}</td>
           <td><Pill kind={u.status === 'active' ? 'ok' : u.status} dot>{u.status}</Pill></td>
           <td><span className="arow-acts">
-            <IBtn icon="download" title="Export user data (GDPR)" onClick={() => AdminStore.say('Data export queued — sent to ' + u.email, 'GDPR export queued', u.email)} />
+            <IBtn icon="download" title="Export user data (GDPR)" onClick={() => admAct('user.export', { row: u }, () => AdminStore.say('Data export queued — sent to ' + u.email, 'GDPR export queued', u.email))} />
             <IBtn icon={u.status === 'blocked' ? 'undo-2' : 'ban'} bad={u.status !== 'blocked'} confirm={arm === 'b' + u.id} title={u.status === 'blocked' ? 'Unblock' : arm === 'b' + u.id ? 'Click again to confirm' : 'Block user'} onClick={() => (u.status === 'blocked' || arm === 'b' + u.id) ? block(u) : setArm('b' + u.id)} />
             {u.status === 'deletion' && <IBtn icon="trash-2" bad confirm={arm === 'e' + u.id} title={arm === 'e' + u.id ? 'Click again to confirm erasure' : 'Erase all user data now'} onClick={() => arm === 'e' + u.id ? erase(u) : setArm('e' + u.id)} />}
           </span></td>
@@ -86,7 +88,7 @@ function AdminSystem() {
     <div className="adm-row adm-row--2">
       <Panel title="Feature flags" hint="take effect immediately" flush>
         {A.flags.map(fl => (<div key={fl.key} className="flagrow">
-          <Switch on={fl.on} onChange={v => { fl.on = v; AdminStore.say(fl.label + (v ? ' enabled' : ' disabled'), 'Flag ' + (v ? 'enabled' : 'disabled'), fl.label); }} />
+          <Switch on={fl.on} onChange={v => admAct('flag.toggle', { row: fl, on: v }, () => { fl.on = v; AdminStore.say(fl.label + (v ? ' enabled' : ' disabled'), 'Flag ' + (v ? 'enabled' : 'disabled'), fl.label); })} />
           <span className="flagrow__t"><b>{fl.label}</b><span>{fl.desc}</span></span>
           <Pill kind={fl.on ? 'ok' : 'off'}>{fl.on ? 'on' : 'off'}</Pill>
         </div>))}
@@ -94,8 +96,8 @@ function AdminSystem() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Panel title="Announcement banner" hint="shows on every page">
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <Switch on={A.banner.on} onChange={v => { A.banner.on = v; AdminStore.say('Banner ' + (v ? 'enabled' : 'disabled'), 'Banner ' + (v ? 'enabled' : 'disabled'), A.banner.text.slice(0, 40) + '…'); }} />
-            <div className="f" style={{ flex: 1 }}><textarea value={A.banner.text} onChange={e => { A.banner.text = e.target.value; AdminStore.emit(); }}></textarea></div>
+            <Switch on={A.banner.on} onChange={v => admAct('banner.set', { on: v, text: A.banner.text }, () => { A.banner.on = v; AdminStore.say('Banner ' + (v ? 'enabled' : 'disabled'), 'Banner ' + (v ? 'enabled' : 'disabled'), A.banner.text.slice(0, 40) + '…'); })} />
+            <div className="f" style={{ flex: 1 }}><textarea value={A.banner.text} onChange={e => { A.banner.text = e.target.value; AdminStore.emit(); }} onBlur={() => admAct('banner.set', { on: A.banner.on, text: A.banner.text }, () => { })}></textarea></div>
           </div>
         </Panel>
         <Panel title="Admin access" flush>

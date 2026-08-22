@@ -44,7 +44,7 @@ function AdminApp() {
         </div>))}
       </nav>
       <div className="adm-side__foot">
-        <div className="adm-me"><span className="adm-me__av">OPS</span><span className="adm-me__who"><b>Operations</b><span>{ADMIN_ME}</span></span></div>
+        <div className="adm-me"><span className="adm-me__av">OPS</span><span className="adm-me__who"><b>Operations</b><span>{A.me}</span></span></div>
         <a className="adm-side__link" href="index.html" target="_blank" rel="noopener"><Icon name="external-link" size={13} /><span className="lb">Open pricy.no</span></a>
       </div>
     </aside>
@@ -54,8 +54,8 @@ function AdminApp() {
         <span className="adm-top__crumb">ADMIN /</span>
         <span className="adm-top__title">{ADM_TITLES[tab]}</span>
         <span className="adm-top__right">
-          <span className="adm-top__date">Fri 21 Aug · 12:52</span>
-          <span className="tag tag--solid">PROD</span>
+          <span className="adm-top__date">{(d => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))(new Date())}</span>
+          <span className="tag tag--solid">{window.ADMIN_ENV || 'PREVIEW'}</span>
         </span>
       </header>
       <Page go={go} />

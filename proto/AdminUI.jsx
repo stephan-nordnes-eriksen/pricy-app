@@ -31,6 +31,7 @@ function Drawer({ title, sub, foot, onClose, children }) {
   </React.Fragment>);
 }
 function Cols({ points, unit, x0, x1 }) {
+  if (!points || !points.length) return null;
   const max = Math.max(...points);
   return (<div>
     <div className="cols">{points.map((p, i) => <div key={i} className="cols__c" style={{ height: (p / max * 100) + '%' }} title={p + (unit || '')}></div>)}</div>
@@ -61,6 +62,6 @@ function useArm() {
   useEffect(() => { if (arm == null) return; const t = setTimeout(() => setArm(null), 3000); return () => clearTimeout(t); }, [arm]);
   return [arm, setArm];
 }
-function agoM(min) { if (min < 1) return 'just now'; if (min < 60) return min + ' m ago'; if (min < 1440) return Math.round(min / 60) + ' h ago'; return Math.round(min / 1440) + ' d ago'; }
+function agoM(min) { if (min == null) return '\u2014'; if (min < 1) return 'just now'; if (min < 60) return min + ' m ago'; if (min < 1440) return Math.round(min / 60) + ' h ago'; return Math.round(min / 1440) + ' d ago'; }
 
 Object.assign(window, { Pill, Stat, Panel, Seg, IBtn, Switch, Drawer, Cols, Bars, F, ToastHost, useArm, agoM });

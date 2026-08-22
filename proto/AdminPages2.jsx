@@ -8,7 +8,7 @@ function AdminStores({ go }) {
   const A = useAdmin(); const [sel, setSel] = useState(null);
   const m = sel && A.merchants.find(x => x.id === sel);
   return (<div className="adm-main" data-screen-label="Admin — Webstores">
-    <div className="adm-bar"><span className="t-small">Onboarding pipeline — applications move left to right. Click a card to review.</span><span className="adm-bar__count">{A.merchants.length} webstores in pipeline · 96 live total</span></div>
+    <div className="adm-bar"><span className="t-small">Onboarding pipeline — applications move left to right. Click a card to review.</span><span className="adm-bar__count">{A.merchants.length} webstores in pipeline{A.stats.totals.webstoresLive != null ? ' · ' + fmt(A.stats.totals.webstoresLive) + ' live total' : ''}</span></div>
     <div className="pipes">{MERCH_STAGES.map(([k, l]) => { const items = A.merchants.filter(x => x.stage === k); return (
       <div key={k} className={'pipe' + (k === 'live' ? ' pipe--live' : '')}>
         <div className="pipe__hd">{l}<span className="n">{items.length}</span></div>
@@ -32,14 +32,16 @@ function AdminStores({ go }) {
 function StoreDrawer({ m, go, onClose }) {
   const adv = () => {
     const nx = M_NEXT[m.stage];
-    if (nx === 'crawl') m.crawl = { done: false, pct: 4, items: 0, errs: 0 };
-    if (nx === 'live') m.liveSince = 'just now';
-    m.stage = nx;
-    AdminStore.say(m.name + (nx === 'live' ? ' is now LIVE' : ' moved to ' + nx), 'Merchant ' + (nx === 'live' ? 'set live' : 'advanced to ' + nx), m.domain);
-    if (nx === 'live') onClose();
+    admAct('merchant.advance', { row: m, to: nx }, () => {
+      if (nx === 'crawl') m.crawl = { done: false, pct: 4, items: 0, errs: 0 };
+      if (nx === 'live') m.liveSince = 'just now';
+      m.stage = nx;
+      AdminStore.say(m.name + (nx === 'live' ? ' is now LIVE' : ' moved to ' + nx), 'Merchant ' + (nx === 'live' ? 'set live' : 'advanced to ' + nx), m.domain);
+      if (nx === 'live') onClose();
+    });
   };
-  const reject = () => { ADMIN.merchants.splice(ADMIN.merchants.indexOf(m), 1); AdminStore.say('Application rejected', 'Merchant application rejected', m.domain); onClose(); };
-  const reval = () => AdminStore.say('Feed re-validation queued for ' + m.domain, 'Feed re-validated', m.domain);
+  const reject = () => admAct('merchant.reject', { row: m }, () => { const i = ADMIN.merchants.indexOf(m); if (i > -1) ADMIN.merchants.splice(i, 1); AdminStore.say('Application rejected', 'Merchant application rejected', m.domain); onClose(); });
+  const reval = () => admAct('merchant.revalidate', { row: m }, () => AdminStore.say('Feed re-validation queued for ' + m.domain, 'Feed re-validated', m.domain));
   return (<Drawer title={m.name} sub={<React.Fragment><a href={'https://' + m.domain} target="_blank" rel="noopener">{m.domain}</a><span>·</span><span>org {m.org}</span><span>·</span><span>applied {m.applied}</span></React.Fragment>} onClose={onClose}
     foot={<React.Fragment>
       {m.stage !== 'live' && <Btn variant="ghost" size="sm" icon="x" onClick={reject}>Reject</Btn>}
@@ -74,8 +76,8 @@ function AdminCrawlers() {
   const A = useAdmin(); const [sel, setSel] = useState(null);
   const c = sel && A.crawlers.find(x => x.id === sel);
   const n = s => A.crawlers.filter(x => x.status === s).length;
-  const run = (x, e) => { if (e) e.stopPropagation(); x.last = 0; AdminStore.say('Run queued — ' + x.shop, 'Crawler run queued', x.shop); };
-  const toggle = (x, e) => { if (e) e.stopPropagation(); x.status = x.status === 'paused' ? 'ok' : 'paused'; AdminStore.say(x.shop + (x.status === 'paused' ? ' paused' : ' resumed'), 'Crawler ' + x.status, x.shop); };
+  const run = (x, e) => { if (e) e.stopPropagation(); admAct('crawler.run', { row: x }, () => { x.last = 0; AdminStore.say('Run queued — ' + x.shop, 'Crawler run queued', x.shop); }); };
+  const toggle = (x, e) => { if (e) e.stopPropagation(); const paused = x.status !== 'paused'; admAct('crawler.toggle', { row: x, paused }, () => { x.status = paused ? 'paused' : 'ok'; AdminStore.say(x.shop + (paused ? ' paused' : ' resumed'), 'Crawler ' + x.status, x.shop); }); };
   return (<div className="adm-main" data-screen-label="Admin — Crawlers">
     <div className="adm-row adm-row--stat" style={{ gridTemplateColumns: 'repeat(5,1fr)' }}>
       <Stat l="Sources" v={A.crawlers.length} d="feeds, APIs & crawlers" />
@@ -116,7 +118,7 @@ function CrawlerDrawer({ c, onRun, onToggle, onClose }) {
     <div className="drw-sec"><h4>Configuration</h4>
       <div className="fgrid">
         <F label="Type"><input readOnly value={c.kind} /></F>
-        <F label="Schedule"><select defaultValue={c.sched} onChange={e => { c.sched = e.target.value; AdminStore.say('Schedule set to ' + e.target.value, 'Crawler schedule changed', c.shop); }}>{['15 min', '1 h', '6 h', '24 h'].map(s => <option key={s}>{s}</option>)}</select></F>
+        <F label="Schedule"><select defaultValue={c.sched} onChange={e => { const sched = e.target.value; admAct('crawler.schedule', { row: c, sched }, () => { c.sched = sched; AdminStore.say('Schedule set to ' + sched, 'Crawler schedule changed', c.shop); }); }}>{['15 min', '1 h', '6 h', '24 h'].map(s => <option key={s}>{s}</option>)}</select></F>
         <F label="Endpoint" wide mono><input readOnly value={c.url} /></F>
       </div>
     </div>
