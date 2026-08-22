@@ -99,6 +99,9 @@ async function ensureSchema(db) {
     await db.prepare('ALTER TABLE users ADD COLUMN lists TEXT').run().catch(() => {});
     // honest metrics: signup date for "Member since" (pre-existing rows stay NULL)
     await db.prepare('ALTER TABLE users ADD COLUMN created_at INTEGER').run().catch(() => {});
+    // /admin console: granted manually, no endpoint and no UI —
+    // wrangler d1 execute pricy-app --remote --command "UPDATE users SET admin = 1 WHERE email = '…'"
+    await db.prepare('ALTER TABLE users ADD COLUMN admin INTEGER').run().catch(() => {});
     // 4d: real-source offers carry a deep link and a freshness stamp
     await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
@@ -169,6 +172,15 @@ function ingestAuth(request, env) {
   if (!bearer || !timingSafeEqual(bearer, env.INGEST_TOKEN)) return json({ error: 'unauthorized' }, 401);
   return null;
 }
+// admin gate (plans/admin-console.md): the ops bearer (tools/) OR the session
+// cookie of a users.admin row (the /admin console). Same trust either way —
+// returns the error Response, or null when authorized.
+async function adminAuth(request, env, db) {
+  if (env.INGEST_TOKEN && !ingestAuth(request, env)) return null;
+  const token = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`))?.[1];
+  const user = await sessionUser(db, token);
+  return user?.admin ? null : json({ error: 'unauthorized' }, 401);
+}
 async function bodyEmail(request) {
   const email = String(((await request.json().catch(() => ({}))).email || '')).trim().toLowerCase();
   return EMAIL_RE.test(email) ? email : null;
@@ -233,7 +245,7 @@ async function passwordAuth(db, action, email, password) {
 async function sessionUser(db, token) {
   if (!token) return null;
   return db.prepare(
-    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy, u.lists, u.created_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
+    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy, u.lists, u.created_at, u.admin FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
   ).bind(await sha(token), Date.now()).first();
 }
 
@@ -1711,7 +1723,7 @@ async function meBody(db, user, hideAutobuy) {
   // hideAutobuy (env.HIDE_AUTOBUY): the feature is invisible — no autobuy blob,
   // no purchase history in the me payload. The data export passes false: a
   // user's own data stays complete regardless of what the UI shows.
-  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null }, watches: results, lists: await listsBody(db, user), settings: user.settings ? JSON.parse(user.settings) : {}, ...(hideAutobuy ? {} : { autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) }) };
+  return { user: { email: user.email, name: user.name, initials: initials(user.name), hasPassword: !!user.password_hash, createdAt: user.created_at ?? null, ...(user.admin ? { admin: 1 } : {}) }, watches: results, lists: await listsBody(db, user), settings: user.settings ? JSON.parse(user.settings) : {}, ...(hideAutobuy ? {} : { autobuy: user.autobuy ? JSON.parse(user.autobuy) : null, purchases: await purchasesBody(db, user.id) }) };
 }
 
 // The owner's lists, with shared state joined from the tables: a list that
@@ -2120,7 +2132,13 @@ export default {
     // Precedence ids > q > top=drop > list (node= or all heads).
     if (route === 'GET /api/products') {
       // the ops bearer is the only way to see meta.hidden rows (see visible())
-      const denied = ingestAuth(request, env);
+      let denied = ingestAuth(request, env);
+      // the /admin console reads with a session, not the bearer — but only a
+      // query that ASKS for the ops view pays the session lookup; anonymous
+      // and logged-in SPA traffic keeps its edge cache and zero-auth path
+      if (denied && (url.searchParams.get('hidden') === '1' || url.searchParams.get('admin') === '1')) {
+        denied = await adminAuth(request, env, db);
+      }
       const ops = !denied;
       // Anonymous responses are catalog-version-stable, and Worker responses
       // are never edge-cached implicitly — the Cache API is the opt-in. Repeat
@@ -2285,12 +2303,69 @@ export default {
       return json({ ok: true });
     }
 
-    // The signup backlog, newest first (ops: ONBOARDING.md).
+    // The signup backlog, newest first (ops: ONBOARDING.md; /admin Webstores).
     if (route === 'GET /api/admin/joins') {
-      const denied = ingestAuth(request, env);
+      const denied = await adminAuth(request, env, db);
       if (denied) return denied;
       const { results } = await db.prepare('SELECT * FROM merchant_joins ORDER BY id DESC LIMIT 500').all();
       return json(results);
+    }
+
+    // ── /admin console reads (plans/admin-console.md) ─────────────────────
+    // Real numbers only: a panel the prototype mocks but nothing serves stays
+    // empty in the console — admin-boot.jsx never invents a value.
+    if (route === 'GET /api/admin/overview') {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      const ver = await seedCatalog(db);
+      const meta = await catMeta(db, ver);
+      const q = (sql, ...b) => db.prepare(sql).bind(...b);
+      const [offers, freshOffers, shops, users, watches, reviews, hidden, gpcQueued, imagesQueued, imagesFailed, joins, alerts24h] = (await db.batch([
+        q('SELECT COUNT(*) n FROM offers'),
+        q('SELECT COUNT(*) n FROM offers WHERE updated_at > ?', Date.now() - 36e5),
+        q('SELECT COUNT(DISTINCT shop) n FROM offers'),
+        q('SELECT COUNT(*) n FROM users'),
+        q('SELECT COUNT(*) n FROM watches WHERE paused = 0'),
+        q('SELECT COUNT(*) n FROM reviews WHERE hidden = 0'),
+        q(`SELECT COUNT(*) n FROM products WHERE json_extract(meta, '$.hidden') = 1`),
+        q(`SELECT COUNT(*) n FROM gpc WHERE status = 'queued'`),
+        q('SELECT COUNT(*) n FROM images WHERE fetched_at = 0'),
+        q('SELECT COUNT(*) n FROM images WHERE fetched_at = -1'),
+        q('SELECT COUNT(*) n FROM merchant_joins'),
+        q('SELECT COUNT(*) n FROM alerts WHERE created_at > ?', Date.now() - 864e5),
+      ])).map(r => r.results[0].n);
+      return json({ products: meta.products, uncat: meta.uncat, offers, freshOffers, shops, users, watches, reviews, hidden, gpcQueued, imagesQueued, imagesFailed, joins, alerts24h });
+    }
+
+    // Moderation queue: newest reviews with author + product name. Email is
+    // served — this is the same ops trust boundary as the GDPR-ish surfaces.
+    if (route === 'GET /api/admin/reviews') {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      const { results } = await db.prepare(
+        `SELECT r.id, r.product_id, r.title, r.body, r.claims, r.verified, r.hidden, r.created_at, r.updated_at,
+                u.name AS user, u.email, json_extract(p.meta, '$.name') AS product
+         FROM reviews r JOIN users u ON u.id = r.user_id LEFT JOIN products p ON p.id = r.product_id
+         ORDER BY r.id DESC LIMIT 200`).all();
+      return json(results); // claims stays upstream's own 'ynu' string, CLAIM_KEYS order
+    }
+
+    // Users listing for the console. `last login` derives from the freshest
+    // session (mint time = expiry − SESSION_DAYS); no tracking table exists.
+    if (route === 'GET /api/admin/users') {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      const needle = (url.searchParams.get('q') || '').trim().toLowerCase();
+      const { n: total } = await db.prepare('SELECT COUNT(*) n FROM users').first();
+      const { results } = await db.prepare(
+        `SELECT u.id, u.email, u.name, u.created_at, u.admin,
+                COALESCE(json_array_length(u.lists), 0) AS lists,
+                (SELECT COUNT(*) FROM watches w WHERE w.user_id = u.id AND w.paused = 0) AS watches,
+                (SELECT COUNT(*) FROM push_subs s WHERE s.user_id = u.id) AS devices,
+                (SELECT MAX(expires_at) FROM sessions s WHERE s.user_id = u.id) AS session_until
+         FROM users u ${needle ? 'WHERE lower(u.email) LIKE ?1 OR lower(u.name) LIKE ?1' : ''}
+         ORDER BY u.id DESC LIMIT 200`).bind(...(needle ? [`%${needle}%`] : [])).all();
+      return json({ total, users: results });
     }
 
     // Drain the gtin→brick queue (gpc-strict). The cron drains on its own;
@@ -2309,7 +2384,7 @@ export default {
     // extra.json row, no deploy. tools/enrich.mjs and tools/group.mjs print
     // ready-to-run curls against these.
     if (request.method === 'PATCH' && url.pathname.startsWith('/api/admin/products/')) {
-      const denied = ingestAuth(request, env);
+      const denied = await adminAuth(request, env, db);
       if (denied) return denied;
       await seedCatalog(db);
       const id = decodeURIComponent(url.pathname.slice('/api/admin/products/'.length));
@@ -2347,7 +2422,7 @@ export default {
     // review from every GET and the aggregate, {hidden: 0} restores it. No
     // listing route — `wrangler d1 execute` is the triage view, like reports.
     if (request.method === 'PATCH' && url.pathname.startsWith('/api/admin/reviews/')) {
-      const denied = ingestAuth(request, env);
+      const denied = await adminAuth(request, env, db);
       if (denied) return denied;
       const b = await request.json().catch(() => null);
       if (!b || (b.hidden !== 0 && b.hidden !== 1)) return json({ error: 'bad patch (hidden: 0|1)' }, 400);
@@ -2364,7 +2439,7 @@ export default {
     // deletes the orphan. Pass meta {name, family, vlabel, …} to create the
     // target on the spot (group.mjs re-homing to a new variant child).
     if (route === 'POST /api/admin/alias') {
-      const denied = ingestAuth(request, env);
+      const denied = await adminAuth(request, env, db);
       if (denied) return denied;
       await seedCatalog(db);
       const b = await request.json().catch(() => null);
@@ -2473,7 +2548,7 @@ export default {
         return json(await meBody(db, user, !!env.HIDE_AUTOBUY), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 
-      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, lists, created_at FROM users WHERE email = ?').bind(email).first();
+      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, lists, created_at, admin FROM users WHERE email = ?').bind(email).first();
       if (!user) return json({ error: 'no account for this email' }, 401);
       if (!password) return json({ error: 'enter your password' }, 400);
       if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);

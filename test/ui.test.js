@@ -1789,3 +1789,59 @@ test('install bar: Android prompts, iOS instructs, dismissal sticks', async () =
   await until(() => q(again, '.app-hdr'));
   assert.strictEqual(q(again, '.instl'), null, 'a dismissed install bar must stay dismissed');
 });
+
+// ── /admin console (plans/admin-console.md) ────────────────────────────────
+// dist/admin.html is a second standalone page: same vendored pipeline, with
+// admin-boot.jsx slotted after AdminData.jsx so the mocks are emptied at
+// parse time and the store hydrates from the real admin endpoints.
+function bootAdmin({ admin = true } = {}) {
+  const html = fs.readFileSync(path.join(DIST, 'admin.html'), 'utf8');
+  const dom = new JSDOM(html.replace(/<script[\s\S]*?<\/script>/g, ''), { url: 'http://pricy.test/admin', runScripts: 'outside-only', pretendToBeVisual: true });
+  const win = dom.window;
+  win.scrollTo = () => {};
+  const ok = (data, status = 200) => Promise.resolve({ ok: status < 400, status, json: () => Promise.resolve(data) });
+  win.api = [];
+  win.fetch = (u, opts = {}) => {
+    win.api.push((opts.method || 'GET') + ' ' + u);
+    if (u === '/api/me') return admin ? ok({ user: { email: 'ops@pricy.no', name: 'Ops', admin: 1 }, watches: [] }) : ok({ error: 'unauthenticated' }, 401);
+    if (u === '/api/auth/login') return ok({ user: { email: 'ops@pricy.no', name: 'Ops', admin: 1 } });
+    if (u === '/api/admin/overview') return ok({ products: 14231, uncat: 6800, offers: 52000, freshOffers: 120, shops: 50, users: 3, watches: 5, reviews: 2, hidden: 8900, gpcQueued: 40, imagesQueued: 12, imagesFailed: 3, joins: 1, alerts24h: 7 });
+    if (u.startsWith('/api/products?admin=1')) return ok({ meta: {}, products: [{ id: 'xm5', name: 'Sony WH-1000XM5', brand: 'Sony', cat: 'Audio', icon: 'headphones', ean: '4548736132565', brick: '10001071', shops: 5, best: 3290, offers: [{ shop: 'Power', price: 3290, updated_at: Date.now() - 3600e3 }] }] });
+    if (u.startsWith('/api/products?hidden=1')) return ok({ meta: {}, products: [{ id: 'ean-1', name: 'Fraktgebyr', shops: 0, offers: [] }] });
+    if (u === '/api/admin/joins') return ok([{ id: 1, domain: 'fjellsport.no', method: 'feed', feed: 'https://fjellsport.no/f.xml', email: 'nora@fjellsport.no', created_at: Date.now() - 864e5 }]);
+    if (u === '/api/admin/reviews') return ok([{ id: 9, product_id: 'xm5', product: 'Sony WH-1000XM5', user: 'Kari', email: 'k@n.no', title: 'Bra', body: 'Solid lyd', claims: 'yuy', verified: 1, hidden: 0, created_at: Date.now() - 3600e3 }]);
+    if (u === '/api/admin/users') return ok({ total: 3, users: [{ id: 1, email: 'ops@pricy.no', name: 'Ops', admin: 1, lists: 0, watches: 2, devices: 1, created_at: Date.now() - 30 * 864e5, session_until: Date.now() + 29 * 864e5 }] });
+    return Promise.reject(new Error('unexpected fetch ' + u));
+  };
+  const ctx = dom.getInternalVMContext();
+  for (const [, src, inline] of html.matchAll(/<script(?:\s+src="([^"]+)")?>([\s\S]*?)<\/script>/g)) {
+    vm.runInContext(src ? fs.readFileSync(path.join(DIST, src), 'utf8') : inline, ctx, { filename: src || 'admin.html:inline' });
+  }
+  return win;
+}
+
+test('admin console: the shell hydrates from real endpoints and no mock data renders', async () => {
+  const win = bootAdmin();
+  assert.ok(await until(() => qa(win, '.adm-nav__i').length === 7), 'sidebar tabs render');
+  assert.ok(await until(() => qa(win, '.stat__v').length >= 6), 'overview KPIs hydrate');
+  assert.ok(win.document.body.textContent.includes('14 231'), 'the served product count renders');
+  assert.ok(!win.document.body.textContent.includes('84 312'), 'the mock KPI numbers are gone');
+  assert.strictEqual(q(win, 'input[name=password]'), null, 'no login gate for an admin session');
+
+  qa(win, '.adm-nav__i').find(n => n.textContent.includes('Products')).click();
+  assert.ok(await until(() => win.document.body.textContent.includes('Sony WH-1000XM5')), 'the served catalog page renders');
+  assert.ok(win.document.body.textContent.includes('4548736132565'), 'GTIN column serves meta.ean');
+  assert.ok(win.document.body.textContent.includes('Fraktgebyr'), 'hidden backlog rows ride the All seg');
+
+  qa(win, '.adm-nav__i').find(n => n.textContent.includes('Moderation')).click();
+  assert.ok(await until(() => win.document.body.textContent.includes('Solid lyd')), 'the review queue renders served rows');
+
+  qa(win, '.adm-nav__i').find(n => n.textContent.includes('Webstores')).click();
+  assert.ok(await until(() => win.document.body.textContent.includes('fjellsport.no')), 'joins land in the pipeline');
+});
+
+test('admin console: no admin session → login gate, and nothing privileged is fetched', async () => {
+  const win = bootAdmin({ admin: false });
+  assert.ok(await until(() => q(win, 'input[name=email]')), 'the login gate renders');
+  assert.ok(!win.api.some(c => c.includes('/api/admin/') || c.includes('admin=1') || c.includes('hidden=1')), 'no privileged fetch before auth');
+});

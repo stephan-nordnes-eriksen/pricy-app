@@ -6,6 +6,26 @@ Moderation, Users, System. It runs entirely on the mock arrays in
 `AdminData.jsx` and is NOT in build.js yet: committing the sync changed
 nothing that deploys.)
 
+**Status 2026-08-22: phase 1 SHIPPED.** User's calls: real admin
+accounts (manual grant, no UI), Users tab included. What landed:
+`users.admin` column + `adminAuth` (INGEST bearer OR admin session) on
+the console surface, `GET /api/admin/overview|reviews|users`, joins/
+product-PATCH/review-PATCH/alias opened to admin sessions,
+`/api/products` privileged params (`hidden=1`, new `admin=1`) accept the
+session (lookup only runs when asked — anonymous traffic keeps its
+zero-auth path), build.js emits `dist/admin.html`+`admin.js` with the
+repo-owned `admin-boot.jsx` slotted after AdminData.jsx (mocks emptied at
+parse time, login gate, hydration), API + jsdom tests. Deviations from
+the plan as written: no localStorage token — auth is the session cookie
+outright, so the token-prompt idea died before birth. **Known interim
+fiction (all upstream-owned strings, prompt below):** Overview's
+hardcoded "needs attention" rows (CDON/garmin) and panel hint texts, the
+topbar date + "PROD" tag, `ADMIN_ME` in the sidebar, AdminProducts'
+"84 312 in catalog" line and its client-side-only filtering (the served
+page is 400 rows), AdminUsers' "41 208 registered" line, and every action
+button (they mutate local state + toast — nothing persists until the
+action hooks land). Crawlers/System tabs render empty (phase 2 data).
+
 ## Current state
 
 The prototype is its own page (`admin.html`), not a route in the SPA —
@@ -109,6 +129,19 @@ without data are dropped by boot, never left showing mock values.
 > 3. Moderation's "Auto-filters caught 61 spam items" line and
 >    AdminUsers' "41 208 registered" are hardcoded — read them from
 >    `A.stats` fields so a boot can serve real numbers or hide them.
+> 4. Action hook: when `window.onAdminAction` exists, every mutating
+>    button (product save/merge/publish/resolve/unlink, review
+>    publish/reject, correction apply, user block/export/erase, merchant
+>    advance/reject, crawler run/pause, flag/banner toggles) must
+>    `await window.onAdminAction(kind, payload)` — payload carrying the
+>    row's real `id`/`rid` — and only apply the local mutation + toast on
+>    a truthy result, showing the returned string as an error toast
+>    otherwise. Without the hook, keep today's local-only behavior.
+> 5. AdminOverview's "Needs attention" list is hardcoded (CDON, garmin) —
+>    derive it from `A.stats.issues` (array of {ic, k, t, d, tab}) and
+>    render nothing when empty. Same for `ADMIN_ME` (read
+>    `window.ADMIN_ME` fallback) and agoM: give it a `—` branch for
+>    null/NaN input.
 
 ## Open questions for the user
 

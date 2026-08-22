@@ -269,4 +269,37 @@ fs.cpSync(path.join(REPO, 'pwa'), DIST, { recursive: true });
 fs.mkdirSync(path.join(DIST, 'static', 'email'), { recursive: true });
 fs.copyFileSync(path.join(REPO, 'emails', 'assets-email', 'logo-wordmark.png'), path.join(DIST, 'static', 'email', 'logo-wordmark.png'));
 for (const f of localCss) fs.copyFileSync(path.join(REPO, 'proto', f), path.join(DIST, f));
+
+// --- admin console (plans/admin-console.md) --------------------------------
+// proto/admin.html is a second standalone loader; same treatment as the main
+// app except nothing is discarded: admin-boot.jsx (repo-owned) slots in right
+// AFTER AdminData.jsx so the mock arrays are emptied before any component
+// renders, and AdminApp.jsx still mounts last, byte-faithful.
+{
+  let adm = fs.readFileSync(path.join(REPO, 'proto', 'admin.html'), 'utf8');
+  const admSrcs = [...adm.matchAll(BLOCK_RE)].map(m => m[1]);
+  const di = admSrcs.indexOf('AdminData.jsx');
+  if (di < 0) throw new Error('proto/admin.html no longer references AdminData.jsx — admin-boot.jsx needs a new insertion point');
+  const admBlocks = admSrcs.map(f => '\n' + fs.readFileSync(path.join(REPO, 'proto', f), 'utf8') + '\n');
+  admBlocks.splice(di + 1, 0, fs.readFileSync(path.join(REPO, 'admin-boot.jsx'), 'utf8'));
+  const admCompiled = esbuild.transformSync(admBlocks.join('\n;\n'), { loader: 'jsx', target: 'es2020' }).code;
+  adm = adm
+    .replace(BLOCK_RE, '')
+    .replace(/<script src="https:\/\/unpkg\.com\/react@[^"]*"[^>]*><\/script>/, '<script src="vendor/react.production.min.js"></script>')
+    .replace(/<script src="https:\/\/unpkg\.com\/react-dom@[^"]*"[^>]*><\/script>/, '<script src="vendor/react-dom.production.min.js"></script>')
+    .replace(/<script src="https:\/\/unpkg\.com\/lucide@[^"]*"[^>]*><\/script>/, '<script src="vendor/lucide.min.js"></script>')
+    .replace(/[ \t]*<script src="https:\/\/unpkg\.com\/@babel\/standalone[^"]*"[^>]*><\/script>\n?/, '')
+    // served at /admin: relative refs must resolve against the dist root
+    .replace('</title>', '</title>\n<base href="/">')
+    .replace('</body>', '<script src="admin.js"></script>\n</body>');
+  if (!adm.includes('<script src="admin.js">') || !adm.includes('<base href="/">')) throw new Error('admin.js/base injection failed');
+  for (const cdn of ['unpkg.com', 'text/babel']) {
+    if (adm.includes(cdn)) throw new Error(`admin build output still references ${cdn}`);
+  }
+  for (const m of adm.matchAll(/<link[^>]*href="(?!https?:)([^"]+\.css)"/g)) {
+    fs.copyFileSync(path.join(REPO, 'proto', m[1]), path.join(DIST, m[1]));
+  }
+  fs.writeFileSync(path.join(DIST, 'admin.html'), adm);
+  fs.writeFileSync(path.join(DIST, 'admin.js'), admCompiled);
+}
 console.log(`built dist/: app.js ${Math.round(compiled.length / 1024)}KB from ${blocks.length} prototype blocks + boot.jsx`);

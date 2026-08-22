@@ -3341,3 +3341,55 @@ test('alerts: push-only extras — back in stock, and all-time low for target-le
   assert.strictEqual((await pushesDuring(() => push([row(1150)]))).length, 1, 'coming back in stock pushes');
   assert.strictEqual((await alerts()).length, 0, 'push-only events write no alerts-feed rows');
 });
+
+// ── /admin console (plans/admin-console.md) ────────────────────────────────
+test('admin console: a users.admin session unlocks the admin surface, plain users and anonymous do not', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ops@pricy.no', password: 'correcthorse1' } }));
+
+  assert.strictEqual((await call('/api/admin/overview')).status, 401, 'anonymous is denied');
+  assert.strictEqual((await call('/api/admin/overview', { cookie })).status, 401, 'a plain user is not an admin');
+  assert.strictEqual((await call('/api/products?hidden=1', { cookie })).status, 401, 'hidden listing stays gated for plain users');
+
+  // the only grant path: manual SQL (wrangler d1 execute in prod, no endpoint)
+  await DB.prepare("UPDATE users SET admin = 1 WHERE email = 'ops@pricy.no'").bind().run();
+
+  const me = await (await call('/api/me', { cookie })).json();
+  assert.strictEqual(me.user.admin, 1, 'meBody flags the admin so the console can gate on it');
+
+  const ov = await (await call('/api/admin/overview', { cookie })).json();
+  assert.ok(ov.products > 0 && ov.users >= 1, `overview serves real counts (${ov.products} products, ${ov.users} users)`);
+  assert.ok(['offers', 'shops', 'hidden', 'gpcQueued', 'joins', 'alerts24h'].every(k => Number.isInteger(ov[k])), 'every overview count is a real integer');
+
+  const us = await (await call('/api/admin/users', { cookie })).json();
+  assert.ok(us.total >= 1 && us.users.some(u => u.email === 'ops@pricy.no' && u.admin === 1), 'users listing serves the roster');
+  assert.strictEqual((await call('/api/admin/users?q=nobody-matches')).status, 401);
+  assert.deepStrictEqual((await (await call('/api/admin/users?q=nobody-matches', { cookie })).json()).users, [], 'q= filters');
+
+  assert.strictEqual((await call('/api/admin/reviews', { cookie })).status, 200, 'moderation queue opens to the session');
+  assert.strictEqual((await call('/api/admin/joins', { cookie })).status, 200, 'joins backlog opens to the session');
+  assert.strictEqual((await call('/api/products?hidden=1', { cookie })).status, 200, 'hidden listing opens to the admin session');
+
+  // writes accept the session with the same trust as the bearer
+  assert.strictEqual((await call('/api/admin/products/xm5', { method: 'PATCH', cookie, body: { kw: 'admin console test' } })).status, 200);
+  // and the bearer path is unchanged
+  assert.strictEqual((await call('/api/admin/overview', { token: OPS })).status, 200, 'the ops bearer still works everywhere');
+});
+
+test('admin console: the moderation queue lists reviews with author and product name', async () => {
+  const call = api({ DB: d1() });
+  await call('/api/products'); // seeds
+  const cookie = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@nordmann.no', password: 'correcthorse1' } }));
+  const post = await call('/api/reviews', { method: 'POST', cookie, body: { product_id: 'xm5', claims: { worth: 'y', durable: 'u', described: 'y' }, title: 'Solide', body: 'Beste kjøpet i år.' } });
+  assert.strictEqual(post.status, 200);
+
+  const rows = await (await call('/api/admin/reviews', { token: OPS })).json();
+  const r = rows.find(x => x.product_id === 'xm5');
+  assert.ok(r, 'the review is in the queue');
+  assert.strictEqual(r.user, 'Kari', 'author name joined');
+  assert.strictEqual(r.email, 'kari@nordmann.no', 'author email served on the admin surface');
+  assert.ok(String(r.product || '').includes('Sony'), 'product name joined from meta');
+  assert.strictEqual(r.claims, 'yuy', "claims serve as upstream's 'ynu' string");
+  assert.strictEqual(r.hidden, 0);
+});

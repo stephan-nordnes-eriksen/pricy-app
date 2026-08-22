@@ -403,7 +403,26 @@ Two Claude Design projects feed this repo:
   the owner, a new bought-mark notifies the OTHER members — never the
   owner (spoiler by timing) and never the buyer. All sends go through
   `pushToUser` (settings gate at the caller, dead endpoints pruned).
-- MCP experiment: `POST /mcp` on the same Worker is a hand-rolled
+- **Admin console at /admin** (2026-08-22, plans/admin-console.md): the
+  synced admin prototype (`proto/admin.html` + `Admin*.jsx` +
+  `admin.css`) builds into `dist/admin.html`+`admin.js` — same vendored
+  pipeline as the main app, with the repo-owned `admin-boot.jsx` slotted
+  right AFTER AdminData.jsx so the mock arrays are emptied at parse time
+  (no fake number ever renders); the shell then hydrates from the real
+  admin API and shows a login gate otherwise. Auth: `users.admin`
+  (granted manually, no endpoint/UI: `wrangler d1 execute pricy-app
+  --remote --command "UPDATE users SET admin=1 WHERE email='…'"`);
+  `adminAuth` = INGEST_TOKEN bearer OR admin session, on the console's
+  reads (`GET /api/admin/overview|reviews|users|joins`) and writes
+  (product PATCH, review PATCH, alias). `/api/products` privileged
+  params (`hidden=1`, `admin=1` = ops view) accept the session too — the
+  session lookup runs ONLY when those params are present, so anonymous/
+  SPA traffic keeps its zero-auth edge-cached path. The READ side is
+  real; the page's action buttons still mutate local state + toast until
+  upstream grows `window.onAdminAction` (prompt in the plan file), and
+  Crawlers/System render empty until phase 2 (crawl_runs, audit table,
+  merchant stages). Ingest/gpc/images/push/outreach/catalog.json stay
+  bearer-only.
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
   `Mcp-Session-Id` header to the shared `sessions` table), search_products,
   get_product, buy_now (records an order in the `purchases` table — MVP,
