@@ -102,6 +102,8 @@ async function ensureSchema(db) {
     // /admin console: granted manually, no endpoint and no UI —
     // wrangler d1 execute pricy-app --remote --command "UPDATE users SET admin = 1 WHERE email = '…'"
     await db.prepare('ALTER TABLE users ADD COLUMN admin INTEGER').run().catch(() => {});
+    // console Users tab: blocked = locked out (sessions dead, login refused)
+    await db.prepare('ALTER TABLE users ADD COLUMN blocked INTEGER').run().catch(() => {});
     // 4d: real-source offers carry a deep link and a freshness stamp
     await db.prepare('ALTER TABLE offers ADD COLUMN url TEXT').run().catch(() => {});
     await db.prepare('ALTER TABLE offers ADD COLUMN updated_at INTEGER').run().catch(() => {});
@@ -245,7 +247,9 @@ async function passwordAuth(db, action, email, password) {
 async function sessionUser(db, token) {
   if (!token) return null;
   return db.prepare(
-    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy, u.lists, u.created_at, u.admin FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?'
+    // COALESCE: the column arrived 2026-08-22, pre-existing rows are NULL.
+    // A blocked user's sessions all die here — web, MCP and OAuth alike.
+    'SELECT u.id, u.email, u.name, u.password_hash, u.settings, u.autobuy, u.lists, u.created_at, u.admin FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND COALESCE(u.blocked, 0) = 0'
   ).bind(await sha(token), Date.now()).first();
 }
 
@@ -2358,7 +2362,7 @@ export default {
       const needle = (url.searchParams.get('q') || '').trim().toLowerCase();
       const { n: total } = await db.prepare('SELECT COUNT(*) n FROM users').first();
       const { results } = await db.prepare(
-        `SELECT u.id, u.email, u.name, u.created_at, u.admin,
+        `SELECT u.id, u.email, u.name, u.created_at, u.admin, u.blocked,
                 COALESCE(json_array_length(u.lists), 0) AS lists,
                 (SELECT COUNT(*) FROM watches w WHERE w.user_id = u.id AND w.paused = 0) AS watches,
                 (SELECT COUNT(*) FROM push_subs s WHERE s.user_id = u.id) AS devices,
@@ -2366,6 +2370,32 @@ export default {
          FROM users u ${needle ? 'WHERE lower(u.email) LIKE ?1 OR lower(u.name) LIKE ?1' : ''}
          ORDER BY u.id DESC LIMIT 200`).bind(...(needle ? [`%${needle}%`] : [])).all();
       return json({ total, users: results });
+    }
+
+    // Block/unblock (console user.block action). Blocking kills every live
+    // session at the sessionUser choke point — web, MCP and OAuth alike.
+    // Admins can't be blocked (no locking yourself out from the console).
+    if (request.method === 'PATCH' && url.pathname.startsWith('/api/admin/users/')) {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      const b = await request.json().catch(() => null);
+      if (!b || (b.blocked !== 0 && b.blocked !== 1)) return json({ error: 'bad patch (blocked: 0|1)' }, 400);
+      const id = Number(url.pathname.slice('/api/admin/users/'.length));
+      const target = await db.prepare('SELECT admin FROM users WHERE id = ?').bind(id).first();
+      if (!target) return json({ error: 'unknown user' }, 404);
+      if (target.admin && b.blocked) return json({ error: 'admins cannot be blocked' }, 400);
+      await db.prepare('UPDATE users SET blocked = ? WHERE id = ?').bind(b.blocked, id).run();
+      return json({ ok: true });
+    }
+
+    // Drop a merchant application (console merchant.reject). The row is the
+    // only record — rejecting IS deleting, same as the manual triage did.
+    if (request.method === 'DELETE' && url.pathname.startsWith('/api/admin/joins/')) {
+      const denied = await adminAuth(request, env, db);
+      if (denied) return denied;
+      await db.prepare('DELETE FROM merchant_joins WHERE id = ?')
+        .bind(Number(url.pathname.slice('/api/admin/joins/'.length))).run();
+      return json({ ok: true });
     }
 
     // Drain the gtin→brick queue (gpc-strict). The cron drains on its own;
@@ -2548,8 +2578,11 @@ export default {
         return json(await meBody(db, user, !!env.HIDE_AUTOBUY), 200, { 'set-cookie': await startSession(db, user.id) });
       }
 
-      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, lists, created_at, admin FROM users WHERE email = ?').bind(email).first();
+      const user = await db.prepare('SELECT id, email, name, password_hash, settings, autobuy, lists, created_at, admin, blocked FROM users WHERE email = ?').bind(email).first();
       if (!user) return json({ error: 'no account for this email' }, 401);
+      // sessionUser is the real enforcement (every authed request dies there);
+      // this is just the clear message instead of a mystery 401 after login
+      if (user.blocked) return json({ error: 'account blocked — contact kontakt@pricy.no' }, 403);
       if (!password) return json({ error: 'enter your password' }, 400);
       if (!user.password_hash) return json({ error: 'this account has no password — use magic link or BankID' }, 401);
       if (!(await verifyPassword(password, user.password_hash))) return json({ error: 'incorrect password' }, 401);

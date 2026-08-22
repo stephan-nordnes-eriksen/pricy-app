@@ -17,14 +17,29 @@ zero-auth path), build.js emits `dist/admin.html`+`admin.js` with the
 repo-owned `admin-boot.jsx` slotted after AdminData.jsx (mocks emptied at
 parse time, login gate, hydration), API + jsdom tests. Deviations from
 the plan as written: no localStorage token — auth is the session cookie
-outright, so the token-prompt idea died before birth. **Known interim
-fiction (all upstream-owned strings, prompt below):** Overview's
-hardcoded "needs attention" rows (CDON/garmin) and panel hint texts, the
-topbar date + "PROD" tag, `ADMIN_ME` in the sidebar, AdminProducts'
-"84 312 in catalog" line and its client-side-only filtering (the served
-page is 400 rows), AdminUsers' "41 208 registered" line, and every action
-button (they mutate local state + toast — nothing persists until the
-action hooks land). Crawlers/System tabs render empty (phase 2 data).
+outright, so the token-prompt idea died before birth.
+
+**Status 2026-08-22 later: the hookable upstream landed and is WIRED.**
+The prompt below was pasted, synced, and admin-boot.jsx now implements
+both seams: `onAdminProducts` (q → blob search ≤100 client-refined;
+draft → node=uncat; live → node=<every stocked segment, from
+meta.tree>; a category → its segment code; hidden → the 200-row backlog
+listing client-filtered; flagged/dupe → truly empty, no machinery
+exists; totals/counts from overview + meta.total, all filterless fast
+path — no sort param, no CPU cliff) and `onAdminAction` (product.save →
+meta PATCH + alias for a changed GTIN + hidden⇄live via hidden:1/null,
+mod.act → review hidden PATCH, user.block → users PATCH,
+merchant.reject → joins DELETE; everything else returns an honest error
+toast — merge/publish/resolve/unlink/crawler.*/user.export/erase/
+merchant.advance/flags/banner). New worker bits: `users.blocked`
+(enforced at the sessionUser choke point — web/MCP/OAuth sessions all
+die; login 403s with a clear message; admins unblockable),
+`PATCH /api/admin/users/:id {blocked}`, `DELETE /api/admin/joins/:id`.
+Remaining fiction: none rendered. Remaining empty: Crawlers tab and
+System's flags/admins/audit (phase 2 data), Overview's clicks/searches
+panels ("No analytics yet" until an events table exists). Save caveat:
+a renamed SEED row reverts on the next deploy (seed keys win in the
+json_patch merge) — discovered `ean-*`/`p-*` rows keep edits.
 
 ## Current state
 

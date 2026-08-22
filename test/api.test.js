@@ -3393,3 +3393,34 @@ test('admin console: the moderation queue lists reviews with author and product 
   assert.strictEqual(r.claims, 'yuy', "claims serve as upstream's 'ynu' string");
   assert.strictEqual(r.hidden, 0);
 });
+
+test('admin console: blocking a user kills their sessions and refuses login; joins can be dropped', async () => {
+  const DB = d1();
+  const call = api({ DB });
+  const kari = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'kari@n.no', password: 'correcthorse1' } }));
+  const ops = cookieOf(await call('/api/auth/signup', { method: 'POST', body: { email: 'ops@pricy.no', password: 'correcthorse1' } }));
+  await DB.prepare("UPDATE users SET admin = 1 WHERE email = 'ops@pricy.no'").bind().run();
+
+  const { users } = await (await call('/api/admin/users', { cookie: ops })).json();
+  const target = users.find(u => u.email === 'kari@n.no');
+  assert.ok(!target.blocked, 'starts unblocked');
+
+  assert.strictEqual((await call(`/api/admin/users/${target.id}`, { method: 'PATCH', cookie: ops, body: { blocked: 2 } })).status, 400);
+  assert.strictEqual((await call(`/api/admin/users/${target.id}`, { method: 'PATCH', cookie: ops, body: { blocked: 1 } })).status, 200);
+  assert.strictEqual((await call('/api/me', { cookie: kari })).status, 401, 'live session dies at the sessionUser choke point');
+  assert.strictEqual((await call('/api/auth/login', { method: 'POST', body: { email: 'kari@n.no', password: 'correcthorse1' } })).status, 403, 'login refused with a clear message');
+  assert.strictEqual((await call(`/api/admin/users/${target.id}`, { method: 'PATCH', cookie: ops, body: { blocked: 0 } })).status, 200);
+  assert.strictEqual((await call('/api/me', { cookie: kari })).status, 200, 'unblocking restores the existing session');
+
+  const admin = (await (await call('/api/admin/users', { cookie: ops })).json()).users.find(u => u.email === 'ops@pricy.no');
+  assert.strictEqual((await call(`/api/admin/users/${admin.id}`, { method: 'PATCH', cookie: ops, body: { blocked: 1 } })).status, 400, 'admins cannot be blocked');
+  assert.strictEqual((await call('/api/admin/users/999999', { method: 'PATCH', cookie: ops, body: { blocked: 1 } })).status, 404);
+  assert.strictEqual((await call(`/api/admin/users/${target.id}`, { method: 'PATCH', cookie: kari, body: { blocked: 1 } })).status, 401, 'plain users cannot block');
+
+  // merchant.reject: DELETE drops the application row
+  await call('/api/merchant/join', { method: 'POST', body: { domain: 'fjellsport.no', method: 'crawl', email: 'nora@fjellsport.no' } });
+  const [row] = await (await call('/api/admin/joins', { cookie: ops })).json();
+  assert.strictEqual((await call(`/api/admin/joins/${row.id}`, { method: 'DELETE' })).status, 401, 'delete is gated');
+  assert.strictEqual((await call(`/api/admin/joins/${row.id}`, { method: 'DELETE', cookie: ops })).status, 200);
+  assert.deepStrictEqual(await (await call('/api/admin/joins', { cookie: ops })).json(), [], 'the row is gone');
+});

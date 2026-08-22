@@ -417,11 +417,20 @@ Two Claude Design projects feed this repo:
   (product PATCH, review PATCH, alias). `/api/products` privileged
   params (`hidden=1`, `admin=1` = ops view) accept the session too — the
   session lookup runs ONLY when those params are present, so anonymous/
-  SPA traffic keeps its zero-auth edge-cached path. The READ side is
-  real; the page's action buttons still mutate local state + toast until
-  upstream grows `window.onAdminAction` (prompt in the plan file), and
-  Crawlers/System render empty until phase 2 (crawl_runs, audit table,
-  merchant stages). Ingest/gpc/images/push/outreach/catalog.json stay
+  SPA traffic keeps its zero-auth edge-cached path. Upstream is hookable
+  (synced 2026-08-22) and boot wires both seams: `window.onAdminProducts`
+  drives the Products table server-side (q → blob search; draft →
+  node=uncat; live → node=<all stocked segments>; hidden → the backlog
+  listing; all filterless fast-path queries — never add a sort param, the
+  full-shape path is a CPU cliff at this catalog size), and
+  `window.onAdminAction` persists product.save (meta PATCH + alias on a
+  GTIN change + hidden⇄live), mod.act (review hidden PATCH), user.block
+  (`users.blocked`, enforced at the sessionUser choke point — all session
+  kinds die, login 403s, admins unblockable) and merchant.reject
+  (`DELETE /api/admin/joins/:id`); unwired kinds return an honest error
+  toast, never a fake success. Crawlers/System data and Overview
+  analytics are phase 2 (crawl_runs, audit table, merchant stages,
+  events). Ingest/gpc/images/push/outreach/catalog.json stay
   bearer-only.
   Streamable-HTTP MCP server (no SDK). Tools: login/signup (binds the
   `Mcp-Session-Id` header to the shared `sessions` table), search_products,
