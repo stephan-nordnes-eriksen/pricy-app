@@ -114,38 +114,102 @@ without data are dropped by boot, never left showing mock values.
    - moderation kinds beyond reviews (need submit surfaces first)
    - real admin accounts/roles
 
-## Upstream prompt (paste into the prototype project when phase 1 starts)
+## Upstream prompt (paste into the prototype project — makes the admin app hookable)
 
-> In the admin app (admin.html + Admin*.jsx):
-> 1. AdminProducts currently filters `A.catalog` client-side and
->    hardcodes "84 312 in catalog". Add an optional hook like the main
->    app's onQuery: when `window.onAdminProducts` exists, call it
->    (debounced) with `{q, cat, status, page}` and render
->    `{rows, total}` from the resolved value instead of filtering
->    `A.catalog`; keep the current behavior when the hook is absent.
->    Show the served `total` in the count line.
-> 2. The topbar date "Fri 21 Aug · 12:52" should come from `new
->    Date()`, and the "PROD" tag from `window.ADMIN_ENV || 'PREVIEW'`.
-> 3. Moderation's "Auto-filters caught 61 spam items" line and
->    AdminUsers' "41 208 registered" are hardcoded — read them from
->    `A.stats` fields so a boot can serve real numbers or hide them.
-> 4. Action hook: when `window.onAdminAction` exists, every mutating
->    button (product save/merge/publish/resolve/unlink, review
->    publish/reject, correction apply, user block/export/erase, merchant
->    advance/reject, crawler run/pause, flag/banner toggles) must
->    `await window.onAdminAction(kind, payload)` — payload carrying the
->    row's real `id`/`rid` — and only apply the local mutation + toast on
->    a truthy result, showing the returned string as an error toast
->    otherwise. Without the hook, keep today's local-only behavior.
-> 5. AdminOverview's "Needs attention" list is hardcoded (CDON, garmin) —
->    derive it from `A.stats.issues` (array of {ic, k, t, d, tab}) and
->    render nothing when empty. Same for `ADMIN_ME` (read
->    `window.ADMIN_ME` fallback) and agoM: give it a `—` branch for
->    null/NaN input.
+Written 2026-08-22 after phase 1 shipped. One paste. Boot will be
+written against these exact contracts, so signatures must land as
+specified. After the sync: extend admin-boot.jsx to implement
+`onAdminAction`/`onAdminProducts` and set the window overrides.
 
-## Open questions for the user
+> In the admin app (admin.html + AdminApp/AdminData/AdminUI/
+> AdminPages1/2/3.jsx), make every screen hookable by a host page so a
+> production boot can serve real data and persist actions. Hard rule:
+> with NONE of the hooks or window overrides present, the preview must
+> behave exactly as it does today — same mock data, same local-only
+> actions, same visuals.
+>
+> 1. **Action hook.** Add to AdminData.jsx:
+>    ```js
+>    // host seam: when window.onAdminAction exists, every mutating
+>    // control awaits it; true = proceed, a string = error toast, and
+>    // the local mutation + success toast happen only inside apply()
+>    async function admAct(kind, payload, apply) {
+>      const h = window.onAdminAction;
+>      if (h) {
+>        let r; try { r = await h(kind, payload); } catch (e) { r = String(e && e.message || e); }
+>        if (r !== true) { AdminStore.say(typeof r === 'string' ? r : 'Action failed'); return false; }
+>      }
+>      apply(); return true;
+>    }
+>    ```
+>    Route EVERY mutating control through it. `payload` always carries
+>    the store row object itself under `row` (a host attaches its own
+>    fields, e.g. a server id — never rebuild or clone the row):
+>    - ProductDrawer: `product.save` {row, fields, specs} ·
+>      `product.merge` {row, into} · `product.publish` {row} ·
+>      `product.resolve` {row} · `offer.unlink` {row, shop, price}
+>    - Moderation: `mod.act` {row, ok}
+>    - Users: `user.block` {row, on} · `user.export` {row} ·
+>      `user.erase` {row}
+>    - Webstores: `merchant.advance` {row, to} · `merchant.reject`
+>      {row} · `merchant.revalidate` {row}
+>    - Crawlers: `crawler.run` {row} · `crawler.toggle` {row, paused} ·
+>      `crawler.schedule` {row, sched}
+>    - System: `flag.toggle` {row, on} · `banner.set` {on, text} —
+>      fired on the switch AND on textarea blur, never per keystroke
+>
+> 2. **Server-driven Products table.** When `window.onAdminProducts`
+>    exists, AdminProducts must NOT filter `A.catalog`. Instead:
+>    `const res = await window.onAdminProducts({q, cat, status, page})`
+>    — debounce q by 250 ms; `page` starts at 0, increments via a
+>    "Show more" button visible while `rows.length < total`, and resets
+>    to 0 on any q/cat/status change; a call that resolves `null` was
+>    superseded — ignore it. Render `res.rows` (append page > 0) and
+>    `res.total`; the count line becomes
+>    `fmt(total) + " matching — showing " + rows.length`. When
+>    `res.counts` is present ({all, live, flagged, dupe, draft,
+>    hidden}) it feeds the status-seg badges. Also add `hidden` as a
+>    P_STATUS option and to the drawer status select — it is the real
+>    backlog vocabulary. Hook absent → today’s client-side path.
+>
+> 3. **Drawer offers from the row.** ProductDrawer’s "Matched offers"
+>    reads the demo lookup `A_PROD[row.id]`. Prefer `row.offerRows`
+>    (array of {shop, price, updated_at}) when present; fall back to
+>    the A_PROD path.
+>
+> 4. **No invented numbers.** Move every hardcoded stat into data so a
+>    host can override, and render each line only when its value is
+>    non-null:
+>    - `A_STATS.totals = { products: 84312, users: 41208,
+>      webstoresLive: 96, spamCaught7d: 61 }` — AdminProducts’
+>      "84 312 in catalog", AdminUsers’ "41 208 registered",
+>      Webstores’ "96 live total" and Moderation’s "Auto-filters
+>      caught 61 spam items" all render from these fields.
+>    - AdminOverview’s "Needs attention": move the four mock rows into
+>      `A_STATS.issues` ([{ic, k, t, d, tab}]) and render from
+>      `A.stats.issues`; empty → one muted "Nothing needs attention"
+>      row.
+>    - Panel hint strings ("× 1 000 · total 187 k", "red = returned no
+>      results", "share of 1.24 M offers") move into `A_STATS`
+>      (clicksHint, searchesHint, healthHint); render the hint only
+>      when set.
+>    - The clicks chart and Top searches panels: when `clicks14` has
+>      fewer than 2 points / `searches` is empty, render a muted "No
+>      analytics yet" placeholder instead of the chart.
+>
+> 5. **Live chrome.** Topbar: real `new Date()` in the current format,
+>    and the environment tag from `window.ADMIN_ENV || "PREVIEW"`.
+>    Sidebar identity: add `me: ADMIN_ME` to the ADMIN object, render
+>    `A.me` in the sidebar footer, and use `ADMIN.me` as the audit
+>    actor in AdminStore.say.
+>
+> 6. **Small guards.** `agoM`: return "—" for null/undefined/NaN
+>    input. `Sparkline`: render nothing for fewer than 2 points.
+>    `Cols`: render nothing when `points` is empty.
 
-- Is the INGEST_TOKEN-in-localStorage gate acceptable for v1, or do
-  you want real admin accounts before anything ships at /admin?
-- Users tab lists real customer emails to the bearer holder — fine
-  (it's the ops token), or keep the Users tab out of v1?
+## Decisions (2026-08-22)
+
+- Real admin accounts, created manually — no onboarding, no UI
+  (`users.admin`, wrangler d1 one-liner). The token-in-localStorage
+  idea died before birth.
+- Users tab is in, real customer emails included (admin-only surface).
